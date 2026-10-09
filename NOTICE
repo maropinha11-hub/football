@@ -1,0 +1,15 @@
+Football Training derives from Gameplay Football.
+
+Source: https://github.com/vi3itor/GameplayFootball
+Revision: 68159a2f0f96eec8ebba26ab7820130f36b922a7
+Original game and Blunted2: Bastiaan Konings Schuiling, 2008-2015.
+Modernized portions: Copyright 2019 Google LLC & Bastiaan Konings;
+other contributors' notices are retained in their original files.
+The imported fork is distributed under Apache-2.0; see LICENSE and
+individual file notices. The Alegreya font has its own OFL license in data.
+
+Modifications add solo training, robust SDL2 controller handling,
+build/start instructions, diagnostics and validation.
+Player models, field resources and animation files are retained from the
+referenced fork. No PES source, binaries or animations were supplied or
+used; Gameplay Football fidelity is not a claim of PES equivalence.
