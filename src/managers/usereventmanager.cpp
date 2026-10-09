@@ -23,6 +23,10 @@
 #include "base/log.hpp"
 #include "base/utils.hpp"
 
+#ifdef _WIN32
+#include <xinput.h>
+#endif
+
 namespace blunted {
 
   template<> UserEventManager* Singleton<UserEventManager>::singleton = 0;
@@ -75,6 +79,13 @@ namespace blunted {
           (SDL_IsGameController(i) ? " (GameController)" : " (raw joystick)"));
       OpenJoystick(i);
     }
+#ifdef _WIN32
+    for (int i = 0; i < 4; ++i) {
+      XINPUT_STATE state{};
+      if (XInputGetState(static_cast<DWORD>(i), &state) == ERROR_SUCCESS)
+        Log(e_Notice, "UserEventManager", "UserEventManager", "XInput user #" + int_to_str(i) + ": connected");
+    }
+#endif
     //SDL_JoystickEventState(SDL_IGNORE); // doesn't seem to work? bug?
     SDL_JoystickEventState(SDL_ENABLE);
     //printf("JOYSTICK EVENT STATE: %i (%i = ignore, %i = enable)\n", SDL_JoystickEventState(SDL_QUERY), SDL_IGNORE, SDL_ENABLE);
@@ -142,6 +153,13 @@ namespace blunted {
     switch (event.type) {
       case SDL_WINDOWEVENT:
         if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) ClearInputs();
+        else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+          boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+          // ClearInputs deliberately masks held SDL state after focus loss.
+          // Once the window is active again, live polling is safe to resume.
+          for (int slot = 0; slot < _JOYSTICK_MAX; ++slot)
+            if (joystick[slot]) controllerInputsCleared[slot] = false;
+        }
         break;
       case SDL_JOYDEVICEADDED:
       case SDL_CONTROLLERDEVICEADDED: {
@@ -292,6 +310,7 @@ namespace blunted {
   bool UserEventManager::GetJoyButtonState(int joyID, int sdlJoyButtonID) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 || sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS) return false;
+    SDL_JoystickUpdate();
     if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]))
       return SDL_JoystickGetButton(joystick[joyID], sdlJoyButtonID) != 0;
     return joyButtonPressed[joyID][sdlJoyButtonID];
@@ -312,6 +331,7 @@ namespace blunted {
     float rest = joyAxisCalibration[joyID][axisID][2];
 
     float value = joyAxis[joyID][axisID];
+    SDL_JoystickUpdate();
     if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
         axisID < SDL_JoystickNumAxes(joystick[joyID])) {
       value = SDL_JoystickGetAxis(joystick[joyID], axisID);
@@ -353,6 +373,7 @@ namespace blunted {
   float UserEventManager::GetJoystickAxisRaw(int joyID, int axisID) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+    SDL_JoystickUpdate();
     if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
         axisID < SDL_JoystickNumAxes(joystick[joyID]))
       return SDL_JoystickGetAxis(joystick[joyID], axisID);
@@ -362,6 +383,7 @@ namespace blunted {
   bool UserEventManager::GetJoystickButton(int joyID, int buttonID) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (joyID < 0 || joyID >= _JOYSTICK_MAX || buttonID < 0 || buttonID >= _JOYSTICK_MAXBUTTONS) return false;
+    SDL_JoystickUpdate();
     if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
         buttonID < SDL_JoystickNumButtons(joystick[joyID]))
       return SDL_JoystickGetButton(joystick[joyID], buttonID) != 0;
@@ -379,6 +401,33 @@ namespace blunted {
   bool UserEventManager::GetControllerButton(int slot, SDL_GameControllerButton button) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (slot < 0 || slot >= _JOYSTICK_MAX || button < 0 || button >= SDL_CONTROLLER_BUTTON_MAX) return false;
+#ifdef _WIN32
+    if (!controllerInputsCleared[slot] && slot < 4) {
+      XINPUT_STATE state{};
+      if (XInputGetState(static_cast<DWORD>(slot), &state) == ERROR_SUCCESS) {
+        WORD mask = 0;
+        switch (button) {
+          case SDL_CONTROLLER_BUTTON_A: mask = XINPUT_GAMEPAD_A; break;
+          case SDL_CONTROLLER_BUTTON_B: mask = XINPUT_GAMEPAD_B; break;
+          case SDL_CONTROLLER_BUTTON_X: mask = XINPUT_GAMEPAD_X; break;
+          case SDL_CONTROLLER_BUTTON_Y: mask = XINPUT_GAMEPAD_Y; break;
+          case SDL_CONTROLLER_BUTTON_BACK: mask = XINPUT_GAMEPAD_BACK; break;
+          case SDL_CONTROLLER_BUTTON_START: mask = XINPUT_GAMEPAD_START; break;
+          case SDL_CONTROLLER_BUTTON_LEFTSTICK: mask = XINPUT_GAMEPAD_LEFT_THUMB; break;
+          case SDL_CONTROLLER_BUTTON_RIGHTSTICK: mask = XINPUT_GAMEPAD_RIGHT_THUMB; break;
+          case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: mask = XINPUT_GAMEPAD_LEFT_SHOULDER; break;
+          case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: mask = XINPUT_GAMEPAD_RIGHT_SHOULDER; break;
+          case SDL_CONTROLLER_BUTTON_DPAD_UP: mask = XINPUT_GAMEPAD_DPAD_UP; break;
+          case SDL_CONTROLLER_BUTTON_DPAD_DOWN: mask = XINPUT_GAMEPAD_DPAD_DOWN; break;
+          case SDL_CONTROLLER_BUTTON_DPAD_LEFT: mask = XINPUT_GAMEPAD_DPAD_LEFT; break;
+          case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: mask = XINPUT_GAMEPAD_DPAD_RIGHT; break;
+          default: break;
+        }
+        return mask != 0 && (state.Gamepad.wButtons & mask) != 0;
+      }
+    }
+#endif
+    SDL_GameControllerUpdate();
     if (!controllerInputsCleared[slot] && gameController[slot] && SDL_GameControllerGetAttached(gameController[slot]))
       return SDL_GameControllerGetButton(gameController[slot], button) != 0;
     return controllerButtons[slot][button];
@@ -386,6 +435,23 @@ namespace blunted {
   float UserEventManager::GetControllerAxis(int slot, SDL_GameControllerAxis axis) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (slot < 0 || slot >= _JOYSTICK_MAX || axis < 0 || axis >= SDL_CONTROLLER_AXIS_MAX) return 0.0f;
+#ifdef _WIN32
+    if (!controllerInputsCleared[slot] && slot < 4) {
+      XINPUT_STATE state{};
+      if (XInputGetState(static_cast<DWORD>(slot), &state) == ERROR_SUCCESS) {
+        switch (axis) {
+          case SDL_CONTROLLER_AXIS_LEFTX: return state.Gamepad.sThumbLX / (state.Gamepad.sThumbLX < 0 ? 32768.0f : 32767.0f);
+          case SDL_CONTROLLER_AXIS_LEFTY: return -state.Gamepad.sThumbLY / (state.Gamepad.sThumbLY < 0 ? 32768.0f : 32767.0f);
+          case SDL_CONTROLLER_AXIS_RIGHTX: return state.Gamepad.sThumbRX / (state.Gamepad.sThumbRX < 0 ? 32768.0f : 32767.0f);
+          case SDL_CONTROLLER_AXIS_RIGHTY: return -state.Gamepad.sThumbRY / (state.Gamepad.sThumbRY < 0 ? 32768.0f : 32767.0f);
+          case SDL_CONTROLLER_AXIS_TRIGGERLEFT: return state.Gamepad.bLeftTrigger / 255.0f;
+          case SDL_CONTROLLER_AXIS_TRIGGERRIGHT: return state.Gamepad.bRightTrigger / 255.0f;
+          default: break;
+        }
+      }
+    }
+#endif
+    SDL_GameControllerUpdate();
     if (!controllerInputsCleared[slot] && gameController[slot] && SDL_GameControllerGetAttached(gameController[slot])) {
       const Sint16 value = SDL_GameControllerGetAxis(gameController[slot], axis);
       return value / (value < 0 ? 32768.0f : 32767.0f);

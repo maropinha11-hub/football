@@ -112,7 +112,7 @@ else()
 endif()
 
 if(WIN32)
-   set(PLATFORM_LIBRARIES opengl32 ws2_32)
+   set(PLATFORM_LIBRARIES opengl32 ws2_32 xinput9_1_0)
 else()
    set(PLATFORM_LIBRARIES dl m)
 endif()
