@@ -114,6 +114,7 @@ namespace blunted {
           Log(e_Warning, "UserEventManager", "OpenJoystick",
               "Could not open SDL device #" + int_to_str(deviceIndex) + ": " + SDL_GetError());
         } else {
+          controllerInputsCleared[slot] = false;
           const char *name = SDL_JoystickName(joystick[slot]);
           Log(e_Notice, "UserEventManager", "OpenJoystick",
               "Opened controller slot " + int_to_str(slot) + ": " + (name ? name : "unnamed"));
@@ -132,6 +133,7 @@ namespace blunted {
       std::fill(joyAxis[slot], joyAxis[slot] + _JOYSTICK_MAXAXES, 0.0f);
       std::fill(controllerButtons[slot], controllerButtons[slot] + SDL_CONTROLLER_BUTTON_MAX, false);
       std::fill(controllerAxes[slot], controllerAxes[slot] + SDL_CONTROLLER_AXIS_MAX, 0.0f);
+      controllerInputsCleared[slot] = true;
     }
   }
 
@@ -160,6 +162,7 @@ namespace blunted {
           std::fill(joyAxis[slot], joyAxis[slot] + _JOYSTICK_MAXAXES, 0.0f);
           std::fill(controllerButtons[slot], controllerButtons[slot] + SDL_CONTROLLER_BUTTON_MAX, false);
           std::fill(controllerAxes[slot], controllerAxes[slot] + SDL_CONTROLLER_AXIS_MAX, 0.0f);
+          controllerInputsCleared[slot] = true;
         }
         break;
       }
@@ -168,12 +171,16 @@ namespace blunted {
         boost::mutex::scoped_lock lock(joyButtonPressedMutex);
         int slot = FindJoystickSlot(event.cbutton.which);
         if (slot >= 0 && event.cbutton.button < SDL_CONTROLLER_BUTTON_MAX)
+          controllerInputsCleared[slot] = false;
+        if (slot >= 0 && event.cbutton.button < SDL_CONTROLLER_BUTTON_MAX)
           controllerButtons[slot][event.cbutton.button] = event.type == SDL_CONTROLLERBUTTONDOWN;
         break;
       }
       case SDL_CONTROLLERAXISMOTION: {
         boost::mutex::scoped_lock lock(joyButtonPressedMutex);
         int slot = FindJoystickSlot(event.caxis.which);
+        if (slot >= 0 && event.caxis.axis < SDL_CONTROLLER_AXIS_MAX)
+          controllerInputsCleared[slot] = false;
         if (slot >= 0 && event.caxis.axis < SDL_CONTROLLER_AXIS_MAX)
           controllerAxes[slot][event.caxis.axis] = event.caxis.value / (event.caxis.value < 0 ? 32768.0f : 32767.0f);
         break;
@@ -205,20 +212,28 @@ namespace blunted {
       case SDL_JOYAXISMOTION:
         joyButtonPressedMutex.lock();
         joyID = FindJoystickSlot(event.jaxis.which);
-        if (joyID >= 0 && event.jaxis.axis < _JOYSTICK_MAXAXES)
+        if (joyID >= 0 && event.jaxis.axis < _JOYSTICK_MAXAXES) {
+          controllerInputsCleared[joyID] = false;
           joyAxis[joyID][event.jaxis.axis] = event.jaxis.value;
+        }
         joyButtonPressedMutex.unlock();
         break;
       case SDL_JOYBUTTONDOWN:
         joyButtonPressedMutex.lock();
         joyID = FindJoystickSlot(event.jbutton.which);
-        if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS) joyButtonPressed[joyID][event.jbutton.button] = true;
+        if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS) {
+          controllerInputsCleared[joyID] = false;
+          joyButtonPressed[joyID][event.jbutton.button] = true;
+        }
         joyButtonPressedMutex.unlock();
         break;
       case SDL_JOYBUTTONUP:
         joyButtonPressedMutex.lock();
         joyID = FindJoystickSlot(event.jbutton.which);
-        if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS) joyButtonPressed[joyID][event.jbutton.button] = false;
+        if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS) {
+          controllerInputsCleared[joyID] = false;
+          joyButtonPressed[joyID][event.jbutton.button] = false;
+        }
         joyButtonPressedMutex.unlock();
         break;
     }
@@ -277,6 +292,8 @@ namespace blunted {
   bool UserEventManager::GetJoyButtonState(int joyID, int sdlJoyButtonID) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 || sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS) return false;
+    if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]))
+      return SDL_JoystickGetButton(joystick[joyID], sdlJoyButtonID) != 0;
     return joyButtonPressed[joyID][sdlJoyButtonID];
   }
 
@@ -295,6 +312,10 @@ namespace blunted {
     float rest = joyAxisCalibration[joyID][axisID][2];
 
     float value = joyAxis[joyID][axisID];
+    if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
+        axisID < SDL_JoystickNumAxes(joystick[joyID])) {
+      value = SDL_JoystickGetAxis(joystick[joyID], axisID);
+    }
 
     if (value < min) value = min;
     if (value > max) value = max;
@@ -332,7 +353,19 @@ namespace blunted {
   float UserEventManager::GetJoystickAxisRaw(int joyID, int axisID) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
     if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+    if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
+        axisID < SDL_JoystickNumAxes(joystick[joyID]))
+      return SDL_JoystickGetAxis(joystick[joyID], axisID);
     return joyAxis[joyID][axisID];
+  }
+
+  bool UserEventManager::GetJoystickButton(int joyID, int buttonID) const {
+    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    if (joyID < 0 || joyID >= _JOYSTICK_MAX || buttonID < 0 || buttonID >= _JOYSTICK_MAXBUTTONS) return false;
+    if (!controllerInputsCleared[joyID] && joystick[joyID] && SDL_JoystickGetAttached(joystick[joyID]) &&
+        buttonID < SDL_JoystickNumButtons(joystick[joyID]))
+      return SDL_JoystickGetButton(joystick[joyID], buttonID) != 0;
+    return joyButtonPressed[joyID][buttonID];
   }
 
   bool UserEventManager::IsJoystickConnected(int slot) const {
@@ -345,11 +378,19 @@ namespace blunted {
   }
   bool UserEventManager::GetControllerButton(int slot, SDL_GameControllerButton button) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
-    return slot >= 0 && slot < _JOYSTICK_MAX && button >= 0 && button < SDL_CONTROLLER_BUTTON_MAX && controllerButtons[slot][button];
+    if (slot < 0 || slot >= _JOYSTICK_MAX || button < 0 || button >= SDL_CONTROLLER_BUTTON_MAX) return false;
+    if (!controllerInputsCleared[slot] && gameController[slot] && SDL_GameControllerGetAttached(gameController[slot]))
+      return SDL_GameControllerGetButton(gameController[slot], button) != 0;
+    return controllerButtons[slot][button];
   }
   float UserEventManager::GetControllerAxis(int slot, SDL_GameControllerAxis axis) const {
     boost::mutex::scoped_lock lock(joyButtonPressedMutex);
-    return slot >= 0 && slot < _JOYSTICK_MAX && axis >= 0 && axis < SDL_CONTROLLER_AXIS_MAX ? controllerAxes[slot][axis] : 0.0f;
+    if (slot < 0 || slot >= _JOYSTICK_MAX || axis < 0 || axis >= SDL_CONTROLLER_AXIS_MAX) return 0.0f;
+    if (!controllerInputsCleared[slot] && gameController[slot] && SDL_GameControllerGetAttached(gameController[slot])) {
+      const Sint16 value = SDL_GameControllerGetAxis(gameController[slot], axis);
+      return value / (value < 0 ? 32768.0f : 32767.0f);
+    }
+    return controllerAxes[slot][axis];
   }
 
   float UserEventManager::GetJoystickAxisCalibrationMin(int joyID, int axisID) {

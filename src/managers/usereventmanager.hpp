@@ -67,6 +67,7 @@ namespace blunted {
 
       float GetJoystickAxis(int joyID, int axisID, bool deadzone = true) const;
       float GetJoystickAxisRaw(int joyID, int axisID) const;
+      bool GetJoystickButton(int joyID, int buttonID) const;
       bool IsJoystickConnected(int slot) const;
       bool IsGameController(int slot) const;
       bool GetControllerButton(int slot, SDL_GameControllerButton button) const;
@@ -90,6 +91,7 @@ namespace blunted {
       SDL_GameController *gameController[_JOYSTICK_MAX]{};
       bool controllerButtons[_JOYSTICK_MAX][SDL_CONTROLLER_BUTTON_MAX]{};
       float controllerAxes[_JOYSTICK_MAX][SDL_CONTROLLER_AXIS_MAX]{};
+      bool controllerInputsCleared[_JOYSTICK_MAX]{};
       int FindJoystickSlot(SDL_JoystickID instance) const;
       void OpenJoystick(int deviceIndex);
       void ClearInputs();

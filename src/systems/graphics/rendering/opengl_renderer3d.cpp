@@ -2271,6 +2271,11 @@ struct GLfunctions {
 
       // process messages
 
+      // Refresh XInput/HIDAPI state before dispatching events.  Querying the
+      // controller directly in the game thread then remains reliable on
+      // Windows when the window briefly loses focus or a Bluetooth pad sends
+      // axis updates without a queued SDL event.
+      SDL_GameControllerUpdate();
       while (SDL_PollEvent(&event)) {
 
         // context losing/gaining focus

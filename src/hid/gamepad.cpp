@@ -132,7 +132,7 @@ void HIDGamepad::Process() {
     previousControllerButtonState[i] = controllerButtonState[i];
     signed int buttonID = controllerMapping[i];
     if (buttonID >= 0) { // button
-      controllerButtonState[i] = UserEventManager::GetInstance().GetJoyButtonState(gamepadID, buttonID) ? 1.0 : 0.0;
+      controllerButtonState[i] = UserEventManager::GetInstance().GetJoystickButton(gamepadID, buttonID) ? 1.0 : 0.0;
     } else { // axis
       // decode
       int axisID = -buttonID - 1;
