@@ -20,6 +20,8 @@
 #include <algorithm>
 
 #include "environmentmanager.hpp"
+#include "base/log.hpp"
+#include "base/utils.hpp"
 
 namespace blunted {
 
@@ -52,10 +54,25 @@ namespace blunted {
     }
 
 
-    // init the joy!
-
-    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+    // Initialize both SDL joystick layers.  Xbox Series controllers can be
+    // exposed by Windows through XInput, HIDAPI, or Bluetooth; explicitly
+    // enabling all three paths prevents a connected pad from being visible to
+    // Windows but absent from SDL's controller list.
+#ifdef _WIN32
+    SDL_SetHint(SDL_HINT_XINPUT_ENABLED, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_XBOX, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE, "1");
+#endif
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
+    SDL_GameControllerEventState(SDL_ENABLE);
+    Log(e_Notice, "UserEventManager", "UserEventManager", "SDL joystick count: " + int_to_str(SDL_NumJoysticks()));
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
+      const char *name = SDL_JoystickNameForIndex(i);
+      Log(e_Notice, "UserEventManager", "UserEventManager",
+          "SDL device #" + int_to_str(i) + ": " + (name ? name : "unnamed") +
+          (SDL_IsGameController(i) ? " (GameController)" : " (raw joystick)"));
       OpenJoystick(i);
     }
     //SDL_JoystickEventState(SDL_IGNORE); // doesn't seem to work? bug?
@@ -92,6 +109,14 @@ namespace blunted {
           if (gameController[slot]) joystick[slot] = SDL_GameControllerGetJoystick(gameController[slot]);
         } else {
           joystick[slot] = SDL_JoystickOpen(deviceIndex);
+        }
+        if (!joystick[slot]) {
+          Log(e_Warning, "UserEventManager", "OpenJoystick",
+              "Could not open SDL device #" + int_to_str(deviceIndex) + ": " + SDL_GetError());
+        } else {
+          const char *name = SDL_JoystickName(joystick[slot]);
+          Log(e_Notice, "UserEventManager", "OpenJoystick",
+              "Opened controller slot " + int_to_str(slot) + ": " + (name ? name : "unnamed"));
         }
         return;
       }
