@@ -2,53 +2,66 @@
 
 Revisão de 10/10/2026. Base jogável aprovada pelo usuário:
 `0cb7ead8dcf294755a0b0581f559cdeb241de0f3`.
-Esta etapa acrescenta ferramentas de investigação e o contrato de integração;
-nenhuma animação, regra física ou rotina do PES foi incorporada ao executável.
+Esta etapa acrescenta a conferência dos binários recebidos, um leitor validado
+de animações e um laboratório offline para estudar os gestos. A integração
+ao executável depende da adaptação do esqueleto e da validação dos contatos.
 
 ## Material recebido e alcance da conferência
 
 Recebemos dois prints da ISO extraída e `analise-pes-sles51912.md`, com
 172.981 bytes e SHA-256
 `32f92a9d0bb9bea898f0e7a61677ff043f8e4d4969b228baf55365a5e9a6d7ea`.
-O documento descreve outro projeto, um núcleo parcial v0.14; seus arquivos,
-código-fonte, biblioteca, animações e estados PCSX2 não vieram no anexo.
+O documento descreve outro projeto, um núcleo parcial v0.14. Na primeira
+etapa tínhamos somente o texto e os prints; agora também recebemos
+`fpsoccer-pes-nucleo-v14.zip`, `SLES_519.12`, `OVER.AFS`, `SYSTEM.CNF` e
+`CDLIST.DIR`. O pacote inclui código, dados numéricos e referências de testes,
+mas não a memória completa dos estados PCSX2 usados pelo estudo anterior.
 Suas instruções de câmera, engine e cronograma pertencem àquele estudo;
 o objetivo atual continua sendo nosso treinamento nativo em primeira pessoa.
 
 | Informação | Origem | Situação nesta etapa |
 | --- | --- | --- |
-| `SLES_519.12`, `OVER.AFS`, `SYSTEM.CNF`, `CDLIST.DIR` | Prints | Nomes visíveis; bytes ainda não recebidos. |
+| `SLES_519.12`, `OVER.AFS`, `SYSTEM.CNF`, `CDLIST.DIR` | Arquivos enviados | ELF32 MIPS conferido; CNF indica PAL e executável SLES_519.12. |
 | `DATA_F.AFS`, `DATA_G.AFS`, `DATA_S.AFS` | Prints | Presentes; não sabemos quais recursos cada arquivo desta cópia contém. |
 | `SIZE_E.AFS` presente e `DATA_E.AFS` ausente da lista | Prints | Diferença a conferir com CNF, catálogo e executável; não prova corrupção. |
-| 20 overlays, incluindo `game.ovl` | Relatório enviado | Relatado; aguardando `OVER.AFS` para reextrair e conferir hashes. |
-| 1.105 blocos, 36.378 poses, 19 articulações | Relatório enviado | Relatado; aguardando o pacote v0.14 ou os recursos correspondentes. |
-| 1.439.665 verificações do núcleo parcial | Relatório enviado | Não reexecutadas aqui; o próprio relatório limita o modelo de referência. |
-| 0/132 poses finais inteiras idênticas | Relatório enviado | Divergência aberta; quantidade de testes de helpers não resolve a pose final. |
+| 20 overlays, incluindo `game.ovl` | Leitura de `OVER.AFS` | Inventariados; três módulos reextraídos com hashes conferidos. |
+| 1.105 blocos, 36.378 registros de pose, 19 articulações | Leitura do FPSANM14 recebido | Todos os índices, blocos, hashes, offsets e tempos conferidos contra o catálogo. |
+| 1.439.665 verificações do núcleo parcial | Compilação e `make check` nesta nuvem | 16 baterias reexecutadas, zero divergências contra os vetores fornecidos. |
+| 13.262 comparações de buffers no leitor JavaScript | Verificação desta etapa | Igualdade em bits nos 6.565 casos de decodificação/pose e 132 casos de canais capturados. |
+| 0/132 poses finais inteiras idênticas | Comparação incluída no pacote recebido | Divergência aberta; não reexecutada contra estados completos nesta etapa. |
 | 293 arquivos `.anim`, 195 contatos escritos, 14 canais por arquivo | Leitura deste checkout | Conferido pelo catálogo e pelos testes desta etapa. |
 
 Os módulos IOP dos prints são componentes de execução do PS2, como áudio,
 armazenamento, rede e controle. Seus nomes não localizam os clips dos atletas.
 Os arquivos `.PSS` são candidatos a vídeo; não são a prioridade para animações.
 
-## Arquivos necessários agora
+## Conferência dos arquivos recebidos
 
-O material mais útil é **`fpsoccer-pes-nucleo-v14.zip`**, citado no relatório.
-Ele permitiria conferir a implementação, o formato do índice próprio, as
-referências dos testes e `data/pes_animation_tracks.fpsa`. O relatório atribui
-a esse último arquivo 6.310.088 bytes e SHA-256
+O ZIP v0.14 recebido tem 20.702.174 bytes e SHA-256
+`7561b99ddaca6e12c9c70f483a340c38dbb378172ae67911f2d092fe8f2bda5e`.
+Conferimos os 167 arquivos listados em seu `SHA256SUMS` e extraímos os dados
+para pesquisa sem alterar o anexo. `data/pes_animation_tracks.fpsa` tem
+6.310.088 bytes e SHA-256
 `c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5`.
-Não temos esse pacote nem deduzimos seu conteúdo a partir do texto.
+Ele preserva os blocos numéricos atribuídos a `anime.bin`, `anime2.bin` e
+`anime3.bin`. Os três arquivos brutos não foram enviados separadamente;
+a igualdade deles com uma nova extração da ISO ainda não foi conferida.
 
-Para conferir a cópia do disco, enviar em um ZIP pequeno:
-**`SLES_519.12`, `OVER.AFS`, `SYSTEM.CNF` e `CDLIST.DIR`**.
-Os dois arquivos maiores aparecem nos prints com aproximadamente 2,1 e
-6,3 MiB. O leitor confere o ELF e o arquivo de módulos antes de usar qualquer
-endereço do estudo. Um hash diferente exige nova correspondência; não é
-prova isolada de que o disco esteja modificado ou inválido.
+`SLES_519.12` tem 2.196.728 bytes e SHA-256
+`a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53`;
+`OVER.AFS` tem 6.447.104 bytes e SHA-256
+`aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3`.
+Ambos correspondem aos hashes do relatório. As 16 regiões de código/tabelas
+de animação do manifesto v0.14 foram conferidas nos bytes do ELF recebido.
+O hash de `game.ovl` reextraído e o da tabela de direções também correspondem
+ao estudo. O [registro de validação](pes3-validation.json) conserva os
+tamanhos, hashes, escopos e resultados desta etapa.
 
-Se o pacote v0.14 não estiver disponível, os primeiros recursos de animação
-a localizar são os seguintes. Os caminhos e IDs vêm do relatório de **DATA E**;
-a correspondência com F/G/S ainda precisa ser verificada.
+`CDLIST.DIR` relaciona DATA E/F/G/I/S e OVER. A diferença entre essa lista
+e os prints não prova corrupção. Não precisamos de outro arquivo para usar
+o laboratório atual. Para uma futura reextração independente, os recursos
+relatados de **DATA E** são os seguintes; sua correspondência com F/G/S ainda
+precisa ser verificada.
 
 | Recurso relatado | Caminho relatado | Tamanho descompactado relatado |
 | --- | --- | ---: |
@@ -57,8 +70,27 @@ a correspondência com F/G/S ainda precisa ser verificada.
 | `0x00370001` / `anime3.bin` | `150pl.afs/150pl_anime.afs` | 1.300.928 bytes |
 | `0x00080001` / `game.mbc` | Mesmo contêiner de `anime.bin` | Payload relatado de 1.750 bytes; função desconhecida. |
 
-Não precisamos receber a ISO inteira, a pasta IOP ou todos os AFS de centenas
-de megabytes nesta primeira conferência.
+## Abrir o laboratório no Windows 11
+
+1. Baixe [pes3-animation-lab.zip](../artifacts/pes3-animation-lab.zip) e extraia.
+2. Abra `abrir-laboratorio.html` com Edge ou Chrome. Não precisa instalar outro
+   Windows, Python, Node ou copiar arquivos para a pasta do jogo.
+3. Escolha o ID original, reproduza/pausa ou percorra as chaves. Arrastar gira
+   a visão; a roda do mouse ajusta o zoom. “Enquadrar esqueleto” restaura a visão.
+4. Opcionalmente marque candidatos visuais a corrida, passe, chute etc. Exporte
+   o catálogo JSON antes de fechar a aba; as marcações ficam somente na sessão.
+
+![Prévia do laboratório](pes3-animation-lab.png)
+
+Os 1.105 clips e os dados necessários estão embutidos no HTML, que funciona
+offline. O laboratório mostra articulações, sem a malha do atleta ou a bola.
+O ritmo da prévia usa unidades originais por segundo; não comprova o FPS do
+PES. A fixação horizontal modifica somente a visualização da raiz.
+
+O JSON exportado conserva ID, hash do bloco e instante observado. A
+classificação é um candidato visual: `retargeting_validated`,
+`contact_validated` e `runtime_enabled` continuam falsos. O laboratório não
+substitui o executável de treino nem importa automaticamente esses clips.
 
 ## Ferramentas implementadas
 
@@ -77,7 +109,7 @@ ausência de payload excedente. A saída descompactada tem limite configurável.
 Os nomes de saída usam índices e nomes sanitizados; arquivos existentes não
 são sobrescritos. Layouts sem nomes continuam inventariados por índice,
 mas não permitem encontrar animações só pelo nome. Outros wrappers e a
-decodificação dos ossos permanecem sem implementação.
+decodificação de formatos PS2 adicionais permanecem sem implementação.
 
 Exemplos para quem tiver Python 3 no computador, dentro deste repositório:
 
@@ -86,8 +118,8 @@ py -3 tools/pes3/inspect.py "C:\PES3_ESTUDO\01_ISO_EXTRAIDA\SLES_519.12" "C:\PES
 py -3 tools/pes3/inspect.py "C:\PES3_ESTUDO\01_ISO_EXTRAIDA\DATA_F.AFS" --output pes3-dados-f.json --extract pes3-recursos
 ```
 
-No Linux, usar `python3` no lugar de `py -3`. Estes comandos são opcionais:
-basta enviar os arquivos pequenos para fazermos a conferência na nuvem.
+No Linux, usar `python3` no lugar de `py -3`. Estes comandos são opcionais
+para repetir a inspeção dos recursos na máquina local.
 Para repetir uma extração, escolher uma pasta nova. Falhas retornam status
 não zero e entram no relatório; extrações válidas de recursos anteriores
 podem permanecer na pasta se uma entrada posterior falhar.
@@ -103,10 +135,63 @@ python3 tools/pes3/catalogue.py --output /tmp/football-animation-catalogue.json
 python3 -m unittest discover -s tests -p test_pes3_tools.py -v
 ```
 
-São 20 testes com arquivos estruturais sintéticos e a base aberta real.
+São 24 testes com arquivos estruturais sintéticos e a base aberta real.
 Cobrem AFS aninhados, limites/sobreposições, zlib inválido ou excessivo,
-mapa ELF, extração sem alterar a entrada, nomes de saída e erros de catálogo.
-Não são testes dos binários do PES, ainda não recebidos, nem da sua execução.
+mapa ELF, extração sem alterar a entrada, nomes de saída, erros de catálogo
+e limites do FPSANM14. A inspeção dos binários enviados e a comparação do
+leitor com vetores reais são verificações separadas, registradas acima.
+
+[`fpsa.py`](../tools/pes3/fpsa.py) valida os 1.105 blocos contra o catálogo.
+[`motion.js`](../tools/pes3/motion.js) reproduz a decodificação local do
+formato 2 e a interpolação do núcleo enviado. Preserva operações binary32,
+tratamento de subnormais selecionado, ordem dos produtos, quaternions int16
+e tempos irregulares; não normaliza quaternions nem reamostra as chaves.
+[`verify_motion.js`](../tools/pes3/verify_motion.js) compara os buffers em bits
+com os vetores recebidos. A sentinela de tempo zero não cria outra pose; o
+clip 1022, por exemplo, possui última chave em 112 e duração declarada 114.
+
+[`build_lab.py`](../tools/pes3/build_lab.py) empacota o leitor e o HTML offline,
+incluindo manifesto de hashes. A composição das matrizes locais para desenho
+usa cinemática direta padrão da hierarquia observada nos 132 registros.
+Isso permite estudar os gestos, mas não reproduz as transformações finais,
+caches, espelhamento ou mistura entre clips do PES.
+
+Para repetir com o pacote v0.14 extraído em `PES_CORE`:
+
+```bash
+make -C "$PES_CORE" check
+node tools/pes3/verify_motion.js "$PES_CORE/data/pes_animation_tracks.fpsa" "$PES_CORE/tests/animation_pose_vectors.json.gz" /tmp/pes3-motion-novo.json
+python3 tools/pes3/build_lab.py --core "$PES_CORE" --output /tmp/pes3-laboratorio-novo.zip
+python3 tests/pes3_lab_smoke.py /tmp/pes3-laboratorio-novo.zip --output /tmp/pes3-browser-novo.json
+```
+
+Escolha saídas novas: os geradores não sobrescrevem pacotes e relatórios.
+O último comando requer Playwright Python e Chromium no ambiente de teste;
+essas dependências não são necessárias para abrir o laboratório no Windows.
+As 26 verificações do pacote e do navegador cobrem reprodução, pausa, tempos
+originais, exportação, IDs, atalhos e tela estreita, com zero erros JavaScript
+e zero requisições de rede. A política do Chromium da nuvem bloqueia `file://`;
+por isso o teste carrega os mesmos bytes HTML com `set_content`. A abertura
+por arquivo no Windows/Edge ainda exige conferência no computador do usuário.
+
+## O que os resultados comprovam
+
+`make check` recompilou o núcleo C++ com `-fno-fast-math` e
+`-ffp-contract=off`, depois executou as 16 baterias. A referência é o conjunto
+de vetores fornecido: não regeneramos a execução MIPS/VU contra estados
+completos nem repetimos um quadro inteiro do jogo. As 1.439.665 verificações
+não representam 1.439.665 animações ou validação da gameplay completa.
+
+A comparação recebida de poses armazenadas tem zero poses inteiras idênticas
+entre 132 observações e diferença máxima de componente 33,375921. Isso é
+distinto dos testes de interpolação local que passaram. Caches, mistura,
+espelhamento e escritas posteriores são hipóteses a investigar; ainda não
+isolamos a causa. Não aplicamos compensação numérica para ocultar diferenças.
+
+Os 509 recursos originais e o shader documentado do treino foram conferidos.
+O pacote jogável Windows desta etapa conserva o hash
+`ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443`.
+Não foi necessária uma recompilação do jogo para o laboratório separado.
 
 ## Como o jogo já escolhe a animação
 
@@ -167,8 +252,8 @@ O relatório descreve 19 articulações, mas os arquivos atuais têm 14 canais:
 `player`, `body`, `middle`, `neck`, ombros/cotovelos e coxas/joelhos/tornozelos
 de ambos os lados. O vetor de pais relatado não identifica sozinho os nomes
 anatômicos, a pose de referência ou a orientação local de cada osso.
-Antes de produzir um `.anim`, precisamos conferir essas bases e visualizar
-pelo menos uma pose parada e uma sequência de passada/toque. Quaternions
+Antes de produzir um `.anim`, precisamos conferir as bases anatômicas,
+orientações locais, unidades e contatos dos candidatos vistos no laboratório. Quaternions
 compactados, tempos irregulares, mistura, espelhamento e translação da raiz
 exigem tratamento separado; não basta renomear arquivos `.bin`.
 
@@ -179,7 +264,7 @@ estabelecida. Nosso motor usa Z positivo como altura, metros e passos de
 10 ms. A escala visual de 256 unidades/m e os 60 Hz do outro treino são
 escolhas daquele adaptador, não parâmetros do PES comprovados aqui.
 
-Primeiro reproduzir os testes do núcleo recebido; depois medir unidades,
+Os testes locais do núcleo recebido foram reproduzidos; falta medir unidades,
 trajetórias, quique, atrito, spin e contato. Previsão deve concordar com o
 atualizador no horizonte relevante conforme seu escopo, sem ser tratada
 como se fosse a atualização real. Força/elevação dependem também do instante
@@ -207,9 +292,10 @@ ser diagnosticadas antes de chamar a integração de reprodução fiel.
 
 ## Fontes consultadas
 
-- Relatório do usuário v0.14, identificado por tamanho/hash acima. Os
-  caminhos, hashes esperados, IDs e resultados PES neste documento são
-  atribuídos a essa fonte; não houve acesso aos seus binários nesta etapa.
+- Relatório e pacote do usuário v0.14, identificados por tamanho/hash acima.
+  Os caminhos de DATA E e a comparação com poses finais vêm dessa fonte;
+  as conferências do ELF, OVER, dados numéricos e testes locais foram
+  executadas nesta etapa e registradas em `pes3-validation.json`.
 - Código do checkout aprovado de Gameplay Football, especialmente
   `animation.cpp`, `footballanimationextension.cpp`, `animcollection.cpp`
   e `humanoid.cpp`; catálogo regenerado com zero erros.

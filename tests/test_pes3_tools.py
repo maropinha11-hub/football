@@ -25,6 +25,7 @@ def load_tool(name):
 
 inspector = load_tool("inspect")
 catalogue = load_tool("catalogue")
+fpsa = load_tool("fpsa")
 
 
 def afs_fixture(resources, names=True):
@@ -261,6 +262,65 @@ class CLITests(unittest.TestCase):
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(output.read_bytes(), report_bytes)
+
+
+def fpsa_fixture():
+    rotations = [0, 0, 0, 32767] * 18
+    records = b"".join(struct.pack("<4h3f72h", 0, 0, 0, 32767, float(i), -400, 0, *rotations)
+                       for i in range(2))
+    block = (struct.pack("<7I", 0x20011119, 0x20000002, 0x40000000, 60, 356, 0, 0)
+             + records + struct.pack("<IfIfI", 2, 2.0, 28, 0.0, 192))
+    return (b"FPSANM14" + struct.pack("<6I", 1, 32, 14, 19, 164, 0)
+            + struct.pack("<4I", 0, 0x40000000, 48, len(block)) + block)
+
+
+class FPSATests(unittest.TestCase):
+    def parse(self, data, metadata=None):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "sample.fpsa"
+            path.write_bytes(data)
+            return fpsa.read_bundle(path, metadata)
+
+    def test_original_times_and_pose_count_are_preserved(self):
+        data, parsed = self.parse(fpsa_fixture())
+        self.assertEqual(parsed["clips"], 1)
+        self.assertEqual(parsed["poses"], 2)
+        self.assertEqual(parsed["entries"][0]["key_end_times_bits"], ["0x40000000", "0x0"])
+        self.assertEqual(parsed["sha256"], hashlib.sha256(data).hexdigest())
+        self.assertFalse(parsed["matches_v14_bundle"])
+
+    def test_truncated_and_extra_bytes_are_rejected(self):
+        data = fpsa_fixture()
+        for corrupted in [data[:20], data[:-1], data + b"\0"]:
+            with self.subTest(size=len(corrupted)):
+                with self.assertRaises(ValueError):
+                    self.parse(corrupted)
+
+    def test_corrupt_indices_keys_and_numbers_are_rejected(self):
+        original = fpsa_fixture()
+        for offset, value in [(8, 20001), (12, 16), (20, 18), (24, 160), (28, 1),
+                              (32, 1), (36, 0), (40, 0), (44, 99999),
+                              (48, 0), (52, 0), (60, 0), (64, 0xffffffff),
+                              (84, 0x7fc00000), (404, 0), (408, 0), (412, 0),
+                              (416, 0x40000000), (420, 0)]:
+            data = bytearray(original)
+            struct.pack_into("<I", data, offset, value)
+            with self.subTest(offset=offset):
+                with self.assertRaises(ValueError):
+                    self.parse(data)
+
+    def test_catalogue_must_match_hashes_offsets_and_times(self):
+        data, parsed = self.parse(fpsa_fixture())
+        metadata = {"bundle_sha256": parsed["sha256"], "bundle_bytes": len(data),
+                    "clips": 1, "poses": 2, "entries": parsed["entries"]}
+        self.parse(data, metadata)
+        for key, wrong in [("bundle_sha256", "wrong"), ("poses", 3)]:
+            with self.assertRaises(ValueError):
+                self.parse(data, dict(metadata, **{key: wrong}))
+        changed = json.loads(json.dumps(metadata))
+        changed["entries"][0]["block_sha256"] = "wrong"
+        with self.assertRaises(ValueError):
+            self.parse(data, changed)
 
 
 if __name__ == "__main__":

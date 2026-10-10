@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PES 3 · Laboratório de animações</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Segoe UI,sans-serif;background:#0d1420;color:#e9f0f7}
+*{box-sizing:border-box}body{margin:0}main{max-width:1350px;margin:auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:25px;margin:0 0 7px}
+p{line-height:1.55}.muted{color:#a6b5c9;font-size:14px}header p{margin:0}button,input,select{font:inherit}
+button,select,input[type=number]{background:#1c2b40;border:1px solid #3b506d;color:#eef5ff;border-radius:8px;padding:9px 12px}
+button{cursor:pointer}button:hover{background:#2b4160}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #79ceff}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;margin-top:20px}
+.panel{background:#142033;border:1px solid #2b3d54;border-radius:12px;padding:16px}.stage{padding:0;overflow:hidden;position:relative}
+canvas{display:block;width:100%;height:560px;touch-action:none;cursor:grab;background:#0f1929}
+.legend{position:absolute;left:16px;top:14px;pointer-events:none;font-size:13px;color:#c2d3e9}
+.legend span{display:inline-block;width:9px;height:9px;border-radius:50%;background:#69c6ff;margin-right:5px}.legend .orange{background:#ffb96e;margin-left:12px}
+.controls{padding:16px;border-top:1px solid #2b3d54}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:#79ceff;margin:15px 0 6px}.time{font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;font-size:13px;color:#bdcce0}
+label{display:block;margin-bottom:8px;font-size:14px}label.inline{display:inline-flex;align-items:center;gap:6px;margin:0}
+.stack>*{margin-bottom:14px}.stack input[type=number],.stack select,.stack button{width:100%}.stack input[type=number]{max-width:none}
+.notice{font-size:13px;color:#bdcce0;margin:14px 0 0}.notice strong{color:#e2edf9}#status{color:#99d2fa}#category-status{min-height:22px}
+details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{color:#79ceff}#error{background:#482b33;color:#ffd7dd;padding:16px;border-radius:10px;display:none}
+@media(max-width:800px){main{padding:14px}.layout{grid-template-columns:1fr}canvas{height:440px}header{align-items:start}.stack{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stack>*{margin:0}.notice{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>PES 3 · Laboratório de animações</h1><p class="muted">Explorar os gestos, conferir as chaves e preparar o catálogo para o treino.</p></div><div id="status">Lendo dados…</div></header>
+<p id="error" role="alert"></p>
+<div class="layout">
+<section class="panel stage" aria-label="Prévia do esqueleto">
+<canvas id="scene" aria-label="Esqueleto de 19 articulações. Arraste para girar a visão." tabindex="0"></canvas>
+<div class="legend"><span></span>Cadeia 1–7 <span class="orange"></span>Cadeia 8–18 · números são IDs dos ossos</div>
+<div class="controls"><div class="row">
+<button id="play" type="button">Reproduzir</button><button id="previous-key" type="button">Anterior chave</button><button id="next-key" type="button">Próxima chave</button>
+<label class="inline">Ritmo da prévia <select id="rate"><option value="10">Lento</option><option value="30" selected>Médio</option><option value="60">Rápido</option></select></label>
+</div><input id="timeline" type="range" min="0" max="1" step="any" value="0" aria-label="Tempo nas unidades originais do clip">
+<div class="time"><span id="time-label">0</span><span>Unidades originais · a sentinela final não é uma nova pose</span></div></div>
+</section>
+<aside class="panel stack">
+<div><label for="clip">ID original da animação</label><input id="clip" type="number" min="0" max="1104" value="47"></div>
+<div class="row"><button id="previous-clip" type="button">Clip anterior</button><button id="next-clip" type="button">Próximo clip</button></div>
+<div><label class="inline"><input id="follow" type="checkbox" checked>Fixar deslocamento horizontal</label></div>
+<div><label class="inline"><input id="labels" type="checkbox" checked>Mostrar IDs dos ossos</label></div>
+<button id="fit" type="button">Enquadrar esqueleto</button>
+<div><label for="category">Marcar candidato visual</label><select id="category"><option value="">Sem classificação</option><option value="idle">Parado</option><option value="walk">Caminhada</option><option value="run">Corrida</option><option value="dribble">Condução</option><option value="pass">Passe</option><option value="shot">Chute</option><option value="header">Cabeceio</option><option value="trap">Domínio</option><option value="other">Outro gesto</option></select><p id="category-status" class="muted"></p></div>
+<button id="export" type="button">Exportar catálogo marcado</button>
+<p class="notice"><strong>Prévia de pesquisa.</strong> A pose local foi verificada. O desenho usa composição padrão da hierarquia; mistura, espelhamento e transformações finais do PES ainda precisam ser validados. As marcações não habilitam clips no jogo.</p>
+</aside></div>
+<details><summary>Origem dos dados e limites da prévia</summary><p id="source-info"></p><p>Os números e tempos do contêiner v0.14 foram preservados. O ritmo escolhido é apenas a velocidade de reprodução desta ferramenta. Não estabelece FPS, metros ou a velocidade de simulação do PES. O contato com a bola e a conversão para o esqueleto do nosso jogador exigem validação própria.</p><p>Espaço reproduz/pausa; setas esquerda/direita mudam o clip quando o foco está fora dos campos. Arraste a visão e use a roda do mouse para aproximar.</p></details>
+</main>
+<script id="bundle" type="application/octet-stream">__PES3_BUNDLE__</script>
+<script id="metadata" type="application/json">__PES3_METADATA__</script>
+<script>__PES3_MOTION__</script>
+<script>
+"use strict";
+(() => {
+  const $ = id => document.getElementById(id), motion = window.Pes3Motion;
+  try {
+    const raw = atob($("bundle").textContent.trim()), bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const clips = motion.parseBundle(bytes.buffer), meta = JSON.parse($("metadata").textContent);
+    const initial = motion.initialState(meta.bind_bits), canvas = $("scene"), ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Não foi possível iniciar o desenho. Abra com Edge ou Chrome.");
+    const annotations = new Map(); let active = 47, time = 0, playing = false, yaw = .35, pitch = -.04, zoom = 1;
+    let bounds, latestPose, latestWorld, lastTimestamp = null, changed = true;
+    const matrix = ([x,y,z,w]) => [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],
+      [2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)], [2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];
+    const mv = (m,v) => m.map(row => row.reduce((n,x,i) => n+x*v[i],0));
+    const mm = (a,b) => a.map(row => [0,1,2].map(j => row.reduce((n,x,i) => n+x*b[i][j],0)));
+    function world(pose) {
+      const positions = [], rotations = [];
+      pose.forEach((bone,i) => {
+        const p = meta.parents[i], r = matrix(bone.rotation), t = bone.translation.slice(0,3);
+        positions.push(p<0 ? t : mv(rotations[p],t).map((v,j) => v+positions[p][j]));
+        rotations.push(p<0 ? r : mm(rotations[p],r));
+      });
+      const anchor = $("follow").checked ? [positions[0][0],0,positions[0][2]] : [0,0,0];
+      return positions.map(p => [p[0]-anchor[0],-p[1],p[2]-anchor[2]]);
+    }
+    function sample(at) { return motion.evaluate(motion.decode(clips[active],at,initial)); }
+    function measure() {
+      const min=[Infinity,Infinity,Infinity], max=[-Infinity,-Infinity,-Infinity], c=clips[active];
+      const times=[0,...c.times.filter(t=>t>0),c.duration];
+      for (const at of times) for (const p of world(sample(at))) p.forEach((v,i)=>{min[i]=Math.min(min[i],v);max[i]=Math.max(max[i],v);});
+      bounds={center:min.map((v,i)=>(v+max[i])/2),span:Math.max(50,Math.hypot(...min.map((v,i)=>max[i]-v)))*1.18};
+    }
+    function choose(id) {
+      if (!Number.isInteger(id) || id<0 || id>=clips.length) {$("clip").value=active;return;}
+      active=id;time=0;$("clip").value=id;$("timeline").max=clips[id].duration;
+      $("category").value=annotations.get(id)?.category || "";
+      $("category-status").textContent=annotations.has(id)?"Candidato anotado; ainda não validado no treino.":"";
+      measure();zoom=1;changed=true;
+    }
+    function project(p,width,height) {
+      const v=p.map((x,i)=>x-bounds.center[i]), c=Math.cos(yaw),s=Math.sin(yaw);
+      const x=c*v[0]+s*v[2], z=-s*v[0]+c*v[2], cp=Math.cos(pitch),sp=Math.sin(pitch);
+      const y=cp*v[1]-sp*z, depth=sp*v[1]+cp*z, distance=bounds.span*4;
+      const scale=Math.min(width,height)*.82/bounds.span*zoom*distance/(distance+depth);
+      return [width/2+x*scale,height/2-y*scale,depth];
+    }
+    function draw() {
+      const width=canvas.clientWidth,height=canvas.clientHeight,dpr=window.devicePixelRatio||1;
+      if (canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)) {canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
+      ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
+      latestPose=sample(time);latestWorld=world(latestPose);
+      const points=latestWorld.map(p=>project(p,width,height));
+      ctx.strokeStyle="#26364d";ctx.lineWidth=1;
+      const floor=bounds.span*.7, cx=bounds.center[0],cz=bounds.center[2];
+      for (let i=-5;i<=5;i++) for (const swap of [false,true]) {
+        const offset=i*floor/5;
+        const a=project(swap?[cx-floor,0,cz+offset]:[cx+offset,0,cz-floor],width,height);
+        const b=project(swap?[cx+floor,0,cz+offset]:[cx+offset,0,cz+floor],width,height);
+        ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+      }
+      const order=points.map((p,i)=>i).sort((a,b)=>points[b][2]-points[a][2]);
+      for (const i of order) {
+        const p=meta.parents[i], point=points[i];ctx.strokeStyle=i<=7?"#69c6ff":"#ffb96e";ctx.lineWidth=4;
+        if (p>=0) {ctx.beginPath();ctx.moveTo(points[p][0],points[p][1]);ctx.lineTo(point[0],point[1]);ctx.stroke();}
+        ctx.fillStyle="#eef6ff";ctx.beginPath();ctx.arc(point[0],point[1],4,0,Math.PI*2);ctx.fill();
+        if ($("labels").checked) {ctx.font="12px system-ui";ctx.fillText(String(i),point[0]+(i===0?-16:8),point[1]-7);}
+      }
+      $("timeline").value=time;$("time-label").textContent=time.toFixed(2)+" / "+clips[active].duration.toFixed(2);
+      changed=false;
+    }
+    function play(value) {playing=value;$("play").textContent=value?"Pausar":"Reproduzir";lastTimestamp=null;}
+    $("play").onclick=()=>play(!playing);
+    $("clip").onchange=()=>choose(Number($("clip").value));
+    $("previous-clip").onclick=()=>choose((active+clips.length-1)%clips.length);
+    $("next-clip").onclick=()=>choose((active+1)%clips.length);
+    $("timeline").oninput=()=>{play(false);time=Number($("timeline").value);changed=true;};
+    function keyStep(direction) {
+      play(false);const keys=[0,...clips[active].times.filter(t=>t>0),clips[active].duration];
+      time=direction>0?(keys.find(t=>t>time+1e-5)??clips[active].duration):([...keys].reverse().find(t=>t<time-1e-5)??0);changed=true;
+    }
+    $("previous-key").onclick=()=>keyStep(-1);$("next-key").onclick=()=>keyStep(1);
+    $("follow").onchange=()=>{measure();changed=true;};$("labels").onchange=()=>{changed=true;};
+    $("fit").onclick=()=>{yaw=.35;pitch=-.04;zoom=1;measure();changed=true;};
+    $("category").onchange=()=>{
+      const category=$("category").value;
+      if (category) annotations.set(active,{clip:active,category,observed_time_original_units:time});
+      else annotations.delete(active);
+      $("category-status").textContent=category?"Candidato anotado; ainda não validado no treino.":"";
+    };
+    $("export").onclick=()=>{
+      const entries=[...annotations.values()].sort((a,b)=>a.clip-b.clip).map(a=>({...a,
+        block_sha256:meta.clips[a.clip].block_sha256,classification_status:"visual_candidate",
+        retargeting_validated:false,contact_validated:false,runtime_enabled:false}));
+      const document={schema_version:1,bundle_sha256:meta.bundle_sha256,entries};
+      const url=URL.createObjectURL(new Blob([JSON.stringify(document,null,2)+"\n"],{type:"application/json"}));
+      const link=window.document.createElement("a");link.href=url;link.download="pes3-candidatos.json";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    };
+    let drag=null;
+    canvas.onpointerdown=e=>{drag=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId);};
+    canvas.onpointermove=e=>{if(!drag)return;yaw+=(e.clientX-drag[0])*.008;pitch=Math.max(-1.2,Math.min(1.2,pitch+(e.clientY-drag[1])*.006));drag=[e.clientX,e.clientY];changed=true;};
+    canvas.onpointerup=canvas.onpointercancel=()=>{drag=null;};
+    canvas.onwheel=e=>{e.preventDefault();zoom=Math.max(.4,Math.min(4,zoom*Math.exp(-e.deltaY*.001)));changed=true;};
+    window.addEventListener("resize",()=>{changed=true;});
+    document.addEventListener("keydown",e=>{
+      if (/INPUT|SELECT|BUTTON/.test(e.target.tagName))return;
+      if(e.code==="Space"){e.preventDefault();play(!playing);}
+      if(e.code==="ArrowLeft"){e.preventDefault();choose((active+clips.length-1)%clips.length);}
+      if(e.code==="ArrowRight"){e.preventDefault();choose((active+1)%clips.length);}
+    });
+    $("status").textContent=clips.length.toLocaleString("pt-BR")+" clips · 19 articulações";
+    $("clip").max=clips.length-1;
+    $("source-info").textContent="Contêiner FPSANM14 · SHA-256 "+meta.bundle_sha256+". 36.378 registros de pose, com chaves preservadas. Nenhum executável ou AFS é necessário para abrir esta prévia.";
+    window.pes3Lab={choose, snapshot:()=>({clip:active,time,playing,clipCount:clips.length,pose:latestPose,world:latestWorld,bounds,
+      annotationCount:annotations.size,scope:meta.scope})};
+    choose(47);draw();
+    function frame(timestamp) {
+      if(playing&&lastTimestamp!==null){const dt=Math.min((timestamp-lastTimestamp)/1000,.1);time=(time+dt*Number($("rate").value))%clips[active].duration;changed=true;}
+      lastTimestamp=timestamp;if(changed)draw();requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  } catch (error) {$("error").style.display="block";$("error").textContent=error.message;$("status").textContent="Falha ao carregar";}
+})();
+</script>
+</body>
+</html>

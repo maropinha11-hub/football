@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "run_id": "df7be59a-c64f-458d-9399-8da05b7f4460",
+  "completed_at_utc": "2026-10-10T21:46:16.304190+00:00",
+  "gameplay_baseline_commit": "0cb7ead8dcf294755a0b0581f559cdeb241de0f3",
+  "research_baseline_commit": "47a9f8c4bfe5f34538066f9bbd500f8660376cff",
+  "received_core_archive": {
+    "file": "fpsoccer-pes-nucleo-v14.zip",
+    "bytes": 20702174,
+    "sha256": "7561b99ddaca6e12c9c70f483a340c38dbb378172ae67911f2d092fe8f2bda5e",
+    "manifest_entries_checked": 167,
+    "manifest_mismatches": 0
+  },
+  "received_iso_files": [
+    {
+      "file": "SLES_519.12",
+      "size": 2196728,
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "matches_supplied_report": [
+        "executable"
+      ],
+      "kind": "elf32-mips"
+    },
+    {
+      "file": "OVER.AFS",
+      "size": 6447104,
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "matches_supplied_report": [
+        "over"
+      ],
+      "kind": "afs"
+    },
+    {
+      "file": "SYSTEM.CNF",
+      "size": 56,
+      "sha256": "0809ef72e45b3307fd60c9296026c0636a6c8a1adcd2dd64ad6582f36a5dc5b4",
+      "matches_supplied_report": [],
+      "kind": "unclassified"
+    },
+    {
+      "file": "CDLIST.DIR",
+      "size": 70,
+      "sha256": "302439037f0bb3f8033c74dd66e0796a632e29141945fa04d019dbf482a67b98",
+      "matches_supplied_report": [],
+      "kind": "unclassified"
+    }
+  ],
+  "iso_configuration": {
+    "boot_executable": "SLES_519.12",
+    "version": "1.02",
+    "video_mode": "PAL",
+    "cdlist_entries": [
+      "DATA_E.AFS",
+      "DATA_F.AFS",
+      "DATA_G.AFS",
+      "DATA_I.AFS",
+      "DATA_S.AFS",
+      "OVER.AFS"
+    ]
+  },
+  "overlays": {
+    "count": 20,
+    "exports": [
+      {
+        "path": "OVER.AFS/0006:game.ovl",
+        "stored_file": "aa1942fd00fd60c7/0006-game.ovl.stored",
+        "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+        "size": 2822528
+      },
+      {
+        "path": "OVER.AFS/0016:training_common.ovl",
+        "stored_file": "aa1942fd00fd60c7/0016-training_common.ovl.stored",
+        "sha256": "7b4b19e278831347748ea52ab37e387fddeaef49932d363e27c2cc67004c2c4d",
+        "size": 61440
+      },
+      {
+        "path": "OVER.AFS/0018:training_free.ovl",
+        "stored_file": "aa1942fd00fd60c7/0018-training_free.ovl.stored",
+        "sha256": "ed0348543a3ac224c387a9421ee150c49e98c98a5f47d532e022438fce6e12c6",
+        "size": 4096
+      }
+    ]
+  },
+  "animation_code_regions_verified_against_uploaded_elf": [
+    {
+      "name": "motion_decode",
+      "start": "0x1113cc0",
+      "end_exclusive": "0x1114570",
+      "file_offset": 541888,
+      "sha256": "4aa9988eb528f926cb38b5e68002661f1bff1e0db428a25409b4e8980c2dc60b",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "local_pose",
+      "start": "0x1115130",
+      "end_exclusive": "0x11153a0",
+      "file_offset": 547120,
+      "sha256": "105b793ba6dfd8711c9e87713b6370ce8fbf7dfa64e8189c2d80e1b4d2e5f307",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "short_arc_cache",
+      "start": "0x1115710",
+      "end_exclusive": "0x11157e0",
+      "file_offset": 548624,
+      "sha256": "e1adb62c60583b304e3d5dc92df61bfe72c49bc1132a6cf7501712b7003357b3",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "format_translation_predicate",
+      "start": "0x1114e90",
+      "end_exclusive": "0x1114eb0",
+      "file_offset": 546448,
+      "sha256": "73e694bfaaa440ab1f65bb172e685aa6409d5f88469b5907cffae3f66404720c",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "dot_product",
+      "start": "0x10d2f70",
+      "end_exclusive": "0x10d2fa0",
+      "file_offset": 276336,
+      "sha256": "486be6961464472f0da40148322a8497e6e307238e3613cd3d577de2c844aa44",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "linear_translation",
+      "start": "0x1093f10",
+      "end_exclusive": "0x1093f38",
+      "file_offset": 18192,
+      "sha256": "d19e0e73c95ccd3e7bd688455a2a41720f66ba123ee734a74ef9ddfaf6580f12",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "sine",
+      "start": "0x10a7af0",
+      "end_exclusive": "0x10a7bd8",
+      "file_offset": 99056,
+      "sha256": "e205f41cfb82a2fbd47cacdabef4261dfd4d2562fe5d1b559b4687334c247a31",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "sine_kernel",
+      "start": "0x10a6a48",
+      "end_exclusive": "0x10a6b50",
+      "file_offset": 94792,
+      "sha256": "0c3ae409c8addc9456075646a69af944401ebe8f17f640001c064019a8be0a8c",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "cosine_kernel",
+      "start": "0x10a6090",
+      "end_exclusive": "0x10a61e0",
+      "file_offset": 92304,
+      "sha256": "f700e78b1d84eba817294b321975f0877968443cbc2cb8973c146855615e78b2",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "reduce_angle_reached",
+      "start": "0x10a5c10",
+      "end_exclusive": "0x10a5d58",
+      "file_offset": 91152,
+      "sha256": "e160e7444f2148e39c9f19576eea89a3c06d4ebd406639e806392e39bd6b5c76",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "atan2_wrapper",
+      "start": "0x10a7c98",
+      "end_exclusive": "0x10a7cb0",
+      "file_offset": 99480,
+      "sha256": "db4a78c36ad4ce8ac592aa45fe5554882649db7ae3f3848f73a00913bec21264",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "atan2",
+      "start": "0x10a5580",
+      "end_exclusive": "0x10a5760",
+      "file_offset": 89472,
+      "sha256": "273cf99941b4cc26b74b8e88ad52c23f6f94fe64aaa3f5e529a5ec6d5e7402dd",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "atan",
+      "start": "0x10a74f0",
+      "end_exclusive": "0x10a777c",
+      "file_offset": 97520,
+      "sha256": "016d98784ebd471b08de76517b156db0ee1e72533b41a35ff8cbae93b875a35e",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "absolute",
+      "start": "0x10a7898",
+      "end_exclusive": "0x10a78c0",
+      "file_offset": 98456,
+      "sha256": "14489dc19e8a1b8969af6ea363460fefd935d6f6fb97f211609374f38e3e381e",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "dispatch_or_coefficients",
+      "start": "0x1269ae0",
+      "end_exclusive": "0x1269b08",
+      "file_offset": 1942240,
+      "sha256": "a40f590d5075ad77eefa9a84988f18b01722e624c685cd4791bdb04d326b0536",
+      "matches_supplied_manifest": true
+    },
+    {
+      "name": "dispatch_or_coefficients",
+      "start": "0x1293d70",
+      "end_exclusive": "0x1293dbc",
+      "file_offset": 2114928,
+      "sha256": "534e70da96dbd2815829370a311246e23cb91443869a5b1d2f7712688ab9e103",
+      "matches_supplied_manifest": true
+    }
+  ],
+  "game_overlay_direction_table": {
+    "file_offset_start": "0x2b0150",
+    "bytes": 1024,
+    "sha256": "4fb3e50486d39cc542fec0b281b6707ff6b39c23653e5e840f51a48f1cfca127"
+  },
+  "native_core": {
+    "command": "make check",
+    "result": "passed",
+    "exit_code": 0,
+    "batteries": 16,
+    "checks": 1439665,
+    "mismatches": 0,
+    "compiler_flags": "-O2 -std=c++17 -Wall -Wextra -Werror -fno-fast-math -ffp-contract=off -fPIC -shared",
+    "log_sha256": "41c4a9a6f291fad526226ebee573012cd07dae07069e779a1e46f8ebc92f34fe",
+    "library_sha256": "bed788eb5cce67ebf527b57731c8c6be1012fcaed089ab15fab903c57329267b",
+    "results": [
+      {
+        "command": "verify.py",
+        "checks": 358342,
+        "mismatches": 0,
+        "scope": "integer helper vectors and saved player displacement; not full PES gameplay"
+      },
+      {
+        "command": "verify_recovered_actions.py",
+        "checks": 142423,
+        "mismatches": 0,
+        "scope": "selected original helpers/blocks and snapshot fields; no full PES frame replay"
+      },
+      {
+        "command": "verify_ball_contacts.py",
+        "checks": 92080,
+        "mismatches": 0,
+        "scope": "Selected instructions using host binary32 plus vector subnormal flushing; no PS2 hardware or frame equivalence"
+      },
+      {
+        "command": "verify_contact_effects.py",
+        "checks": 27621,
+        "mismatches": 0,
+        "scope": "Selected integer instructions and host binary32 scale/effect model; stored scale disagreements reported separately; no game-frame replay"
+      },
+      {
+        "command": "verify_fixed_player.py",
+        "checks": 107855,
+        "mismatches": 0,
+        "scope": "Selected original integer/host-binary32 instruction models, API contracts and fixed-athlete adaptation; no PS2 hardware, full frames or online tests"
+      },
+      {
+        "command": "verify_solo_training.py",
+        "checks": 179258,
+        "mismatches": 0,
+        "scope": "Selected offline movement/heading/prediction/rate instruction models and API contracts; not a full action, playable pitch, full frame or PS2 float-equivalence test"
+      },
+      {
+        "command": "verify_animation_clock.py",
+        "checks": 48570,
+        "mismatches": 0,
+        "scope": "Selected animation-clock instructions, supplied-distance chase gate and segmented target/transition planning; transition/pose calls excluded, no full action/frame or playable pitch"
+      },
+      {
+        "command": "verify_animation_transition.py",
+        "checks": 103657,
+        "mismatches": 0,
+        "scope": "Original change/blend/refresh instructions and common target block with their calls executed; gate/candidate/restart supplied, no bones, full action/frame, hardware-equivalence claim or playable pitch"
+      },
+      {
+        "command": "verify_movement_prepare.py",
+        "checks": 46380,
+        "mismatches": 0,
+        "scope": "Two preparation helpers, complete near-amplitude cap and selected post-direction 61/62/63 branches with transition calls; supplied upstream inputs, no remaining actions, bones, full frame or playable pitch"
+      },
+      {
+        "command": "verify_movement_prediction.py",
+        "checks": 10759,
+        "mismatches": 0,
+        "scope": "Complete self preparation 0x01864950 with reached original helpers, selected record cache and self/mode-0 search. Supplied forecasts, host-float reference, no whole frames or hardware equivalence."
+      },
+      {
+        "command": "verify_movement_cycle.py",
+        "checks": 23823,
+        "mismatches": 0,
+        "scope": "Complete original phase-change wrapper and reset; clip48 branch with supplied gate/candidate; only 55-to-56 entry. Host binary32, no full action/frame, physics, bones or playable scene."
+      },
+      {
+        "command": "verify_ball_dynamics.py",
+        "checks": 172030,
+        "mismatches": 0,
+        "scope": "Original ball forecast routine, finite checked host binary32 domain; not the whole live ball update."
+      },
+      {
+        "command": "verify_ball_free.py",
+        "checks": 59978,
+        "mismatches": 0,
+        "scope": "Selected live free-ball kinematics and independent RNG. Not the main update or full gameplay."
+      },
+      {
+        "command": "verify_ball_release.py",
+        "checks": 9416,
+        "mismatches": 0,
+        "scope": "Release wrapper selected published gameplay fields including mode-1 first-ground query and four original arrays; touch arithmetic, not its timing/gate or full action/frame/PS2 hardware."
+      },
+      {
+        "command": "verify_animation_amplitude.py",
+        "checks": 30928,
+        "mismatches": 0,
+        "scope": "Animation amplitude helper and reached speed arithmetic, original no-write branches; clip 454 excluded, no bones, action timing or complete gameplay/frame equivalence."
+      },
+      {
+        "command": "verify_animation_pose.py",
+        "checks": 26545,
+        "mismatches": 0,
+        "scope": "Original format-2 decoder and local interpolation, 19 bones/root first. Original sin/atan bytes execute in the reference; host binary32/VU subset, not PS2 hardware parity. No clip selection, action controller, hierarchy matrices or complete gameplay."
+      }
+    ],
+    "reference": "Supplied v0.14 fixtures; original MIPS/VU oracle and full saved states were not regenerated in this run."
+  },
+  "dataset_manifest": {
+    "schema_version": 1,
+    "kind": "FPSANM14",
+    "sha256": "c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5",
+    "bytes": 6310088,
+    "clips": 1105,
+    "poses": 36378,
+    "bones": 19,
+    "matches_v14_bundle": true,
+    "html_sha256": "029ce175a9121d5a364c2ac03d68b3a0266bc2b88ce088bf805625a52e29e639",
+    "motion_js_sha256": "6f949b660c407ea3a9693b1cc351b9672e8374109f2c42ad8a5078de45ab75d7",
+    "skeleton_profile_sha256": "c78daf2e7a7b80926b1ae14a710ab2b054be349cde9bd3786b6c82c4039e2b45",
+    "scope": "Verified local interpolation; diagnostic standard FK, no original final transforms or gameplay."
+  },
+  "javascript_motion": {
+    "schema_version": 1,
+    "result": "passed",
+    "animation_blocks": 1105,
+    "pose_records": 36378,
+    "decode_pose_cases": 6565,
+    "captured_channel_cases": 132,
+    "byte_buffer_comparisons": 13262,
+    "rejected_invalid_inputs": 14,
+    "bundle_sha256": "c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5",
+    "scope": "JavaScript local decoder/evaluator against supplied v0.14 fixtures; no PS2 final hierarchy, mirror, clip blend, action selection or hardware equivalence."
+  },
+  "browser_functional": {
+    "schema_version": 1,
+    "result": "passed",
+    "run_id": "80c17c31-4933-4d50-864b-55d12391064d",
+    "completed_at_utc": "2026-10-10T21:43:21.816702+00:00",
+    "package_sha256": "e1566f497af74415797b32e230fdb4f49d43486fcedae0dea771eeefa723f356",
+    "html_sha256": "029ce175a9121d5a364c2ac03d68b3a0266bc2b88ce088bf805625a52e29e639",
+    "checks": 26,
+    "passed_checks": [
+      "package_crc",
+      "package_contents",
+      "html_manifest_hash",
+      "embedded_bundle_hash",
+      "clip_inventory",
+      "nineteen_finite_joints",
+      "no_automatic_gesture_labels",
+      "canvas_has_skeleton_pixels",
+      "playback_advances",
+      "pause_stops_playback",
+      "sentinel_is_not_a_new_pose",
+      "previous_original_key",
+      "next_endpoint",
+      "preview_follow_preserves_local_pose",
+      "manual_candidate_annotation",
+      "export_retains_source_and_time",
+      "export_does_not_enable_gameplay",
+      "annotation_can_be_removed",
+      "last_to_first_clip",
+      "first_to_last_clip",
+      "invalid_id_preserves_selection",
+      "keyboard_clip_navigation",
+      "keyboard_playback",
+      "narrow_viewport_canvas_visible",
+      "no_javascript_errors",
+      "no_network_requests"
+    ],
+    "javascript_errors": [],
+    "network_requests": [],
+    "load_method": "set_content_exact_packaged_inline_html",
+    "scope": "Chromium inline-document functional checks in cloud; file-URL opening and Windows Edge not executed."
+  },
+  "python_structural_tests": {
+    "command": "python3 -m unittest discover -s tests -p test_pes3_tools.py -v",
+    "result": "passed",
+    "tests": 24
+  },
+  "original_training_assets": {
+    "original_assets_verified": 509,
+    "documented_shader_overrides_verified": 1
+  },
+  "open_pose_disagreement_from_supplied_package": {
+    "source": "animation_pose_snapshot_comparison.json",
+    "source_sha256": "39886b60222d2e5f9e0c746f1011b4749612a41c61001b2e50a8df6e7b3429b2",
+    "observations": 132,
+    "exact_whole_pose_matches": 0,
+    "max_absolute_component_difference": 33.37592124938965,
+    "recomputed_against_complete_ps2_states": false,
+    "cause_isolated": false
+  },
+  "deliverables": {
+    "animation_lab": {
+      "file": "artifacts/pes3-animation-lab.zip",
+      "bytes": 5764629,
+      "sha256": "e1566f497af74415797b32e230fdb4f49d43486fcedae0dea771eeefa723f356"
+    },
+    "training_windows": {
+      "file": "artifacts/football-training-windows-x86_64.zip",
+      "sha256": "ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443",
+      "rebuilt_this_stage": false
+    }
+  },
+  "scope": "Verified partial core against supplied fixtures, local animation decoding/interpolation and diagnostic inline viewer. No retargeting, final PS2 hierarchy/mirror/blend, contacts, animation import, physics replacement or full gameplay equivalence."
+}

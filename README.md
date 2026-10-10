@@ -23,9 +23,11 @@ não contêm o motor nem as animações do PES. Fidelidade à base aberta e
 equivalência ao PES são verificações diferentes. Consulte
 [a pesquisa técnica](docs/RESEARCH.md) para a origem e os limites da implementação.
 
-O estudo separado do PES 3, os arquivos necessários e as ferramentas para
-catalogar e conferir recursos estão em [docs/PES3.md](docs/PES3.md).
-Essa preparação ainda não adiciona animações ou física do PES ao treino.
+O estudo do PES 3 e a conferência dos arquivos recebidos estão em
+[docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)
+permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia
+o ZIP e abra `abrir-laboratorio.html` com Edge ou Chrome. É uma ferramenta de
+pesquisa; as animações e a física do PES ainda não foram integradas ao treino.
 
 ## Executar no Linux
 
@@ -197,4 +199,6 @@ Windows 11.
 
 Preservados `LICENSE`, avisos nos arquivos, `NOTICE` e a licença OFL das
 fontes. [UPSTREAM.md](docs/UPSTREAM.md) contém as instruções do fork antes
-das alterações. Não foram utilizados arquivos extraídos de PES.
+das alterações. O executável de treinamento usa os recursos dessa base.
+O laboratório separado usa os dados numéricos PES 3 enviados pelo usuário;
+a origem e os limites de validação estão em [docs/PES3.md](docs/PES3.md).
