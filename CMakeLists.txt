@@ -98,7 +98,7 @@ add_library(blunted2 ${BLUNTED_CORE_SOURCES} ${BLUNTED_CORE_HEADERS} ${OWN_LIBRA
 
 add_library(leaguelib ${LEAGUE_SOURCES} ${LEAGUE_HEADERS})
 add_library(gamelib ${GAME_SOURCES} ${GAME_HEADERS})
-target_sources(gamelib PRIVATE src/onthepitch/training.cpp)
+target_sources(gamelib PRIVATE src/onthepitch/training.cpp src/onthepitch/trainingcontrol.cpp)
 add_library(hidlib ${HID_SOURCES} ${HID_HEADERS})
 add_library(menulib ${MENU_SOURCES} ${MENU_HEADERS})
 add_library(datalib ${DATA_SOURCES} ${DATA_HEADERS})

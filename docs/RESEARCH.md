@@ -100,3 +100,69 @@ Carreira e online continuam para etapas posteriores.
 A validação virtual verifica o caminho de entrada. A avaliação de latência,
 rumble, Bluetooth, sensação do movimento e desempenho na GPU do usuário
 continua exigindo teste com o Xbox Series S no computador de destino.
+
+
+## Direção para trás e temporização (2026-10-10)
+
+O arquivo enviado `PES2017_PrimeiraPessoa_v0.12.4.zip` contém fontes. Foram
+lidos `src/look_math.h` e o tratamento de entrada de `src/first_person.cpp`.
+`bodyToView` conserva o sinal de ambos os eixos ao projetar o comando do
+corpo no referencial da câmera. O olhar é separado dessa direção. Essas
+ideias servem de referência para a base aberta; os endereços e hooks do
+executável PES são específicos daquele jogo e não se aplicam a esta base.
+Nenhum executável ou instalador do anexo foi executado.
+
+A falha local estava em `training::View::movement`: qualquer comando com
+bola virava `forward(bodyYaw) * magnitude`. Baixo era convertido em avanço,
+enquanto a referência tentava girar a apenas 2,1 rad/s e ainda aguardava
+um limite de 0,35 rad sobre o torso. A nova implementação pede a direção
+completa imediatamente ao controlador original, inclusive a reversão.
+O alvo fica estável durante a animação; manter uma direção lateral ou para
+trás pede um novo giro em relação à nova frente quando o corpo e o domínio
+da bola completam o anterior. Nas inversões, o pedido de velocidade baixa
+para até 1,8 m/s enquanto a bola ainda viaja no rumo contrário ao comando;
+a força do analógico continua proporcional, e a velocidade volta ao normal
+assim que a bola acompanha o novo rumo. A câmera acompanha a direção real
+do deslocamento durante o giro, em vez da antecipação do torso. Ao voltar
+para frente, fixa esse rumo,
+sem realimentação do balanço das animações nem da orientação da cabeça.
+A assistência original entre os contatos com a bola continua ativa.
+
+O pacote Windows passa a configurar `graphics_vsync=0`, conservando o
+intervalo de apresentação de 16 ms do agendador. Isso remove a espera
+obrigatória do swap pela atualização do monitor; computadores que preferem
+sincronização podem usar `graphics_vsync=1`. O SDL inicializa o temporizador
+com precisão solicitada de 1 ms no Windows. O relógio da simulação usa
+`SDL_GetPerformanceCounter`, monotônico, em vez da hora civil, sujeita a
+ajustes do sistema. O passo físico permanece 10 ms: aumentar a velocidade
+artificial da bola ou das animações não resolve atrasos de apresentação.
+A telemetria registra `wall_ms` para comparar tempo simulado e real.
+
+
+A medição revelou também uma corrida no agendador da base: as fases de
+`IUserTaskMessage` e `ISystemTaskMessage` notificavam `somethingIsDone`
+dentro de `Execute`, antes de `Command::Handle` publicar `handled=true`.
+Se o agendador acordasse nesse intervalo, observaria a tarefa incompleta e
+poderia esperar o timeout padrão de 100 ms, sem uma nova notificação quando
+a tarefa ficasse pronta. Na reprodução inicial, janelas de 1.000 ms de
+simulação chegaram a levar aproximadamente 5–6 segundos reais. A conclusão
+agora publica a prontidão sob o mutex do comando, libera esse mutex e só
+então notifica o agendador através de `OnComplete`. Liberar antes de
+notificar preserva a ordem dos locks, pois o agendador consulta `IsReady`
+enquanto segura seu próprio mutex. O teste de comando reutilizado confere
+essa ordem e o teste renderizado compara cinco segundos com o relógio real.
+
+
+Nas inversões em primeira pessoa, o vetor de um contato já aceito pode
+apontar para o fim do passo anterior, enquanto a entrada pede o rumo oposto.
+O toque agora considera o comando atual e aplica o corte com velocidade
+horizontal limitada a 2,5 m/s quando o plano ou a bola apontam no sentido
+contrário. O evento continua dependendo do contato e do alcance originais;
+a posição da bola não é corrigida para seguir o jogador. O pé mais fraco
+continua conservando uma pequena parcela do momento de entrada.
+Após esse contato, uma nova direção pode replanejar o restante da animação
+de condução, preservando o toque já executado, as misturas de poses e os
+limites de aceleração. Isso evita terminar um giro antigo depois de voltar
+para frente. Os quadros finais e os contatos ainda pendentes mantêm seus
+limites de interrupção. A validação exige posse contínua e avanço no novo
+rumo ao trocar de baixo para frente no meio de giros repetidos.

@@ -191,7 +191,9 @@ void Humanoid::Process() {
 
     float ballDistance = (currentMentalImage->GetBallPrediction(500).Get2D() - spatialState.position).GetLength();
     const bool trainingMovement = TrainingEnabled() && CastPlayer()->GetExternalController() &&
-                                  currentAnim->functionType == e_FunctionType_Movement;
+                                  (currentAnim->functionType == e_FunctionType_Movement ||
+                                   (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl &&
+                                    currentAnim->frameNum > currentAnim->touchFrame + 1));
     if (( trainingMovement ||
           (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
@@ -321,7 +323,8 @@ void Humanoid::Process() {
       // if we just requeued, for example, from movement to ballcontrol, there's no reason we can not immediately requeue to another ballcontrol again (next time). only apply the initial requeue delay on subsequent anims of the same type
       // (so we can have a fast ballcontrol -> ballcontrol requeue, but after that, use the initial delay)
       if (interruptAnim == e_InterruptAnim_ReQueue && previousAnim->functionType == currentAnim->functionType) {
-        reQueueDelayFrames = TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement ? 8 : initialReQueueDelayFrames;
+        reQueueDelayFrames = TrainingEnabled() && (currentAnim->functionType == e_FunctionType_Movement ||
+            (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl)) ? 8 : initialReQueueDelayFrames;
       }
 
     }
@@ -1206,14 +1209,21 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
 
   if (localInterruptAnim == e_InterruptAnim_ReQueue) {
+    // The contact has already happened: a changed input can replan the
+    // remaining locomotion without cancelling or duplicating that touch.
+    const bool trainingPostTouch = TrainingEnabled() && match->IsFirstPerson() &&
+        currentAnim->functionType == e_FunctionType_BallControl &&
+        currentAnim->frameNum > currentAnim->touchFrame + 1;
+    if (trainingPostTouch && currentAnim->frameNum + minRemainingMovementReQueueFrames >
+        currentAnim->anim->GetEffectiveFrameCount()) return false;
 
     float focusDistance = (match->GetDesignatedPossessionPlayer()->GetPosition() - spatialState.position).GetLength();
 
-    if (currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
+    if (!trainingPostTouch && currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
     if (!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && currentAnim->frameNum + minRemainingMovementReQueueFrames > currentAnim->anim->GetEffectiveFrameCount()) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (!allowMovementReQueue || reQueueDelayFrames > 0)) return false;
-    if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)) return false;
+    if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || (!trainingPostTouch && (currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)))) return false;
     if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_Trap) return false;
     if (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap && (!allowTrapReQueue || currentAnim->frameNum + minRemainingTrapReQueueFrames > currentAnim->touchFrame || reQueueDelayFrames > 0)) return false;
     if (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl && (!allowTrapReQueue || currentAnim->frameNum + minRemainingTrapReQueueFrames > currentAnim->touchFrame || reQueueDelayFrames > 0)) return false;
@@ -1228,7 +1238,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     // Direct training input can revise locomotion while keeping the existing blend
     // and acceleration limits. Touch actions retain their original contact timing.
     if ((!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
-        (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
+        (!trainingPostTouch && currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap)) {
 

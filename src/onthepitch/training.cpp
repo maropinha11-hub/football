@@ -69,10 +69,28 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   // ball, so the original reception assistance engages before body contact.
   const bool controlled = delta.Get2D().GetLength() < (trainingView.withBall ? 2.3f : 1.5f) &&
       delta.coords[2] < (trainingView.withBall ? 1.4f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
-  const Vector3 body = designatedPossessionPlayer->GetBodyDirectionVec();
+  // Locomotion heading reflects where the feet are actually travelling.
+  // A torso can anticipate the next touch while the current step is still
+  // moving elsewhere; using that pose here makes forward drift after a turn.
+  const Vector3 body = designatedPossessionPlayer->GetDirectionVec();
+  const Vector3 ballVelocity = ball->GetMovement().Get2D();
+  const float ballSpeed = ballVelocity.GetLength();
+  // A reversal must finish its real touch, not just reverse the player's
+  // velocity while the ball is still departing in the old direction.
+  const bool canRepeat = delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
+      (ballSpeed > 0.5f ? ballVelocity.GetNormalized(0).GetDotProduct(
+          training::forward(trainingView.travelYaw)) > 0.8f :
+          designatedPossessionPlayer->GetMovement().GetLength() < 0.5f);
+  const bool continuing = controlled && trainingView.withBall && trainingView.moving;
+  const float previousTarget = trainingView.travelYaw, previousSteer = trainingView.steeringAngle;
   trainingView.update(controlled, std::atan2(body.coords[1], body.coords[0]), input->GetDirection(), look, 0.01f,
                       clamp(GetConfiguration()->GetReal("firstperson_look_speed", 2.1f), 0.5f, 5.0f),
-                      clamp(GetConfiguration()->GetReal("firstperson_recenter_speed", 1.3f), 0.2f, 4.0f));
+                      clamp(GetConfiguration()->GetReal("firstperson_recenter_speed", 1.3f), 0.2f, 4.0f), canRepeat);
+  if (continuing && trainingView.moving &&
+      std::fabs(training::angle(previousSteer - trainingView.steeringAngle)) < 0.02f &&
+      std::fabs(training::angle(previousTarget - trainingView.travelYaw)) > 0.4f &&
+      GetConfiguration()->GetBool("training_telemetry", false))
+    printf("TRAINING_STEER_REPEAT t=%lu target=%.4f\n", actualTime_ms, trainingView.travelYaw);
 }
 
 void Match::ResolveTrainingBallContacts(const Vector3 &from) {
@@ -237,7 +255,7 @@ void Match::ProcessTraining() {
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
              "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
-             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f}\n",
+             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f,\"wall_ms\":%lu}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
@@ -252,7 +270,8 @@ void Match::ProcessTraining() {
                static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetActionMode() : 0,
              inputMovement.coords[0], inputMovement.coords[1], keys,
              std::atan2(designatedPossessionPlayer->GetBodyDirectionVec().coords[1],
-                        designatedPossessionPlayer->GetBodyDirectionVec().coords[0]));
+                        designatedPossessionPlayer->GetBodyDirectionVec().coords[0]),
+             EnvironmentManager::GetInstance().GetTime_ms());
       fflush(stdout);
     }
   }

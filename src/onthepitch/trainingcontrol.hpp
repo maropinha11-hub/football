@@ -29,6 +29,10 @@ inline Vector3 movementStick(const Vector3 &value, float deadzone) {
   return result.GetNormalized(0) * speed;
 }
 inline float shotCharge(int held_ms) { return limit((held_ms - 40) / 480.0f, 0, 1); }
+// Brake into a sharp cut while the last touch still carries the ball away.
+inline float turnSpeed(float requested, float ballAlignment, float ballSpeed) {
+  return ballSpeed > 1.0f && ballAlignment < -0.25f ? std::min(requested, 1.8f) : requested;
+}
 // Baseline training player: right-footed, with a useful but less precise left foot.
 inline float controlQuality(const std::string &bodypart) {
   return bodypart == "left_foot" || bodypart == "left_lowerleg" ? 0.72f : 1.0f;
@@ -37,69 +41,12 @@ inline float controlQuality(const std::string &bodypart) {
 struct View {
   float yaw = 0, headYaw = 0, pitch = -0.12f, movementYaw = 0, bodyYaw = 0;
   float idleLook = 0;
+  float travelYaw = 0, steeringAngle = 0, turnTime = 0;
   bool withBall = false, moving = false;
-  void reset(float facing) {
-    yaw = movementYaw = bodyYaw = facing; headYaw = 0; pitch = -0.12f;
-    idleLook = 0; withBall = false; moving = false;
-  }
+  void reset(float facing);
   void update(bool possession, float facing, const Vector3 &move, const Vector3 &look,
-              float dt, float sensitivity = 2.1f, float recenter = 1.3f) {
-    const bool nextMoving = move.GetLength() > 0.001f;
-    if (possession != withBall) {
-      // Preserve the view at the transition; never snap the head to a new heading.
-      if (possession) { bodyYaw = yaw; headYaw = 0; }
-      else { yaw = angle(bodyYaw + headYaw); headYaw = 0; }
-      movementYaw = yaw;
-      idleLook = 0;
-    }
-    withBall = possession;
-    if (withBall) {
-      // Steer relative to the current front, at a bounded rate the original
-      // turn/contact animations can follow. Torso sway never feeds back into
-      // the controls; forward keeps the new heading stable immediately.
-      if (nextMoving) {
-        const float turn = std::atan2(-move.coords[0], move.coords[1]) * (1 - std::exp(-7 * dt));
-        const float maximumTurn = 2.1f * move.GetLength() * dt;
-        // A queued touch can still be finishing its previous turn. Allow a
-        // small steering lead, then wait for the real body instead of letting
-        // the camera/control heading get a full turn ahead of the feet.
-        const float lead = angle(bodyYaw - facing);
-        const float leftRoom = std::max(0.0f, 0.35f - lead);
-        const float rightRoom = std::max(0.0f, 0.35f + lead);
-        bodyYaw = angle(bodyYaw + limit(turn, -std::min(maximumTurn, rightRoom),
-                                             std::min(maximumTurn, leftRoom)));
-      }
-      headYaw = limit(headYaw - look.coords[0] * sensitivity * dt, -1.48f, 1.48f);
-      // Forward means the new front; holding right keeps turning to the new
-      // right. Head look is excluded from this body-relative reference.
-      movementYaw = bodyYaw;
-    } else {
-      yaw = angle(yaw - look.coords[0] * sensitivity * dt);
-      bodyYaw = yaw;
-      movementYaw = yaw;
-    }
-    pitch = limit(pitch - look.coords[1] * sensitivity * 0.75f * dt, -1.30f, 0.95f);
-    if (look.GetLength() > 0.001f) idleLook = 0;
-    else {
-      idleLook += dt;
-      if (withBall && idleLook > 0.45f) {
-        const float keep = std::exp(-recenter * dt);
-        headYaw *= keep;
-        pitch = -0.12f + (pitch + 0.12f) * keep;
-      }
-    }
-    yaw = withBall ? angle(bodyYaw + headYaw) : yaw;
-    moving = nextMoving;
-  }
-  Vector3 movement(const Vector3 &stick) const {
-    // With the ball the stick steers the body in update(), then asks the
-    // original controller to travel along that heading. A second 90-degree
-    // stick rotation here would make the body run sideways to its own view.
-    if (withBall) return forward(bodyYaw) * stick.GetLength();
-    const Vector3 f = forward(movementYaw);
-    const Vector3 right(f.coords[1], -f.coords[0], 0);
-    return right * stick.coords[0] + f * stick.coords[1];
-  }
+              float dt, float sensitivity = 2.1f, float recenter = 1.3f, bool canRepeat = true);
+  Vector3 movement(const Vector3 &stick) const;
 };
 
 struct Shot { float speed, elevation; };

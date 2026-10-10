@@ -32,7 +32,9 @@ Primeira pessoa é o modo inicial. R3 alterna entre primeira pessoa, externa
 e próxima. Com bola o direito não desvia a condução, e a cabeça retorna
 gradualmente ao centro ao soltá-lo. O esquerdo acompanha a frente atual do
 jogador: depois de virar, frente segue a nova frente e direita continua
-virando para a nova direita. RT mantém esse referencial, com domínio mais
+virando para a nova direita. Baixo pede a direção atrás do corpo; se for
+mantido, pede novamente a nova direção para trás após completar a virada.
+RT mantém esse referencial, com domínio mais
 lento e próximo, sem virar automaticamente para o gol. Segurar X aumenta a força e a altura,
 com carga máxima de 0,52 segundo; cerca de 0,25 segundo já produz elevação.
 Os passes mantêm a carga de um segundo. As setas do teclado substituem o direito;
@@ -44,7 +46,9 @@ aproxime-se novamente da bola para retomar o domínio. Ao atualizar, extraia
 o novo ZIP em uma pasta nova e inicie por `run-training.bat`.
 
 `training.config` permite ajustar `firstperson_fov`, `firstperson_look_speed`,
-`firstperson_recenter_speed` e `input_analog_deadzone`.
+`firstperson_recenter_speed` e `input_analog_deadzone`. O pacote usa
+`graphics_vsync=0`, com apresentação limitada pelo intervalo de 16 ms.
+Se preferir sincronização com o monitor, use `graphics_vsync=1`.
 
 O executável é compilado como PE32+ GUI para Windows x64 com MinGW e as DLLs
 SDL2, OpenAL, Boost e SQLite ficam ao lado dele no ZIP. A renderização e o

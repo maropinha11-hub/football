@@ -34,6 +34,7 @@ namespace blunted {
 
     protected:
       boost::shared_ptr<IUserTask> task;
+      void OnComplete() override;
 
   };
 

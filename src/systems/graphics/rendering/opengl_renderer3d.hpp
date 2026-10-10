@@ -29,7 +29,7 @@ namespace blunted {
   class OpenGLRenderer3D : public Renderer3D {
 
     public:
-      OpenGLRenderer3D();
+      explicit OpenGLRenderer3D(int swapInterval = 1);
       virtual ~OpenGLRenderer3D();
 
       virtual void SwapBuffers();
@@ -131,6 +131,7 @@ namespace blunted {
       void operator()();
 
     protected:
+      int swapInterval;
       SDL_GLContext context;
       SDL_Window* window;
       int context_width, context_height, context_bpp;

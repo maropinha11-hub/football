@@ -44,6 +44,7 @@ namespace blunted {
 
     protected:
       ISystemTask *task;
+      void OnComplete() override;
 
   };
 

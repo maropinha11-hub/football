@@ -9,6 +9,18 @@
 #include <stdexcept>
 
 namespace {
+class CompletionProbe : public blunted::Command {
+ public:
+  CompletionProbe() : Command("readiness-before-notification") {}
+  bool observedReady = false;
+ protected:
+  bool Execute(void *) override { observedReady = false; return true; }
+  void OnComplete() override {
+    // Mirrors the scheduler's predicate, with the real command mutex.
+    observedReady = IsReady();
+    Wait();
+  }
+};
 int checks = 0;
 void require(bool ok, const char *message) {
   ++checks;
@@ -39,6 +51,13 @@ int RunControllerTests() {
   SDL_Joystick *virtualPad = nullptr;
   int device = -1;
   try {
+    CompletionProbe completed;
+    require(completed.Handle() && completed.observedReady,
+            "Completion notifications must observe readiness, outside the command mutex");
+    completed.Reset();
+    require(!completed.IsReady(), "Reusing a scheduled command must clear its readiness");
+    require(completed.Handle() && completed.observedReady,
+            "Reused commands must publish readiness before notifying again");
     GetConfiguration()->SetBool("training_mode", true);
     training::View view;
     view.reset(0);
@@ -72,41 +91,60 @@ int RunControllerTests() {
     for (int i = 0; i < 500; ++i) view.update(true, std::sin(i * 0.1f) * 0.2f, Vector3(0), Vector3(0), 0.01f);
     require(std::fabs(view.movement(Vector3(0, 1, 0)).coords[1]) < 0.0001f, "Idle animation sway must not rotate forward movement");
     view.reset(0);
-    for (int i = 0; i < 75; ++i)
+    view.update(true, 0, Vector3(1, 0, 0), Vector3(0), 0.01f);
+    require(view.movement(Vector3(1, 0, 0)).coords[1] < -0.99f,
+            "Right input must request the actual right immediately");
+    for (int i = 1; i <= 75; ++i)
       view.update(true, -training::pi * 0.5f * i / 75, Vector3(1, 0, 0), Vector3(0), 0.01f);
     const float turnedYaw = view.bodyYaw;
-    require(turnedYaw < -1.2f, "Right turn must update the left-stick reference to the player's new front");
+    require(turnedYaw < -1.2f, "Camera must follow the completed right turn");
+    require(view.travelYaw < -2.5f, "Held right must request the new right after completing the previous turn");
+    view.update(true, turnedYaw, Vector3(0, 1, 0), Vector3(0), 0.01f);
     require(view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(turnedYaw)) > 0.999f,
-            "Forward after turning must follow the new front without releasing the stick");
-    view.update(true, turnedYaw, Vector3(1, 0, 0), Vector3(0), 0.01f);
-    require(training::angle(view.bodyYaw - turnedYaw) < -0.02f &&
-            view.movement(Vector3(1, 0, 0)).GetDotProduct(training::forward(view.bodyYaw)) > 0.999f,
-            "Held right must keep turning to the new right and move along the body's updated front");
-    const float straightYaw = view.bodyYaw;
+            "Forward after turning must follow the new front without a neutral gap");
     for (int i = 0; i < 200; ++i)
       view.update(true, turnedYaw + std::sin(i * 0.1f) * 0.2f, Vector3(0, 1, 0), Vector3(0), 0.01f);
-    require(std::fabs(training::angle(view.bodyYaw - straightYaw)) < 0.0001f,
-            "Forward after a turn must keep a straight line despite torso sway");
+    require(std::fabs(training::angle(view.bodyYaw - turnedYaw)) < 0.0001f,
+            "Forward after a turn must remain straight despite torso sway");
     view.update(true, turnedYaw, Vector3(0, 1, 0), Vector3(-1, 0, 0), 0.25f);
-    require(view.headYaw > 0.4f && view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(straightYaw)) > 0.999f,
-            "Head look after a turn must remain independent of the new movement front");
+    require(view.headYaw > 0.4f && view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(turnedYaw)) > 0.999f,
+            "Head look must remain independent of the new front");
     view.reset(0);
-    for (int i = 0; i < 75; ++i)
-      view.update(true, training::pi * 0.5f * i / 75, Vector3(-1, 0, 0), Vector3(0), 0.01f);
-    require(view.bodyYaw > 1.2f && view.movement(Vector3(-1, 0, 0)).coords[1] > 0.9f,
-            "Left turns must update the reference symmetrically");
+    view.update(true, 0, Vector3(-1, 0, 0), Vector3(0), 0.01f);
+    require(view.movement(Vector3(-1, 0, 0)).coords[1] > 0.99f, "Left must request the mirror of right");
+    view.reset(0);
+    view.update(true, 0, Vector3(0, -1, 0), Vector3(0), 0.01f);
+    require(view.movement(Vector3(0, -1, 0)).coords[0] < -0.99f,
+            "Down must immediately request behind, never positive forward motion");
+    for (int i = 1; i <= 100; ++i)
+      view.update(true, -training::pi * i / 100, Vector3(0, -1, 0), Vector3(0), 0.01f);
+    require(view.bodyYaw < -2.8f, "Camera must follow the actual backwards turn");
+    require(view.movement(Vector3(0, -1, 0)).coords[0] > 0.9f,
+            "Held down must request behind the new front after the first reversal");
+    const float reverseFront = view.bodyYaw;
+    view.update(true, reverseFront, Vector3(0, 1, 0), Vector3(0), 0.01f);
+    require(view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(reverseFront)) > 0.999f,
+            "Up after down must keep the newly reversed front");
     view.reset(training::pi - 0.005f);
     view.update(true, -training::pi + 0.1f, Vector3(-1, 0, 0), Vector3(0), 0.01f);
-    require(view.bodyYaw < 0 && std::fabs(training::angle(view.bodyYaw - (training::pi - 0.005f))) <= 0.0211f,
-            "Movement reference must cross the yaw seam without a full rotation");
+    require(view.bodyYaw < 0 && std::fabs(training::angle(view.bodyYaw - (training::pi - 0.005f))) <= 0.06f,
+            "Camera must cross the yaw seam without a full rotation");
     view.reset(0);
-    view.update(true, 0, Vector3(1, 0, 0), Vector3(0), 0.01f);
-    require(std::fabs(view.bodyYaw) <= 0.0211f, "A full right input must not spin ahead of the turn animations");
     for (int i = 0; i < 200; ++i)
       view.update(true, 0, Vector3(1, 0, 0), Vector3(0), 0.01f);
-    require(view.bodyYaw >= -0.3501f && view.bodyYaw < -0.3f,
-            "A pending turn animation must limit the camera's lead over the actual body");
+    require(std::fabs(view.bodyYaw) < 0.001f && view.travelYaw < -1.5f,
+            "A pending turn must move its target without spinning the camera ahead of the body");
+    view.reset(0);
+    view.update(true, 0, Vector3(0, -1, 0), Vector3(0), 0.01f);
+    for (int i = 0; i < 150; ++i)
+      view.update(true, -training::pi, Vector3(0, -1, 0), Vector3(0), 0.01f, 2.1f, 1.3f, false);
+    require(view.movement(Vector3(0, -1, 0)).coords[0] < -0.99f,
+            "A held reversal must finish its ball touch before asking for another reversal");
     const auto quick = training::shot(std::pow(training::shotCharge(250), 0.6f), 0.7f, false, false);
+    require(training::turnSpeed(5, -1, 5) == 1.8f, "A reversal must brake while the ball is travelling away");
+    require(training::turnSpeed(5, 1, 5) == 5 && training::turnSpeed(5, -1, 0) == 5,
+            "Forward travel and a stationary-ball reversal must retain their requested speed");
+    require(training::turnSpeed(0.8f, -1, 5) == 0.8f, "Turn braking must not increase a partial stick's speed");
     require(quick.elevation > 0.17f && quick.speed > 23, "A quarter-second shot must already gain height and useful power");
     require(training::shotCharge(520) == 1 && training::shotCharge(0) == 0, "Shot charge must saturate at 520 ms and reject negative charge");
     require(training::controlQuality("left_foot") < training::controlQuality("right_foot"), "Weak-foot control must be lower than dominant-foot control");

@@ -148,9 +148,10 @@ def dribble_phase(name, buttons, milliseconds):
     for button in reversed(buttons):
         key(button, False)
     check_possession(name, samples)
-    distance = math.dist(origin, samples[-1]["player"])
+    points = [origin] + [f["player"] for f in samples]
+    distance = sum(math.dist(a, b) for a, b in zip(points, points[1:]))
     if distance < 0.5:
-        raise AssertionError(f"{name}: player was stuck, displacement {distance:.2f} m")
+        raise AssertionError(f"{name}: player was stuck, travelled path {distance:.2f} m")
     return samples
 
 def angle(value):
@@ -350,8 +351,11 @@ try:
         turn_origin = frames()[-1]
         right_first = advance(700)
         right_second = advance(700)
-        first_turn = angle(body_yaw(right_first[-1]) - body_yaw(turn_origin))
-        next_turn = angle(body_yaw(right_second[-1]) - body_yaw(right_first[-1]))
+        def signed_turn(origin, samples):
+            headings = [body_yaw(origin)] + [body_yaw(f) for f in samples]
+            return sum(angle(b - a) for a, b in zip(headings, headings[1:]))
+        first_turn = signed_turn(turn_origin, right_first)
+        next_turn = signed_turn(right_first[-1], right_second)
         check("held right keeps turning relative to new front", first_turn < -0.3 and next_turn < -0.3,
               f"Successive right-turn angles {first_turn:.2f}/{next_turn:.2f} rad")
         check_possession("continuous relative turn retains ball", right_first + right_second)
@@ -383,6 +387,38 @@ try:
         check("idle RT does not turn player toward goal", abs(idle_turn) < 0.4 and
               math.dist(rt_idle_origin["player"], rt_idle[-1]["player"]) < 0.3,
               f"Idle RT changed actual body heading {idle_turn:.2f} rad; no automatic goal-facing turn")
+        reset()
+        back_origin = frames()[-1]
+        key("s", True)
+        backwards = advance(500)
+        ahead, sideways = travel(back_origin, backwards)
+        check("down moves behind the current front", ahead < -0.25,
+              f"First 500 ms backwards travel {ahead:.2f} m; side {sideways:.2f} m")
+        back_turns = backwards + advance(2200)
+        headings = [body_yaw(back_origin)] + [body_yaw(f) for f in back_turns]
+        turned = sum(abs(angle(b - a)) for a, b in zip(headings, headings[1:]))
+        repeats = [int(t) for t in re.findall(r"TRAINING_STEER_REPEAT t=(\d+)", log_path.read_text())
+                   if back_origin["t"] <= int(t) <= back_turns[-1]["t"]]
+        check("held down reverses relative to each new front", turned > 4.7 and len(repeats) >= 1,
+              f"Body/camera turned {turned:.2f} rad; {len(repeats)} completed turns requested a new behind while down stayed held")
+        check_possession("repeated backward turns retain ball", back_turns)
+        key("w", True); key("s", False)
+        wait_for(lambda: frames()[-1]["move"] == [0.0, 1.0])
+        back_forward_origin = frames()[-1]
+        after_back = advance(1200)
+        ahead, sideways = travel(back_forward_origin, after_back)
+        check("up follows the front after backward turns", ahead > 2 and abs(sideways) < 0.25 * ahead + 0.15,
+              f"New forward/side travel {ahead:.2f}/{sideways:.2f} m")
+        check_possession("forward after backwards retains ball", after_back)
+        key("w", False)
+        advance(500)
+        timing_origin = frames()[-1]
+        timing = advance(5000)
+        simulation_ms = timing[-1]["t"] - timing_origin["t"]
+        real_ms = timing[-1]["wall_ms"] - timing_origin["wall_ms"]
+        ratio = simulation_ms / real_ms
+        check("simulation keeps real-time pace", 0.85 < ratio < 1.15,
+              f"{simulation_ms} ms simulation / {real_ms} ms monotonic clock; ratio {ratio:.3f}")
         reset()
         key("k", True)
         wait_for(lambda: frames()[-1]["shot_active"] and frames()[-1]["action_mode"] == 2 and frames()[-1]["charge_ms"] >= 100)

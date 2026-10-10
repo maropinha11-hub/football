@@ -9,6 +9,7 @@
 
 #include "types/singleton.hpp"
 #include "types/lockable.hpp"
+#include <cstdint>
 
 namespace blunted {
 
@@ -27,7 +28,7 @@ namespace blunted {
     protected:
       Lockable<bool> quit;
       unsigned long startTime_ms;
-      boost::posix_time::ptime startTime;
+      uint64_t startCounter, counterFrequency;
 
   };
 

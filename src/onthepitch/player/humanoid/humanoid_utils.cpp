@@ -311,6 +311,28 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   powerMultiplier = 1.0f * (1.0f - veloBias) + powerMultiplier * veloBias;
 
   Vector3 touchVec = direction * power * powerMultiplier + Vector3(0, 0, height);
+  Match *practice = player->GetTeam()->GetMatch();
+  Vector3 cutDirection = currentAnim->originatingCommand.desiredDirection.Get2D().GetNormalized(0);
+  float cutIntentSpeed = currentAnim->originatingCommand.desiredVelocityFloat;
+  if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() && player->GetExternalController()) {
+    cutDirection = player->GetExternalController()->GetDirection().Get2D().GetNormalized(0);
+    cutIntentSpeed = player->GetExternalController()->GetFloatVelocity();
+  }
+  if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() &&
+      cutIntentSpeed > 0.1f &&
+      (ball->GetMovement().Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f ||
+       touchVec.Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f)) {
+    // Apply the cut at the accepted foot contact. The old planned end
+    // position can still be behind this touch while the next step turns
+    // around; sending the ball there makes the player leave it behind.
+    // This changes its impulse, never its position or its free flight.
+    const float cutSpeed = std::min(2.5f, cutIntentSpeed);
+    const Vector3 cut = cutDirection * cutSpeed;
+    touchVec.coords[0] = cut.coords[0];
+    touchVec.coords[1] = cut.coords[1];
+    if (GetConfiguration()->GetBool("training_telemetry", false))
+      printf("TRAINING_TURN_TOUCH speed=%.4f\n", cutSpeed);
+  }
   if (TrainingEnabled()) {
     const float weakness = 1 - training::controlQuality(currentAnim->anim->GetVariable("touch_bodypart"));
     // Keep the original gait, reach and touch power. A small retained momentum

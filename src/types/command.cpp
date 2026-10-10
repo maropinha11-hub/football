@@ -26,11 +26,14 @@ namespace blunted {
   bool Command::Handle(void *caller) {
     bool result = Execute(caller);
 
-    boost::mutex::scoped_lock lock(mutex);
-    handled = true;
-    //lock.unlock(); // http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
-    // edit: disabled, just to be sure no obscure bugs occur.
-    processed.notify_one();
+    {
+      boost::mutex::scoped_lock lock(mutex);
+      handled = true;
+      processed.notify_one();
+    }
+    // Publish readiness before waking the scheduler. Release this mutex
+    // first: the scheduler holds its own mutex while checking IsReady().
+    OnComplete();
 
     return result;
   }

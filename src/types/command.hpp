@@ -30,6 +30,7 @@ namespace blunted {
 
     protected:
       virtual bool Execute(void *caller = NULL) = 0;
+      virtual void OnComplete() {}
 
       boost::mutex mutex; // locks 'handled & processed'
       bool handled;

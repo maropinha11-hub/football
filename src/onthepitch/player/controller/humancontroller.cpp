@@ -536,6 +536,11 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still
+    if (TrainingEnabled() && match->IsFirstPerson() && match->TrainingHasBall()) {
+      const Vector3 ballMovement = match->GetBall()->GetMovement().Get2D();
+      rawInputVelocityFloat = training::turnSpeed(rawInputVelocityFloat,
+          ballMovement.GetNormalized(0).GetDotProduct(rawInputDirection), ballMovement.GetLength());
+    }
   }
 
   if (GetLastSwitchBias() > 0.0f) {

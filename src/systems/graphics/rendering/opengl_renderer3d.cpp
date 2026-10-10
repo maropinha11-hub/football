@@ -65,7 +65,7 @@ struct GLfunctions {
 
   GLfunctions mapping;
 
-  OpenGLRenderer3D::OpenGLRenderer3D() : context(0), contextIsActive(true) {
+  OpenGLRenderer3D::OpenGLRenderer3D(int interval) : swapInterval(interval), context(0), contextIsActive(true) {
     FOV = 45;
     overallBrightness = 128;
 
@@ -359,7 +359,11 @@ struct GLfunctions {
 
 //#ifdef WIN32
     // SDL subsystems must be initialized before setting attributes
-    SDL_Init(SDL_INIT_VIDEO);
+#ifdef WIN32
+    // The simulation uses 10 ms steps; request timer precision explicitly.
+    SDL_SetHint(SDL_HINT_TIMER_RESOLUTION, "1");
+#endif
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -476,7 +480,7 @@ struct GLfunctions {
 
 #ifdef WIN32
     // SDL selects the platform-specific WGL/GLX implementation for us.
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(swapInterval);
 #endif
 
 #ifdef __linux__

@@ -13,16 +13,17 @@ namespace blunted {
 
   EnvironmentManager::EnvironmentManager() {
     quit.SetData(false);
-    startTime = boost::posix_time::microsec_clock::local_time();
+    startCounter = SDL_GetPerformanceCounter();
+    counterFrequency = SDL_GetPerformanceFrequency();
   };
 
   EnvironmentManager::~EnvironmentManager() {
   };
 
   unsigned long EnvironmentManager::GetTime_ms() {
-    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-    boost::posix_time::time_duration msdiff = now - startTime;
-    return msdiff.total_milliseconds();
+    const Uint64 elapsed = SDL_GetPerformanceCounter() - startCounter;
+    return static_cast<unsigned long>((elapsed / counterFrequency) * 1000 +
+        (elapsed % counterFrequency) * 1000 / counterFrequency);
   }
 
   void EnvironmentManager::Pause_ms(int duration) {
