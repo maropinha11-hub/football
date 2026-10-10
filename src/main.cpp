@@ -54,6 +54,23 @@ boost::shared_ptr<TaskSequence> gameSequence;
 boost::shared_ptr<GameTask> gameTask;
 boost::shared_ptr<MenuTask> menuTask;
 
+// Preserve the original phase order in one worker dispatch. Five separate
+// dispatch/wakeup handoffs for every 10 ms tick waste CPU and Windows kernel
+// waits; none of these phases depends on a parallel task between them.
+class TrainingSimulationTask : public IUserTask {
+ public:
+  void GetPhase() override {}
+  void PutPhase() override {}
+  std::string GetName() const override { return "TrainingSimulation"; }
+  void ProcessPhase() override {
+    menuTask->GetPhase();
+    menuTask->ProcessPhase();
+    menuTask->PutPhase();
+    gameTask->GetPhase();
+    gameTask->ProcessPhase();
+  }
+};
+
 boost::intrusive_ptr<Geometry> greenPilon;
 boost::intrusive_ptr<Geometry> bluePilon;
 boost::intrusive_ptr<Geometry> yellowPilon;
@@ -461,20 +478,17 @@ int main(int argc, const char** argv) {
 
   gameSequence = boost::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 
-  // note: the whole locking stuff is now happening from within some of the code, iirc, 't is all very ugly and unclear. sorry
+  if (TrainingEnabled()) {
+    boost::shared_ptr<IUserTask> simulation(new TrainingSimulationTask());
+    gameSequence->AddUserTaskEntry(simulation, e_TaskPhase_Process);
+  } else {
+    gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Get);
+    gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Process);
+    gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Put);
 
-  //gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Lock);   // ---------- lock -----
-
-  gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Get);
-  gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Process);
-  gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Put);
-
-  //gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Unlock); // ---------- unlock ---
-
-  gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Get);
-  gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Process);
-
-//  gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Unlock); // ---------- unlock ---
+    gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Get);
+    gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Process);
+  }
 
   GetScheduler()->RegisterTaskSequence(gameSequence);
 

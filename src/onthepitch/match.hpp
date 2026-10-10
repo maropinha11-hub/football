@@ -112,6 +112,7 @@ class Match {
     void Exit();
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void ProcessTraining();
+    void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
     bool TrainingHasBall() const { return trainingView.withBall; }
@@ -266,6 +267,8 @@ class Match {
     unsigned int trainingPreviousButtons = 0;
     unsigned int trainingGoals = 0;
     unsigned long trainingResetAt_ms = 0;
+    unsigned long trainingKnockOnUntil_ms = 0;
+    unsigned long trainingPaceWall_ms = 0, trainingPaceSim_ms = 0;
     std::atomic<int> trainingCameraMode{2};
     training::View trainingView;
     Vector3 trainingEyePosition;

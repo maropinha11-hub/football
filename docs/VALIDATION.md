@@ -12,7 +12,7 @@ threads. O pacote Windows x64 foi compilado com MinGW GCC 14.2 e vcpkg.
   controle SDL virtual Xbox, direção para trás, direção relativa à nova
   frente, olhar independente, carga de chute, colisões e prontidão antes
   da notificação de conclusão, também após reutilizar o comando.
-- Jogo real renderizado: 65 verificações aprovadas, nenhuma ignorada.
+- Jogo real renderizado: 78 verificações aprovadas, nenhuma ignorada.
   Usa os valores do pacote, reduzindo a resolução e começando com câmera
   externa para os primeiros exercícios.
 - Recursos: 509 arquivos originais conferidos por hash, além do shader
@@ -23,12 +23,35 @@ threads. O pacote Windows x64 foi compilado com MinGW GCC 14.2 e vcpkg.
 - Capturas de frente, visão para baixo e câmera externa inspecionadas.
 
 Relatório: [validation-firstperson.json](validation-firstperson.json).
-Execução: `7b4424de-39eb-4b0e-91d2-190d24513eff`. Cada tentativa registra um identificador novo e
+Execução: `1cb78dfb-404a-4f75-aa58-63e1ea5f2a01`. Cada tentativa registra um identificador novo e
 seu resultado; este relatório corresponde à execução final aprovada.
 
-SHA-256 do ZIP: `44f53f1588d9f12e00bf1b77a9229767c2dbcee000120f872d113dfeb4a33552`.
+SHA-256 do ZIP: `ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443`.
 
 ## Correções verificadas
+
+O buffer permite preparar passe, enfiada e chute antes da chegada da bola.
+A primeira ação registrada nos exercícios recebidos é o passe/chute pedido,
+sem contato intermediário de domínio. Cabeceios de passe e finalização foram
+registrados antes do quique, com primeiro contato da cabeça a 1,63 m. A
+seleção também considera os gestos originais de cabeceio parado e com salto;
+a potência do cabeceio respeita a animação original.
+
+A curva durante a corrida com RB+RT conserva a assistência ao toque adiantado.
+O teste mantém RT por 5,2 segundos em linha reta e depois exercita sua entrada
+em uma corrida existente, uma curva de 2,5 segundos e a recuperação ao soltar
+RT. Após a curva, a bola ficou a 0,58 m do jogador, sem reset. A janela de
+recuperação começa somente em um contato real; passe, chute ou contato comum
+a encerram. Soltar o analógico pede frenagem no próximo contato real do pé
+para que o passo anterior não renove uma condução sem entrada.
+
+A simulação do treino executa cinco fases ordenadas em um despacho por passo,
+e tarefas já prontas dispensam esperas temporizadas do agendador. O passo
+físico e a duração das animações continuam em 10 ms. Foram medidos 5.000 ms
+simulados em 5.000 ms reais, e 2.500 ms em 2.500 ms durante curva com RB+RT.
+O log registra a relação de tempo a cada cinco segundos reais. Essas são
+medidas do runtime Linux; o desempenho no hardware Windows depende do teste
+local do usuário.
 
 Com bola, baixo pede a direção atrás do jogador imediatamente ao
 controlador. O alvo fica estável durante o giro. Manter uma direção pede
@@ -63,68 +86,81 @@ com o relógio real, sem mudar a velocidade da bola ou das animações.
 | Verificação | Evidência |
 | --- | --- |
 | rendered game startup | Native simulation emitted live frames |
-| walking and dribbling | Player moved 7.14 m |
-| walking retains ball | Ball distance max/end 0.61/0.56 m; controlled 15/15 frames |
+| walking and dribbling | Player moved 6.65 m |
+| walking retains ball | Ball distance max/end 0.60/0.57 m; controlled 15/15 frames |
 | animation playback | Original animation frames advanced |
 | release and deceleration | Stopped speed 0.000 m/s |
-| sprinting | Walk 5.00, sprint 7.72 m/s |
-| sprinting retains ball | Ball distance max/end 0.98/0.75 m; controlled 16/16 frames |
-| short pass | Functions [1, 4]; ball speed 24.82 m/s |
-| through pass | Functions [1, 5]; ball speed 24.82 m/s |
-| high pass | Functions [1, 6]; ball speed 20.66 m/s |
-| shot | Functions [1, 8]; ball speed 33.44 m/s |
-| aerial physics | Peak height 3.93 m |
-| super cancel free movement | Player moved away from incoming ball to x=-15.10 m |
+| sprinting | Walk 5.00, sprint 7.74 m/s |
+| sprinting retains ball | Ball distance max/end 0.98/0.74 m; controlled 16/16 frames |
+| short pass | Functions [1, 4]; ball speed 25.04 m/s |
+| through pass | Functions [1, 5]; ball speed 25.49 m/s |
+| high pass | Functions [1, 6]; ball speed 30.66 m/s |
+| shot | Functions [1, 8]; ball speed 31.85 m/s |
+| aerial physics | Peak height 3.94 m |
+| super cancel free movement | Player moved away from incoming ball to x=-14.94 m |
 | off-ball sliding | Functions [1, 13] |
-| finishing exercise | Player starts at x=29.60 m |
+| finishing exercise | Player starts at x=30.25 m |
 | goal detection | Goal counter 0 -> 1 |
-| automatic ball reset | Ball returned to x=30.24 m |
-| charged shot elevation | Light (22.9325, 0.4749), charged (33.8514, 6.2843) (speed, height); delivered charge {'light': 120, 'quick': 410, 'charged': 520, 'chip': 520} |
-| quick shot elevation | Target 250 ms, delivered 410 ms; shot (31.2757, 4.1715) (speed, height) |
-| LB chip trajectory | Chip (22.0, 10.181); charged (33.8514, 6.2843) |
-| free kick exercise | Player starts at [27.742, -7.9704, 0.0] |
+| automatic ball reset | Ball returned to x=30.65 m |
+| charged shot elevation | Light (23.4934, 0.5426), charged (33.4431, 6.283) (speed, height); delivered charge {'light': 130, 'quick': 410, 'charged': 520, 'chip': 520} |
+| quick shot elevation | Target 250 ms, delivered 410 ms; shot (31.6297, 4.1723) (speed, height) |
+| LB chip trajectory | Chip (21.2769, 10.1825); charged (33.4431, 6.283) |
+| free kick exercise | Player starts at [28.2396, -7.929, 0.0] |
 | first person camera | Camera switches to first person |
-| head free look with ball | Head yaw -0.94, player stays still |
-| gradual head recenter | Head magnitude 1.16 -> 0.10 rad after input release |
-| head look does not steer dribbling | Player delta [4.6111, -0.0615]; head turns independently |
-| straight dribbling | Forward/side displacement [7.305400000000001, 0.0923] m |
-| straight movement retains ball | Ball distance max/end 0.61/0.39 m; controlled 17/17 frames |
-| held right keeps turning relative to new front | Successive right-turn angles -1.19/-1.35 rad |
-| continuous relative turn retains ball | Ball distance max/end 0.73/0.73 m; controlled 14/14 frames |
-| forward follows new front after turn | New front -2.78 rad; forward/side travel 5.89/0.44 m |
-| new forward retains ball | Ball distance max/end 0.50/0.40 m; controlled 12/12 frames |
-| RT preserves new forward direction | RT forward/side travel 5.19/-0.29 m; speed 4.32 m/s |
-| RT after turn retains ball | Ball distance max/end 0.47/0.46 m; controlled 12/12 frames |
-| idle RT does not turn player toward goal | Idle RT changed actual body heading 0.01 rad; no automatic goal-facing turn |
-| down moves behind the current front | First 500 ms backwards travel -0.62 m; side -0.02 m |
-| held down reverses relative to each new front | Body/camera turned 8.79 rad; 3 completed turns requested a new behind while down stayed held |
-| repeated backward turns retain ball | Ball distance max/end 0.63/0.52 m; controlled 27/27 frames |
-| up follows the front after backward turns | New forward/side travel 4.02/-0.53 m |
-| forward after backwards retains ball | Ball distance max/end 0.78/0.39 m; controlled 12/12 frames |
-| simulation keeps real-time pace | 5000 ms simulation / 5001 ms monotonic clock; ratio 1.000 |
+| head free look with ball | Head yaw -0.97, player stays still |
+| gradual head recenter | Head magnitude 1.11 -> 0.11 rad after input release |
+| head look does not steer dribbling | Player delta [4.4654, 0.0]; head turns independently |
+| straight dribbling | Forward/side displacement [7.898899999999999, 0.0] m |
+| straight movement retains ball | Ball distance max/end 0.83/0.39 m; controlled 17/17 frames |
+| held right keeps turning relative to new front | Successive right-turn angles -1.21/-1.31 rad |
+| continuous relative turn retains ball | Ball distance max/end 0.67/0.67 m; controlled 14/14 frames |
+| forward follows new front after turn | New front -2.84 rad; forward/side travel 5.87/0.36 m |
+| new forward retains ball | Ball distance max/end 0.57/0.39 m; controlled 12/12 frames |
+| RT preserves new forward direction | RT forward/side travel 5.28/-0.29 m; speed 4.13 m/s |
+| RT after turn retains ball | Ball distance max/end 0.46/0.45 m; controlled 12/12 frames |
+| idle RT does not turn player toward goal | Idle RT changed actual body heading -0.02 rad; no automatic goal-facing turn |
+| down moves behind the current front | First 500 ms backwards travel -0.38 m; side -0.06 m |
+| held down reverses relative to each new front | Body/camera turned 9.00 rad; 2 completed turns requested a new behind while down stayed held |
+| repeated backward turns retain ball | Ball distance max/end 0.59/0.30 m; controlled 27/27 frames |
+| up follows the front after backward turns | New forward/side travel 4.46/0.31 m |
+| forward after backwards retains ball | Ball distance max/end 0.68/0.39 m; controlled 12/12 frames |
+| simulation keeps real-time pace | 5000 ms simulation / 5000 ms monotonic clock; ratio 1.000 |
 | reset cancels buffered shot | Functions [1]; no stale shot after reset |
-| forward before turns retains ball | Ball distance max/end 0.83/0.38 m; controlled 12/12 frames |
-| left turn retains ball | Ball distance max/end 0.87/0.63 m; controlled 12/12 frames |
-| right reversal retains ball | Ball distance max/end 0.75/0.72 m; controlled 16/16 frames |
-| backward turn retains ball | Ball distance max/end 0.49/0.49 m; controlled 12/12 frames |
-| stopping after turns retains ball | Ball distance max/end 0.36/0.36 m; controlled 7/7 frames |
+| forward before turns retains ball | Ball distance max/end 0.83/0.37 m; controlled 12/12 frames |
+| left turn retains ball | Ball distance max/end 0.90/0.57 m; controlled 12/12 frames |
+| right reversal retains ball | Ball distance max/end 0.77/0.64 m; controlled 16/16 frames |
+| backward turn retains ball | Ball distance max/end 0.53/0.34 m; controlled 12/12 frames |
+| stopping after turns retains ball | Ball distance max/end 0.47/0.42 m; controlled 7/7 frames |
 | stopping after turns releases movement | Stopped speed 0.000 m/s |
-| restart after turns retains ball | Ball distance max/end 0.54/0.37 m; controlled 18/18 frames |
+| restart after turns retains ball | Ball distance max/end 0.53/0.40 m; controlled 18/18 frames |
 | turning uses original ball-control animations | Functions [1, 2] |
-| close control diagonal retains ball | Ball distance max/end 0.47/0.45 m; controlled 22/22 frames |
-| close control reversal retains ball | Ball distance max/end 0.60/0.36 m; controlled 16/16 frames |
-| first person sprint retains ball | Ball distance max/end 0.99/0.69 m; controlled 25/25 frames |
-| original knock-on and recovery | Long-touch distance max 1.95 m; recovered to 0.66 m after releasing RT |
-| pass releases possession | Ball distance 21.87 m |
+| close control diagonal retains ball | Ball distance max/end 0.45/0.40 m; controlled 22/22 frames |
+| close control reversal retains ball | Ball distance max/end 0.54/0.29 m; controlled 16/16 frames |
+| first person sprint retains ball | Ball distance max/end 0.99/0.70 m; controlled 25/25 frames |
+| original knock-on and recovery | Long-touch distance max 2.17 m; recovered to 0.57 m after releasing RT |
+| sprint knock-on turns retain control | Turning with RB+RT: distance max 2.10 m, controlled 25/25 frames |
+| simulation pace during sprint knock-on turns | 2500 ms simulation / 2500 ms real; ratio 1.000 |
+| knock-on turn recovers without reset | Recovered to 0.58 m after turning and releasing RT |
+| pass releases possession | Ball distance 21.62 m |
 | off ball idle does not chase | Idle displacement 0.000 m; speed 0.000 m/s |
-| off ball movement is free after pass | Sideways displacement 4.09 m without super cancel |
-| manual approach recovers passed ball | Recovered in 8.9 s; ball distance 0.41 m; functions [1, 2] |
-| off ball FPS turning | Yaw changed -0.65 rad without ball |
-| first person forward movement | Player moved 2.90 m |
-| front stadium remains visible | Central distant roof covers 99.9% of inspection band |
+| off ball movement is free after pass | Sideways displacement 3.74 m without super cancel |
+| manual approach recovers passed ball | Recovered in 8.4 s; ball distance 0.39 m; functions [1, 2] |
+| off ball FPS turning | Yaw changed -0.71 rad without ball |
+| first person forward movement | Player moved 3.06 m |
+| headed pass before bounce accepts early input | Action buffered with ball 5.29 m away |
+| headed pass before bounce | First contact head / function 4 at z=1.6313 m; peak speed 19.43 m/s |
+| headed shot before bounce accepts early input | Action buffered with ball 5.13 m away |
+| headed shot before bounce | First contact head / function 8 at z=1.6313 m; peak speed 27.21 m/s |
+| first-time short pass accepts early input | Action buffered with ball 5.62 m away |
+| first-time short pass | First contact left_foot / function 4 at z=0.1100 m; peak speed 29.47 m/s |
+| first-time through pass accepts early input | Action buffered with ball 5.66 m away |
+| first-time through pass | First contact right_foot / function 5 at z=0.1100 m; peak speed 24.32 m/s |
+| first-time shot accepts early input | Action buffered with ball 5.86 m away |
+| first-time shot | First contact left_foot / function 8 at z=0.1100 m; peak speed 29.99 m/s |
+| front stadium remains visible | Central distant roof covers 100.0% of inspection band |
 | ball stays above turf | Minimum ball center 0.110 m |
-| finite physics state | 1349 live samples are finite |
-| rendered foot contact correction | 95 rendered foot corrections; median error 0.269 -> 0.143 m |
+| finite physics state | 1616 live samples are finite |
+| rendered foot contact correction | 74 rendered foot corrections; median error 0.187 -> 0.093 m |
 | external camera restoration | First person cycles back to external view |
 | clean shutdown | Exit status 0 |
 

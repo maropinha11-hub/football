@@ -6,7 +6,7 @@
 #include <cstdio>
 
 void Match::ResetTraining(int exercise, bool ballAtPlayer) {
-  trainingExercise = clamp(exercise, 0, 4);
+  trainingExercise = clamp(exercise, 0, 5);
   Player *player = designatedPossessionPlayer;
   Vector3 position = ballAtPlayer ? player->GetPosition().Get2D() : Vector3(0, 0, 0);
   if (!ballAtPlayer && exercise == 2) position = Vector3(30, 0, 0);
@@ -20,6 +20,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   ballIsInGoal = false;
   lastGoalScorer = 0;
   trainingResetAt_ms = 0;
+  trainingKnockOnUntil_ms = 0;
   lastTouchTeamID = -1;
   for (unsigned int i = 0; i < e_TouchType_SIZE; ++i) lastTouchTeamIDs[i] = -1;
   teams[0]->ResetSituation(ballPosition);
@@ -31,8 +32,14 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   player->RelaxFatigue(1.0f);
   ball->ResetSituation(ballPosition);
   if (exercise == 3) {
-    ball->SetPosition(position + Vector3(8, 0, 3.5f));
+    // Arrive at heading height before the first bounce, within a real
+    // standing/jumping header's reach rather than landing metres away.
+    ball->SetPosition(position + Vector3(5.5f, 0, 3.5f));
     ball->SetMomentum(Vector3(-5.0f, 0, 3.0f));
+  }
+  if (exercise == 5) {
+    ball->SetPosition(position + Vector3(8, 0, 0.11f));
+    ball->SetMomentum(Vector3(-6.0f, 0, 0));
   }
   bestPossessionTeamID = 0;
   inPlay = true;
@@ -42,10 +49,18 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   resetNetting = true;
   trainingView.reset(std::atan2(direction.coords[1], direction.coords[0]));
   trainingEyeInitialized = false;
-  const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta"};
+  const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta", "Passe recebido"};
   SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | F2: trazer bola", 4000);
   printf("TRAINING_RESET exercise=%d\n", exercise);
   fflush(stdout);
+}
+
+void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
+  if (!TrainingEnabled()) return;
+  // Only a real knock-on contact starts recovery. Passing/shooting, an
+  // ordinary control touch, and resets release it immediately.
+  trainingKnockOnUntil_ms = knockOn &&
+      (function == e_FunctionType_BallControl || function == e_FunctionType_Trap) ? actualTime_ms + 1600 : 0;
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
@@ -67,8 +82,11 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   // Hysteresis keeps the head/body mode from flickering between individual dribble touches.
   // A sprint is about 8 m/s: allow a small margin when approaching a still
   // ball, so the original reception assistance engages before body contact.
-  const bool controlled = delta.Get2D().GetLength() < (trainingView.withBall ? 2.3f : 1.5f) &&
+  const bool closeControl = delta.Get2D().GetLength() < (trainingView.withBall ? 2.3f : 1.5f) &&
       delta.coords[2] < (trainingView.withBall ? 1.4f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
+  const bool recoveringKnockOn = trainingKnockOnUntil_ms > actualTime_ms &&
+      delta.Get2D().GetLength() < 5.0f && delta.coords[2] < 1.4f && relativeSpeed < 12.0f;
+  const bool controlled = closeControl || recoveringKnockOn;
   // Locomotion heading reflects where the feet are actually travelling.
   // A torso can anticipate the next touch while the current step is still
   // moving elsewhere; using that pose here makes forward drift after a turn.
@@ -148,6 +166,7 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_r)) ResetTraining(trainingExercise);
   if (keyOnce(SDLK_F2)) ResetTraining(trainingExercise, true);
   if (keyOnce(SDLK_F3) || keyOnce(SDLK_5)) ResetTraining(4);
+  if (keyOnce(SDLK_6)) ResetTraining(5);
   for (int exercise = 0; exercise < 4; ++exercise) {
     if (keyOnce(SDLK_1 + exercise)) ResetTraining(exercise);
   }
@@ -182,11 +201,14 @@ void Match::ProcessTraining() {
       if (events.GetControllerButton(slot, shortcuts[i])) buttons |= mask;
       if ((buttons & mask) && !(trainingPreviousButtons & mask)) {
         if (i == 4) trainingCameraMode = (trainingCameraMode + 1) % 3;
-        else ResetTraining(i == 2 && input->GetButton(e_ButtonFunction_Switch) ? 4 : i);
+        else ResetTraining(input->GetButton(e_ButtonFunction_Switch) ?
+                           (i == 2 ? 4 : (i == 1 ? 5 : i)) : i);
       }
     }
   }
   trainingPreviousButtons = buttons;
+
+  if (pause) trainingPaceWall_ms = 0;
 
   if (!pause) {
     if (trainingResetAt_ms && actualTime_ms >= trainingResetAt_ms) ResetTraining(trainingExercise);
@@ -209,6 +231,17 @@ void Match::ProcessTraining() {
     designatedPossessionPlayer->RelaxFatigue(1.0f);
     actualTime_ms += 10;
     matchTime_ms = actualTime_ms;
+
+    const unsigned long wall_ms = EnvironmentManager::GetInstance().GetTime_ms();
+    if (!trainingPaceWall_ms) {
+      trainingPaceWall_ms = wall_ms;
+      trainingPaceSim_ms = actualTime_ms;
+    } else if (wall_ms - trainingPaceWall_ms >= 5000) {
+      const float pace = float(actualTime_ms - trainingPaceSim_ms) / (wall_ms - trainingPaceWall_ms);
+      Log(e_Notice, "Training", "Timing", "Simulation/real time: " + real_to_str(pace) + " (1.0 = real time)");
+      trainingPaceWall_ms = wall_ms;
+      trainingPaceSim_ms = actualTime_ms;
+    }
 
     const Vector3 position = ball->Predict(0);
     bool goal = CheckForGoal(-1) || CheckForGoal(1);
@@ -240,8 +273,8 @@ void Match::ProcessTraining() {
       for (unsigned int i = 0; i < 11; ++i)
         if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
       const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB};
-      for (unsigned int i = 0; i < 11; ++i)
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6};
+      for (unsigned int i = 0; i < 12; ++i)
         if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);

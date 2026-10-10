@@ -26,6 +26,7 @@ com SDL como alternativa. O mapeamento usado no treino é:
 | Menu | Pausar |
 | D-pad | Trocar exercício |
 | LB + D-pad baixo | Cobrança de falta |
+| LB + D-pad direita | Receber passe rasteiro para jogar de primeira |
 | R3 | Câmera |
 
 Primeira pessoa é o modo inicial. R3 alterna entre primeira pessoa, externa
@@ -44,6 +45,17 @@ A condução usa a assistência e os passos originais para acompanhar a bola
 durante curvas e inversões. Após um passe ou chute, o movimento fica livre;
 aproxime-se novamente da bola para retomar o domínio. Ao atualizar, extraia
 o novo ZIP em uma pasta nova e inicie por `run-training.bat`.
+
+Na bola aérea (D-pad esquerda), prepare A para cabecear um passe ou X para
+cabecear uma finalização antes da chegada. O exercício de passe recebido
+(LB + D-pad direita; tecla 6) permite preparar A/Y/X para jogar de primeira.
+RB + RT mantém o acompanhamento do toque adiantado durante a curva e ao
+soltar RT; a bola segue a física normal entre contatos.
+
+O treino reduz as trocas entre tarefas do motor, mantendo o passo de 10 ms.
+Se ainda perceber lentidão, o `log.txt` contém linhas `Training::Timing`:
+uma relação próxima de `1.0` indica tempo real. Esse registro também permite
+distinguir atraso da simulação de baixa frequência de imagem no seu PC.
 
 `training.config` permite ajustar `firstperson_fov`, `firstperson_look_speed`,
 `firstperson_recenter_speed` e `input_analog_deadzone`. O pacote usa

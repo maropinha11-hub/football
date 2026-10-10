@@ -320,11 +320,15 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // especially when a turn cannot immediately use a ball-control animation.
       // Solo training always designates this player, so disable the match AI's
       // interception magnet once the ball is actually out of control.
-      if (!match->TrainingHasBall()) {
+      if (!match->TrainingHasBall() && actionMode != 2) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }
-      if (match->IsFirstPerson() && !match->TrainingHasBall())
+      if (match->TrainingHasBall() && actionMode != 2 && inputVelocityFloat < 0.05f &&
+          (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
+          match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)
+        command.desiredVelocityFloat = idleVelocity;
+      if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
     }
 
@@ -339,7 +343,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
     // super cancel
     if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) {
-      if (!hasBestPossession) {
+      if (!hasBestPossession && !(TrainingEnabled() && match->TrainingHasBall())) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }
@@ -402,6 +406,17 @@ void HumanController::Process() {
 
     if (TrainingEnabled()) {
       possessionContext = (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) < 2.5f) ? 1.0f : -1.0f;
+      // A/X/Y have no useful defensive action in solo practice. Accept the
+      // original two-second action buffer before an incoming ball is close,
+      // so its first contact can be a pass, volley or header. B retains the
+      // defensive slide when no reception is imminent.
+      if (hid->GetButton(e_ButtonFunction_ShortPass) ||
+          hid->GetButton(e_ButtonFunction_LongPass) || hid->GetButton(e_ButtonFunction_Shot))
+        possessionContext = 1.0f;
+      const Vector3 incoming = match->GetBall()->Predict(500) - player->GetPosition();
+      if (match->GetBall()->Predict(0).coords[2] > 1.2f && incoming.Get2D().GetLength() < 2.5f &&
+          incoming.Get2D().GetLength() < (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength())
+        possessionContext = 1.0f;
     }
     if (possessionContext < 0.0f) {
       bool allowPressure = true;

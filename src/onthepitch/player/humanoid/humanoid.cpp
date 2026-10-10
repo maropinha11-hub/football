@@ -386,6 +386,8 @@ void Humanoid::Process() {
     if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (controlledcollision): %f\n", bumpyRideBias);
 
     match->GetBall()->Touch(touchVec);
+    match->NotifyTrainingTouch(e_FunctionType_Trap,
+        (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0);
     match->GetBall()->SetRotation(xRot, yRot, 0, 0.2f * (1.0f - bumpyRideBias)); // 0.9
     match->GetBall()->TriggerBallTouchSound(pow(NormalizedClamp(touchVec.GetLength(), 4.0f, 40.0f), 0.7f));
 
@@ -432,6 +434,12 @@ void Humanoid::Process() {
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
+
+      match->NotifyTrainingTouch(currentAnim->functionType,
+          (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0);
+      if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
+        printf("TRAINING_ACTION_TOUCH t=%lu part=%s function=%d z=%.4f\n", match->GetActualTime_ms(),
+            touchingPart.c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2]);
 
       if (trainingFoot) {
         // The contacting leg targets the actual ball at the animation event.
@@ -1116,7 +1124,6 @@ void Humanoid::SelectRetainAnim() {
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
-
   assert(dataSet.size() != 0);
 
   #ifdef dataSetSortable
@@ -1383,6 +1390,20 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
+  if (TrainingEnabled() && (command.desiredFunctionType == e_FunctionType_Shot ||
+                           command.desiredFunctionType == e_FunctionType_HighPass) &&
+      (match->GetBall()->Predict(0).coords[2] > 1.2f || match->GetBall()->Predict(200).coords[2] > 1.2f)) {
+    // The original shot collection has running headers, but no standing
+    // headers; the passing collection has the missing standing/jumping
+    // motions. Reuse only those original head contacts, with the requested
+    // shot/cross impulse and all the original reach/trajectory checks.
+    CrudeSelectionQuery headerQuery = query;
+    headerQuery.functionType = e_FunctionType_ShortPass;
+    DataSet headers;
+    anims->CrudeSelection(headers, headerQuery);
+    for (int id : headers)
+      if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head") dataSet.push_back(id);
+  }
   //if (command.desiredFunctionType == e_FunctionType_Special) printf("size: %i\n", dataSet.size());
   if (dataSet.size() == 0) {
     if (command.desiredFunctionType == e_FunctionType_Movement) {
@@ -2040,8 +2061,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
   Vector3 desiredMovement = desiredDirection * desiredVelocityFloat;
 
   float playerHeight = player->GetPlayerData()->GetHeight();
-
-  e_FunctionType functionType = StringToFunctionType(anims->GetAnim(*iter)->GetAnimType());
+  e_FunctionType functionType = e_FunctionType_Movement;
 
   radian rotationSmuggle_ret_tmp = 0;
   radian predictedAngle = 0;
@@ -2053,6 +2073,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
   while (iter != sortedDataSet.end() && found == false) {
 
     Animation *anim = anims->GetAnim(*iter);
+    functionType = StringToFunctionType(anim->GetAnimType());
     bool isBase = (anim->GetVariable("baseanim").compare("true") == 0);
 
     const std::vector<Vector3> &origPositionCache = match->GetAnimPositionCache(anim);

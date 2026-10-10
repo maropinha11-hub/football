@@ -35,7 +35,7 @@ held = set()
 # only after the game observes both press and release, not after xdotool exits.
 key_bits = {name: 1 << i for i, name in enumerate([
     "w", "s", "a", "d", "j", "i", "l", "k", "Shift_L", "space", "q",
-    "Left", "Right", "Up", "Down", "r", "1", "2", "3", "4", "5", "Tab"])}
+    "Left", "Right", "Up", "Down", "r", "1", "2", "3", "4", "5", "Tab", "6"])}
 checks = []
 log_path = output / "training-smoke.log"
 run_id = str(uuid.uuid4())
@@ -165,6 +165,30 @@ def travel(frame, samples):
     yaw = body_yaw(frame)
     return (delta[0] * math.cos(yaw) + delta[1] * math.sin(yaw),
             delta[0] * math.sin(yaw) - delta[1] * math.cos(yaw))
+
+def receive(name, exercise, button, function, head=False):
+    previous = log_path.read_text().count("TRAINING_RESET")
+    # Prepare before arrival, without the walking test's settling delay.
+    key(exercise, True)
+    key(exercise, False)
+    wait_for(lambda: log_path.read_text().count("TRAINING_RESET") > previous)
+    start = frames()[-1]["t"]
+    key(button, True)
+    advance(100)
+    key(button, False)
+    samples = advance(2200)
+    observed = [f for f in frames() if f["t"] > start]
+    queued = [f for f in observed if f["action_mode"] == 2]
+    check(name + " accepts early input", queued and math.dist(queued[0]["player"], queued[0]["ball"]) > 2.5,
+          f"Action buffered with ball {math.dist(queued[0]['player'], queued[0]['ball']):.2f} m away" if queued else "No buffered action")
+    touches = [m for m in re.finditer(r"TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+) z=([\d.]+)",
+                                     log_path.read_text()) if int(m[1]) > start]
+    first = touches[0] if touches else None
+    check(name, first is not None and int(first[3]) == function and
+          ((first[2] == "head" and float(first[4]) > 1.3) if head else first[2] in ("left_foot", "right_foot")) and
+          max(f["ball_speed"] for f in observed) > 6,
+          f"First contact {first[2]} / function {first[3]} at z={first[4]} m; peak speed {max(f['ball_speed'] for f in observed):.2f} m/s" if first else "No animation contact")
+    return observed
 
 try:
     if Path("/tmp/.X11-unix/X91").exists():
@@ -455,7 +479,7 @@ try:
         knock_origin = frames()[-1]["player"]
         key("Shift_L", True); key("space", True); key("w", True)
         wait_for(lambda: frames()[-1]["move_active"])
-        knock_on = advance(2200)
+        knock_on = advance(5200)
         key("space", False)
         knock_recovery = advance(1500)
         key("w", False); key("Shift_L", False)
@@ -466,6 +490,28 @@ try:
               any(f["function"] == 2 for f in knock_recovery) and
               math.dist(knock_origin, knock_on[-1]["player"]) > 6,
               f"Long-touch distance max {maximum:.2f} m; recovered to {ending:.2f} m after releasing RT")
+        reset()
+        key("Shift_L", True); key("w", True)
+        advance(1800)
+        key("space", True)
+        advance(1200)
+        key("d", True); key("w", False)
+        turn_start = frames()[-1]
+        knock_turn = advance(2500)
+        maximum = max(math.dist(f["player"], f["ball"]) for f in knock_turn)
+        check("sprint knock-on turns retain control", maximum < 5 and all(f["with_ball"] for f in knock_turn) and
+              any(f["function"] == 2 for f in knock_turn),
+              f"Turning with RB+RT: distance max {maximum:.2f} m, controlled {sum(f['with_ball'] for f in knock_turn)}/{len(knock_turn)} frames")
+        sim_ms = knock_turn[-1]["t"] - turn_start["t"]
+        real_ms = knock_turn[-1]["wall_ms"] - turn_start["wall_ms"]
+        check("simulation pace during sprint knock-on turns", 0.85 < sim_ms / real_ms < 1.15,
+              f"{sim_ms} ms simulation / {real_ms} ms real; ratio {sim_ms / real_ms:.3f}")
+        key("w", True); key("d", False); key("space", False)
+        knock_recovery = advance(1500)
+        key("w", False); key("Shift_L", False)
+        ending = math.dist(knock_recovery[-1]["player"], knock_recovery[-1]["ball"])
+        check("knock-on turn recovers without reset", ending < 1.2 and all(f["with_ball"] for f in knock_recovery),
+              f"Recovered to {ending:.2f} m after turning and releasing RT")
         # Once a pass leaves the feet, the single designated training player
         # must stop being attracted to the ball without needing super cancel.
         reset()
@@ -556,6 +602,11 @@ try:
         key("w", False)
         check("first person forward movement", math.dist(origin, moving_fps[-1]["player"]) > 0.6,
               f"Player moved {math.dist(origin, moving_fps[-1]['player']):.2f} m")
+        receive("headed pass before bounce", "4", "j", 4, head=True)
+        receive("headed shot before bounce", "4", "k", 8, head=True)
+        receive("first-time short pass", "6", "j", 4)
+        receive("first-time through pass", "6", "i", 5)
+        receive("first-time shot", "6", "k", 8)
         reset()
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "x11grab", "-video_size", "960x540",
                         "-i", ":91", "-frames:v", "1", str(output / "firstperson-forward.png")], env=environment, check=True)

@@ -86,6 +86,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Alternar primeira pessoa / externa / próxima | Clique do analógico direito | Tab |
 | Livre / condução / finalização / bola aérea | D-pad cima / direita / baixo / esquerda | 1 / 2 / 3 / 4 |
 | Cobrança de falta parada | LB + D-pad baixo | 5 ou F3 |
+| Receber passe rasteiro / jogar de primeira | LB + D-pad direita | 6 |
 | Sair | — | Esc ou F12 |
 
 Segure e solte A/B/X/Y para graduar a força. X também aumenta a elevação
@@ -105,11 +106,24 @@ O jogador destro conserva ligeiramente mais impulso em contatos com o pé
 esquerdo, sem reduzir o alcance dos toques. O contato recebe um ajuste suave
 da perna no instante do toque, com limite de alcance e sem esticar os ossos.
 Reiniciar o exercício também limpa os comandos de chute e passe pendentes.
+RB + RT adianta a bola no instante de um toque original e mantém a assistência
+para alcançá-la, inclusive ao virar e ao soltar RT. Passes e chutes liberam
+essa recuperação. A bola conserva sua trajetória física entre os contatos.
 
-O exercício de bola aérea permite testar domínio, cabeceios e voleios que
-o seletor de animações original escolhe conforme a altura, a posição e o
-momento da ação. Nem todo comando possui um gesto manual dedicado: o
+No exercício de bola aérea, a trajetória permite cabecear antes do primeiro
+quique. Prepare A para passar ou X para finalizar antes da chegada da bola;
+a animação é escolhida pela altura, posição e momento do contato. Cabeceios
+parados e com salto também aproveitam os gestos originais de passe. O exercício
+6 fornece um passe rasteiro para preparar A/Y/X e jogar de primeira, sem
+dominar antes. Esses comandos podem ser preparados até dois segundos antes
+do contato. Nem todo comando possui um gesto manual dedicado: o
 próprio upstream deixa certos dribles especiais desativados.
+
+O treino agrupa as fases da simulação em uma tarefa por passo, reduzindo
+trocas entre threads, e o agendador dispensa esperas temporizadas quando já
+há trabalho pronto. A física e as animações mantêm o passo original de 10 ms.
+O `log.txt` registra periodicamente a relação entre tempo simulado e real;
+`1.0` corresponde à velocidade normal.
 
 O treino usa varredura contínua da esfera da bola contra cápsulas de pernas,
 tronco e cabeça, com restituição e perda de energia tangencial. São volumes

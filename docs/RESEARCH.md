@@ -166,3 +166,46 @@ limites de aceleração. Isso evita terminar um giro antigo depois de voltar
 para frente. Os quadros finais e os contatos ainda pendentes mantêm seus
 limites de interrupção. A validação exige posse contínua e avanço no novo
 rumo ao trocar de baixo para frente no meio de giros repetidos.
+## Recepção de primeira, cabeceios e toque adiantado
+
+O contexto de ataque do treino era limitado à distância de 2,5 m da bola
+prevista em 200 ms. A/X/Y pressionados antes da chegada podiam assumir
+funções defensivas sem efeito no treino, impedindo preparar a recepção.
+Esses botões agora usam o buffer original de ação, com validade de dois
+segundos. A assistência de movimento permanece enquanto a ação está
+pendente; o movimento livre continua depois da execução. B conserva o
+carrinho quando não há recepção próxima, incluindo o caso de super cancel.
+
+A coleção original possui cabeceios de chute em corrida, enquanto os
+cabeceios parados e com salto estão na coleção de passes. A seleção do
+treino também considera esses contatos de cabeça para finalizar e passar
+alto, preservando os testes originais de alcance, altura e trajetória.
+Cada candidato usa seu próprio tipo durante a avaliação física. Cabeceios
+de finalização usam a potência e dificuldade originais do gesto; a curva
+de carga/elevação adicionada ao treino continua aplicada aos chutes com o
+pé. O exercício aéreo aproxima a trajetória para chegar ao alcance da
+cabeça antes do quique. O exercício 6 fornece uma bola rasteira recebida
+para validar ações de primeira com os pés.
+
+Uma reprodução anterior à correção mostrou uma curva com RB+RT perder o
+modo com bola e terminar com distância de 26,29 m. O atalho de super cancel
+substituía a assistência mesmo durante um toque adiantado do próprio
+jogador. Agora essa substituição só vale fora do controle. Um contato real
+de condução/domínio com o modificador de toque adiantado mantém uma janela
+de recuperação de 1,6 s, limitada a 5 m, altura baixa e velocidade relativa
+compatível. Passe, chute, contato comum e reset encerram a janela. Não há
+reposicionamento da bola ou contato inventado. Soltar o analógico também
+pede que o próximo contato real do pé freie a bola; depois de um toque
+lento próximo, a assistência deixa de renovar uma corrida sem entrada.
+
+O treino agrupa Get/Process/Put do menu e Get/Process do jogo em um único
+despacho, preservando sua ordem. Isso reduz cinco trocas entre workers por
+passo para uma. O agendador não cria esperas temporizadas para tarefas que
+já estão prontas; libera o mutex para as notificações de conclusão. Essas
+mudanças reduzem trabalho de sincronização, especialmente no Windows, sem
+acelerar artificialmente a física ou as animações. A verificação de ritmo
+compara simulação e relógio real também em corrida com curvas e RB+RT.
+`Training::Timing` registra essa relação no log a cada cinco segundos reais,
+sem incluir pausas. O desempenho no hardware Windows do usuário ainda
+depende da execução local; os resultados de runtime publicados são nativos
+Linux com renderização real.

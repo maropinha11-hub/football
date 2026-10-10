@@ -318,7 +318,15 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
     cutDirection = player->GetExternalController()->GetDirection().Get2D().GetNormalized(0);
     cutIntentSpeed = player->GetExternalController()->GetFloatVelocity();
   }
+  const std::string contactPart = currentAnim->anim->GetVariable("touch_bodypart");
   if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() &&
+      player->GetExternalController() && cutIntentSpeed < 0.05f &&
+      (contactPart == "left_foot" || contactPart == "right_foot")) {
+    // A neutral stick asks the next actual foot contact to stop the ball.
+    // Do not keep renewing the outgoing momentum from the old turning step.
+    touchVec.coords[0] = 0;
+    touchVec.coords[1] = 0;
+  } else if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() &&
       cutIntentSpeed > 0.1f &&
       (ball->GetMovement().Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f ||
        touchVec.Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f)) {
@@ -385,7 +393,7 @@ Vector3 GetShotVector(Match *match, Player *player, const Vector3 &nextStartPos,
 
   Ball *ball = match->GetBall();
 
-  if (TrainingEnabled()) {
+  if (TrainingEnabled() && currentAnim->anim->GetVariable("touch_bodypart") != "head") {
     const bool chip = (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_Chip) != 0;
     const auto launch = training::shot(currentAnim->originatingCommand.touchInfo.desiredPower,
                                       player->GetStat("physical_shotpower"), chip, match->IsTrainingFreeKick());

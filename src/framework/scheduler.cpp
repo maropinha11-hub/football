@@ -311,8 +311,18 @@ namespace blunted {
         }
 
         sequences.Unlock();
-        boost::system_time tAbsoluteTime = boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-        bool isMessage = somethingIsDone.timed_wait(lock, tAbsoluteTime);
+        if (timeout_ms > 0) {
+          boost::system_time tAbsoluteTime = boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
+          somethingIsDone.timed_wait(lock, tAbsoluteTime);
+        } else {
+          // Already-due work needs no timed wait. On Windows each wait builds
+          // kernel synchronization handles; doing that for every task phase
+          // adds avoidable work to the 100 Hz simulation. Still let completed
+          // commands publish their scheduler notification before proceeding.
+          lock.unlock();
+          boost::this_thread::yield();
+          lock.lock();
+        }
         sequences.Lock();
 
         if (dueEntry.program != boost::shared_ptr<TaskSequenceProgram>()) {
