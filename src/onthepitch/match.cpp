@@ -376,6 +376,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
 
   possessionSideHistory = new ValueHistory<float>(6000);
   if (TrainingEnabled()) {
+    trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
     SetMatchPhase(e_MatchPhase_1stHalf);
     ResetTraining(0);
   }
@@ -1285,6 +1286,28 @@ void Match::Put() {
   }
 
   GetDynamicNode()->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+
+  if (TrainingEnabled() && IsFirstPerson()) {
+    // Match the camera to the interpolated body, so it cannot drift into the head
+    // when simulation and rendering run at different rates.
+    const Vector3 root = designatedPossessionPlayer->GetGeomPosition().Get2D();
+    const float nominal = designatedPossessionPlayer->GetPlayerData()->GetHeight() - 0.10f;
+    Vector3 eyeOffset(0, 0, nominal);
+    const auto &nodes = designatedPossessionPlayer->GetNodeMap();
+    const auto neck = nodes.find("neck");
+    if (neck != nodes.end()) {
+      // The skin scales joint offsets by player height; the camera must use the same transform.
+      const float scale = designatedPossessionPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
+      eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + Vector3(0, 0, 0.14f);
+      eyeOffset.coords[2] = clamp(eyeOffset.coords[2], 0.55f, nominal + 0.12f);
+    }
+    if (!trainingEyeInitialized) { trainingEyePosition = eyeOffset; trainingEyeInitialized = true; }
+    const float eyeBlend = 1 - std::exp(-12.0f * clamp(GetTimeSincePreviousPut_ms(), 1, 100) * 0.001f);
+    trainingEyePosition += (eyeOffset - trainingEyePosition) * eyeBlend;
+    const Vector3 f = fetchedbuf_cameraNodeOrientation * Vector3(0, 1, 0);
+    cameraNode->SetPosition(root + f * 0.12f + trainingEyePosition, false);
+    cameraNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  }
 
   if (!pause) {
 

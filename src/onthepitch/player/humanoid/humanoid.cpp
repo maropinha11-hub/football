@@ -190,7 +190,10 @@ void Humanoid::Process() {
   if (mayReQueue) {
 
     float ballDistance = (currentMentalImage->GetBallPrediction(500).Get2D() - spatialState.position).GetLength();
-    if (( (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
+    const bool trainingMovement = TrainingEnabled() && CastPlayer()->GetExternalController() &&
+                                  currentAnim->functionType == e_FunctionType_Movement;
+    if (( trainingMovement ||
+          (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
           (currentAnim->functionType == e_FunctionType_Trap && TouchPending()) ||
           (currentAnim->functionType == e_FunctionType_BallControl && TouchPending()) ) &&
@@ -318,7 +321,7 @@ void Humanoid::Process() {
       // if we just requeued, for example, from movement to ballcontrol, there's no reason we can not immediately requeue to another ballcontrol again (next time). only apply the initial requeue delay on subsequent anims of the same type
       // (so we can have a fast ballcontrol -> ballcontrol requeue, but after that, use the initial delay)
       if (interruptAnim == e_InterruptAnim_ReQueue && previousAnim->functionType == currentAnim->functionType) {
-        reQueueDelayFrames = initialReQueueDelayFrames; // don't try requeueing (some types of anims, see selectanim()) too often
+        reQueueDelayFrames = TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement ? 8 : initialReQueueDelayFrames;
       }
 
     }
@@ -1195,7 +1198,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     float focusDistance = (match->GetDesignatedPossessionPlayer()->GetPosition() - spatialState.position).GetLength();
 
     if (currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
-    if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
+    if (!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && currentAnim->frameNum + minRemainingMovementReQueueFrames > currentAnim->anim->GetEffectiveFrameCount()) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (!allowMovementReQueue || reQueueDelayFrames > 0)) return false;
     if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)) return false;
@@ -1205,12 +1208,14 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
     // too similar to what we are already trying to accomplish
     if (currentAnim->originatingCommand.desiredFunctionType == command.desiredFunctionType &&
-        ((currentAnim->originatingCommand.desiredDirection * currentAnim->originatingCommand.desiredVelocityFloat) - (command.desiredDirection * command.desiredVelocityFloat)).GetLength() < 1.5f) {
+        ((currentAnim->originatingCommand.desiredDirection * currentAnim->originatingCommand.desiredVelocityFloat) - (command.desiredDirection * command.desiredVelocityFloat)).GetLength() < (TrainingEnabled() ? 0.35f : 1.5f)) {
       return false;
     }
 
     // requeue not needed?
-    if ((currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
+    // Direct training input can revise locomotion while keeping the existing blend
+    // and acceleration limits. Touch actions retain their original contact timing.
+    if ((!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
         (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap)) {

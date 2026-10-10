@@ -81,7 +81,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "setlocal\r\n"
         "cd /d \"%~dp0\"\r\n"
         "gameplayfootball.exe --test-controller %*\r\n"
-        "if errorlevel 1 pause\r\n",
+        "pause\r\n",
         encoding="ascii",
         newline="",
     )
@@ -89,10 +89,13 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
-        "Controle: analógico esquerdo move; A passe; Y enfiada; B alto/carrinho;\n"
-        "X chute; RB correr; RT domínio; View reiniciar; Menu pausa; D-pad\n"
-        "exercício; R3 câmera. Teclado: WASD, J/I/L/K, Shift/Espaço, R, P,\n"
-        "1–4, Tab, Esc. Use run-controller-test.bat para conferir os botões.\n\n"
+        "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
+        "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
+        "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
+        "LB+X cobertura; RB correr; RT domínio; View reiniciar; Menu pausa;\n"
+        "D-pad exercício; LB+D-pad baixo falta; R3 alterna as três câmeras.\n"
+        "Teclado: WASD, setas para olhar, J/I/L/K, Q+K cobertura, Shift/Espaço,\n"
+        "R, P, 1–5, Tab, Esc. run-controller-test.bat executa testes virtuais.\n\n"
         "O pacote contém o executável x64, SDL2, OpenAL, Boost, SQLite e os\n"
         "recursos necessários. O primeiro lançamento pode mostrar o SmartScreen\n"
         "porque o binário não é assinado; confirme a origem local do arquivo.\n\n"

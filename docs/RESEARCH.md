@@ -26,11 +26,17 @@ que faltam no repositório descontinuado e migra partes para SDL2. Por isso,
 o treinamento reutiliza a implementação nativa, não recria uma bola e um
 boneco em uma engine diferente.
 
-Os módulos `ball.cpp`, `humanoidbase.cpp`, `humanoid_utils.cpp`,
-`animcollection.cpp` e os recursos em `data` são preservados byte a byte.
-`humanoid.cpp` recebe uma proteção para ausência de oponente. O controle
-humano e a simulação de partida são adaptados ao treino solo, com as
-alterações identificadas nos arquivos. Isso preserva os algoritmos da base,
+Os recursos em `data`, incluindo modelos e animações, são preservados byte
+a byte, assim como `animcollection.cpp`. Nesta etapa, `ball.cpp` recebe
+correções de contato com o chão e de previsão, `humanoidbase.cpp` adapta a
+apresentação do corpo para primeira pessoa e corrige a orientação no reset,
+e `humanoid_utils.cpp` diferencia chute carregado de cobertura no treino.
+`humanoid.cpp` mantém uma proteção para ausência de oponente e permite
+reavaliar a locomoção durante a animação de movimento no treino, inclusive
+com posse ou longe da bola. O seletor preserva blend e limites de aceleração;
+o intervalo mínimo entre essas revisões passa de 220 para 80 ms. O controle
+humano e a simulação de partida são adaptados ao treino solo. Isso reutiliza
+o seletor e as animações da base,
 mas não significa que toda a experiência do treino seja idêntica à partida
 11 contra 11: não existem adversários, assistência a companheiros, fadiga
 acumulada ou arbitragem nesse contexto.
@@ -59,13 +65,17 @@ acumulada ou arbitragem nesse contexto.
 | --- | --- | --- |
 | Reconexão do controle pode acessar memória fora do array | `event.jaxis.which` é um ID de instância SDL, não um índice contínuo; IDs continuam crescendo | Resolver IDs em slots estáveis e verificar limites antes de acessar arrays |
 | Gatilhos Xbox tratados como um eixo combinado antigo | O código usa índices crus de joystick, dependentes de dispositivo e sistema | Usar GameController da SDL2, LT e RT independentes e limiar de ativação |
-| Analógico ignora a maior parte do curso | A zona morta original exige 75%; o teste virtual confirma que um comando de 73% é descartado | Zona morta radial configurável, padrão 15%, sem mudar velocidades ou animações |
+| Analógico ignora a maior parte do curso | A zona morta original exige 75%; o teste virtual confirma que um comando de 73% é descartado | Zona morta radial configurável, padrão 15%, e velocidade proporcional ao curso útil |
 | Estado preso ao perder foco ou remover controle | A entrega de eventos depende de foco e estados não são limpos | Entregar eventos de ciclo de vida e limpar estados |
 | Atalhos breves podem ser perdidos | Pressionar e soltar entre duas leituras deixa apenas o estado final solto | Guardar e consumir bordas de tecla para os atalhos de treino, ignorando repetição automática |
 | Jogo presume dois times cheios e árbitros | Desreferências de oponente e seleção tática não fazem sentido com um único jogador | Time de treino com um atacante, oponente vazio, guardas e fluxo solo sem arbitragem |
 | Treino perde referências ao repor a bola | Reset original escolhe o primeiro jogador do elenco, que não é ativo no treino | Manter o jogador ativo como referência de posse |
 | Build rootless não encontra headers e bibliotecas de desenvolvimento | Debian usa headers multiarch e alguns symlinks apontam a bibliotecas já instaladas | Prefixo APT local verificado, includes multiarch e vínculos aos runtimes existentes |
 | Recursos dependem do diretório corrente | Caminhos são relativos a `media` e `databases` | Preparar diretório de execução e fornecer script que inicia nele |
+| Direção do corpo incoerente após reiniciar | Reset restaurava a direção global sempre para -Y, mesmo quando o jogador era colocado de frente para +X | Restaurar direção e ângulo do corpo a partir da orientação do exercício |
+| Bola penetra no chão por um tick | O impacto era verificado antes de avançar a posição | Resolver a penetração também após a integração de cada passo |
+| Bola atravessa o jogador no treino solo | A colisão original depende de toque recente de um adversário | Varredura contínua contra cápsulas de pernas, tronco e cabeça |
+| Chute carregado permanece baixo | Elevação original segue contexto de animação e atributos | Carga determina velocidade e elevação; LB seleciona cobertura separada |
 
 Outras falhas encontradas na execução e os resultados reais dos testes são
 registrados em `docs/VALIDATION.md`. Uma falha futura requer diagnóstico e
@@ -82,9 +92,10 @@ específica. Esta entrega preserva e testa Gameplay Football.
 O treino solo permite testar locomoção, aceleração/frenagem, condução,
 passes, chutes, carrinhos e situações aéreas. Duelo, desarme contra um
 adversário, goleiro e passe com recebedor precisam de exercícios adicionais
-com outros jogadores. Uma câmera em primeira pessoa altera orientação da
-entrada e visibilidade do corpo; essa integração ficará para a etapa
-posterior solicitada. Carreira e online também não fazem parte deste treino.
+com outros jogadores. Primeira pessoa foi integrada com movimento relativo à
+visão sem bola, direção de condução independente do olhar com bola e retorno
+gradual da cabeça. O treino de falta é parado, sem barreira ou goleiro.
+Carreira e online continuam para etapas posteriores.
 
 A validação virtual verifica o caminho de entrada. A avaliação de latência,
 rumble, Bluetooth, sensação do movimento e desempenho na GPU do usuário

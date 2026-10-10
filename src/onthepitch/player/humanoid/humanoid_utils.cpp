@@ -355,6 +355,20 @@ Vector3 GetShotVector(Match *match, Player *player, const Vector3 &nextStartPos,
 
   Ball *ball = match->GetBall();
 
+  if (TrainingEnabled()) {
+    const bool chip = (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_Chip) != 0;
+    const auto launch = training::shot(currentAnim->originatingCommand.touchInfo.desiredPower,
+                                      player->GetStat("physical_shotpower"), chip, match->IsTrainingFreeKick());
+    const Vector3 direction = currentAnim->originatingCommand.touchInfo.desiredDirection.Get2D().GetNormalized(player->GetDirectionVec());
+    // Slightly reduce power on an imperfect contact while preserving the charge response.
+    const float contact = clamp(1 - positionOffset.GetLength() * 0.4f, 0.85f, 1.0f);
+    const float speed = launch.speed * contact;
+    xRot = -direction.coords[1] * (chip ? -12.0f : 15.0f);
+    yRot = -direction.coords[0] * (chip ? -12.0f : 15.0f);
+    zRot = clamp(spatialState.bodyDirectionVec.GetAngle2D(direction), -0.5f, 0.5f) * -35.0f;
+    return direction * (speed * std::cos(launch.elevation)) + Vector3(0, 0, speed * std::sin(launch.elevation));
+  }
+
   const std::vector<Vector3> &origPositionCache = match->GetAnimPositionCache(currentAnim->anim);
   Vector3 touchMovement = CalculateMovementAtFrame(origPositionCache, currentAnim->frameNum).GetRotated2D(spatialState.angle); // spatialState.movement isn't reliable because of smuggles and such
   //SetRedDebugPilon(player->GetPosition() + touchMovement);

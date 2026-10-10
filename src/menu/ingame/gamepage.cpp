@@ -20,7 +20,7 @@ using namespace blunted;
 GamePage::GamePage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData), match(0) {
 
   Gui2Caption *betaSign = new Gui2Caption(windowManager, "caption_betasign", 0, 0, 0, TrainingEnabled() ? 2.8f : 2.0f,
-    TrainingEnabled() ? "A: passe | X: chute | B: alto/carrinho | Y: enfiada | RB: correr | RT: dominio" : "gameplay football public beta 2 v0.2");
+    TrainingEnabled() ? "A: passe | X: chute (segurar = forca/altura) | LB+X: cobertura | B: alto | RB: correr" : "gameplay football public beta 2 v0.2");
   betaSign->SetColor(Vector3(180, 180, 180));
   betaSign->SetTransparency(0.3f);
   this->AddView(betaSign);
@@ -29,7 +29,7 @@ GamePage::GamePage(Gui2WindowManager *windowManager, const Gui2PageData &pageDat
   betaSign->Show();
   if (TrainingEnabled()) {
     Gui2Caption *shortcuts = new Gui2Caption(windowManager, "training_shortcuts", 0, 0, 0, 2.5f,
-      "View: reiniciar | Menu: pausa | D-pad: exercicio | R3: camera | Esc: sair");
+      "Direito: olhar | LB+D-pad baixo: falta | View: reiniciar | Menu: pausa | R3: camera");
     shortcuts->SetColor(Vector3(220, 225, 235));
     shortcuts->SetTransparency(0.3f);
     this->AddView(shortcuts);

@@ -98,7 +98,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (actionMode == 2) {
 
     if (!hid->GetButton(actionButton) ||
-        (hid->GetButton(actionButton) && gauge_ms > 500) || // allow anim to kick in before queue is complete (before button is released), it will usually touch ball after the remaining time anyway, so we still have time to add more power, yet still respond as fast as possible
+        (hid->GetButton(actionButton) && gauge_ms >= (TrainingEnabled() ? 1000 : 500)) ||
         (!CastPlayer()->HasPossession() && !match->IsInSetPiece() && actionBufferTime_ms > 0)) {
 
       int baseTime_ms = 60; // substract a little because we can't really press a button shorter than this
@@ -189,6 +189,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         if (GetHIDevice()->GetDeviceType() == e_HIDeviceType_Keyboard) command.touchInfo.autoDirectionBias = 1.0f;
         command.touchInfo.desiredDirection = AI_GetShotDirection(CastPlayer(), command.touchInfo.inputDirection, command.touchInfo.autoDirectionBias);
         command.touchInfo.desiredPower = clamp(pow(gaugeFactor, 0.6f), 0.01f, 1.0f);
+        if (TrainingEnabled() && hid->GetButton(e_ButtonFunction_Switch))
+          command.modifier |= e_PlayerCommandModifier_Chip;
 
         commandQueue.push_back(command);
 
@@ -307,6 +309,16 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (commandQueue.size() > 0) {
     PlayerCommand &command = commandQueue.at(commandQueue.size() - 1);
     assert(command.desiredFunctionType == e_FunctionType_Movement); // make sure this is the movement command (is probably guaranteed, check out _MovementCommand)
+
+    if (TrainingEnabled()) {
+      // Free movement must not be pulled towards the ball by the match AI.
+      if (!match->TrainingHasBall() || (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint))) {
+        command.desiredDirection = inputDirection;
+        command.desiredVelocityFloat = inputVelocityFloat;
+      }
+      if (match->IsFirstPerson() && !match->TrainingHasBall())
+        command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
+    }
 
 /*
     // no magnet
@@ -469,7 +481,8 @@ void HumanController::Process() {
 
 Vector3 HumanController::GetDirection() {
   Vector3 direction = CastPlayer()->GetDirectionVec();
-  return hid->GetDirection().GetNormalized(direction);
+  const Vector3 stick = hid->GetDirection();
+  return (TrainingEnabled() ? match->GetTrainingMovement(stick) : stick).GetNormalized(direction);
 }
 
 float HumanController::GetFloatVelocity() {
@@ -501,15 +514,18 @@ void HumanController::Reset() {
 
 void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVelocityFloat) {
   rawInputDirection = hid->GetDirection();
+  const float magnitude = rawInputDirection.GetLength();
+  if (TrainingEnabled()) rawInputDirection = match->GetTrainingMovement(rawInputDirection);
 
-  if (rawInputDirection.GetLength() < analogStickDeadzone) {
+  if (rawInputDirection.GetLength() < (TrainingEnabled() ? 0.001f : analogStickDeadzone)) {
     rawInputDirection = CastPlayer()->GetDirectionVec();
     rawInputVelocityFloat = idleVelocity;
   } else {
     if (hid->GetButton(e_ButtonFunction_Sprint)) rawInputVelocityFloat = sprintVelocity;
     else if (hid->GetButton(e_ButtonFunction_Dribble)) rawInputVelocityFloat = dribbleVelocity;
-    else if (hid->GetButton(e_ButtonFunction_Switch) && match->GetDesignatedPossessionPlayer() == CastPlayer()) rawInputVelocityFloat = idleVelocity;
+    else if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Switch) && match->GetDesignatedPossessionPlayer() == CastPlayer()) rawInputVelocityFloat = idleVelocity;
     else rawInputVelocityFloat = walkVelocity;
+    if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still
   }

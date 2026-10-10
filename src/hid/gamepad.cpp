@@ -9,6 +9,7 @@
 #include "base/utils.hpp"
 
 #include "../main.hpp"
+#include "../onthepitch/trainingcontrol.hpp"
 
 HIDGamepad::HIDGamepad(int gamepadID) : gamepadID(gamepadID) {
 
@@ -175,10 +176,5 @@ Vector3 HIDGamepad::GetDirection() {
   inputDirection.coords[1] -= GetButtonValue(e_ButtonFunction_Down);
   // The upstream threshold is 75%, which discards most of a modern stick's travel.
   const float deadzone = clamp(GetConfiguration()->GetReal("input_analog_deadzone", 0.15f), 0.02f, 0.5f);
-  if (inputDirection.GetLength() < deadzone) {
-    inputDirection = Vector3(0);
-  } else {
-    inputDirection.Normalize(0);
-  }
-  return inputDirection;
+  return training::radialStick(inputDirection, deadzone);
 }

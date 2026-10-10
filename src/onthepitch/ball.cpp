@@ -20,11 +20,11 @@
 
 Ball::Ball(Match *match) : match(match) {
 
-  bounce = 0.62f; // 1 = full bounce, 0 = no bounce
+  bounce = 0.58f; // restitution on grass
   linearBounce = 0.06f; // bigger = more brake force
   drag = 0.015f;//previously 0.025f; // bigger = more
   friction = 0.04f; // bigger = more
-  linearFriction = 1.6f; // bigger = more, arbitrary scale
+  linearFriction = 0.85f; // rolling resistance (m/s²), in addition to speed-dependent grass drag
   gravity = -9.81f;
   grassHeight = 0.025f;
 
@@ -114,6 +114,15 @@ void Ball::SetPosition(const Vector3 &target) {
 void Ball::SetMomentum(const Vector3 &target) {
   momentum.Set(target);
   CalculatePrediction();
+}
+
+void Ball::ResolveContact(const Vector3 &position, const Vector3 &velocity) {
+  // Keep spin, sound and position history across contacts.
+  positionBuffer = position;
+  positionBuffer.coords[2] = std::max(positionBuffer.coords[2], 0.11f);
+  momentum = velocity;
+  CalculatePrediction();
+  match->UpdateLatestMentalImageBallPredictions();
 }
 
 void Ball::SetRotation(radian x, radian y, radian z, float bias) { // radians per second for each axis
@@ -504,6 +513,12 @@ BallSpatialInfo Ball::CalculatePrediction() {
     // predict next ms
 
     nextPos += momentumPredict * timeStep;
+    // Resolve the impact in this step, rather than allowing penetration for a frame.
+    if (nextPos.coords[2] < 0.11f) {
+      nextPos.coords[2] = 0.11f;
+      if (momentumPredict.coords[2] < 0)
+        momentumPredict.coords[2] = std::max(-momentumPredict.coords[2] * bounce - linearBounce, 0.0f);
+    }
 
     Vector3 rotationVector;
     rotationPredict_ms.GetAngles(rotationVector.coords[0], rotationVector.coords[1], rotationVector.coords[2]);
@@ -574,6 +589,9 @@ void Ball::Process() {
 
   positionBuffer = Predict(10);
   orientationBuffer = orientPrediction;
+  // Predictions must be relative to the newly advanced simulation position.
+  // Otherwise swept collisions and possession tests see a one-step-old ball.
+  for (int i = 0; i < ballPredictionSize_ms / 10 - 1; ++i) predictions[i] = predictions[i + 1];
 
   ballPosHistory.push_back(positionBuffer);
   if (ballPosHistory.size() > ballHistorySize_ms) ballPosHistory.pop_front();

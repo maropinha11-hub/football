@@ -426,6 +426,10 @@ void HumanoidBase::UpdateFullbodyNodes() {
   hairStyle->SetPosition(joints[2].position * zMultiplier + fullbodyOffset, false);
   hairStyle->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
+  if (TrainingEnabled() && match->IsFirstPerson() && match->GetDesignatedPossessionPlayer() == player)
+    hairStyle->Disable();
+  else hairStyle->Enable();
+
   //hairStyle->SetRotation(nodeMap.find("neck")->second->GetDerivedRotation());
   //hairStyle->SetPosition(nodeMap.find("neck")->second->GetDerivedPosition() + joints[2].orientation * Vector3(0, 0, player->GetPlayerData()->GetHeight() - defaultPlayerHeight));
 }
@@ -435,6 +439,9 @@ bool HumanoidBase::NeedsModelUpdate() {
 }
 
 void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
+
+  const bool hideHead = !updateSrc && TrainingEnabled() && match->IsFirstPerson() &&
+                        match->GetDesignatedPossessionPlayer() == player;
 
   int uploadVertices = true;
   int uploadNormals = true;
@@ -450,6 +457,12 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
     FloatArray &uniqueMesh = uniqueFullbodyMesh.at(subgeom);
 
     const std::vector<WeightedVertex> &weightedVertices = weightedVerticesVec.at(subgeom);
+    // The original head is a separate submesh fully bound to the neck joint.
+    // Hiding only that submesh avoids stretching the shirt collar into a cone.
+    const bool hideSubmesh = hideHead && !weightedVertices.empty() &&
+        std::all_of(weightedVertices.begin(), weightedVertices.end(), [](const WeightedVertex &vertex) {
+          return vertex.bones.size() == 1 && vertex.bones[0].jointID == 2;
+        });
 
     int uniqueVertexCount = weightedVertices.size();
 
@@ -548,6 +561,9 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
         if (uploadBitangents) memcpy(&uniqueMesh.data[weightedVertices[v].vertexID * 3 + uniqueElementOffset * 4], resultBitangent.coords, 3 * sizeof(float));
       }
 
+      // Degenerate triangles remove the local head from rendering only.
+      // Source skin, skeleton, collar, arms and legs retain their original animation.
+      if (hideSubmesh) resultVertex = joints[2].position * zMultiplier;
       if (uploadVertices)   memcpy(&materializedTriangleMeshes[subgeom].vertices[weightedVertices[v].vertexID * 3],                           resultVertex.coords,    3 * sizeof(float));
       if (uploadNormals)    memcpy(&materializedTriangleMeshes[subgeom].vertices[weightedVertices[v].vertexID * 3 + uniqueElementOffset],     resultNormal.coords,    3 * sizeof(float));
       if (uploadTangents)   memcpy(&materializedTriangleMeshes[subgeom].vertices[weightedVertices[v].vertexID * 3 + uniqueElementOffset * 3], resultTangent.coords,   3 * sizeof(float));
@@ -942,8 +958,8 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos)
   spatialState.movement = Vector3(0);
   spatialState.relBodyDirectionVec = Vector3(0, -1, 0);
   spatialState.relBodyAngle = 0;
-  spatialState.bodyDirectionVec = Vector3(0, -1, 0);
-  spatialState.bodyAngle = 0;
+  spatialState.bodyDirectionVec = spatialState.directionVec;
+  spatialState.bodyAngle = startAngle;
   spatialState.foot = e_Foot_Right;
 
   int idleAnimID = GetIdleMovementAnimID();

@@ -5,23 +5,37 @@ portátil. Extraia-o para uma pasta local, conecte o controle Xbox Series S por
 USB ou Bluetooth e execute `run-training.bat`. O lançador abre diretamente o
 centro de treinamento com `config/training.config` e os recursos do jogo.
 
-Para verificar a enumeração do controle antes de jogar, execute
-`run-controller-test.bat`. A janela lista os dispositivos SDL detectados e os
-eventos de botões/eixos recebidos. O mapeamento usado no treino é:
+`run-controller-test.bat` executa testes automáticos com controle virtual,
+câmera, carga de chute e colisões. Execute o teste com controles físicos
+desconectados, para deixar os slots disponíveis ao dispositivo virtual.
+O treino usa XInput para Xbox no Windows,
+com SDL como alternativa. O mapeamento usado no treino é:
 
 | Controle | Ação |
 | --- | --- |
 | Analógico esquerdo | Movimento |
+| Analógico direito | Virar a visão sem bola; olhar com a cabeça com bola |
 | A | Passe |
 | Y | Passe em profundidade |
 | B | Bola alta / carrinho |
 | X | Chute |
+| LB + X | Cobertura |
 | RB | Corrida |
 | RT | Domínio |
 | View | Reiniciar exercício |
 | Menu | Pausar |
 | D-pad | Trocar exercício |
+| LB + D-pad baixo | Cobrança de falta |
 | R3 | Câmera |
+
+Primeira pessoa é o modo inicial. R3 alterna entre primeira pessoa, externa
+e próxima. Com bola o direito não desvia a condução, e a cabeça retorna
+gradualmente ao centro ao soltá-lo. Segurar X aumenta a força e a altura,
+com carga máxima de um segundo. As setas do teclado substituem o direito;
+Q+K faz cobertura e 5/F3 inicia a cobrança de falta.
+
+`training.config` permite ajustar `firstperson_fov`, `firstperson_look_speed`,
+`firstperson_recenter_speed` e `input_analog_deadzone`.
 
 O executável é compilado como PE32+ GUI para Windows x64 com MinGW e as DLLs
 SDL2, OpenAL, Boost e SQLite ficam ao lado dele no ZIP. A renderização e o

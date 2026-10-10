@@ -11,6 +11,8 @@
 #include "ball.hpp"
 #include "referee.hpp"
 #include "officials.hpp"
+#include "trainingcontrol.hpp"
+#include <atomic>
 
 #include "../data/matchdata.hpp"
 #include "player/humanoid/animcollection.hpp"
@@ -110,6 +112,13 @@ class Match {
     void Exit();
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void ProcessTraining();
+    Vector3 GetTrainingMovement(const Vector3 &stick) const;
+    Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
+    bool TrainingHasBall() const { return trainingView.withBall; }
+    bool IsFirstPerson() const { return trainingCameraMode.load() == 2; }
+    bool IsTrainingFreeKick() const { return trainingExercise == 4; }
+    void UpdateTrainingView(IHIDevice *input);
+    void ResolveTrainingBallContacts(const Vector3 &from);
 
     void SetRandomSunParams();
     void RandomizeAdboards(boost::intrusive_ptr<Node> stadiumNode);
@@ -257,7 +266,11 @@ class Match {
     unsigned int trainingPreviousButtons = 0;
     unsigned int trainingGoals = 0;
     unsigned long trainingResetAt_ms = 0;
-    bool trainingCloseCamera = false;
+    std::atomic<int> trainingCameraMode{2};
+    training::View trainingView;
+    Vector3 trainingEyePosition;
+    std::atomic<bool> trainingEyeInitialized{false};
+    unsigned int trainingContacts = 0;
 
     boost::intrusive_ptr<Node> dynamicNode;
 

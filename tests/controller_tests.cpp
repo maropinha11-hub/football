@@ -2,6 +2,7 @@
 #include "../src/main.hpp"
 #include "../src/hid/gamepad.hpp"
 #include "managers/usereventmanager.hpp"
+#include "../src/onthepitch/trainingcontrol.hpp"
 #include <SDL2/SDL.h>
 #include <cmath>
 #include <cstdio>
@@ -38,6 +39,48 @@ int RunControllerTests() {
   SDL_Joystick *virtualPad = nullptr;
   int device = -1;
   try {
+    training::View view;
+    view.reset(0);
+    view.update(false, 0, Vector3(0, 1, 0), Vector3(1, 0, 0), 0.25f);
+    require(view.yaw < -0.4f, "FPS right stick must turn facing right");
+    require(view.movement(Vector3(0, 1, 0)).coords[1] < -0.4f, "FPS movement must follow camera heading");
+    require(std::fabs(view.movement(Vector3(1, 0, 0)).GetDotProduct(training::forward(view.yaw))) < 0.001f,
+            "FPS strafing must remain perpendicular to facing");
+    view.reset(0);
+    view.update(true, 0, Vector3(0, 1, 0), Vector3(1, 0, 0), 0.25f);
+    require(view.headYaw < -0.4f, "With ball right stick must turn head");
+    require(view.movement(Vector3(0, 1, 0)).coords[0] > 0.99f, "Head look must not steer dribbling");
+    const float headBefore = view.headYaw;
+    view.update(true, 0, Vector3(0, 1, 0), Vector3(0), 0.25f);
+    require(std::fabs(view.headYaw - headBefore) < 0.001f, "Head must wait before recentering");
+    for (int i = 0; i < 200; ++i) view.update(true, 0, Vector3(0), Vector3(0), 0.01f);
+    require(std::fabs(view.headYaw) < 0.1f, "Head must return slowly to center");
+    view.update(true, 0, Vector3(0), Vector3(1, 1, 0), 10);
+    require(std::fabs(view.headYaw) <= 1.48f && view.pitch >= -1.30f, "Head yaw/pitch must have anatomical limits");
+    const float beforeRelease = view.yaw;
+    view.update(false, 0, Vector3(0), Vector3(0), 0.01f);
+    require(std::fabs(training::angle(view.yaw - beforeRelease)) < 0.001f, "Possession change must not snap camera");
+    const auto partial = training::radialStick(Vector3(0.55f, 0, 0), 0.15f);
+    require(partial.GetLength() > 0.4f && partial.GetLength() < 0.6f, "Analog travel must retain proportional speed");
+    const auto low = training::shot(0.1f, 0.7f, false, false);
+    const auto high = training::shot(1, 0.7f, false, false);
+    const auto chip = training::shot(0.7f, 0.7f, true, false);
+    require(high.speed > low.speed + 10, "Charge must increase shot speed");
+    require(high.elevation > low.elevation + 0.2f, "Charge must increase normal shot elevation");
+    require(chip.speed < high.speed && chip.elevation > high.elevation + 0.2f, "LB shot must be a slower arcing chip");
+    const Vector3 a(0, 0, 0.2f), b(0, 0, 1.5f);
+    const auto contact = training::sweep(Vector3(-2, 0, 1), Vector3(2, 0, 1), a, b, 0.3f);
+    require(contact.hit && contact.time < 0.5f && contact.normal.coords[0] < -0.9f,
+            "Fast ball must hit capsule before crossing body");
+    require(!training::sweep(Vector3(-2, 0.5f, 1), Vector3(2, 0.5f, 1), a, b, 0.3f).hit,
+            "Ball outside body silhouette must pass freely");
+    const auto overlap = training::sweep(Vector3(0.05f, 0, 1), Vector3(0), a, b, 0.3f);
+    require(overlap.hit && overlap.point.coords[0] > 0.29f, "Contact must depenetrate initial overlap");
+    const auto cap = training::sweep(Vector3(0, 0, 2), Vector3(0, 0, 1), a, b, 0.3f);
+    require(cap.hit && cap.normal.coords[2] > 0.9f, "Aerial ball must collide with capsule top");
+    const Vector3 incoming(35, 2, 0);
+    const Vector3 bounced = training::rebound(incoming, Vector3(-1, 0, 0), 0.42f);
+    require(bounced.coords[0] < 0 && bounced.GetLength() < incoming.GetLength(), "Passive body collision must lose energy");
     require(SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) == 0, "SDL controller init failed");
     EnvironmentManager testClock;
     UserEventManager eventManager;

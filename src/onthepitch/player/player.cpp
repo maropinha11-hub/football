@@ -446,7 +446,8 @@ void Player::Put2D() {
     }
   }
 
-  if (fetchedbuf_nameCaptionShowCondition) {
+  if (fetchedbuf_nameCaptionShowCondition &&
+      !(TrainingEnabled() && match->IsFirstPerson() && match->GetDesignatedPossessionPlayer() == this)) {
     //Vector3 captionPos3D = fetchedbuf_nameCaptionPos;
     //Vector3 captionPos2D = GetProjectedCoord(captionPos3D, match->GetCamera());
     Vector3 captionPos3D = GetProjectedCoord(GetGeomPosition() + Vector3(0, 0.5f, 2.4f), match->GetCamera()); // geom pos because in Put2D, we cannot access normal class vars (because multithreading)

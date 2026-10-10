@@ -61,6 +61,7 @@ class Ball {
     void Touch(const Vector3 &target);
     void SetPosition(const Vector3 &target);
     void SetMomentum(const Vector3 &target);
+    void ResolveContact(const Vector3 &position, const Vector3 &velocity);
     void SetRotation(radian x, radian y, radian z, float bias = 1.0); // radians per second for each axis
     void SetRotation(const Vector3 &rot, float bias = 1.0); // radians per second for each axis
     BallSpatialInfo CalculatePrediction(); // returns momentum in 10ms
