@@ -19,6 +19,12 @@ C++ e comparações de seleção/atualização usando a memória carregada. O
 [laboratório atualizado](../artifacts/pes3-savestate-research.zip) consulta
 os cenários e transições registrados. A integração ao jogo continua pendente.
 
+A etapa [PES3-POSES.md](PES3-POSES.md) recupera caminhos de montagem, cache,
+mistura, espelhamento e conversão, com comparações C++ e helpers semânticos
+que dispensam a memória do PS2. O [laboratório de poses](../artifacts/pes3-pose-research.zip)
+mostra campos compostos capturados ou reexecutados. As diferenças contra as
+poses finais do emulador e a calibração para o jogador nativo permanecem abertas.
+
 ## Material recebido e alcance da conferência
 
 Recebemos dois prints da ISO extraída e `analise-pes-sles51912.md`, com

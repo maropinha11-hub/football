@@ -104,8 +104,9 @@ struct Cpu {
       fs = (w >> 11) & 31, fd = (w >> 6) & 31, fn = w & 63;
     if (rs == 4) { f[fs] = static_cast<std::uint32_t>(r[rt]); return; }
     if (rs == 0) { r[rt] = w32(f[fs]); return; }
-    if (rs == 8 && rt < 2) {
-      if (condition == static_cast<bool>(rt)) branch(pc + 4 + static_cast<std::int16_t>(w) * 4);
+    if (rs == 8 && rt < 4) {
+      if (condition == static_cast<bool>(rt & 1)) branch(pc + 4 + static_cast<std::int16_t>(w) * 4);
+      else if (rt & 2) annul = true;
       return;
     }
     if (rs == 20 && fn == 32) { f[fd] = bits(rounded(static_cast<double>(s32(f[fs])))); return; }
@@ -139,11 +140,14 @@ struct Cpu {
   void cop2(std::uint32_t w) {
     const unsigned rs = (w >> 21) & 31, ft = (w >> 16) & 31,
       fs = (w >> 11) & 31, fd = (w >> 6) & 31, fn = w & 63;
+    // Selected pose callers consume only the low words; no general QMFC2 ABI.
+    if (rs == 1) { r[ft] = bits(vf[fs][0]) | (static_cast<std::uint64_t>(bits(vf[fs][1])) << 32); return; }
+    if (rs == 2 && fs == 22) { r[ft] = w32(bits(q)); return; }
     if (rs == 5) { vf[fs] = {value(static_cast<std::uint32_t>(r[ft])),value(static_cast<std::uint32_t>(r[ft] >> 32)),0,0}; return; }
     if (rs < 16) throw std::runtime_error("unsupported COP2 transfer");
     const unsigned mask = rs & 15;
     const auto source = vf[fs], other = vf[ft], old_acc = acc;
-    auto* destination = &vf[fd]; int broadcast = -1, kind = -1;
+    auto* destination = &vf[fd]; int broadcast = -1, kind = -1; bool use_q = false;
     if (fn >= 60) {
       const unsigned index = (w & 3) | ((w >> 4) & 0x7c);
       if (index == 48 || index == 49) {
@@ -153,25 +157,65 @@ struct Cpu {
       }
       if (index == 57) { q = vector_value(std::sqrt(std::abs(static_cast<double>(vector_value(other[(w >> 23) & 3]))))); return; }
       if (index == 59) return; // Selected VWAITQ model has no timing.
-      if (index >= 24 && index <= 27) { kind = 2; broadcast = index - 24; destination = &acc; }
+      if (index == 47) return; // VNOP; timing and flags remain outside scope.
+      if (index == 56) {
+        const double numerator = vector_value(source[(w >> 21) & 3]);
+        const double denominator = vector_value(other[(w >> 23) & 3]);
+        if (!denominator) throw std::runtime_error("VU division by zero outside pose model");
+        q = vector_value(numerator / denominator); return;
+      }
+      if (index == 58) {
+        const double numerator = vector_value(source[(w >> 21) & 3]);
+        const double denominator = vector_value(std::sqrt(std::abs(static_cast<double>(vector_value(other[(w >> 23) & 3])))));
+        if (!denominator) throw std::runtime_error("VU reciprocal sqrt outside nonzero pose domain");
+        q = vector_value(numerator / denominator); return;
+      }
+      if (index == 46) {
+        if (mask != 14) throw std::runtime_error("OPMULA outside selected xyz mask");
+        for (unsigned lane = 0; lane < 3; ++lane)
+          acc[lane] = vector_value(static_cast<double>(vector_value(source[(lane + 1) % 3])) * vector_value(other[(lane + 2) % 3]));
+        return;
+      }
+      if (index <= 3) { kind = 0; broadcast = index; destination = &acc; }
+      else if (index <= 7) { kind = 1; broadcast = index - 4; destination = &acc; }
+      else if (index >= 12 && index <= 15) { kind = 5; broadcast = index - 12; destination = &acc; }
+      else if (index == 40 || index == 41 || index == 42 || index == 44 || index == 45) {
+        kind = index == 40 ? 0 : index == 41 ? 3 : index == 42 ? 2 : index == 44 ? 1 : 5;
+        destination = &acc;
+      }
+      else if (index >= 24 && index <= 27) { kind = 2; broadcast = index - 24; destination = &acc; }
       else if (index >= 8 && index <= 11) { kind = 3; broadcast = index - 8; destination = &acc; }
     } else if (fn <= 3) { kind = 0; broadcast = fn; }
     else if (fn <= 7) { kind = 1; broadcast = fn - 4; }
     else if (fn <= 11) { kind = 3; broadcast = fn - 8; }
+    else if (fn <= 15) { kind = 5; broadcast = fn - 12; }
     else if (fn >= 24 && fn <= 27) { kind = 2; broadcast = fn - 24; }
+    else if (fn == 28 || fn == 33 || fn == 37) { kind = fn == 28 ? 2 : fn == 33 ? 3 : 5; use_q = true; }
     else if (fn == 32) kind = 4;
+    else if (fn == 40) kind = 0;
+    else if (fn == 41) kind = 3;
     else if (fn == 42) kind = 2;
     else if (fn == 44) kind = 1;
+    else if (fn == 45) kind = 5;
+    else if (fn == 46) {
+      if (mask != 14) throw std::runtime_error("OPMSUB outside selected xyz mask");
+      for (unsigned lane = 0; lane < 3; ++lane) {
+        const auto product = vector_value(static_cast<double>(vector_value(source[(lane + 1) % 3])) * vector_value(other[(lane + 2) % 3]));
+        if (fd) vf[fd][lane] = vector_value(static_cast<double>(vector_value(old_acc[lane])) - product);
+      }
+      vf[0] = {0,0,0,1}; return;
+    }
     if (kind < 0) throw std::runtime_error("unsupported VU operation");
     for (unsigned lane = 0; lane < 4; ++lane) {
       if (!(mask & (8 >> lane))) continue;
       const double left = vector_value(source[lane]);
-      const double right = vector_value(kind == 4 ? q : other[broadcast < 0 ? lane : broadcast]);
+      const double right = vector_value(kind == 4 || use_q ? q : other[broadcast < 0 ? lane : broadcast]);
       float out;
       if (kind == 0 || kind == 4) out = vector_value(left + right);
       else if (kind == 1) out = vector_value(left - right);
       else if (kind == 2) out = vector_value(left * right);
-      else out = vector_value(static_cast<double>(vector_value(old_acc[lane])) + vector_value(left * right));
+      else if (kind == 3) out = vector_value(static_cast<double>(vector_value(old_acc[lane])) + vector_value(left * right));
+      else out = vector_value(static_cast<double>(vector_value(old_acc[lane])) - vector_value(left * right));
       if (destination == &acc || fd != 0) (*destination)[lane] = out;
     }
     vf[0] = {0,0,0,1};

@@ -42,6 +42,14 @@ caminhos alcançados e confere 276 chamadas com a memória do treino. No
 “Seleção reexecutada no treino” para consultar os cenários e clips registrados.
 Esta entrega ainda não integra as animações PES ao executável jogável.
 
+A [montagem de poses PES 3](docs/PES3-POSES.md) acrescenta 305 cenários,
+1.113 comparações de chamadas e helpers semânticos C++ de quaternion,
+matriz, rotação e mistura, com 5.434 comparações em bits. No
+[laboratório de poses](artifacts/pes3-pose-research.zip), expanda “Poses do
+treino PES” para consultar campos capturados e saídas reexecutadas. A
+divergência contra as poses finais do emulador, a calibração dos ossos e
+os contatos continuam pendentes antes da importação para o jogo Windows.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

@@ -84,6 +84,10 @@ struct Pes3LiftResult {
 extern "C" int pes3_run_lifted(std::uint8_t* ram, std::uint8_t* scratch,
   std::uint32_t entry, const std::uint64_t* args, std::uint32_t count,
   std::uint32_t budget, Pes3LiftResult* result);
+// Optional 32 raw binary32 FPU input registers for selected pose calls.
+extern "C" int pes3_run_lifted_f32(std::uint8_t* ram, std::uint8_t* scratch,
+  std::uint32_t entry, const std::uint64_t* args, std::uint32_t count,
+  const std::uint32_t* float_registers, std::uint32_t budget, Pes3LiftResult* result);
 '''
 
 
@@ -103,13 +107,14 @@ def generate(words, output):
     lines += ['static void step(Cpu& c) {', '  switch(c.pc >> 12) {']
     lines += [f'    case {page}u: page_{page:x}(c); return;' for page in pages]
     lines += ['    default: throw std::runtime_error("untranslated code page");', '  }', '}',
-      'extern "C" int pes3_run_lifted(std::uint8_t* ram, std::uint8_t* scratch,',
+      'extern "C" int pes3_run_lifted_f32(std::uint8_t* ram, std::uint8_t* scratch,',
       '  std::uint32_t entry, const std::uint64_t* args, std::uint32_t count,',
-      '  std::uint32_t budget, Pes3LiftResult* result) {',
+      '  const std::uint32_t* float_registers, std::uint32_t budget, Pes3LiftResult* result) {',
       '  if(!result) return -1;', '  *result = {};',
       '  if(!ram || !scratch || count > 8 || (count && !args) || !budget) { result->status=1; return 1; }',
       '  Cpu c(ram,scratch); c.pc=entry; c.r[28]=0x012adef0u; c.r[29]=0x01ffc000u; c.r[31]=0xfffffffcu;',
       '  for(unsigned i=0;i<count;++i) c.r[4+i]=args[i];', '  try {',
+      '    if(float_registers) std::memcpy(c.f.data(),float_registers,sizeof(c.f));',
       '    const std::uint32_t little = 1;',
       '    if(*reinterpret_cast<const std::uint8_t*>(&little)!=1) throw std::runtime_error("host must be little endian");',
       '    while(c.pc != 0xfffffffcu) {',
@@ -123,7 +128,11 @@ def generate(words, output):
       '  result->pc=c.pc; result->word=c.word; result->instructions=c.instructions; result->trace_hash=c.trace_hash;',
       '  std::memcpy(result->registers,c.r.data(),sizeof(result->registers));',
       '  std::memcpy(result->float_registers,c.f.data(),sizeof(result->float_registers));',
-      '  return static_cast<int>(result->status);', '}', '']
+      '  return static_cast<int>(result->status);', '}',
+      'extern "C" int pes3_run_lifted(std::uint8_t* ram, std::uint8_t* scratch,',
+      '  std::uint32_t entry, const std::uint64_t* args, std::uint32_t count,',
+      '  std::uint32_t budget, Pes3LiftResult* result) {',
+      '  return pes3_run_lifted_f32(ram,scratch,entry,args,count,nullptr,budget,result);', '}', '']
     output.mkdir(parents=True, exist_ok=False)
     (output / 'lifted_program.cpp').write_text('\n'.join(lines))
     (output / 'lift_api.hpp').write_text(ABI)

@@ -40,6 +40,11 @@ def run(package, browser, screenshot=None):
         if "replay_analysis" in manifest:
             expected_files|={"replay-evidence.json","replay-validation.json.gz","instruction-words.json",
                              "native/lifted_program.cpp","native/lift_api.hpp","native/lift_runtime.hpp"}
+        if "pose_analysis" in manifest:
+            expected_files|={"pose-evidence.json.gz","pose-validation.json.gz","pose-instruction-words.json",
+                "pose-native/lifted_program.cpp","pose-native/lift_api.hpp","pose-native/lift_runtime.hpp",
+                "pose-semantic/pose_ops.hpp","pose-semantic/pose_ops.cpp","pose-semantic/pose-ops-validation.json",
+                "pose-semantic/pose-ops-vectors.json.gz","retarget-plan.json"}
         check("package_contents", set(archive.namelist()) == expected_files)
     check("html_manifest_hash", hashlib.sha256(html_bytes).hexdigest() == manifest["html_sha256"])
     encoded = re.search(r'<script id="bundle" type="application/octet-stream">([^<]+)</script>', html)
@@ -108,6 +113,39 @@ def run(package, browser, screenshot=None):
                 page.locator("#action-filter").select_option("")
                 choose(47)
                 check("all_clips_filter_restored", page.locator("#code-clip option").count()==1105)
+
+            if "pose_analysis" in manifest:
+                page.locator("#pose-context").evaluate("el=>el.open=true")
+                check("pose_panel_visible",page.locator("#pose-source").is_visible())
+                check("pose_scenario_inventory",page.locator("#pose-scenario option").count()==manifest["pose_analysis"]["scenarios"])
+                page.locator("#pose-source").select_option("captured")
+                page.locator("#pose-actor").select_option("9")
+                page.locator("#pose-buffer").select_option("1")
+                page.evaluate("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))")
+                state=snapshot()
+                check("captured_actor_and_buffer_selected",state["poseMode"]=={"source":"captured","actor":10,"scenario":None,"buffer":1})
+                check("captured_pose_uses_composed_points",page.evaluate("()=>{const s=window.pes3Lab.snapshot(),p=s.poseFields.composed_translation_bits.map(r=>r.map(Pes3Motion.num));return s.world.every((r,i)=>r[0]===p[i][0]-p[0][0]&&r[1]===-p[i][1]&&r[2]===p[i][2]-p[0][2]);}"))
+                check("static_pose_disables_clip_playback",page.locator("#play").is_disabled() and page.locator("#timeline").is_disabled())
+                page.locator("#scene").focus();page.keyboard.press("Space")
+                check("keyboard_cannot_animate_frozen_pose",not snapshot()["playing"])
+                page.locator("#pose-source").select_option("reexecuted")
+                value=page.locator("#pose-scenario").evaluate("el=>[...el.options].find(o=>o.textContent==='action-4-pose').value")
+                page.locator("#pose-scenario").select_option(value)
+                page.evaluate("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))")
+                check("reexecuted_pose_origin_identified","Memória alterada para teste" in page.locator("#pose-evidence").inner_text() and snapshot()["poseMode"]["scenario"]=="action-4-pose")
+                check("reexecuted_composed_representation_is_valid",snapshot()["poseFields"]["instance_flags"][1]&6==6)
+                with page.expect_download() as event:page.locator("#export-pose").click()
+                with tempfile.TemporaryDirectory(prefix="pes3-pose-export-") as temp:
+                    target=Path(temp)/event.value.suggested_filename;event.value.save_as(target)
+                    exported=json.loads(target.read_text())
+                check("pose_export_preserves_bits_and_scope",exported["fields"]==snapshot()["poseFields"] and len(exported["state_sha256"])==64 and "No resumed PCSX2 frame" in exported["scope"])
+                page.locator("#pose-source").select_option("clip")
+                check("explicit_clip_mode_restores_playback",snapshot()["poseMode"] is None and not page.locator("#play").is_disabled())
+                page.locator("#pose-source").select_option("captured")
+                choose(48)
+                check("clip_selection_leaves_pose_mode",snapshot()["poseMode"] is None and not page.locator("#play").is_disabled())
+                choose(47)
+                page.locator("#pose-context").evaluate("el=>el.open=false")
 
             if "replay_analysis" in manifest:
                 page.locator("#replay-context").evaluate("element=>element.open=true")
@@ -204,6 +242,12 @@ def run(package, browser, screenshot=None):
             if screenshot:
                 if screenshot.exists():
                     raise FileExistsError(screenshot)
+                if "pose_analysis" in manifest:
+                    page.locator("#pose-context").evaluate("el=>el.open=true")
+                    page.locator("#pose-source").select_option("captured")
+                    page.locator("#pose-actor").select_option("9")
+                    page.locator("#pose-buffer").select_option("1")
+                    page.evaluate("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))")
                 page.screenshot(path=str(screenshot), full_page=True)
             check("no_javascript_errors", not errors and not page.locator("#error").is_visible())
             check("no_network_requests", not requests)

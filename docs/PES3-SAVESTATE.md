@@ -160,9 +160,14 @@ tem SHA-256 `2e31a188a8f84df6dd2fd7a1baa7c17dfd382415078d9c5a1f493b0715841907`.
 
 ## O que falta para o centro de treinamento
 
+Os caminhos de cache, mistura, espelhamento e conversão de poses foram
+aprofundados na etapa [PES3-POSES.md](PES3-POSES.md), que acrescenta uma
+prévia dos pontos compostos e helpers semânticos sem memória do PS2.
+A igualdade com os campos finais capturados continua aberta.
+
 Ainda é necessário recuperar caminhos não exercitados, conferir o quadro
-completo e a aritmética contra sequências do emulador, resolver a pose final,
-caches, mistura e espelhamento. A divergência anterior de poses finais
+completo e a aritmética contra sequências do emulador e resolver as
+diferenças da pose final. A divergência anterior de poses finais
 permanece aberta. Em seguida, unidades/eixos e os 19 ossos precisam ser
 adaptados ao jogador do treino e os contatos com a bola validados antes da
 habilitação no seletor nativo. A física completa também exige essa validação.

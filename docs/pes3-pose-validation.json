@@ -1,0 +1,511 @@
+{
+  "schema_version": 1,
+  "result": "passed_selected_model_checks",
+  "recorded_at_utc": "2026-10-10T23:47:07.599065+00:00",
+  "artifact": {
+    "file": "artifacts/pes3-pose-research.zip",
+    "bytes": 17669713,
+    "sha256": "b97e21fa98b1f4f6c111b054164a209edc6b8aecaa7eda567cad44cf76d81a05",
+    "members": 25,
+    "crc": "passed"
+  },
+  "pose_run": {
+    "run_id": "b1e978a7-b646-43de-99dd-fb18efa399d1",
+    "completed_at_utc": "2026-10-10T23:38:50.922124+00:00",
+    "result": "passed",
+    "summary": {
+      "scenarios": 305,
+      "completed_scenarios": 305,
+      "original_function_calls": 1113,
+      "native_function_comparisons": 1113,
+      "original_instructions": 5741559,
+      "translated_instruction_words": 52414,
+      "fresh_local_semantic_comparisons": 44,
+      "semantic_pose_operation_comparisons": 5434,
+      "captured_pose_matches": 0,
+      "captured_pose_comparisons": 44,
+      "blocked_scenarios": []
+    },
+    "lift": {
+      "instructions_translated": 52414,
+      "pages": 334,
+      "scope": "Reached instruction paths; guest register/memory representation, selected host arithmetic, no devices or complete PS2 frame."
+    },
+    "compile_command": [
+      "g++",
+      "-std=c++17",
+      "-O0",
+      "-fno-fast-math",
+      "-ffp-contract=off",
+      "-shared",
+      "-fPIC",
+      "/tmp/pes3-poses-verified/native/lifted_program.cpp",
+      "-o",
+      "/tmp/pes3-poses-verified/native/libpes3_pose_lift.so"
+    ],
+    "scope": "Captured pose fields and function-return host-model outputs. No resumed PCSX2 frame, pitch metre calibration, mesh, ball contact or native game integration."
+  },
+  "state": {
+    "file": "SLES-51912 (3D653E04).01.p2s",
+    "bytes": 15758906,
+    "sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "format_version": "0x9a590000",
+    "pcsx2_version": "v2.8.2",
+    "members": [
+      {
+        "name": "PCSX2 Savestate Version.id",
+        "bytes": 36,
+        "sha256": "d70df4d4d822ec7fa5bada5274c45f756197f0e800ed3fb6941194e0abaf9311",
+        "compression": 0
+      },
+      {
+        "name": "PCSX2 Internal Structures.dat",
+        "bytes": 6782794,
+        "sha256": "6f1452d81e833716f2ca9c25876adbb6048465a13f0fc8912265f35b79ec7bd2",
+        "compression": 93
+      },
+      {
+        "name": "eeMemory.bin",
+        "bytes": 33554432,
+        "sha256": "dff465421161cc88efe4c9ac853bff7c03026aaead7ce32471ae98d9481bafbd",
+        "compression": 93
+      },
+      {
+        "name": "iopMemory.bin",
+        "bytes": 2097152,
+        "sha256": "6764905472be9353cad4c440c221531c94a6f1aa9173b64644dff1204e6d2d35",
+        "compression": 93
+      },
+      {
+        "name": "eeHwRegs.bin",
+        "bytes": 65536,
+        "sha256": "3f7e0a899b1e822dc1ec359e9444988a02280ce933c070ca733fb7581f166a49",
+        "compression": 93
+      },
+      {
+        "name": "iopHwRegs.bin",
+        "bytes": 65536,
+        "sha256": "da399ebee90f6d7ee77bcc715374dc039462e96e6ecf3709a4d2d67f22e7a31e",
+        "compression": 93
+      },
+      {
+        "name": "Scratchpad.bin",
+        "bytes": 16384,
+        "sha256": "fa68124dc045f593ac308e4d6227c93414db989691ceab91ca0f09dfa61f568c",
+        "compression": 93
+      },
+      {
+        "name": "vu0Memory.bin",
+        "bytes": 4096,
+        "sha256": "5369b14063c3306259b4d5031847a9a0d78c2dcedaaf7c3ae93ba2c5d6ef0261",
+        "compression": 93
+      },
+      {
+        "name": "vu1Memory.bin",
+        "bytes": 16384,
+        "sha256": "b82124aaf9bcb4cefc63be6b608066851628b7909edfb467c0ed262c2fad538f",
+        "compression": 93
+      },
+      {
+        "name": "vu0MicroMem.bin",
+        "bytes": 4096,
+        "sha256": "51a0139d61c4961981ecc5619b1899f2e5eb019013ee02c1c87dcdde198b22de",
+        "compression": 93
+      },
+      {
+        "name": "vu1MicroMem.bin",
+        "bytes": 16384,
+        "sha256": "cc52f3c16758711234fddf5bb0c1b3c33e84a9f5b3de959e36f9338bc1cbbcfa",
+        "compression": 93
+      },
+      {
+        "name": "SPU2.bin",
+        "bytes": 2178992,
+        "sha256": "4694030fc4668d8b01c14303dd531f8d5f22bfebaa320d27f1591106342a139c",
+        "compression": 93
+      },
+      {
+        "name": "USB.bin",
+        "bytes": 8491,
+        "sha256": "dde2ed3eb9bf8b5df84846d3adb993b84f3723084f1a13c2f5ad516ab9d9dca3",
+        "compression": 93
+      },
+      {
+        "name": "PAD.bin",
+        "bytes": 257,
+        "sha256": "254221256f821665a6ac3e47f51b03f510d809b7ee9446b832fb14c1fdc29c92",
+        "compression": 93
+      },
+      {
+        "name": "GS.bin",
+        "bytes": 4194813,
+        "sha256": "625331201cbc22ba4d52829eed76d8a92f7ea9d43c2d32618ccf24736a8eaafc",
+        "compression": 93
+      },
+      {
+        "name": "Screenshot.png",
+        "bytes": 423681,
+        "sha256": "f4cb1ab9580915371346cae2bafac45eb1a95c8a523da94cd63b234afccacf84",
+        "compression": 0
+      }
+    ]
+  },
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "analysis_sha256": "edb7411879c801f8ee69fc0ba2d1339886ab897a358e2fc1b9136a7a545e8b31",
+  "full_pose_validation_sha256": "6bc4247f828e1e7ba1a9e801316d26e3b98d2f7b8c06844fa3be6b26a6e3aa3a",
+  "pose_evidence_sha256": "ab13880b2a0e29a8e905bfdb8279cac5ed0568e178402a0a9e91472c00ef30e0",
+  "reference_sha256": {
+    "mips_integer_reference.py": "2ff253c2fddb8eae6081b80786e9a13502da24e086ce0c88dfb01b50aa77c906",
+    "float_vector_model.py": "3ae41e793c4ea6cfd17fba870f3e504f2601632d6a3bd568480dd9c8c317a0eb",
+    "pose_math_model.py": "a5bfdba5d75f60ca10b20dd4eb7491c2d5897a82033cde9afdab03601383dc56",
+    "scratch_field_model.py": "199846d8bf4cfe31e4bfb3cab61873830abd139334206b9e640371a5298341cc"
+  },
+  "local_semantic_library_sha256": "bed788eb5cce67ebf527b57731c8c6be1012fcaed089ab15fab903c57329267b",
+  "native_files_sha256": {
+    "libpes3_pose_lift.so": "de7a483f70e2bd92a04b89f48812a1bf42a46ead5a42f5bfa6bf7fac23197089",
+    "lift_api.hpp": "08f7f40e27346af74567112118c561eac2a5dadd6e41379ad18142538e906ddd",
+    "lift_runtime.hpp": "324a5727b5684e560e501da9d8d157aec3b6c638379c17276f3b791a9936ed95",
+    "lifted_program.cpp": "35fbae0c61b9997ff9375a0daa6cb4b7e5a79afa71f033276ed0583cfa5ae366"
+  },
+  "semantic_pose_operations": {
+    "result": "passed",
+    "comparisons": 5434,
+    "original_instructions": 256269,
+    "instruction_words": 141,
+    "by_operation": {
+      "quaternion_multiply": 836,
+      "quaternion_matrix": 836,
+      "quaternion_rotate": 836,
+      "shortest_arc_nlerp": 2926
+    },
+    "fixture_sha256": "f60d76ae02965efe13285874b2a515aec47744caf5deae6c2598938f5d03ecc1",
+    "compile_command": [
+      "g++",
+      "-std=c++17",
+      "-O0",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-fno-fast-math",
+      "-ffp-contract=off",
+      "-shared",
+      "-fPIC",
+      "/tmp/pes3-poses-verified/semantic/pose_ops.cpp",
+      "-o",
+      "/tmp/pes3-poses-verified/semantic/libpose_ops.so"
+    ],
+    "files_sha256": {
+      "libpose_ops.so": "29ebba7a5942f27e9819f0f4c6ac62b3a08267b94f36a0b298feb6171929f780",
+      "pose-ops-vectors.json": "f60d76ae02965efe13285874b2a515aec47744caf5deae6c2598938f5d03ecc1",
+      "pose_ops.cpp": "e16b08fbfd4d1ae892c3d5ca64437a18f2ead3a1e4e4e9068f69e0fead0a1a05",
+      "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118"
+    },
+    "scope": "Memory-independent semantic C++ pose helpers; unchanged original helper bodies run first. No reference output substitution, mesh retargeting, contact or whole frame equivalence."
+  },
+  "captured_pose_equivalence": {
+    "status": "open",
+    "kind": "fresh_local_evaluator_vs_saved_local_fields",
+    "whole_pose_matches": 0,
+    "comparisons": 44,
+    "max_absolute_component_delta_model_units": 3.839999794960022,
+    "older_report": "0/132 from older captured states; their complete RAM was not supplied and was not rerun.",
+    "scope": "Neither raw local comparison measures whole-frame hardware equality. Caches and later assembly are separate operations."
+  },
+  "skeleton": {
+    "actor_records": 22,
+    "buffers_per_actor": 2,
+    "nodes_per_buffer": 19,
+    "parents": [
+      -1,
+      0,
+      1,
+      1,
+      2,
+      3,
+      4,
+      5,
+      0,
+      8,
+      8,
+      9,
+      10,
+      11,
+      12,
+      8,
+      15,
+      13,
+      14
+    ],
+    "mirror_pairs": [
+      -1,
+      -1,
+      3,
+      2,
+      5,
+      4,
+      7,
+      6,
+      -1,
+      10,
+      9,
+      12,
+      11,
+      14,
+      13,
+      -1,
+      -1,
+      18,
+      17
+    ]
+  },
+  "retarget": {
+    "mapping_status": "topology_candidates",
+    "native_object_sha256": "f6dfb25c5578d6b806c7818130dd052aec86907e01733912c59e1e0d19728e61",
+    "native_skeletal_nodes": 13,
+    "native_animation_channels": 14,
+    "runtime_enabled": false,
+    "axes_calibrated": false,
+    "scale_calibrated": false,
+    "left_right_calibrated": false,
+    "ball_contacts_validated": false,
+    "scope": "Candidate correspondences from observed PES topology and native XML. Bone names are anatomical hypotheses, not recovered PES symbols. Parent frames must be composed; left/right, bind corrections, units and contact timing remain unverified."
+  },
+  "replay_regression": {
+    "run_id": "2baaaa40-5a27-4cfa-aad7-1de475257735",
+    "completed_at_utc": "2026-10-10T23:30:35.735261+00:00",
+    "result": "passed",
+    "summary": {
+      "scenarios": 234,
+      "completed_scenarios": 234,
+      "original_function_calls": 276,
+      "native_function_comparisons": 276,
+      "blocked_scenarios": [],
+      "original_instructions": 2142295,
+      "observed_transition_calls": 86,
+      "observed_clips": [
+        0,
+        47,
+        60,
+        109,
+        116,
+        117,
+        119,
+        120,
+        224,
+        263,
+        289,
+        296,
+        304,
+        314,
+        317,
+        482,
+        570,
+        680,
+        858,
+        869
+      ],
+      "translated_instruction_words": 51609
+    },
+    "tool_sha256": {
+      "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a",
+      "replay.py": "c7d7f82232c13c410c33d7f3e5a91c2ed44c25b3260aac95778b2fc45c200031",
+      "lift.py": "9afa48b16fc618a509b97bb0c55bf414d8ddf9dc95003462b9eb17c457680ed8",
+      "lift_runtime.hpp": "324a5727b5684e560e501da9d8d157aec3b6c638379c17276f3b791a9936ed95"
+    }
+  },
+  "replay_validation_sha256": "a0bac972284b5a5d497575d6d721c2a752183b227a22eeab60629ff8fdc55ef8",
+  "browser": {
+    "schema_version": 1,
+    "result": "passed",
+    "run_id": "15aa5ce8-69a1-48fc-97ce-66d4e8660ff7",
+    "completed_at_utc": "2026-10-10T23:46:10.052861+00:00",
+    "package_sha256": "b97e21fa98b1f4f6c111b054164a209edc6b8aecaa7eda567cad44cf76d81a05",
+    "html_sha256": "b9502533ae269e3644cbd5e7c17d20a279cb06f69d1a0b4b2544e2cecb6cd35e",
+    "checks": 54,
+    "passed_checks": [
+      "package_crc",
+      "package_contents",
+      "html_manifest_hash",
+      "embedded_bundle_hash",
+      "clip_inventory",
+      "nineteen_finite_joints",
+      "no_automatic_gesture_labels",
+      "canvas_has_skeleton_pixels",
+      "automatic_code_context_visible",
+      "action_context_filters_clips",
+      "substate_context_filters_clips",
+      "navigation_uses_filtered_clips",
+      "code_export_includes_all_clips",
+      "code_export_preserves_source_and_scope",
+      "code_export_needs_no_manual_annotations",
+      "all_clips_filter_restored",
+      "pose_panel_visible",
+      "pose_scenario_inventory",
+      "captured_actor_and_buffer_selected",
+      "captured_pose_uses_composed_points",
+      "static_pose_disables_clip_playback",
+      "keyboard_cannot_animate_frozen_pose",
+      "reexecuted_pose_origin_identified",
+      "reexecuted_composed_representation_is_valid",
+      "pose_export_preserves_bits_and_scope",
+      "explicit_clip_mode_restores_playback",
+      "clip_selection_leaves_pose_mode",
+      "snapshot_replay_controls_visible",
+      "snapshot_replay_inventory",
+      "original_action_selects_recorded_clip",
+      "modified_snapshot_is_identified",
+      "recorded_blend_transition_selectable",
+      "no_transition_preserves_output_clip",
+      "unmodified_memory_is_identified",
+      "replay_export_preserves_provenance",
+      "replay_export_preserves_modified_input",
+      "playback_advances",
+      "pause_stops_playback",
+      "sentinel_is_not_a_new_pose",
+      "previous_original_key",
+      "next_endpoint",
+      "preview_follow_preserves_local_pose",
+      "manual_candidate_annotation",
+      "export_retains_source_and_time",
+      "export_does_not_enable_gameplay",
+      "annotation_can_be_removed",
+      "last_to_first_clip",
+      "first_to_last_clip",
+      "invalid_id_preserves_selection",
+      "keyboard_clip_navigation",
+      "keyboard_playback",
+      "narrow_viewport_canvas_visible",
+      "no_javascript_errors",
+      "no_network_requests"
+    ],
+    "javascript_errors": [],
+    "network_requests": [],
+    "load_method": "set_content_exact_packaged_inline_html",
+    "scope": "Chromium inline-document functional checks in cloud; file-URL opening and Windows Edge not executed."
+  },
+  "browser_report_sha256": "1532914453ec3dc7a8271e1304adcf1c519f4d816efa2312ecc82ec0e15199bd",
+  "python_unit_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_pes3*.py' -v",
+    "exit_code": 0,
+    "passed": 61,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 3.117,
+    "output_sha256": "a1c46777175d35e38e4a26bc7635a19d5082f5e08e7c4154144613c8d2d9d990"
+  },
+  "screenshot": {
+    "file": "docs/pes3-pose-lab.png",
+    "sha256": "b987efba73595662cacc0f0d2a7bf84fd19ccd9370d9143e985d8cf3a39ea672",
+    "selection": {
+      "source": "captured",
+      "actor": 10,
+      "buffer": 1
+    },
+    "visually_inspected": true
+  },
+  "files_sha256": {
+    "tools/pes3/pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+    "tools/pes3/pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+    "tools/pes3/verify_pose_ops.py": "0606b46b49fc7e4a4db4c85f7147c1709f31e7a5fe67a500b328176fc99c6d7e",
+    "tools/pes3/recovered/pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+    "tools/pes3/retarget.py": "3041c818f68d42cc0906c5d1927f5edab27b7dcd076e3b4daaba6881ed1af7c0",
+    "tools/pes3/build_lab.py": "955013c889c9dc1aa86d520d635130ac8ff7e167de7fcae7854927a9542da94e",
+    "tools/pes3/lab.html": "50259d84a8c9aef08203bab0b90ecb618f1c3aa682f09598ad2cbe77091c1d3b",
+    "tools/pes3/motion.js": "6f949b660c407ea3a9693b1cc351b9672e8374109f2c42ad8a5078de45ab75d7",
+    "tools/pes3/lift.py": "9afa48b16fc618a509b97bb0c55bf414d8ddf9dc95003462b9eb17c457680ed8",
+    "tools/pes3/lift_runtime.hpp": "324a5727b5684e560e501da9d8d157aec3b6c638379c17276f3b791a9936ed95",
+    "tools/pes3/replay.py": "00a8cadc961314aae082a0ce2b3752c12adcd83fa4edc0636bfb618f2ebdbe44",
+    "tools/pes3/savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a",
+    "tests/test_pes3_pose.py": "64d51bdcabf16ea7fea98134cc0985793653cd45045ca7b678a82bfab8082bd2",
+    "tests/pes3_lab_smoke.py": "15b041da1e5e191783864bfad30dc3514bdc622c1d9ea38d894e9652926eace1"
+  },
+  "package_files_sha256": {
+    "abrir-laboratorio.html": "b9502533ae269e3644cbd5e7c17d20a279cb06f69d1a0b4b2544e2cecb6cd35e",
+    "LEIA-ME.txt": "176b7f13f2087a621224ae22e49eb461757ff1dce659045ccf95cb1e567d9db5",
+    "manifest.json": "ba64c79079a32a04523c94224b63f5437eb85f26317fa60285a285927acb9a5d",
+    "animation-actions.json": "db88d3460904fd760aa6b2a60c0a55c4f1058e2f75037865732e4b10ba2c3f8d",
+    "actions.json.gz": "143132ab071e6e7d206354589aa9dc175f5438befacb61b25df157e0c96ab619",
+    "action_dispatch.hpp": "7260b7a146f34592d1789d4e471ef24599551377996e3ca72b80e22aa60fd470",
+    "action_dispatch.js": "0444c5bb5a8d5501957e894bde128d829501c747316235ddc693013b106d2075",
+    "actions-validation.json": "50557bcfee9897adb8e785810cf52718603ec2ee884f61695a89f820b55c16a8",
+    "replay-evidence.json": "b9565abd1e54bad99727172cce1d4016bb007b22e9e388616294ca92bfbfd58b",
+    "replay-validation.json.gz": "12cbd6cac5db211478f5fce7a3ab215f4022275c698140beda8b5634eb5d4995",
+    "instruction-words.json": "e12fda233de3f84d0c3c6062fc81bf81c0aad447bea7bcf0329058a0ff28d026",
+    "native/lifted_program.cpp": "3c99763bd0162baabc74fda5b98f0e404af6d0a8635c7128bfbd09fc222583c8",
+    "native/lift_api.hpp": "08f7f40e27346af74567112118c561eac2a5dadd6e41379ad18142538e906ddd",
+    "native/lift_runtime.hpp": "324a5727b5684e560e501da9d8d157aec3b6c638379c17276f3b791a9936ed95",
+    "pose-evidence.json.gz": "c764ab956f7b80a592754aaa238424124ed5d13644ad870e25bbe19252a5eff6",
+    "pose-validation.json.gz": "d4ae91a84ee1bfbb2c239b6b9801a6b70fda3ceb6c22146697c4163d12386b44",
+    "pose-instruction-words.json": "f8523bc0a1314439d75a64219b4f0b9a93139fda6ab2f1bf244b9c2f03621ffc",
+    "pose-native/lifted_program.cpp": "35fbae0c61b9997ff9375a0daa6cb4b7e5a79afa71f033276ed0583cfa5ae366",
+    "pose-native/lift_api.hpp": "08f7f40e27346af74567112118c561eac2a5dadd6e41379ad18142538e906ddd",
+    "pose-native/lift_runtime.hpp": "324a5727b5684e560e501da9d8d157aec3b6c638379c17276f3b791a9936ed95",
+    "pose-semantic/pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+    "pose-semantic/pose_ops.cpp": "e16b08fbfd4d1ae892c3d5ca64437a18f2ead3a1e4e4e9068f69e0fead0a1a05",
+    "pose-semantic/pose-ops-validation.json": "6ae09080db1c9e935293807346eda6a01a5164dd9ba72501471d96aee2714789",
+    "pose-semantic/pose-ops-vectors.json.gz": "b92cc4c469f1c7d62303409cb5d1fbce32c4a596fa536f97857e653fa185ca02",
+    "retarget-plan.json": "164996771b97069b858c553052467e150dbe21f51b936958e981529917d77c1d"
+  },
+  "pcsx2_layout_and_opcode_sources": [
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/SaveState.cpp",
+      "sha256": "868f923f2044e5a27c439f8b8528c9e509d1185d9fcbefd6eacb3e6240029589",
+      "bytes": 37125
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/SaveState.h",
+      "sha256": "6c47daa3be4a4b7c3df236b0ac1dae27af0a948038774ba6e2a8a6bc45493720",
+      "bytes": 8930
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/R5900.h",
+      "sha256": "a6ef18e1b646b5ba6c956c10836aa4f75fd8309798f0ac0cf8644faa41cbf323",
+      "bytes": 13858
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/R5900OpcodeTables.cpp",
+      "sha256": "b96376cfff67799af5fe72bbfe4490c077f3368740dbf368d0a0e6f7be877f59",
+      "bytes": 31618
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/VUops.cpp",
+      "sha256": "1cb75c6d9e2a16cbf29d6f4ba11ce8d4cbb06061c73006b4691854556c9ba0ee",
+      "bytes": 145701
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/VUops.h",
+      "sha256": "624f9b0ec81847f1941826dd05400685fe82ded288de8dd6789122bd8fd07fb1",
+      "bytes": 1298
+    }
+  ],
+  "environment": {
+    "new_dependencies_or_configuration": false,
+    "checks_ran_in_cloud": true,
+    "Windows_Edge_file_URL_check": "not_executed"
+  },
+  "scope": "Recovered selected pose paths and four memory-independent helpers on one training save. Host binary32 model, selected VU subnormal handling, no complete FPU/VU flags/timing/device emulation or resumed frame. Candidate rig mapping remains disabled; full animation selection, native import and ball physics are not complete.",
+  "native_training": {
+    "baseline_commit": "0cb7ead8dcf294755a0b0581f559cdeb241de0f3",
+    "src_data_and_windows_archive_changed": false,
+    "artifact": "artifacts/football-training-windows-x86_64.zip",
+    "bytes": 31320015,
+    "sha256": "ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443"
+  }
+}

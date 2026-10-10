@@ -1,0 +1,489 @@
+{
+  "schema_version": 1,
+  "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+  "native_object_sha256": "f6dfb25c5578d6b806c7818130dd052aec86907e01733912c59e1e0d19728e61",
+  "pes_parent_indices": [
+    -1,
+    0,
+    1,
+    1,
+    2,
+    3,
+    4,
+    5,
+    0,
+    8,
+    8,
+    9,
+    10,
+    11,
+    12,
+    8,
+    15,
+    13,
+    14
+  ],
+  "pes_mirror_pairs": [
+    -1,
+    -1,
+    3,
+    2,
+    5,
+    4,
+    7,
+    6,
+    -1,
+    10,
+    9,
+    12,
+    11,
+    14,
+    13,
+    -1,
+    -1,
+    18,
+    17
+  ],
+  "mapping_status": "topology_candidates",
+  "native_skeletal_nodes": 13,
+  "native_animation_channels": 14,
+  "targets": [
+    {
+      "name": "body",
+      "parent": "player",
+      "bind_position_m": [
+        0.0,
+        0.0,
+        0.96
+      ],
+      "bind_rotation_source": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 0,
+          "ancestor_chain": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "middle",
+      "parent": "body",
+      "bind_position_m": [
+        0.0,
+        0.0,
+        0.15
+      ],
+      "bind_rotation_source": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 8,
+          "ancestor_chain": [
+            0,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "name": "neck",
+      "parent": "middle",
+      "bind_position_m": [
+        0.0,
+        -0.03,
+        0.5
+      ],
+      "bind_rotation_source": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 16,
+          "ancestor_chain": [
+            0,
+            8,
+            15,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_shoulder",
+      "parent": "middle",
+      "bind_position_m": [
+        0.16,
+        -0.01,
+        0.48
+      ],
+      "bind_rotation_source": [
+        10.0,
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 11,
+          "ancestor_chain": [
+            0,
+            8,
+            9,
+            11
+          ]
+        },
+        {
+          "index": 12,
+          "ancestor_chain": [
+            0,
+            8,
+            10,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_elbow",
+      "parent": "left_shoulder",
+      "bind_position_m": [
+        -0.01,
+        -0.0,
+        -0.33
+      ],
+      "bind_rotation_source": [
+        -6.0,
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 13,
+          "ancestor_chain": [
+            0,
+            8,
+            9,
+            11,
+            13
+          ]
+        },
+        {
+          "index": 14,
+          "ancestor_chain": [
+            0,
+            8,
+            10,
+            12,
+            14
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_shoulder",
+      "parent": "middle",
+      "bind_position_m": [
+        -0.16,
+        -0.01,
+        0.48
+      ],
+      "bind_rotation_source": [
+        10.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 12,
+          "ancestor_chain": [
+            0,
+            8,
+            10,
+            12
+          ]
+        },
+        {
+          "index": 11,
+          "ancestor_chain": [
+            0,
+            8,
+            9,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_elbow",
+      "parent": "right_shoulder",
+      "bind_position_m": [
+        0.01,
+        -0.0,
+        -0.33
+      ],
+      "bind_rotation_source": [
+        -6.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 14,
+          "ancestor_chain": [
+            0,
+            8,
+            10,
+            12,
+            14
+          ]
+        },
+        {
+          "index": 13,
+          "ancestor_chain": [
+            0,
+            8,
+            9,
+            11,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_thigh",
+      "parent": "body",
+      "bind_position_m": [
+        0.087,
+        0.0,
+        -0.01
+      ],
+      "bind_rotation_source": [
+        2.0,
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 2,
+          "ancestor_chain": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "index": 3,
+          "ancestor_chain": [
+            0,
+            1,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_knee",
+      "parent": "left_thigh",
+      "bind_position_m": [
+        0.0,
+        0.0,
+        -0.42
+      ],
+      "bind_rotation_source": [
+        -2.0,
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 4,
+          "ancestor_chain": [
+            0,
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "index": 5,
+          "ancestor_chain": [
+            0,
+            1,
+            3,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_ankle",
+      "parent": "left_knee",
+      "bind_position_m": [
+        0.0,
+        -0.04,
+        -0.44
+      ],
+      "bind_rotation_source": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 6,
+          "ancestor_chain": [
+            0,
+            1,
+            2,
+            4,
+            6
+          ]
+        },
+        {
+          "index": 7,
+          "ancestor_chain": [
+            0,
+            1,
+            3,
+            5,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_thigh",
+      "parent": "body",
+      "bind_position_m": [
+        -0.087,
+        0.0,
+        -0.01
+      ],
+      "bind_rotation_source": [
+        2.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 3,
+          "ancestor_chain": [
+            0,
+            1,
+            3
+          ]
+        },
+        {
+          "index": 2,
+          "ancestor_chain": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_knee",
+      "parent": "right_thigh",
+      "bind_position_m": [
+        0.0,
+        0.0,
+        -0.42
+      ],
+      "bind_rotation_source": [
+        -2.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 5,
+          "ancestor_chain": [
+            0,
+            1,
+            3,
+            5
+          ]
+        },
+        {
+          "index": 4,
+          "ancestor_chain": [
+            0,
+            1,
+            2,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_ankle",
+      "parent": "right_knee",
+      "bind_position_m": [
+        0.0,
+        -0.04,
+        -0.44
+      ],
+      "bind_rotation_source": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pes_candidates": [
+        {
+          "index": 7,
+          "ancestor_chain": [
+            0,
+            1,
+            3,
+            5,
+            7
+          ]
+        },
+        {
+          "index": 6,
+          "ancestor_chain": [
+            0,
+            1,
+            2,
+            4,
+            6
+          ]
+        }
+      ]
+    }
+  ],
+  "movement_channel": {
+    "name": "player",
+    "policy": "native controller translation remains authoritative"
+  },
+  "runtime_enabled": false,
+  "axes_calibrated": false,
+  "scale_calibrated": false,
+  "left_right_calibrated": false,
+  "ball_contacts_validated": false,
+  "scope": "Candidate correspondences from observed PES topology and native XML. Bone names are anatomical hypotheses, not recovered PES symbols. Parent frames must be composed; left/right, bind corrections, units and contact timing remain unverified."
+}

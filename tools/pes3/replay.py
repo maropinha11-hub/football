@@ -118,7 +118,7 @@ def trace_word(current, pc, word):
     return current
 
 
-def observe_case(state, case, reference, math_class, words, image, budget):
+def observe_case(state, case, reference, math_class, words, image, budget, capture=None, capture_each_return=False):
     ref = reference(state.ram, state.scratch)
     for edit in case['edits']:
         ref.write(int(edit['address'], 16), edit['format'], edit['value'])
@@ -147,7 +147,8 @@ def observe_case(state, case, reference, math_class, words, image, budget):
                 branches.append(hex(pc))
         try:
             value = ref.run(int(request['entry'],16), request['args'], max_instructions=budget,
-              math_model=model, instruction_observer=observe, full_quadwords=True)
+              math_model=model, instruction_observer=observe, full_quadwords=True,
+              initial_float_registers={int(k):v for k,v in request.get('float_inputs',{}).items()})
             status, reason = 'completed', None
         except Exception as exc:
             value = None; status, reason = 'blocked', str(exc)
@@ -156,14 +157,21 @@ def observe_case(state, case, reference, math_class, words, image, budget):
           'trace_hash': hex(signature), 'registers': ref.last_registers if status == 'completed' else None,
           'float_registers': model.f[:] if status == 'completed' else None,
           'ram_sha256': digest(ref.ram), 'scratch_sha256': digest(ref.scratch)})
+        if request.get('float_inputs'):
+            records[-1]['float_inputs'] = request['float_inputs']
+        if capture and capture_each_return and status == 'completed':
+            records[-1]['pose_output'] = capture(ref, case)
         if status != 'completed':
             break
     player = PLAYER_BASE + case['actor'] * PLAYER_STRIDE
-    return dict(case, status=records[-1]['status'], results=records,
+    row = dict(case, status=records[-1]['status'], results=records,
       last_instruction={'pc':hex(last[0]), 'word':f'{last[1]:08x}'},
       transitions=transitions, calls=calls, branch_pcs=sorted(set(branches)),
       output_actor={'action':ref.read(player+0xDA,'B'), 'substate':ref.read(player+0xDC,'H'),
                     'clip':ref.read(player+0x2DC,'H'), 'frame_bits':hex(ref.read(player+0x2E4,'I'))})
+    if capture and row['status'] == 'completed':
+        row['pose_output'] = capture(ref, case)
+    return row
 
 
 class LiftResult(C.Structure):
@@ -177,6 +185,10 @@ def compare_native(state, cases, library, budget):
     native.pes3_run_lifted.argtypes = [C.POINTER(C.c_uint8),C.POINTER(C.c_uint8),C.c_uint32,
       C.POINTER(C.c_uint64),C.c_uint32,C.c_uint32,C.POINTER(LiftResult)]
     native.pes3_run_lifted.restype = C.c_int
+    if any(r.get('float_inputs') for case in cases for r in case['results']):
+        native.pes3_run_lifted_f32.argtypes = [C.POINTER(C.c_uint8),C.POINTER(C.c_uint8),C.c_uint32,
+          C.POINTER(C.c_uint64),C.c_uint32,C.POINTER(C.c_uint32),C.c_uint32,C.POINTER(LiftResult)]
+        native.pes3_run_lifted_f32.restype = C.c_int
     comparisons = 0
     for case in cases:
         if case['status'] != 'completed':
@@ -188,8 +200,14 @@ def compare_native(state, cases, library, budget):
         scratch_buffer = (C.c_uint8 * len(scratch)).from_buffer(scratch)
         for expected in case['results']:
             args = (C.c_uint64 * len(expected['args']))(*expected['args']); result = LiftResult()
-            status = native.pes3_run_lifted(ram_buffer,scratch_buffer,int(expected['entry'],16),
-              args,len(args),budget,C.byref(result))
+            if expected.get('float_inputs'):
+                floats = (C.c_uint32*32)()
+                for key,value in expected['float_inputs'].items():floats[int(key)] = value
+                status = native.pes3_run_lifted_f32(ram_buffer,scratch_buffer,int(expected['entry'],16),
+                  args,len(args),floats,budget,C.byref(result))
+            else:
+                status = native.pes3_run_lifted(ram_buffer,scratch_buffer,int(expected['entry'],16),
+                  args,len(args),budget,C.byref(result))
             if status:
                 raise AssertionError(f"{case['id']}: native blocked at {result.pc:#x}: {result.error.decode()}")
             actual = {'instructions':result.instructions,'trace_hash':hex(result.trace_hash),

@@ -38,7 +38,7 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
 <button id="play" type="button">Reproduzir</button><button id="previous-key" type="button">Anterior chave</button><button id="next-key" type="button">Próxima chave</button>
 <label class="inline">Ritmo da prévia <select id="rate"><option value="10">Lento</option><option value="30" selected>Médio</option><option value="60">Rápido</option></select></label>
 </div><input id="timeline" type="range" min="0" max="1" step="any" value="0" aria-label="Tempo nas unidades originais do clip">
-<div class="time"><span id="time-label">0</span><span>Unidades originais · a sentinela final não é uma nova pose</span></div></div>
+<div class="time"><span id="time-label">0</span><span id="time-units">Unidades originais · a sentinela final não é uma nova pose</span></div></div>
 </section>
 <aside class="panel stack">
 <div><label for="clip">ID original da animação</label><input id="clip" type="number" min="0" max="1104" value="47"></div>
@@ -57,9 +57,15 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
 <label for="scenario-transition">Transição de animação</label><select id="scenario-transition"></select>
 <p id="replay-evidence" class="muted"></p>
 <button id="export-replay" type="button">Exportar reexecução</button></details>
+<details id="pose-context" hidden><summary>Poses do treino PES</summary>
+<label for="pose-source">Origem da pose</label><select id="pose-source"><option value="clip">Clip isolado</option><option value="captured">Pose capturada no PES</option><option value="reexecuted">Pose reexecutada em C++</option></select>
+<label for="pose-actor">Atleta do save</label><select id="pose-actor"></select>
+<label for="pose-scenario">Caminho de montagem</label><select id="pose-scenario"></select>
+<label for="pose-buffer">Buffer de animação</label><select id="pose-buffer"><option value="0">Buffer 0</option><option value="1">Buffer 1</option></select>
+<p id="pose-evidence" class="muted"></p><button id="export-pose" type="button">Exportar pose selecionada</button></details>
 <div><label for="category">Marcar candidato visual</label><select id="category"><option value="">Sem classificação</option><option value="idle">Parado</option><option value="walk">Caminhada</option><option value="run">Corrida</option><option value="dribble">Condução</option><option value="pass">Passe</option><option value="shot">Chute</option><option value="header">Cabeceio</option><option value="trap">Domínio</option><option value="other">Outro gesto</option></select><p id="category-status" class="muted"></p></div>
 <button id="export" type="button">Exportar catálogo marcado</button>
-<p class="notice"><strong>Prévia de pesquisa.</strong> A pose local foi verificada. O desenho usa composição padrão da hierarquia; mistura, espelhamento e transformações finais do PES ainda precisam ser validados. As marcações não habilitam clips no jogo.</p>
+<p id="preview-notice" class="notice"><strong>Prévia de pesquisa.</strong> A pose local foi verificada. O desenho do clip usa composição padrão da hierarquia. As marcações não habilitam clips no jogo.</p>
 </aside></div>
 <details><summary>Origem dos dados e limites da prévia</summary><p id="source-info"></p><p>Os números e tempos do contêiner v0.14 foram preservados. O ritmo escolhido é apenas a velocidade de reprodução desta ferramenta. Não estabelece FPS, metros ou a velocidade de simulação do PES. O contato com a bola e a conversão para o esqueleto do nosso jogador exigem validação própria.</p><p>Espaço reproduz/pausa; setas esquerda/direita mudam o clip quando o foco está fora dos campos. Arraste a visão e use a roda do mouse para aproximar.</p></details>
 </main>
@@ -77,7 +83,7 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
     const initial = motion.initialState(meta.bind_bits), canvas = $("scene"), ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Não foi possível iniciar o desenho. Abra com Edge ou Chrome.");
     const annotations = new Map(); let active = 47, time = 0, playing = false, yaw = .35, pitch = -.04, zoom = 1;
-    let filteredIds=clips.map(c=>c.id);
+    let filteredIds=clips.map(c=>c.id), poseMode=null, poseFields=null;
     let bounds, latestPose, latestWorld, lastTimestamp = null, changed = true;
     const matrix = ([x,y,z,w]) => [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],
       [2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)], [2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];
@@ -94,14 +100,20 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
       return positions.map(p => [p[0]-anchor[0],-p[1],p[2]-anchor[2]]);
     }
     function sample(at) { return motion.evaluate(motion.decode(clips[active],at,initial)); }
+    function posedPoints() {
+      const positions=poseFields.composed_translation_bits.map(row=>row.slice(0,3).map(motion.num));
+      const anchor=$("follow").checked?[positions[0][0],0,positions[0][2]]:[0,0,0];
+      return positions.map(p=>[p[0]-anchor[0],-p[1],p[2]-anchor[2]]);
+    }
     function measure() {
       const min=[Infinity,Infinity,Infinity], max=[-Infinity,-Infinity,-Infinity], c=clips[active];
-      const times=[0,...c.times.filter(t=>t>0),c.duration];
-      for (const at of times) for (const p of world(sample(at))) p.forEach((v,i)=>{min[i]=Math.min(min[i],v);max[i]=Math.max(max[i],v);});
+      const samples=poseMode?[posedPoints()]:[0,...c.times.filter(t=>t>0),c.duration].map(at=>world(sample(at)));
+      for (const points of samples) for (const p of points) p.forEach((v,i)=>{min[i]=Math.min(min[i],v);max[i]=Math.max(max[i],v);});
       bounds={center:min.map((v,i)=>(v+max[i])/2),span:Math.max(50,Math.hypot(...min.map((v,i)=>max[i]-v)))*1.18};
     }
     function choose(id) {
       if (!Number.isInteger(id) || id<0 || id>=clips.length) {$("clip").value=active;return;}
+      if(poseMode){poseMode=null;poseFields=null;$("pose-source").value="clip";poseControls(false);}
       active=id;time=0;$("clip").value=id;$("timeline").max=clips[id].duration;
       $("category").value=annotations.get(id)?.category || "";
       $("category-status").textContent=annotations.has(id)?"Candidato anotado; ainda não validado no treino.":"";
@@ -165,6 +177,37 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
       $("scenario-filter").value=String(meta.replay.scenarios.findIndex(s=>s.id==="action1-substate-1"));
       selectReplayScenario();
     }
+    function poseControls(frozen){
+      for(const id of ["play","timeline","previous-key","next-key","rate","category","export"])$(id).disabled=frozen;
+      $("time-units").textContent=frozen?"Campos compostos do modelo · sem calibração em metros":"Unidades originais · a sentinela final não é uma nova pose";
+      if(meta.pose){
+        const source=$("pose-source").value;
+        $("pose-actor").disabled=source!=="captured";$("pose-scenario").disabled=source!=="reexecuted";
+        $("pose-buffer").disabled=!frozen;$("export-pose").disabled=!frozen;
+      }
+    }
+    function selectPose(){
+      const source=$("pose-source").value;
+      if(source==="clip"){poseMode=null;poseFields=null;poseControls(false);measure();changed=true;return;}
+      const record=source==="captured"?meta.pose.captured_actors[Number($("pose-actor").value)]:meta.pose.scenarios[Number($("pose-scenario").value)];
+      const buffer=Number($("pose-buffer").value), output=source==="captured"?record:record.pose_output;
+      poseFields=output.buffers[buffer];poseMode={source,actor:record.actor,scenario:record.id||null,buffer};
+      playing=false;$("play").textContent="Reproduzir";lastTimestamp=null;poseControls(true);
+      $("pose-evidence").textContent=(source==="captured"?"Campos do save original":"Saída reexecutada e comparada em C++")+
+        " · Atleta "+record.actor+" · Buffer "+buffer+". "+(source==="reexecuted"?(record.input_kind==="modified_snapshot"?"Memória alterada para teste. ":"Memória capturada; chamada definida pelo teste. "):"")+
+        "Pose estática; não representa quadros consecutivos. Os pontos compostos são preservados; a integração ao jogador nativo continua pendente.";
+      measure();zoom=1;changed=true;
+    }
+    if(meta.pose){
+      $("pose-context").hidden=false;
+      $("pose-actor").replaceChildren(...meta.pose.captured_actors.map((a,i)=>new Option("Atleta "+a.actor,String(i))));
+      $("pose-scenario").replaceChildren(...meta.pose.scenarios.map((s,i)=>new Option(s.id,String(i))));
+      for(const id of ["pose-source","pose-actor","pose-scenario","pose-buffer"])$(id).onchange=selectPose;
+      $("export-pose").onclick=()=>downloadJson({schema_version:1,state_sha256:meta.pose.state_sha256,
+        selection:poseMode,parents:meta.pose.parents,mirror_pairs:meta.pose.mirror_pairs,fields:poseFields,scope:meta.pose.scope},"pes3-pose-treino.json");
+      poseControls(false);
+      $("preview-notice").textContent="Prévia de pesquisa. Clips isolados usam uma hierarquia diagnóstica. Poses do treino usam campos compostos capturados ou reexecutados. O modelo aritmético não comprova igualdade com todo o hardware PS2. A importação ao jogo permanece pendente.";
+    }
     function project(p,width,height) {
       const v=p.map((x,i)=>x-bounds.center[i]), c=Math.cos(yaw),s=Math.sin(yaw);
       const x=c*v[0]+s*v[2], z=-s*v[0]+c*v[2], cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -176,7 +219,8 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
       const width=canvas.clientWidth,height=canvas.clientHeight,dpr=window.devicePixelRatio||1;
       if (canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)) {canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
-      latestPose=sample(time);latestWorld=world(latestPose);
+      latestPose=poseMode?poseFields.local_rotation_bits.map((q,i)=>({rotation:q.map(motion.num),translation:poseFields.local_translation_bits[i].map(motion.num)})):sample(time);
+      latestWorld=poseMode?posedPoints():world(latestPose);
       const points=latestWorld.map(p=>project(p,width,height));
       ctx.strokeStyle="#26364d";ctx.lineWidth=1;
       const floor=bounds.span*.7, cx=bounds.center[0],cz=bounds.center[2];
@@ -193,10 +237,10 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
         ctx.fillStyle="#eef6ff";ctx.beginPath();ctx.arc(point[0],point[1],4,0,Math.PI*2);ctx.fill();
         if ($("labels").checked) {ctx.font="12px system-ui";ctx.fillText(String(i),point[0]+(i===0?-16:8),point[1]-7);}
       }
-      $("timeline").value=time;$("time-label").textContent=time.toFixed(2)+" / "+clips[active].duration.toFixed(2);
+      $("timeline").value=time;$("time-label").textContent=poseMode?"Pose estática · 19 ossos":time.toFixed(2)+" / "+clips[active].duration.toFixed(2);
       changed=false;
     }
-    function play(value) {playing=value;$("play").textContent=value?"Pausar":"Reproduzir";lastTimestamp=null;}
+    function play(value) {playing=poseMode?false:value;$("play").textContent=playing?"Pausar":"Reproduzir";lastTimestamp=null;}
     $("play").onclick=()=>play(!playing);
     $("clip").onchange=()=>choose(Number($("clip").value));
     $("previous-clip").onclick=()=>navigate(-1);
@@ -239,7 +283,7 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
     $("clip").max=clips.length-1;
     $("source-info").textContent="Contêiner FPSANM14 · SHA-256 "+meta.bundle_sha256+". 36.378 registros de pose, com chaves preservadas. Nenhum executável ou AFS é necessário para abrir esta prévia.";
     window.pes3Lab={choose, snapshot:()=>({clip:active,time,playing,clipCount:clips.length,pose:latestPose,world:latestWorld,bounds,
-      annotationCount:annotations.size,scope:meta.scope})};
+      annotationCount:annotations.size,scope:meta.scope,poseMode,poseFields})};
     choose(47);draw();
     function frame(timestamp) {
       if(playing&&lastTimestamp!==null){const dt=Math.min((timestamp-lastTimestamp)/1000,.1);time=(time+dt*Number($("rate").value))%clips[active].duration;changed=true;}
