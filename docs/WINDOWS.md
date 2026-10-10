@@ -35,6 +35,11 @@ com carga máxima de 0,52 segundo; cerca de 0,25 segundo já produz elevação.
 Os passes mantêm a carga de um segundo. As setas do teclado substituem o direito;
 Q+K faz cobertura e 5/F3 inicia a cobrança de falta.
 
+A condução usa a assistência e os passos originais para acompanhar a bola
+durante curvas e inversões. Após um passe ou chute, o movimento fica livre;
+aproxime-se novamente da bola para retomar o domínio. Ao atualizar, extraia
+o novo ZIP em uma pasta nova e inicie por `run-training.bat`.
+
 `training.config` permite ajustar `firstperson_fov`, `firstperson_look_speed`,
 `firstperson_recenter_speed` e `input_analog_deadzone`.
 

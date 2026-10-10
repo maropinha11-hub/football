@@ -93,10 +93,14 @@ de jogador, impedimentos ou interrupções do árbitro no treino. Após gol ou
 bola muito além do campo, o exercício é reposto automaticamente.
 
 O analógico esquerdo corrige pequenos desvios perto das direções retas,
-preservando diagonais e velocidade proporcional. A condução usa um jogador
-destro: o pé esquerdo tem menor alcance de domínio e conserva mais do impulso
-da bola recebida. O contato recebe um ajuste suave da perna no instante do toque,
-com limite de alcance e sem esticar os ossos.
+preservando diagonais e velocidade proporcional. A condução mantém a assistência
+de movimento, a sequência de passos e o alcance das animações originais para
+acompanhar a bola nas curvas, inversões e retomadas. Quando a bola sai do
+domínio após um passe ou chute, o movimento volta a ser livre.
+O jogador destro conserva ligeiramente mais impulso em contatos com o pé
+esquerdo, sem reduzir o alcance dos toques. O contato recebe um ajuste suave
+da perna no instante do toque, com limite de alcance e sem esticar os ossos.
+Reiniciar o exercício também limpa os comandos de chute e passe pendentes.
 
 O exercício de bola aérea permite testar domínio, cabeceios e voleios que
 o seletor de animações original escolhe conforme a altura, a posição e o

@@ -314,8 +314,11 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     assert(command.desiredFunctionType == e_FunctionType_Movement); // make sure this is the movement command (is probably guaranteed, check out _MovementCommand)
 
     if (TrainingEnabled()) {
-      // Stick-driven movement; queued kick/trap animations still meet the ball.
-      if (actionMode != 2 || !match->TrainingHasBall()) {
+      // Dribbling still needs the original movement assistance between touches,
+      // especially when a turn cannot immediately use a ball-control animation.
+      // Solo training always designates this player, so disable the match AI's
+      // interception magnet once the ball is actually out of control.
+      if (!match->TrainingHasBall()) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }

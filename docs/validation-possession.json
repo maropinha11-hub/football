@@ -1,0 +1,186 @@
+{
+  "scenario": "Rendered first-person directional possession regression; same input sequence before and after",
+  "before_commit": "b2ee145fbec4232e4bfa624955ec689d3ccf6ab0",
+  "corrections": [
+    "Original ball-control movement assistance between touch animations",
+    "Original foot/gait selection and reach",
+    "Original 0.4 m contact-event tolerance",
+    "No extra weak-foot impulse; only 2.8 percent incoming momentum blend"
+  ],
+  "before": [
+    {
+      "phase": "Sprint straight",
+      "max_ball_distance_m": 0.98,
+      "end_ball_distance_m": 0.633,
+      "controlled_samples": 25,
+      "total_samples": 25,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Walk forward",
+      "max_ball_distance_m": 0.59,
+      "end_ball_distance_m": 0.568,
+      "controlled_samples": 12,
+      "total_samples": 12,
+      "functions": [
+        2
+      ]
+    },
+    {
+      "phase": "Turn left",
+      "max_ball_distance_m": 0.68,
+      "end_ball_distance_m": 0.449,
+      "controlled_samples": 12,
+      "total_samples": 12,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Turn right",
+      "max_ball_distance_m": 4.298,
+      "end_ball_distance_m": 4.298,
+      "controlled_samples": 11,
+      "total_samples": 16,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Reverse",
+      "max_ball_distance_m": 5.03,
+      "end_ball_distance_m": 4.898,
+      "controlled_samples": 0,
+      "total_samples": 12,
+      "functions": [
+        1
+      ]
+    },
+    {
+      "phase": "Forward again",
+      "max_ball_distance_m": 7.66,
+      "end_ball_distance_m": 7.66,
+      "controlled_samples": 0,
+      "total_samples": 19,
+      "functions": [
+        1
+      ]
+    },
+    {
+      "phase": "Close control diagonal",
+      "max_ball_distance_m": 0.78,
+      "end_ball_distance_m": 0.719,
+      "controlled_samples": 23,
+      "total_samples": 23,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Close control reverse",
+      "max_ball_distance_m": 3.607,
+      "end_ball_distance_m": 3.295,
+      "controlled_samples": 3,
+      "total_samples": 16,
+      "functions": [
+        1
+      ]
+    }
+  ],
+  "after": [
+    {
+      "phase": "Sprint straight",
+      "max_ball_distance_m": 0.975,
+      "end_ball_distance_m": 0.865,
+      "controlled_samples": 25,
+      "total_samples": 25,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Walk forward",
+      "max_ball_distance_m": 0.596,
+      "end_ball_distance_m": 0.559,
+      "controlled_samples": 12,
+      "total_samples": 12,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Turn left",
+      "max_ball_distance_m": 0.627,
+      "end_ball_distance_m": 0.403,
+      "controlled_samples": 12,
+      "total_samples": 12,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Turn right",
+      "max_ball_distance_m": 2.059,
+      "end_ball_distance_m": 0.735,
+      "controlled_samples": 17,
+      "total_samples": 17,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Reverse",
+      "max_ball_distance_m": 0.603,
+      "end_ball_distance_m": 0.401,
+      "controlled_samples": 12,
+      "total_samples": 12,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Forward again",
+      "max_ball_distance_m": 0.61,
+      "end_ball_distance_m": 0.441,
+      "controlled_samples": 18,
+      "total_samples": 18,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Close control diagonal",
+      "max_ball_distance_m": 0.54,
+      "end_ball_distance_m": 0.465,
+      "controlled_samples": 22,
+      "total_samples": 22,
+      "functions": [
+        1,
+        2
+      ]
+    },
+    {
+      "phase": "Close control reverse",
+      "max_ball_distance_m": 0.634,
+      "end_ball_distance_m": 0.443,
+      "controlled_samples": 16,
+      "total_samples": 16,
+      "functions": [
+        1,
+        2
+      ]
+    }
+  ]
+}

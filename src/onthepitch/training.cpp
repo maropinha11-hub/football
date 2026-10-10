@@ -25,6 +25,9 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   teams[0]->ResetSituation(ballPosition);
   teams[1]->ResetSituation(ballPosition);
   player->ResetPosition(position, position + direction * 10);
+  // Reset the controller as well as the animation: a charged/queued action
+  // from the previous attempt must not fire after the ball is repositioned.
+  if (player->GetExternalController()) player->GetExternalController()->Reset();
   player->RelaxFatigue(1.0f);
   ball->ResetSituation(ballPosition);
   if (exercise == 3) {
@@ -62,8 +65,10 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   const Vector3 delta = ball->Predict(0) - designatedPossessionPlayer->GetPosition();
   const float relativeSpeed = (ball->GetMovement() - designatedPossessionPlayer->GetMovement()).GetLength();
   // Hysteresis keeps the head/body mode from flickering between individual dribble touches.
+  // A sprint is about 8 m/s: allow a small margin when approaching a still
+  // ball, so the original reception assistance engages before body contact.
   const bool controlled = delta.Get2D().GetLength() < (trainingView.withBall ? 2.3f : 1.5f) &&
-      delta.coords[2] < (trainingView.withBall ? 1.4f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 8.0f);
+      delta.coords[2] < (trainingView.withBall ? 1.4f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
   const Vector3 body = designatedPossessionPlayer->GetBodyDirectionVec();
   trainingView.update(controlled, std::atan2(body.coords[1], body.coords[0]), input->GetDirection(), look, 0.01f,
                       clamp(GetConfiguration()->GetReal("firstperson_look_speed", 2.1f), 0.5f, 5.0f),
@@ -208,6 +213,18 @@ void Match::ProcessTraining() {
       const Vector3 p = designatedPossessionPlayer->GetPosition();
       const Vector3 movement = designatedPossessionPlayer->GetMovement();
       const Vector3 ballMovement = ball->GetMovement();
+      const Vector3 inputMovement = input->GetDirection();
+      const e_ButtonFunction keyboardButtons[] = {e_ButtonFunction_Up, e_ButtonFunction_Down,
+          e_ButtonFunction_Left, e_ButtonFunction_Right, e_ButtonFunction_ShortPass,
+          e_ButtonFunction_LongPass, e_ButtonFunction_HighPass, e_ButtonFunction_Shot,
+          e_ButtonFunction_Sprint, e_ButtonFunction_Dribble, e_ButtonFunction_Switch};
+      unsigned int keys = 0;
+      for (unsigned int i = 0; i < 11; ++i)
+        if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
+      const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB};
+      for (unsigned int i = 0; i < 11; ++i)
+        if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);
       if (trainingController > 0) {
@@ -220,7 +237,7 @@ void Match::ProcessTraining() {
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
              "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
-             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d}\n",
+             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
@@ -230,7 +247,10 @@ void Match::ProcessTraining() {
              input->GetDirection().GetLength() > 0.001f ? 1 : 0,
              input->GetButton(e_ButtonFunction_Shot) ? 1 : 0,
              designatedPossessionPlayer->GetExternalController() ?
-               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetCharge_ms() : 0);
+               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetCharge_ms() : 0,
+             designatedPossessionPlayer->GetExternalController() ?
+               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetActionMode() : 0,
+             inputMovement.coords[0], inputMovement.coords[1], keys);
       fflush(stdout);
     }
   }

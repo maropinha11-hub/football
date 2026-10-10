@@ -313,9 +313,11 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   Vector3 touchVec = direction * power * powerMultiplier + Vector3(0, 0, height);
   if (TrainingEnabled()) {
     const float weakness = 1 - training::controlQuality(currentAnim->anim->GetVariable("touch_bodypart"));
-    // A weaker touch runs a little farther and retains more incoming momentum,
-    // instead of adding random lateral steering to straight dribbling.
-    touchVec = touchVec * (1 + weakness * 0.45f) * (1 - weakness * 0.25f) + ball->GetMovement() * (weakness * 0.25f);
+    // Keep the original gait, reach and touch power. A small retained momentum
+    // difference is enough for the weaker foot without pushing the ball away
+    // during reversals or rejecting the next compatible step.
+    const float retainedMomentum = weakness * 0.10f;
+    touchVec = touchVec * (1 - retainedMomentum) + ball->GetMovement() * retainedMomentum;
   }
 /*
   if (player->GetDebug()) {

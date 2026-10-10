@@ -87,10 +87,12 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     )
     (stage / "LEIA-ME.txt").write_text(
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
-        "Extraia este ZIP para uma pasta e execute run-training.bat. Conecte o\n"
+        "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
+        "A condução mantém a assistência e os passos originais nas viradas.\n"
+        "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
         "X: carga máxima 0,52 s; cerca de 0,25 s já levanta a bola.\n"
         "LB+X cobertura; RB correr; RT domínio; View reiniciar; Menu pausa;\n"
