@@ -237,7 +237,7 @@ void Match::ProcessTraining() {
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
              "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
-             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u}\n",
+             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
@@ -250,7 +250,9 @@ void Match::ProcessTraining() {
                static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetCharge_ms() : 0,
              designatedPossessionPlayer->GetExternalController() ?
                static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetActionMode() : 0,
-             inputMovement.coords[0], inputMovement.coords[1], keys);
+             inputMovement.coords[0], inputMovement.coords[1], keys,
+             std::atan2(designatedPossessionPlayer->GetBodyDirectionVec().coords[1],
+                        designatedPossessionPlayer->GetBodyDirectionVec().coords[0]));
       fflush(stdout);
     }
   }

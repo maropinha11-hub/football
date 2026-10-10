@@ -259,7 +259,9 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
     bool idleTurnToOpponentGoal = false;
     bool knockOn = false;
-    if (hid->GetButton(e_ButtonFunction_Dribble)) idleTurnToOpponentGoal = true;
+    // RT changes touch/speed, not the first-person player's heading. The
+    // original idle goal-facing shortcut would otherwise fight a recent turn.
+    if (hid->GetButton(e_ButtonFunction_Dribble) && !(TrainingEnabled() && match->IsFirstPerson())) idleTurnToOpponentGoal = true;
     if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) knockOn = true;
 
     // special adapted input for ballcontrol and trap, when we have shoot/pass buffers

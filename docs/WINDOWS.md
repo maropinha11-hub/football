@@ -30,7 +30,10 @@ com SDL como alternativa. O mapeamento usado no treino é:
 
 Primeira pessoa é o modo inicial. R3 alterna entre primeira pessoa, externa
 e próxima. Com bola o direito não desvia a condução, e a cabeça retorna
-gradualmente ao centro ao soltá-lo. Segurar X aumenta a força e a altura,
+gradualmente ao centro ao soltá-lo. O esquerdo acompanha a frente atual do
+jogador: depois de virar, frente segue a nova frente e direita continua
+virando para a nova direita. RT mantém esse referencial, com domínio mais
+lento e próximo, sem virar automaticamente para o gol. Segurar X aumenta a força e a altura,
 com carga máxima de 0,52 segundo; cerca de 0,25 segundo já produz elevação.
 Os passes mantêm a carga de um segundo. As setas do teclado substituem o direito;
 Q+K faz cobertura e 5/F3 inicia a cobrança de falta.

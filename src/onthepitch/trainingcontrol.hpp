@@ -54,15 +54,25 @@ struct View {
     }
     withBall = possession;
     if (withBall) {
-      // Animation sway cannot rotate the stick's reference while standing still.
+      // Steer relative to the current front, at a bounded rate the original
+      // turn/contact animations can follow. Torso sway never feeds back into
+      // the controls; forward keeps the new heading stable immediately.
       if (nextMoving) {
-        const Vector3 direction = movement(move);
-        const float travelYaw = std::atan2(direction.coords[1], direction.coords[0]);
-        bodyYaw = angle(bodyYaw + angle(travelYaw - bodyYaw) * (1 - std::exp(-7 * dt)));
+        const float turn = std::atan2(-move.coords[0], move.coords[1]) * (1 - std::exp(-7 * dt));
+        const float maximumTurn = 2.1f * move.GetLength() * dt;
+        // A queued touch can still be finishing its previous turn. Allow a
+        // small steering lead, then wait for the real body instead of letting
+        // the camera/control heading get a full turn ahead of the feet.
+        const float lead = angle(bodyYaw - facing);
+        const float leftRoom = std::max(0.0f, 0.35f - lead);
+        const float rightRoom = std::max(0.0f, 0.35f + lead);
+        bodyYaw = angle(bodyYaw + limit(turn, -std::min(maximumTurn, rightRoom),
+                                             std::min(maximumTurn, leftRoom)));
       }
       headYaw = limit(headYaw - look.coords[0] * sensitivity * dt, -1.48f, 1.48f);
-      // The left-stick frame stays fixed throughout a turn; looking around never steers it.
-      if (!nextMoving) movementYaw = bodyYaw;
+      // Forward means the new front; holding right keeps turning to the new
+      // right. Head look is excluded from this body-relative reference.
+      movementYaw = bodyYaw;
     } else {
       yaw = angle(yaw - look.coords[0] * sensitivity * dt);
       bodyYaw = yaw;
@@ -82,6 +92,10 @@ struct View {
     moving = nextMoving;
   }
   Vector3 movement(const Vector3 &stick) const {
+    // With the ball the stick steers the body in update(), then asks the
+    // original controller to travel along that heading. A second 90-degree
+    // stick rotation here would make the body run sideways to its own view.
+    if (withBall) return forward(bodyYaw) * stick.GetLength();
     const Vector3 f = forward(movementYaw);
     const Vector3 right(f.coords[1], -f.coords[0], 0);
     return right * stick.coords[0] + f * stick.coords[1];

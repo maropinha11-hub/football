@@ -91,6 +91,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
+        "Depois de virar, frente segue a nova frente; direita continua a curva.\n"
+        "RT mantém a direção atual, sem virar sozinho para o gol.\n"
         "A condução mantém a assistência e os passos originais nas viradas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"

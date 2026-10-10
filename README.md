@@ -10,7 +10,10 @@ colisões no treino. Carreira e partidas online ficam para etapas posteriores.
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o
-direito olha ao redor sem alterar a direção do movimento. A cabeça retorna
+direito olha ao redor sem alterar a direção do movimento. Após virar, empurre
+o esquerdo para frente para seguir a nova frente; mantê-lo à direita continua
+a curva para a nova direita. RT mantém essa direção e ajusta o domínio,
+sem virar automaticamente para o gol. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
 

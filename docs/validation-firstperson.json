@@ -1,5 +1,5 @@
 {
-  "run_id": "d68c12b0-b019-4bc8-a0c0-681c554ba5fa",
+  "run_id": "ff738f36-fdcb-43eb-b35d-bafdbe5f73bb",
   "checks": [
     {
       "check": "rendered game startup",
@@ -9,12 +9,12 @@
     {
       "check": "walking and dribbling",
       "result": "passed",
-      "evidence": "Player moved 7.04 m"
+      "evidence": "Player moved 8.25 m"
     },
     {
       "check": "walking retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.60/0.56 m; controlled 15/15 frames"
+      "evidence": "Ball distance max/end 0.60/0.56 m; controlled 18/18 frames"
     },
     {
       "check": "animation playback",
@@ -29,17 +29,17 @@
     {
       "check": "sprinting",
       "result": "passed",
-      "evidence": "Walk 5.00, sprint 7.77 m/s"
+      "evidence": "Walk 5.00, sprint 7.72 m/s"
     },
     {
       "check": "sprinting retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.98/0.72 m; controlled 16/16 frames"
+      "evidence": "Ball distance max/end 0.98/0.75 m; controlled 16/16 frames"
     },
     {
       "check": "short pass",
       "result": "passed",
-      "evidence": "Functions [1, 4]; ball speed 25.04 m/s"
+      "evidence": "Functions [1, 4]; ball speed 26.19 m/s"
     },
     {
       "check": "through pass",
@@ -49,12 +49,12 @@
     {
       "check": "high pass",
       "result": "passed",
-      "evidence": "Functions [1, 6]; ball speed 16.91 m/s"
+      "evidence": "Functions [1, 6]; ball speed 18.59 m/s"
     },
     {
       "check": "shot",
       "result": "passed",
-      "evidence": "Functions [1, 8]; ball speed 31.76 m/s"
+      "evidence": "Functions [1, 8]; ball speed 32.30 m/s"
     },
     {
       "check": "aerial physics",
@@ -64,7 +64,7 @@
     {
       "check": "super cancel free movement",
       "result": "passed",
-      "evidence": "Player moved away from incoming ball to x=-67.87 m"
+      "evidence": "Player moved away from incoming ball to x=-17.26 m"
     },
     {
       "check": "off-ball sliding",
@@ -74,37 +74,37 @@
     {
       "check": "finishing exercise",
       "result": "passed",
-      "evidence": "Player starts at x=29.62 m"
+      "evidence": "Player starts at x=29.45 m"
     },
     {
       "check": "goal detection",
       "result": "passed",
-      "evidence": "Goal counter 1 -> 2"
+      "evidence": "Goal counter 0 -> 1"
     },
     {
       "check": "automatic ball reset",
       "result": "passed",
-      "evidence": "Ball returned to x=29.79 m"
+      "evidence": "Ball returned to x=29.90 m"
     },
     {
       "check": "charged shot elevation",
       "result": "passed",
-      "evidence": "Light (22.7987, 0.6215), charged (35.0, 6.282) (speed, height); delivered charge {'light': 140, 'quick': 270, 'charged': 520, 'chip': 520}"
+      "evidence": "Light (22.307, 0.4809), charged (33.8511, 6.3238) (speed, height); delivered charge {'light': 120, 'quick': 330, 'charged': 520, 'chip': 520}"
     },
     {
       "check": "quick shot elevation",
       "result": "passed",
-      "evidence": "Target 250 ms, delivered 270 ms; shot (28.1214, 2.0107) (speed, height)"
+      "evidence": "Target 250 ms, delivered 330 ms; shot (30.718, 2.8838) (speed, height)"
     },
     {
       "check": "LB chip trajectory",
       "result": "passed",
-      "evidence": "Chip (21.5621, 10.189); charged (35.0, 6.282)"
+      "evidence": "Chip (22.0, 10.181); charged (33.8511, 6.3238)"
     },
     {
       "check": "free kick exercise",
       "result": "passed",
-      "evidence": "Player starts at [27.6379, -7.935, 0.0]"
+      "evidence": "Player starts at [27.7972, -8.0601, 0.0]"
     },
     {
       "check": "first person camera",
@@ -114,27 +114,62 @@
     {
       "check": "head free look with ball",
       "result": "passed",
-      "evidence": "Head yaw -1.01, player stays still"
+      "evidence": "Head yaw -0.92, player stays still"
     },
     {
       "check": "gradual head recenter",
       "result": "passed",
-      "evidence": "Head magnitude 1.03 -> 0.08 rad after input release"
+      "evidence": "Head magnitude 0.97 -> 0.07 rad after input release"
     },
     {
       "check": "head look does not steer dribbling",
       "result": "passed",
-      "evidence": "Player delta [6.4785, 0.1978]; head turns independently"
+      "evidence": "Player delta [4.4585, 0.041100000000000005]; head turns independently"
     },
     {
       "check": "straight dribbling",
       "result": "passed",
-      "evidence": "Forward/side displacement [8.748999999999999, -0.1691] m"
+      "evidence": "Forward/side displacement [8.1484, 0.0] m"
     },
     {
       "check": "straight movement retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.57/0.47 m; controlled 18/18 frames"
+      "evidence": "Ball distance max/end 0.60/0.56 m; controlled 17/17 frames"
+    },
+    {
+      "check": "held right keeps turning relative to new front",
+      "result": "passed",
+      "evidence": "Successive right-turn angles -0.79/-0.88 rad"
+    },
+    {
+      "check": "continuous relative turn retains ball",
+      "result": "passed",
+      "evidence": "Ball distance max/end 0.51/0.50 m; controlled 19/19 frames"
+    },
+    {
+      "check": "forward follows new front after turn",
+      "result": "passed",
+      "evidence": "New front -2.56 rad; forward/side travel 7.08/-0.59 m"
+    },
+    {
+      "check": "new forward retains ball",
+      "result": "passed",
+      "evidence": "Ball distance max/end 0.48/0.45 m; controlled 14/14 frames"
+    },
+    {
+      "check": "RT preserves new forward direction",
+      "result": "passed",
+      "evidence": "RT forward/side travel 5.71/-0.53 m; speed 3.84 m/s"
+    },
+    {
+      "check": "RT after turn retains ball",
+      "result": "passed",
+      "evidence": "Ball distance max/end 0.56/0.53 m; controlled 14/14 frames"
+    },
+    {
+      "check": "idle RT does not turn player toward goal",
+      "result": "passed",
+      "evidence": "Idle RT changed actual body heading 0.00 rad; no automatic goal-facing turn"
     },
     {
       "check": "reset cancels buffered shot",
@@ -144,27 +179,27 @@
     {
       "check": "forward before turns retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.56/0.48 m; controlled 12/12 frames"
+      "evidence": "Ball distance max/end 0.59/0.57 m; controlled 12/12 frames"
     },
     {
       "check": "left turn retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.44/0.44 m; controlled 13/13 frames"
+      "evidence": "Ball distance max/end 0.60/0.49 m; controlled 12/12 frames"
     },
     {
       "check": "right reversal retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.65/0.44 m; controlled 18/18 frames"
+      "evidence": "Ball distance max/end 0.50/0.44 m; controlled 16/16 frames"
     },
     {
       "check": "backward turn retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.64/0.29 m; controlled 13/13 frames"
+      "evidence": "Ball distance max/end 0.49/0.49 m; controlled 13/13 frames"
     },
     {
       "check": "stopping after turns retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.59/0.39 m; controlled 7/7 frames"
+      "evidence": "Ball distance max/end 0.49/0.41 m; controlled 7/7 frames"
     },
     {
       "check": "stopping after turns releases movement",
@@ -174,7 +209,7 @@
     {
       "check": "restart after turns retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.60/0.44 m; controlled 21/21 frames"
+      "evidence": "Ball distance max/end 0.74/0.46 m; controlled 24/24 frames"
     },
     {
       "check": "turning uses original ball-control animations",
@@ -184,27 +219,27 @@
     {
       "check": "close control diagonal retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.66/0.59 m; controlled 22/22 frames"
+      "evidence": "Ball distance max/end 0.61/0.52 m; controlled 27/27 frames"
     },
     {
       "check": "close control reversal retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.58/0.40 m; controlled 16/16 frames"
+      "evidence": "Ball distance max/end 0.52/0.51 m; controlled 16/16 frames"
     },
     {
       "check": "first person sprint retains ball",
       "result": "passed",
-      "evidence": "Ball distance max/end 0.97/0.66 m; controlled 26/26 frames"
+      "evidence": "Ball distance max/end 1.03/0.96 m; controlled 25/25 frames"
     },
     {
       "check": "original knock-on and recovery",
       "result": "passed",
-      "evidence": "Long-touch distance max 2.19 m; recovered to 0.68 m after releasing RT"
+      "evidence": "Long-touch distance max 2.12 m; recovered to 0.42 m after releasing RT"
     },
     {
       "check": "pass releases possession",
       "result": "passed",
-      "evidence": "Ball distance 25.67 m"
+      "evidence": "Ball distance 24.08 m"
     },
     {
       "check": "off ball idle does not chase",
@@ -214,27 +249,27 @@
     {
       "check": "off ball movement is free after pass",
       "result": "passed",
-      "evidence": "Sideways displacement 3.69 m without super cancel"
+      "evidence": "Sideways displacement 5.59 m without super cancel"
     },
     {
       "check": "manual approach recovers passed ball",
       "result": "passed",
-      "evidence": "Recovered in 12.4 s; ball distance 0.49 m; functions [1, 2]"
+      "evidence": "Recovered in 14.6 s; ball distance 0.51 m; functions [1, 2]"
     },
     {
       "check": "off ball FPS turning",
       "result": "passed",
-      "evidence": "Yaw changed -0.80 rad without ball"
+      "evidence": "Yaw changed -1.16 rad without ball"
     },
     {
       "check": "first person forward movement",
       "result": "passed",
-      "evidence": "Player moved 6.05 m"
+      "evidence": "Player moved 6.00 m"
     },
     {
       "check": "front stadium remains visible",
       "result": "passed",
-      "evidence": "Central distant roof covers 97.9% of inspection band"
+      "evidence": "Central distant roof covers 100.0% of inspection band"
     },
     {
       "check": "ball stays above turf",
@@ -244,12 +279,12 @@
     {
       "check": "finite physics state",
       "result": "passed",
-      "evidence": "1854 live samples are finite"
+      "evidence": "2262 live samples are finite"
     },
     {
       "check": "rendered foot contact correction",
       "result": "passed",
-      "evidence": "271 rendered foot corrections; median error 0.176 -> 0.063 m"
+      "evidence": "261 rendered foot corrections; median error 0.165 -> 0.065 m"
     },
     {
       "check": "external camera restoration",
@@ -262,6 +297,6 @@
       "evidence": "Exit status 0"
     }
   ],
-  "total": 52,
+  "total": 59,
   "result": "passed"
 }

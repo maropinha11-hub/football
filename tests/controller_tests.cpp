@@ -71,6 +71,41 @@ int RunControllerTests() {
     view.reset(0);
     for (int i = 0; i < 500; ++i) view.update(true, std::sin(i * 0.1f) * 0.2f, Vector3(0), Vector3(0), 0.01f);
     require(std::fabs(view.movement(Vector3(0, 1, 0)).coords[1]) < 0.0001f, "Idle animation sway must not rotate forward movement");
+    view.reset(0);
+    for (int i = 0; i < 75; ++i)
+      view.update(true, -training::pi * 0.5f * i / 75, Vector3(1, 0, 0), Vector3(0), 0.01f);
+    const float turnedYaw = view.bodyYaw;
+    require(turnedYaw < -1.2f, "Right turn must update the left-stick reference to the player's new front");
+    require(view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(turnedYaw)) > 0.999f,
+            "Forward after turning must follow the new front without releasing the stick");
+    view.update(true, turnedYaw, Vector3(1, 0, 0), Vector3(0), 0.01f);
+    require(training::angle(view.bodyYaw - turnedYaw) < -0.02f &&
+            view.movement(Vector3(1, 0, 0)).GetDotProduct(training::forward(view.bodyYaw)) > 0.999f,
+            "Held right must keep turning to the new right and move along the body's updated front");
+    const float straightYaw = view.bodyYaw;
+    for (int i = 0; i < 200; ++i)
+      view.update(true, turnedYaw + std::sin(i * 0.1f) * 0.2f, Vector3(0, 1, 0), Vector3(0), 0.01f);
+    require(std::fabs(training::angle(view.bodyYaw - straightYaw)) < 0.0001f,
+            "Forward after a turn must keep a straight line despite torso sway");
+    view.update(true, turnedYaw, Vector3(0, 1, 0), Vector3(-1, 0, 0), 0.25f);
+    require(view.headYaw > 0.4f && view.movement(Vector3(0, 1, 0)).GetDotProduct(training::forward(straightYaw)) > 0.999f,
+            "Head look after a turn must remain independent of the new movement front");
+    view.reset(0);
+    for (int i = 0; i < 75; ++i)
+      view.update(true, training::pi * 0.5f * i / 75, Vector3(-1, 0, 0), Vector3(0), 0.01f);
+    require(view.bodyYaw > 1.2f && view.movement(Vector3(-1, 0, 0)).coords[1] > 0.9f,
+            "Left turns must update the reference symmetrically");
+    view.reset(training::pi - 0.005f);
+    view.update(true, -training::pi + 0.1f, Vector3(-1, 0, 0), Vector3(0), 0.01f);
+    require(view.bodyYaw < 0 && std::fabs(training::angle(view.bodyYaw - (training::pi - 0.005f))) <= 0.0211f,
+            "Movement reference must cross the yaw seam without a full rotation");
+    view.reset(0);
+    view.update(true, 0, Vector3(1, 0, 0), Vector3(0), 0.01f);
+    require(std::fabs(view.bodyYaw) <= 0.0211f, "A full right input must not spin ahead of the turn animations");
+    for (int i = 0; i < 200; ++i)
+      view.update(true, 0, Vector3(1, 0, 0), Vector3(0), 0.01f);
+    require(view.bodyYaw >= -0.3501f && view.bodyYaw < -0.3f,
+            "A pending turn animation must limit the camera's lead over the actual body");
     const auto quick = training::shot(std::pow(training::shotCharge(250), 0.6f), 0.7f, false, false);
     require(quick.elevation > 0.17f && quick.speed > 23, "A quarter-second shot must already gain height and useful power");
     require(training::shotCharge(520) == 1 && training::shotCharge(0) == 0, "Shot charge must saturate at 520 ms and reject negative charge");

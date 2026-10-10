@@ -85,14 +85,30 @@ def advance(milliseconds):
     return [frame for frame in frames() if frame["t"] > current]
 
 def key(name, down):
-    subprocess.run(["xdotool", "keydown" if down else "keyup", name], env=environment, check=True)
+    # Address the game's own window directly. XTest's server-wide key state
+    # and autorepeat can keep a charge held after its synthetic release.
+    subprocess.run(["xdotool", "keydown" if down else "keyup", "--window", windows[-1], name],
+                   env=environment, check=True)
     if down:
         held.add(name)
     else:
         held.discard(name)
     if name in key_bits and game is not None and game.poll() is None:
         bit = key_bits[name]
-        wait_for(lambda: (frames()[-1]["keys"] & bit) == (bit if down else 0))
+        sent = time.monotonic()
+        def acknowledged():
+            nonlocal sent
+            if (frames()[-1]["keys"] & bit) == (bit if down else 0):
+                return True
+            # XTest can drop a release while the software-rendered window is
+            # catching up. Re-send key-up to that same window; keep requiring
+            # a real SDL/HID acknowledgement rather than clearing game state.
+            if not down and time.monotonic() - sent > 1:
+                subprocess.run(["xdotool", "keyup", "--window", windows[-1], name],
+                               env=environment, check=True)
+                sent = time.monotonic()
+            return False
+        wait_for(acknowledged)
 
 def tap(name):
     key(name, True)
@@ -136,6 +152,18 @@ def dribble_phase(name, buttons, milliseconds):
     if distance < 0.5:
         raise AssertionError(f"{name}: player was stuck, displacement {distance:.2f} m")
     return samples
+
+def angle(value):
+    return math.atan2(math.sin(value), math.cos(value))
+
+def body_yaw(frame):
+    return angle(frame["yaw"] - frame["head_yaw"])
+
+def travel(frame, samples):
+    delta = [samples[-1]["player"][i] - frame["player"][i] for i in range(2)]
+    yaw = body_yaw(frame)
+    return (delta[0] * math.cos(yaw) + delta[1] * math.sin(yaw),
+            delta[0] * math.sin(yaw) - delta[1] * math.cos(yaw))
 
 try:
     if Path("/tmp/.X11-unix/X91").exists():
@@ -208,9 +236,11 @@ try:
         # Aerial reception can catch up during reset on a software renderer.
         # Keep running until B is unambiguously a defensive action, not a high pass.
         wait_for(lambda: math.dist(frames()[-1]["player"], frames()[-1]["ball"]) > 4.0)
+        sliding_start = frames()[-1]["t"]
         key("l", True)
-        wait_for(lambda: frames()[-1]["function"] == 13)
-        sliding = [frames()[-1]] + advance(800)
+        wait_for(lambda: any(f["t"] > sliding_start and f["function"] == 13 for f in frames()))
+        advance(800)
+        sliding = [f for f in frames() if f["t"] > sliding_start]
         key("l", False)
         key("a", False)
         key("space", False)
@@ -222,24 +252,26 @@ try:
         shot_origin = frames()[-1]["player"][0]
         check("finishing exercise", abs(shot_origin - 30.0) < 1.0, f"Player starts at x={shot_origin:.2f} m")
         goals_before = frames()[-1]["goals"]
-        # Test goal/net/reset behavior with a full-power finish from six metres.
-        # At 22 m, delayed key-up on a software renderer can legitimately send
-        # the charged shot over the bar. Shot-charge curves are checked below.
-        key("d", True)
-        wait_for(lambda: frames()[-1]["player"][0] >= 46.8)
-        key("d", False)
-        advance(500)
+        # A ground pass from the finishing fixture crosses the empty goal.
+        # This isolates goal/net/reset checks from charged-shot elevation and
+        # delayed movement release on the software renderer. Shots are checked
+        # separately below; do not dribble across the line before the action.
         finishing_start = frames()[-1]["t"]
-        key("k", True)
-        wait_for(lambda: charge_seen(finishing_start, 520))
-        key("k", False)
-        wait_for(lambda: not frames()[-1]["shot_active"])
-        advance(3500)
+        key("d", True)  # Explicit +X aim; idle torso sway is not an aiming input.
+        key("j", True)
+        advance(400)
+        key("j", False)
+        # Preserve the explicit aim through the queued passing animation,
+        # until its real touch sends the ball away from the player.
+        wait_for(lambda: any(f["t"] > finishing_start and f["function"] == 4 for f in frames()) and
+                 frames()[-1]["ball_speed"] > 10 and frames()[-1]["ball"][0] - frames()[-1]["player"][0] > 3)
+        key("d", False)
+        wait_for(lambda: any(f["t"] > finishing_start and f["goals"] > goals_before for f in frames()))
         finishing = [f for f in frames() if f["t"] > finishing_start]
-        check("goal detection", any(f["function"] == 8 for f in finishing) and
+        check("goal detection", any(f["function"] == 4 for f in finishing) and
               any(f["goals"] == goals_before + 1 for f in finishing) and max(f["goals"] for f in finishing) == goals_before + 1,
               f"Goal counter {goals_before} -> {frames()[-1]['goals']}")
-        advance(2300)
+        advance(2500)
         check("automatic ball reset", abs(frames()[-1]["ball"][0] - 30.65) < 1.5,
               f"Ball returned to x={frames()[-1]['ball'][0]:.2f} m")
         trajectories = {}
@@ -256,7 +288,9 @@ try:
             advance(2500)
             if chip:
                 key("q", False)
-            trajectory = [f for f in frames() if start < f["t"] <= start + hold_ms + 2500]
+            # Include the observed flight after key-up, not an assumed deadline
+            # from before LB/X delivery and the original kick preparation.
+            trajectory = [f for f in frames() if f["t"] > start]
             trajectories[name] = (max(f["ball_speed"] for f in trajectory), max(f["ball"][2] for f in trajectory))
             # The original gauge can keep ticking during the kick wind-up;
             # the applied training shot power already saturates at 520 ms.
@@ -306,6 +340,49 @@ try:
         check("straight dribbling", delta[0] > 3 and abs(delta[1]) < 0.08 * delta[0] + 0.08,
               f"Forward/side displacement {delta} m")
         check_possession("straight movement retains ball", straight_run)
+        reset()
+        key("w", True)
+        advance(600)
+        # Change direction without a neutral-stick gap: this failed when the
+        # movement frame stayed at the initial heading throughout the dribble.
+        key("d", True); key("w", False)
+        wait_for(lambda: frames()[-1]["move"] == [1.0, 0.0])
+        turn_origin = frames()[-1]
+        right_first = advance(700)
+        right_second = advance(700)
+        first_turn = angle(body_yaw(right_first[-1]) - body_yaw(turn_origin))
+        next_turn = angle(body_yaw(right_second[-1]) - body_yaw(right_first[-1]))
+        check("held right keeps turning relative to new front", first_turn < -0.3 and next_turn < -0.3,
+              f"Successive right-turn angles {first_turn:.2f}/{next_turn:.2f} rad")
+        check_possession("continuous relative turn retains ball", right_first + right_second)
+        key("w", True); key("d", False)
+        wait_for(lambda: frames()[-1]["move"] == [0.0, 1.0])
+        forward_origin = frames()[-1]
+        new_forward = advance(1200)
+        ahead, sideways = travel(forward_origin, new_forward)
+        check("forward follows new front after turn", ahead > 2 and abs(sideways) < 0.25 * ahead + 0.15 and
+              all(abs(angle(body_yaw(f) - body_yaw(forward_origin))) < 0.03 for f in new_forward),
+              f"New front {body_yaw(forward_origin):.2f} rad; forward/side travel {ahead:.2f}/{sideways:.2f} m")
+        check_possession("new forward retains ball", new_forward)
+        key("space", True)
+        rt_origin = frames()[-1]
+        rt_forward = advance(1200)
+        ahead, sideways = travel(rt_origin, rt_forward)
+        check("RT preserves new forward direction", ahead > 1 and abs(sideways) < 0.3 * ahead + 0.15 and
+              abs(angle(body_yaw(rt_forward[-1]) - body_yaw(rt_origin))) < 0.03 and
+              statistics.median(f["speed"] for f in rt_forward[-5:]) < statistics.median(f["speed"] for f in new_forward[-5:]),
+              f"RT forward/side travel {ahead:.2f}/{sideways:.2f} m; speed {rt_forward[-1]['speed']:.2f} m/s")
+        check_possession("RT after turn retains ball", rt_forward)
+        key("w", False); key("space", False)
+        advance(800)
+        rt_idle_origin = frames()[-1]
+        key("space", True)
+        rt_idle = advance(1500)
+        key("space", False)
+        idle_turn = angle(rt_idle[-1]["player_yaw"] - rt_idle_origin["player_yaw"])
+        check("idle RT does not turn player toward goal", abs(idle_turn) < 0.4 and
+              math.dist(rt_idle_origin["player"], rt_idle[-1]["player"]) < 0.3,
+              f"Idle RT changed actual body heading {idle_turn:.2f} rad; no automatic goal-facing turn")
         reset()
         key("k", True)
         wait_for(lambda: frames()[-1]["shot_active"] and frames()[-1]["action_mode"] == 2 and frames()[-1]["charge_ms"] >= 100)
