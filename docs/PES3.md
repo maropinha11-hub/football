@@ -13,6 +13,12 @@ de três roteamentos. O pacote atualizado é
 marcar os gestos manualmente para exportar as associações recuperadas.
 Os corpos completos das ações e suas condições físicas continuam pendentes.
 
+Com o save state de treino recebido, a etapa em
+[PES3-SAVESTATE.md](PES3-SAVESTATE.md) acrescenta caminhos recompilados em
+C++ e comparações de seleção/atualização usando a memória carregada. O
+[laboratório atualizado](../artifacts/pes3-savestate-research.zip) consulta
+os cenários e transições registrados. A integração ao jogo continua pendente.
+
 ## Material recebido e alcance da conferência
 
 Recebemos dois prints da ISO extraída e `analise-pes-sles51912.md`, com

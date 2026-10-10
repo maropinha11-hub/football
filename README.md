@@ -36,6 +36,12 @@ extraia o ZIP e abra `abrir-laboratorio.html` para consultar e exportar o mapa
 sem classificação manual. Os corpos completos das ações e as condições
 físicas ainda precisam de recuperação e validação.
 
+A [etapa com o save state PES 3](docs/PES3-SAVESTATE.md) recompila em C++ os
+caminhos alcançados e confere 276 chamadas com a memória do treino. No
+[laboratório com reexecução](artifacts/pes3-savestate-research.zip), expanda
+“Seleção reexecutada no treino” para consultar os cenários e clips registrados.
+Esta entrega ainda não integra as animações PES ao executável jogável.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

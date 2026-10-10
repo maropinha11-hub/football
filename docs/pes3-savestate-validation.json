@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "result": "passed",
+  "recorded_at_utc": "2026-10-10T23:02:01.528838+00:00",
+  "artifact": {
+    "file": "artifacts/pes3-savestate-research.zip",
+    "bytes": 12672608,
+    "sha256": "dd0debf03657efd0b23eab86442c1a803742679f0ad4ae48a7bb2cc3f9f43fc1"
+  },
+  "state": {
+    "file": "SLES-51912 (3D653E04).01.p2s",
+    "bytes": 15758906,
+    "sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "format_version": "0x9a590000",
+    "pcsx2_version": "v2.8.2",
+    "members": [
+      {
+        "name": "PCSX2 Savestate Version.id",
+        "bytes": 36,
+        "sha256": "d70df4d4d822ec7fa5bada5274c45f756197f0e800ed3fb6941194e0abaf9311",
+        "compression": 0
+      },
+      {
+        "name": "PCSX2 Internal Structures.dat",
+        "bytes": 6782794,
+        "sha256": "6f1452d81e833716f2ca9c25876adbb6048465a13f0fc8912265f35b79ec7bd2",
+        "compression": 93
+      },
+      {
+        "name": "eeMemory.bin",
+        "bytes": 33554432,
+        "sha256": "dff465421161cc88efe4c9ac853bff7c03026aaead7ce32471ae98d9481bafbd",
+        "compression": 93
+      },
+      {
+        "name": "iopMemory.bin",
+        "bytes": 2097152,
+        "sha256": "6764905472be9353cad4c440c221531c94a6f1aa9173b64644dff1204e6d2d35",
+        "compression": 93
+      },
+      {
+        "name": "eeHwRegs.bin",
+        "bytes": 65536,
+        "sha256": "3f7e0a899b1e822dc1ec359e9444988a02280ce933c070ca733fb7581f166a49",
+        "compression": 93
+      },
+      {
+        "name": "iopHwRegs.bin",
+        "bytes": 65536,
+        "sha256": "da399ebee90f6d7ee77bcc715374dc039462e96e6ecf3709a4d2d67f22e7a31e",
+        "compression": 93
+      },
+      {
+        "name": "Scratchpad.bin",
+        "bytes": 16384,
+        "sha256": "fa68124dc045f593ac308e4d6227c93414db989691ceab91ca0f09dfa61f568c",
+        "compression": 93
+      },
+      {
+        "name": "vu0Memory.bin",
+        "bytes": 4096,
+        "sha256": "5369b14063c3306259b4d5031847a9a0d78c2dcedaaf7c3ae93ba2c5d6ef0261",
+        "compression": 93
+      },
+      {
+        "name": "vu1Memory.bin",
+        "bytes": 16384,
+        "sha256": "b82124aaf9bcb4cefc63be6b608066851628b7909edfb467c0ed262c2fad538f",
+        "compression": 93
+      },
+      {
+        "name": "vu0MicroMem.bin",
+        "bytes": 4096,
+        "sha256": "51a0139d61c4961981ecc5619b1899f2e5eb019013ee02c1c87dcdde198b22de",
+        "compression": 93
+      },
+      {
+        "name": "vu1MicroMem.bin",
+        "bytes": 16384,
+        "sha256": "cc52f3c16758711234fddf5bb0c1b3c33e84a9f5b3de959e36f9338bc1cbbcfa",
+        "compression": 93
+      },
+      {
+        "name": "SPU2.bin",
+        "bytes": 2178992,
+        "sha256": "4694030fc4668d8b01c14303dd531f8d5f22bfebaa320d27f1591106342a139c",
+        "compression": 93
+      },
+      {
+        "name": "USB.bin",
+        "bytes": 8491,
+        "sha256": "dde2ed3eb9bf8b5df84846d3adb993b84f3723084f1a13c2f5ad516ab9d9dca3",
+        "compression": 93
+      },
+      {
+        "name": "PAD.bin",
+        "bytes": 257,
+        "sha256": "254221256f821665a6ac3e47f51b03f510d809b7ee9446b832fb14c1fdc29c92",
+        "compression": 93
+      },
+      {
+        "name": "GS.bin",
+        "bytes": 4194813,
+        "sha256": "625331201cbc22ba4d52829eed76d8a92f7ea9d43c2d32618ccf24736a8eaafc",
+        "compression": 93
+      },
+      {
+        "name": "Screenshot.png",
+        "bytes": 423681,
+        "sha256": "f4cb1ab9580915371346cae2bafac45eb1a95c8a523da94cd63b234afccacf84",
+        "compression": 0
+      }
+    ],
+    "cpu": {
+      "status": "decoded",
+      "tag_offset": 322,
+      "gp": "0x12adef0",
+      "sp": "0x1fffca0",
+      "ra": "0x111cc80",
+      "pc": "0x1126210",
+      "delay_slot": 0,
+      "scope": "Snapshot metadata only; replay calls use explicit function arguments, not a resumed frame."
+    }
+  },
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "analysis_sha256": "edb7411879c801f8ee69fc0ba2d1339886ab897a358e2fc1b9136a7a545e8b31",
+  "summary": {
+    "scenarios": 234,
+    "completed_scenarios": 234,
+    "original_function_calls": 276,
+    "native_function_comparisons": 276,
+    "blocked_scenarios": [],
+    "original_instructions": 2142295,
+    "observed_transition_calls": 86,
+    "observed_clips": [
+      0,
+      47,
+      60,
+      109,
+      116,
+      117,
+      119,
+      120,
+      224,
+      263,
+      289,
+      296,
+      304,
+      314,
+      317,
+      482,
+      570,
+      680,
+      858,
+      869
+    ],
+    "translated_instruction_words": 51609
+  },
+  "lift": {
+    "instructions_translated": 51609,
+    "pages": 331,
+    "scope": "Reached instruction paths; guest register/memory representation, selected host arithmetic, no devices or complete PS2 frame."
+  },
+  "code_words_verified": 386812,
+  "loaded_clips_verified": 999,
+  "unloaded_clips": [
+    999,
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019,
+    1020,
+    1021,
+    1022,
+    1023,
+    1024,
+    1025,
+    1026,
+    1027,
+    1028,
+    1029,
+    1030,
+    1031,
+    1032,
+    1033,
+    1034,
+    1035,
+    1036,
+    1037,
+    1038,
+    1039,
+    1040,
+    1041,
+    1042,
+    1043,
+    1044,
+    1045,
+    1046,
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1055,
+    1056,
+    1057,
+    1058,
+    1059,
+    1060,
+    1061,
+    1062,
+    1063,
+    1064,
+    1065,
+    1066,
+    1067,
+    1068,
+    1069,
+    1070,
+    1071,
+    1072,
+    1073,
+    1074,
+    1075,
+    1076,
+    1077,
+    1078,
+    1079,
+    1080,
+    1081,
+    1082,
+    1083,
+    1084,
+    1085,
+    1086,
+    1087,
+    1088,
+    1089,
+    1090,
+    1091,
+    1092,
+    1093,
+    1094,
+    1095,
+    1096,
+    1097,
+    1098,
+    1099,
+    1100,
+    1101,
+    1102,
+    1103,
+    1104
+  ],
+  "actors": [
+    {
+      "id": 1,
+      "address": "0x14c0aa0",
+      "object": "0x100130",
+      "action": 130,
+      "substate": 0,
+      "clip": 653,
+      "frame_bits": "0x41f80000",
+      "controller_slot": 8
+    },
+    {
+      "id": 2,
+      "address": "0x14c0f60",
+      "object": "0x100260",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x42080000",
+      "controller_slot": 8
+    },
+    {
+      "id": 3,
+      "address": "0x14c1420",
+      "object": "0x100390",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41e00000",
+      "controller_slot": 8
+    },
+    {
+      "id": 4,
+      "address": "0x14c18e0",
+      "object": "0x1004c0",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41600000",
+      "controller_slot": 8
+    },
+    {
+      "id": 5,
+      "address": "0x14c1da0",
+      "object": "0x1005f0",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41600000",
+      "controller_slot": 8
+    },
+    {
+      "id": 6,
+      "address": "0x14c2260",
+      "object": "0x100720",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41d80000",
+      "controller_slot": 8
+    },
+    {
+      "id": 7,
+      "address": "0x14c2720",
+      "object": "0x100850",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41300000",
+      "controller_slot": 8
+    },
+    {
+      "id": 8,
+      "address": "0x14c2be0",
+      "object": "0x100980",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x40c00000",
+      "controller_slot": 8
+    },
+    {
+      "id": 9,
+      "address": "0x14c30a0",
+      "object": "0x100ab0",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41d80000",
+      "controller_slot": 8
+    },
+    {
+      "id": 10,
+      "address": "0x14c3560",
+      "object": "0x100be0",
+      "action": 0,
+      "substate": 2,
+      "clip": 304,
+      "frame_bits": "0x42200000",
+      "controller_slot": 0
+    },
+    {
+      "id": 11,
+      "address": "0x14c3a20",
+      "object": "0x100d10",
+      "action": 7,
+      "substate": 5,
+      "clip": 304,
+      "frame_bits": "0x41e00000",
+      "controller_slot": 8
+    },
+    {
+      "id": 12,
+      "address": "0x14c3ee0",
+      "object": "0x100e40",
+      "action": 130,
+      "substate": 0,
+      "clip": 340,
+      "frame_bits": "0x41400000",
+      "controller_slot": 8
+    },
+    {
+      "id": 13,
+      "address": "0x14c43a0",
+      "object": "0x100f70",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 14,
+      "address": "0x14c4860",
+      "object": "0x1010a0",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 15,
+      "address": "0x14c4d20",
+      "object": "0x1011d0",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 16,
+      "address": "0x14c51e0",
+      "object": "0x101300",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 17,
+      "address": "0x14c56a0",
+      "object": "0x101430",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 18,
+      "address": "0x14c5b60",
+      "object": "0x101560",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 19,
+      "address": "0x14c6020",
+      "object": "0x101690",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 20,
+      "address": "0x14c64e0",
+      "object": "0x1017c0",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 21,
+      "address": "0x14c69a0",
+      "object": "0x1018f0",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    },
+    {
+      "id": 22,
+      "address": "0x14c6e60",
+      "object": "0x101a20",
+      "action": 255,
+      "substate": 0,
+      "clip": 998,
+      "frame_bits": "0x0",
+      "controller_slot": 8
+    }
+  ],
+  "controlled_actor": 10,
+  "global_pointers": {
+    "0x12a6238": "0x1535f10",
+    "0x12a623c": "0x1535e40",
+    "0x12a6250": "0x155d860"
+  },
+  "test_memory_kinds": {
+    "unmodified_snapshot": 91,
+    "modified_snapshot": 143
+  },
+  "recorded_dynamic_calls": [
+    {
+      "call_pc": "0x1167374",
+      "static_argument": [
+        "unresolved"
+      ],
+      "clips_in_tested_paths": [
+        119
+      ],
+      "scope": "Concrete arguments in tested captured/modified memory; no universal resolution of this call."
+    },
+    {
+      "call_pc": "0x119f904",
+      "static_argument": [
+        "arg0.u16:732"
+      ],
+      "clips_in_tested_paths": [
+        0,
+        47,
+        60,
+        109,
+        116,
+        117,
+        119,
+        120,
+        224,
+        263,
+        304,
+        314,
+        317,
+        680,
+        858,
+        869
+      ],
+      "scope": "Concrete arguments in tested captured/modified memory; no universal resolution of this call."
+    },
+    {
+      "call_pc": "0x163fd18",
+      "static_argument": [
+        "unresolved"
+      ],
+      "clips_in_tested_paths": [
+        869
+      ],
+      "scope": "Concrete arguments in tested captured/modified memory; no universal resolution of this call."
+    }
+  ],
+  "reference_sha256": {
+    "mips_integer_reference.py": "2ff253c2fddb8eae6081b80786e9a13502da24e086ce0c88dfb01b50aa77c906",
+    "float_vector_model.py": "3ae41e793c4ea6cfd17fba870f3e504f2601632d6a3bd568480dd9c8c317a0eb",
+    "scratch_field_model.py": "199846d8bf4cfe31e4bfb3cab61873830abd139334206b9e640371a5298341cc"
+  },
+  "native_files_sha256": {
+    "libpes3_lift.so": "46bfaaa9e7ee80a38efa353df33f8fcc0c605052b5279fd2082f9ed2c8f86064",
+    "lift_runtime.hpp": "56bd994c4dab0c49c5f53791b152cdd55c0c0f1a3fc96a24e61b6bc643b866a7",
+    "lift_api.hpp": "264d51379f3e1a609be08f03b2ae995096ea91df2200329ae03c46419c86ad43",
+    "lifted_program.cpp": "b5926784e38cbebe9a16da866cb31d4ed61cf1394595f3a72f16c88bf8a832bb"
+  },
+  "full_replay_validation_sha256": "2e31a188a8f84df6dd2fd7a1baa7c17dfd382415078d9c5a1f493b0715841907",
+  "browser": {
+    "schema_version": 1,
+    "result": "passed",
+    "run_id": "63769165-9c01-4785-ab18-a0f1eb4b9da9",
+    "completed_at_utc": "2026-10-10T22:59:45.024284+00:00",
+    "package_sha256": "dd0debf03657efd0b23eab86442c1a803742679f0ad4ae48a7bb2cc3f9f43fc1",
+    "html_sha256": "fe6acca6867bcf5dae3ca93327a354a72591da09f0c60fc9a4d0f3920ecd17c3",
+    "checks": 43,
+    "passed_checks": [
+      "package_crc",
+      "package_contents",
+      "html_manifest_hash",
+      "embedded_bundle_hash",
+      "clip_inventory",
+      "nineteen_finite_joints",
+      "no_automatic_gesture_labels",
+      "canvas_has_skeleton_pixels",
+      "automatic_code_context_visible",
+      "action_context_filters_clips",
+      "substate_context_filters_clips",
+      "navigation_uses_filtered_clips",
+      "code_export_includes_all_clips",
+      "code_export_preserves_source_and_scope",
+      "code_export_needs_no_manual_annotations",
+      "all_clips_filter_restored",
+      "snapshot_replay_controls_visible",
+      "snapshot_replay_inventory",
+      "original_action_selects_recorded_clip",
+      "modified_snapshot_is_identified",
+      "recorded_blend_transition_selectable",
+      "no_transition_preserves_output_clip",
+      "unmodified_memory_is_identified",
+      "replay_export_preserves_provenance",
+      "replay_export_preserves_modified_input",
+      "playback_advances",
+      "pause_stops_playback",
+      "sentinel_is_not_a_new_pose",
+      "previous_original_key",
+      "next_endpoint",
+      "preview_follow_preserves_local_pose",
+      "manual_candidate_annotation",
+      "export_retains_source_and_time",
+      "export_does_not_enable_gameplay",
+      "annotation_can_be_removed",
+      "last_to_first_clip",
+      "first_to_last_clip",
+      "invalid_id_preserves_selection",
+      "keyboard_clip_navigation",
+      "keyboard_playback",
+      "narrow_viewport_canvas_visible",
+      "no_javascript_errors",
+      "no_network_requests"
+    ],
+    "javascript_errors": [],
+    "network_requests": [],
+    "load_method": "set_content_exact_packaged_inline_html",
+    "scope": "Chromium inline-document functional checks in cloud; file-URL opening and Windows Edge not executed."
+  },
+  "python_unit_tests": {
+    "command": "python3 -m unittest discover -s tests -p 'test_pes3*.py' -v",
+    "passed": 47,
+    "failures": 0,
+    "errors": 0,
+    "scope": "Structural readers, decoder/lifter invariants, native guard/division/budget cases and original open game catalogue."
+  },
+  "files_sha256": {
+    "tools/pes3/savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a",
+    "tools/pes3/replay.py": "0a043fec273c018e95f90cc9122da736d5096b2f51d1746c55cf60aae9be6fe6",
+    "tools/pes3/lift.py": "850ef3891cd59550119b222257c5bca3d81058c96709a8bfec846adc13bea0f1",
+    "tools/pes3/lift_runtime.hpp": "56bd994c4dab0c49c5f53791b152cdd55c0c0f1a3fc96a24e61b6bc643b866a7",
+    "tools/pes3/build_lab.py": "dedffe35247e8660fdbc9f9ddd589dc1609de6ae8bb699a542f92d1039bf0bb1",
+    "tools/pes3/lab.html": "7cdade43a0da5e636752f9e554f43c8c41e2f66a02ab16c2818a4b45dcfa5788",
+    "tests/test_pes3_savestate.py": "94f4015629b19474d3b0ab275d061d1942d16f15552b41d07b921a862dca6f31",
+    "tests/pes3_lab_smoke.py": "e8148b825e81749e1c21aac4197ba71353dd16782dcc890ff32217ce5e5f4810",
+    "docs/pes3-replay-evidence.json": "b9565abd1e54bad99727172cce1d4016bb007b22e9e388616294ca92bfbfd58b"
+  },
+  "pcsx2_layout_sources": {
+    "SaveState.h": {
+      "url": "https://raw.githubusercontent.com/PCSX2/pcsx2/v2.8.2/pcsx2/SaveState.h",
+      "sha256": "6c47daa3be4a4b7c3df236b0ac1dae27af0a948038774ba6e2a8a6bc45493720"
+    },
+    "R5900.h": {
+      "url": "https://raw.githubusercontent.com/PCSX2/pcsx2/v2.8.2/pcsx2/R5900.h",
+      "sha256": "a6ef18e1b646b5ba6c956c10836aa4f75fd8309798f0ac0cf8644faa41cbf323"
+    },
+    "SaveState.cpp": {
+      "url": "https://raw.githubusercontent.com/PCSX2/pcsx2/v2.8.2/pcsx2/SaveState.cpp",
+      "sha256": "868f923f2044e5a27c439f8b8528c9e509d1185d9fcbefd6eacb3e6240029589"
+    }
+  },
+  "scope": "Continuous modeled original calls and reached-path static C++ recompilation on captured/modified memory. Original helpers execute normally. Comparisons cover full EE RAM, scratchpad, low GPR/FPU registers and instruction sequence. Explicit argument calls with normalized registers; no resumed PCSX2 frame, observed consecutive frames, PS2 hardware equivalence or engine integration.",
+  "native_training": {
+    "file": "artifacts/football-training-windows-x86_64.zip",
+    "sha256": "ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443",
+    "changed": false
+  }
+}

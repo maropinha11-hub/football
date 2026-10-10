@@ -52,6 +52,11 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
 <label for="code-clip">Clips referenciados pelo código</label><select id="code-clip"></select>
 <p id="code-evidence"></p><button id="export-code" type="button">Exportar mapa do código</button>
 </div>
+<details id="replay-context" hidden><summary>Seleção reexecutada no treino</summary>
+<label for="scenario-filter">Cenário registrado</label><select id="scenario-filter"></select>
+<label for="scenario-transition">Transição de animação</label><select id="scenario-transition"></select>
+<p id="replay-evidence" class="muted"></p>
+<button id="export-replay" type="button">Exportar reexecução</button></details>
 <div><label for="category">Marcar candidato visual</label><select id="category"><option value="">Sem classificação</option><option value="idle">Parado</option><option value="walk">Caminhada</option><option value="run">Corrida</option><option value="dribble">Condução</option><option value="pass">Passe</option><option value="shot">Chute</option><option value="header">Cabeceio</option><option value="trap">Domínio</option><option value="other">Outro gesto</option></select><p id="category-status" class="muted"></p></div>
 <button id="export" type="button">Exportar catálogo marcado</button>
 <p class="notice"><strong>Prévia de pesquisa.</strong> A pose local foi verificada. O desenho usa composição padrão da hierarquia; mistura, espelhamento e transformações finais do PES ainda precisam ser validados. As marcações não habilitam clips no jogo.</p>
@@ -136,6 +141,29 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
       $("code-clip").onchange=()=>choose(Number($("code-clip").value));
       $("export-code").onclick=()=>downloadJson({...meta.actions,bundle_sha256:meta.bundle_sha256},"pes3-animacoes-codigo.json");
       $("code-clip").replaceChildren(...filteredIds.map(id=>new Option("Clip "+id+" · "+meta.actions.clips[id].references.length+" chamadas",String(id))));
+    }
+    function selectReplayTransition(){
+      const scenario=meta.replay.scenarios[Number($("scenario-filter").value)];
+      const transition=scenario.transitions[Number($("scenario-transition").value)];
+      $("action-filter").value="";$("substate-filter").value="";filterCode();playing=false;$("play").textContent="Reproduzir";
+      choose(transition?transition.clip:scenario.output_actor.clip);
+    }
+    function selectReplayScenario(){
+      const scenario=meta.replay.scenarios[Number($("scenario-filter").value)], transitions=scenario.transitions;
+      $("scenario-transition").replaceChildren(...transitions.map((t,i)=>new Option((i+1)+" · Clip "+t.clip+" · "+t.role,String(i))));
+      $("scenario-transition").disabled=!transitions.length;
+      const kind=scenario.input_kind==="modified_snapshot"?"Memória alterada para teste":"Memória capturada";
+      $("replay-evidence").textContent=kind+" · Atleta "+scenario.actor+" · "+transitions.length+" transições. Resultado: ação "+scenario.output_actor.action+
+        ", subestado "+scenario.output_actor.substate+", clip "+scenario.output_actor.clip+". Caminho C++ conferido contra as instruções originais. São chamadas isoladas; a prévia mostra o clip sem a mistura final.";
+      selectReplayTransition();
+    }
+    if(meta.replay){
+      $("replay-context").hidden=false;
+      $("scenario-filter").replaceChildren(...meta.replay.scenarios.map((s,i)=>new Option(s.id+" · Atleta "+s.actor,String(i))));
+      $("scenario-filter").onchange=selectReplayScenario;$("scenario-transition").onchange=selectReplayTransition;
+      $("export-replay").onclick=()=>downloadJson(meta.replay,"pes3-reexecucao-treino.json");
+      $("scenario-filter").value=String(meta.replay.scenarios.findIndex(s=>s.id==="action1-substate-1"));
+      selectReplayScenario();
     }
     function project(p,width,height) {
       const v=p.map((x,i)=>x-bounds.center[i]), c=Math.cos(yaw),s=Math.sin(yaw);

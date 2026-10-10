@@ -37,6 +37,9 @@ def run(package, browser, screenshot=None):
         if "action_analysis" in manifest:
             expected_files|={"animation-actions.json","actions.json.gz","action_dispatch.hpp",
                              "action_dispatch.js","actions-validation.json"}
+        if "replay_analysis" in manifest:
+            expected_files|={"replay-evidence.json","replay-validation.json.gz","instruction-words.json",
+                             "native/lifted_program.cpp","native/lift_api.hpp","native/lift_runtime.hpp"}
         check("package_contents", set(archive.namelist()) == expected_files)
     check("html_manifest_hash", hashlib.sha256(html_bytes).hexdigest() == manifest["html_sha256"])
     encoded = re.search(r'<script id="bundle" type="application/octet-stream">([^<]+)</script>', html)
@@ -105,6 +108,32 @@ def run(package, browser, screenshot=None):
                 page.locator("#action-filter").select_option("")
                 choose(47)
                 check("all_clips_filter_restored", page.locator("#code-clip option").count()==1105)
+
+            if "replay_analysis" in manifest:
+                page.locator("#replay-context").evaluate("element=>element.open=true")
+                check("snapshot_replay_controls_visible",page.locator("#scenario-filter").is_visible())
+                check("snapshot_replay_inventory",page.locator("#scenario-filter option").count()==manifest["replay_analysis"]["scenarios"])
+                def scenario(name):
+                    value=page.locator("#scenario-filter").evaluate("(el,name)=>[...el.options].find(o=>o.textContent.startsWith(name+' ·')).value",name)
+                    page.locator("#scenario-filter").select_option(value)
+                scenario("forced-action-4")
+                check("original_action_selects_recorded_clip",snapshot()["clip"]==263 and not snapshot()["playing"])
+                check("modified_snapshot_is_identified","Memória alterada para teste" in page.locator("#replay-evidence").inner_text())
+                scenario("action1-substate-18")
+                page.locator("#scenario-transition").select_option("1")
+                check("recorded_blend_transition_selectable",snapshot()["clip"]==304 and page.locator("#scenario-transition option").count()==3)
+                scenario("update-actor-10")
+                check("no_transition_preserves_output_clip",snapshot()["clip"]==304 and page.locator("#scenario-transition").is_disabled())
+                check("unmodified_memory_is_identified","Memória capturada" in page.locator("#replay-evidence").inner_text())
+                with page.expect_download() as event:page.locator("#export-replay").click()
+                with tempfile.TemporaryDirectory(prefix="pes3-replay-export-") as temp:
+                    target=Path(temp)/event.value.suggested_filename;event.value.save_as(target)
+                    replay=json.loads(target.read_text())
+                check("replay_export_preserves_provenance",replay["summary"]==manifest["replay_analysis"] and len(replay["state_sha256"])==64)
+                check("replay_export_preserves_modified_input",any(s["edits"] for s in replay["scenarios"]) and "no resumed PCSX2 frame" in replay["scope"])
+                scenario("action1-substate-1")
+                page.locator("#replay-context").evaluate("element=>element.open=false")
+                choose(47)
 
             page.locator("#play").click()
             page.wait_for_function("window.pes3Lab.snapshot().time>1")

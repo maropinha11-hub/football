@@ -125,22 +125,21 @@ SHA-256 do `actions.json` descompactado:
 O relatório registra também os hashes das ferramentas e dos modelos de
 referência usados na comparação.
 
-## Próximo dado necessário e integração
+## Save state recebido e integração
 
-Precisamos de um **save state completo `.p2s` do PCSX2 durante o treino do
-PES 3, com o jogador e a bola em campo**, acompanhado da versão do PCSX2.
-Esse arquivo preserva a memória carregada, incluindo ponteiros, tabelas e
-estruturas que os binários enviados apenas reservam ou inicializam. Os canais
-derivados do v0.14 não substituem essa memória. O estado permitirá investigar
-as chamadas dinâmicas e repetir trechos com dados reais; sozinho não comprova
-todas as situações da gameplay.
+O save state completo solicitado foi recebido e validado. A etapa em
+[PES3-SAVESTATE.md](PES3-SAVESTATE.md) acrescenta recompilação estática dos
+caminhos alcançados, 276 comparações nativas e argumentos concretos de três
+chamadas antes pendentes. Os resultados podem ser consultados no
+[laboratório com reexecução](../artifacts/pes3-savestate-research.zip).
+Essa memória permite investigar dados carregados que os canais derivados do
+v0.14 não continham; não comprova todas as situações da gameplay.
 
-Em seguida, a recuperação deve avançar dos roteamentos para o seletor de
-entrada `0x01853D30`, os corpos das ações e os testes geométricos, incluindo
-`0x017BB0A0`. Executar esses caminhos com estados e comandos registrados
-permitirá confrontar IDs, condições e transições. Ainda será necessário
-conferir unidades/eixos, apoio, instante de contato, mistura, espelhamento e
-transformação final, além da física da bola.
+O seletor de entrada `0x01853D30`, corpos de ações e o gate `0x017BB0A0`
+foram alcançados nos cenários documentados. A recuperação deve continuar nos
+ramos não exercitados e na ordem do quadro completo. Ainda será necessário
+conferir unidades/eixos, apoio, instante de contato, mistura, espelhamento
+e transformação final, além da física da bola.
 
 No nosso motor, a ligação será com `AnimCollection` e `Humanoid`, que já
 filtram comando, velocidade, direção e contato admissível. Um ID encontrado
