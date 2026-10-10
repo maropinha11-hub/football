@@ -1,0 +1,7 @@
+{
+  "data/media/shaders/postprocess.frag": {
+    "sha256": "64d9f84ff8fffa4adbd6f7f14caaf6dd581b16c32f8dd1d7f5852b3047c92183",
+    "original_sha256": "686bf6d5eba59db4c5f770b0dddc589ad36775d5a577af33e22b72094cc7fce0",
+    "reason": "Only cleared depth is sky; retain distant stadium geometry with the close first-person near plane."
+  }
+}

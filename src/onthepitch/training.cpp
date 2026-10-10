@@ -220,14 +220,17 @@ void Match::ProcessTraining() {
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
              "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
-             "\"look_active\":%d,\"move_active\":%d}\n",
+             "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
              designatedPossessionPlayer->GetFrameNum(), trainingController, trainingGoals,
              trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingView.yaw,
              trainingView.headYaw, trainingView.pitch, trainingContacts, lookActive ? 1 : 0,
-             input->GetDirection().GetLength() > 0.001f ? 1 : 0);
+             input->GetDirection().GetLength() > 0.001f ? 1 : 0,
+             input->GetButton(e_ButtonFunction_Shot) ? 1 : 0,
+             designatedPossessionPlayer->GetExternalController() ?
+               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetCharge_ms() : 0);
       fflush(stdout);
     }
   }

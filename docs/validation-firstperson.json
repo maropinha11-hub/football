@@ -1,5 +1,5 @@
 {
-  "run_id": "1922c162-63bb-4d45-974b-11dd729d0c2c",
+  "run_id": "bc498b5c-dd19-4a02-b817-6fbc26929e8a",
   "checks": [
     {
       "check": "rendered game startup",
@@ -9,7 +9,7 @@
     {
       "check": "walking and dribbling",
       "result": "passed",
-      "evidence": "Player moved 6.54 m"
+      "evidence": "Player moved 4.74 m"
     },
     {
       "check": "animation playback",
@@ -24,27 +24,27 @@
     {
       "check": "sprinting",
       "result": "passed",
-      "evidence": "Walk 5.00, sprint 7.83 m/s"
+      "evidence": "Walk 5.00, sprint 7.88 m/s"
     },
     {
       "check": "short pass",
       "result": "passed",
-      "evidence": "Functions [1, 4]; ball speed 25.00 m/s"
+      "evidence": "Functions [1, 4]; ball speed 25.18 m/s"
     },
     {
       "check": "through pass",
       "result": "passed",
-      "evidence": "Functions [1, 5]; ball speed 24.93 m/s"
+      "evidence": "Functions [1, 5]; ball speed 25.49 m/s"
     },
     {
       "check": "high pass",
       "result": "passed",
-      "evidence": "Functions [1, 6]; ball speed 22.95 m/s"
+      "evidence": "Functions [1, 6]; ball speed 23.51 m/s"
     },
     {
       "check": "shot",
       "result": "passed",
-      "evidence": "Functions [1, 8]; ball speed 25.21 m/s"
+      "evidence": "Functions [1, 8]; ball speed 32.29 m/s"
     },
     {
       "check": "aerial physics",
@@ -64,7 +64,7 @@
     {
       "check": "finishing exercise",
       "result": "passed",
-      "evidence": "Player starts at x=29.75 m"
+      "evidence": "Player starts at x=30.25 m"
     },
     {
       "check": "goal detection",
@@ -74,22 +74,27 @@
     {
       "check": "automatic ball reset",
       "result": "passed",
-      "evidence": "Ball returned to x=29.79 m"
+      "evidence": "Ball returned to x=30.65 m"
     },
     {
       "check": "charged shot elevation",
       "result": "passed",
-      "evidence": "Light (19.4274, 0.1814), charged (30.5488, 3.5669) (speed, height)"
+      "evidence": "Light (27.3104, 1.9741), charged (35.0, 6.282) (speed, height)"
+    },
+    {
+      "check": "quick shot elevation",
+      "result": "passed",
+      "evidence": "Quarter-second shot (29.7502, 2.8314) (speed, height)"
     },
     {
       "check": "LB chip trajectory",
       "result": "passed",
-      "evidence": "Chip (20.5631, 8.7103); charged (30.5488, 3.5669)"
+      "evidence": "Chip (22.0, 10.181); charged (35.0, 6.282)"
     },
     {
       "check": "free kick exercise",
       "result": "passed",
-      "evidence": "Player starts at [28.1211, -7.8597, 0.0]"
+      "evidence": "Player starts at [28.2397, -7.929, 0.0]"
     },
     {
       "check": "first person camera",
@@ -99,27 +104,37 @@
     {
       "check": "head free look with ball",
       "result": "passed",
-      "evidence": "Head yaw -1.03, player stays still"
+      "evidence": "Head yaw -1.07, player stays still"
     },
     {
       "check": "gradual head recenter",
       "result": "passed",
-      "evidence": "Head magnitude 1.24 -> 0.11 rad after input release"
+      "evidence": "Head magnitude 1.34 -> 0.13 rad after input release"
     },
     {
       "check": "head look does not steer dribbling",
       "result": "passed",
-      "evidence": "Player delta [6.4858, -0.8712000000000001]; head turns independently"
+      "evidence": "Player delta [4.1484, 0.0]; head turns independently"
+    },
+    {
+      "check": "straight dribbling",
+      "result": "passed",
+      "evidence": "Forward/side displacement [9.4484, 0.0] m"
     },
     {
       "check": "off ball FPS turning",
       "result": "passed",
-      "evidence": "Yaw changed -0.55 rad without ball"
+      "evidence": "Yaw changed -1.28 rad without ball"
     },
     {
       "check": "first person forward movement",
       "result": "passed",
-      "evidence": "Player moved 2.70 m"
+      "evidence": "Player moved 2.28 m"
+    },
+    {
+      "check": "front stadium remains visible",
+      "result": "passed",
+      "evidence": "Central distant stands cover 83.8% of inspection region"
     },
     {
       "check": "ball stays above turf",
@@ -129,7 +144,12 @@
     {
       "check": "finite physics state",
       "result": "passed",
-      "evidence": "611 live samples are finite"
+      "evidence": "704 live samples are finite"
+    },
+    {
+      "check": "rendered foot contact correction",
+      "result": "passed",
+      "evidence": "40 rendered foot corrections; median error 0.205 -> 0.081 m"
     },
     {
       "check": "external camera restoration",
@@ -142,6 +162,6 @@
       "evidence": "Exit status 0"
     }
   ],
-  "total": 28,
+  "total": 32,
   "result": "passed"
 }

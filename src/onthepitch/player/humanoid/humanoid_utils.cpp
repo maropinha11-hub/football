@@ -311,6 +311,12 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   powerMultiplier = 1.0f * (1.0f - veloBias) + powerMultiplier * veloBias;
 
   Vector3 touchVec = direction * power * powerMultiplier + Vector3(0, 0, height);
+  if (TrainingEnabled()) {
+    const float weakness = 1 - training::controlQuality(currentAnim->anim->GetVariable("touch_bodypart"));
+    // A weaker touch runs a little farther and retains more incoming momentum,
+    // instead of adding random lateral steering to straight dribbling.
+    touchVec = touchVec * (1 + weakness * 0.45f) * (1 - weakness * 0.25f) + ball->GetMovement() * (weakness * 0.25f);
+  }
 /*
   if (player->GetDebug()) {
     SetRedDebugPilon(ball->Predict(0).Get2D());

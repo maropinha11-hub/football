@@ -114,7 +114,9 @@ void main(void) {
   float fogFactor = clamp(fragDepth * 0.01f * (1.0f - fogScale) - 0.16f * fogScale, 0.0f, 0.25f);
 
   fragColor = fragColor * (1.0f - fogFactor) + fogColor * fogFactor;
-  if (depth > 0.999f) fragColor = fogColor; // fill 'background'/sky
+  // A close first-person near plane puts stadium geometry above 0.999.
+  // Only the cleared depth buffer represents background sky.
+  if (depth >= 1.0f) fragColor = fogColor;
 
   float brightness = 1.0f;
   float contrastBias = 0.3f;//0.1f; // 0 == normal .. 1 == 'fake hdri'

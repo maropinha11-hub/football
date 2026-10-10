@@ -39,6 +39,7 @@ int RunControllerTests() {
   SDL_Joystick *virtualPad = nullptr;
   int device = -1;
   try {
+    GetConfiguration()->SetBool("training_mode", true);
     training::View view;
     view.reset(0);
     view.update(false, 0, Vector3(0, 1, 0), Vector3(1, 0, 0), 0.25f);
@@ -62,6 +63,26 @@ int RunControllerTests() {
     require(std::fabs(training::angle(view.yaw - beforeRelease)) < 0.001f, "Possession change must not snap camera");
     const auto partial = training::radialStick(Vector3(0.55f, 0, 0), 0.15f);
     require(partial.GetLength() > 0.4f && partial.GetLength() < 0.6f, "Analog travel must retain proportional speed");
+    const auto straight = training::movementStick(Vector3(0.05f, 0.9f, 0), 0.15f);
+    require(std::fabs(straight.coords[0]) < 0.0001f && straight.coords[1] > 0.8f, "Small cross-axis error must not steer straight travel");
+    const auto diagonal = training::movementStick(Vector3(0.6f, 0.6f, 0), 0.15f);
+    require(std::fabs(diagonal.coords[0] - diagonal.coords[1]) < 0.0001f, "Diagonal direction must remain available");
+    require(std::fabs(straight.GetLength() - training::radialStick(Vector3(0.05f, 0.9f, 0), 0.15f).GetLength()) < 0.0001f, "Straight assistance must retain analog speed");
+    view.reset(0);
+    for (int i = 0; i < 500; ++i) view.update(true, std::sin(i * 0.1f) * 0.2f, Vector3(0), Vector3(0), 0.01f);
+    require(std::fabs(view.movement(Vector3(0, 1, 0)).coords[1]) < 0.0001f, "Idle animation sway must not rotate forward movement");
+    const auto quick = training::shot(std::pow(training::shotCharge(250), 0.6f), 0.7f, false, false);
+    require(quick.elevation > 0.17f && quick.speed > 23, "A quarter-second shot must already gain height and useful power");
+    require(training::shotCharge(520) == 1 && training::shotCharge(0) == 0, "Shot charge must saturate at 520 ms and reject negative charge");
+    require(training::controlQuality("left_foot") < training::controlQuality("right_foot"), "Weak-foot control must be lower than dominant-foot control");
+    require(training::controlQuality("head") == 1, "Foot penalties must not affect headers");
+    const Vector3 hip(0, 0, 0.96f), knee(0, -0.12f, 0.54f), ankle(0, 0, 0.1f), target(0.15f, -0.25f, 0.16f);
+    const auto pose = training::legPose(hip, knee, ankle, target);
+    require((pose.ankle - target).GetLength() < 0.001f, "Reachable foot target must be met");
+    require(std::fabs((pose.knee - hip).GetLength() - (knee - hip).GetLength()) < 0.001f &&
+            std::fabs((pose.ankle - pose.knee).GetLength() - (ankle - knee).GetLength()) < 0.001f, "Contact correction must preserve both leg lengths");
+    const auto farPose = training::legPose(hip, knee, ankle, Vector3(5, 0, 0));
+    require((farPose.ankle - hip).GetLength() < (knee - hip).GetLength() + (ankle - knee).GetLength(), "Unreachable ball must not stretch the leg");
     const auto low = training::shot(0.1f, 0.7f, false, false);
     const auto high = training::shot(1, 0.7f, false, false);
     const auto chip = training::shot(0.7f, 0.7f, true, false);
@@ -107,6 +128,11 @@ int RunControllerTests() {
     pad.Process();
     require(pad.GetDirection().coords[0] > 0.5f, "Analog movement missing or reversed");
     require(std::fabs(pad.GetDirection().coords[1]) < 0.01f, "Analog neutral Y drift");
+    SDL_JoystickSetVirtualAxis(virtualPad, SDL_CONTROLLER_AXIS_LEFTX, 1400);
+    SDL_JoystickSetVirtualAxis(virtualPad, SDL_CONTROLLER_AXIS_LEFTY, -28000);
+    pump(); pad.Process();
+    require(std::fabs(pad.GetDirection().coords[0]) < 0.001f && pad.GetDirection().coords[1] > 0.7f, "Actual SDL stick path must stabilize near-straight travel");
+    SDL_JoystickSetVirtualAxis(virtualPad, SDL_CONTROLLER_AXIS_LEFTY, 0);
     SDL_JoystickSetVirtualAxis(virtualPad, SDL_CONTROLLER_AXIS_LEFTX, 1000);
     pump(); pad.Process();
     require(pad.GetDirection().GetLength() == 0, "Deadzone does not remove analog drift");

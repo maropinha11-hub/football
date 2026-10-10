@@ -138,6 +138,7 @@ struct AnimApplyBuffer {
     smoothFactor = 0.5f;
     noPos = false;
     orientation = 0;
+    trainingTouchBlend = 0;
   }
   AnimApplyBuffer(const AnimApplyBuffer &src) {
     anim = src.anim;
@@ -149,6 +150,9 @@ struct AnimApplyBuffer {
     position = src.position;
     orientation = src.orientation;
     offsets = src.offsets;
+    trainingTouchBlend = src.trainingTouchBlend;
+    trainingTouchTarget = src.trainingTouchTarget;
+    trainingTouchLeft = src.trainingTouchLeft;
   }
   Animation *anim;
   int frameNum;
@@ -159,6 +163,9 @@ struct AnimApplyBuffer {
   Vector3 position;
   radian orientation;
   std::map < std::string, BiasedOffset > offsets;
+  float trainingTouchBlend = 0;
+  Vector3 trainingTouchTarget;
+  bool trainingTouchLeft = false;
 };
 
 struct TemporalHumanoidNode {

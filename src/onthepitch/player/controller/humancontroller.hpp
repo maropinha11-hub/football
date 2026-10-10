@@ -29,6 +29,7 @@ class HumanController : public PlayerController {
     IHIDevice *GetHIDevice() { return hid; }
 
     int GetActionMode() { return actionMode; }
+    int GetCharge_ms() const { return gauge_ms; }
 
     virtual void Reset();
 

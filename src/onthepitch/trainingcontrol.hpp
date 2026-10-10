@@ -4,6 +4,7 @@
 #include "base/math/vector3.hpp"
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 namespace training {
 using blunted::Vector3;
@@ -15,6 +16,22 @@ inline Vector3 radialStick(const Vector3 &value, float deadzone) {
   const float length = value.GetLength();
   if (length <= deadzone) return Vector3(0);
   return value.GetNormalized(0) * limit((length - deadzone) / (1 - deadzone), 0, 1);
+}
+
+// Continuous cross-axis correction preserves diagonal control and analog speed.
+inline Vector3 movementStick(const Vector3 &value, float deadzone) {
+  Vector3 result = radialStick(value, deadzone);
+  const float speed = result.GetLength();
+  const int major = std::fabs(result.coords[0]) > std::fabs(result.coords[1]) ? 0 : 1;
+  const int minor = 1 - major;
+  const float cross = std::max(0.0f, std::fabs(result.coords[minor]) - std::fabs(result.coords[major]) * 0.08f) / 0.92f;
+  result.coords[minor] = std::copysign(cross, result.coords[minor]);
+  return result.GetNormalized(0) * speed;
+}
+inline float shotCharge(int held_ms) { return limit((held_ms - 40) / 480.0f, 0, 1); }
+// Baseline training player: right-footed, with a useful but less precise left foot.
+inline float controlQuality(const std::string &bodypart) {
+  return bodypart == "left_foot" || bodypart == "left_lowerleg" ? 0.72f : 1.0f;
 }
 
 struct View {
@@ -37,7 +54,12 @@ struct View {
     }
     withBall = possession;
     if (withBall) {
-      bodyYaw = angle(bodyYaw + angle(facing - bodyYaw) * (1 - std::exp(-7 * dt)));
+      // Animation sway cannot rotate the stick's reference while standing still.
+      if (nextMoving) {
+        const Vector3 direction = movement(move);
+        const float travelYaw = std::atan2(direction.coords[1], direction.coords[0]);
+        bodyYaw = angle(bodyYaw + angle(travelYaw - bodyYaw) * (1 - std::exp(-7 * dt)));
+      }
       headYaw = limit(headYaw - look.coords[0] * sensitivity * dt, -1.48f, 1.48f);
       // The left-stick frame stays fixed throughout a turn; looking around never steers it.
       if (!nextMoving) movementYaw = bodyYaw;
@@ -73,7 +95,21 @@ inline Shot shot(float charge, float ability, bool chip, bool freeKick) {
   const float maximum = 28 + 7 * limit(ability, 0, 1);
   // A firm short press stays low; a long press gains height as well as speed.
   return {11 + (maximum - 11) * std::pow(p, 0.65f),
-          (2.5f + (freeKick ? 20.0f : 17.5f) * p * p) * pi / 180};
+          (2.5f + (freeKick ? 20.0f : 17.5f) * std::pow(p, 1.35f)) * pi / 180};
+}
+
+// Preserve leg lengths and the animated knee's bend plane; clamp unreachable targets.
+struct LegPose { Vector3 knee, ankle; };
+inline LegPose legPose(const Vector3 &hip, const Vector3 &knee, const Vector3 &ankle, const Vector3 &target) {
+  const float upper = (knee - hip).GetLength(), lower = (ankle - knee).GetLength();
+  const Vector3 axis = (target - hip).GetNormalized(Vector3(0, 0, -1));
+  const float distance = limit((target - hip).GetLength(), std::fabs(upper - lower) + 0.001f, upper + lower - 0.001f);
+  const float along = (upper * upper + distance * distance - lower * lower) / (2 * distance);
+  const float across = std::sqrt(std::max(0.0f, upper * upper - along * along));
+  Vector3 bend = knee - hip - axis * (knee - hip).GetDotProduct(axis);
+  const Vector3 fallback = std::fabs(axis.coords[1]) < 0.9f ? Vector3(0, -1, 0) : Vector3(1, 0, 0);
+  bend = bend.GetNormalized((fallback - axis * fallback.GetDotProduct(axis)).GetNormalized(Vector3(1, 0, 0)));
+  return {hip + axis * along + bend * across, hip + axis * distance};
 }
 
 struct Contact { bool hit = false; float time = 1; Vector3 point, normal; };

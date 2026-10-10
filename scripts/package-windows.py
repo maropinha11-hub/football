@@ -92,6 +92,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
+        "X: carga máxima 0,52 s; cerca de 0,25 s já levanta a bola.\n"
         "LB+X cobertura; RB correr; RT domínio; View reiniciar; Menu pausa;\n"
         "D-pad exercício; LB+D-pad baixo falta; R3 alterna as três câmeras.\n"
         "Teclado: WASD, setas para olhar, J/I/L/K, Q+K cobertura, Shift/Espaço,\n"

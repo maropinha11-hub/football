@@ -225,13 +225,15 @@ namespace blunted {
       camera->GetCapping(nearCap, farCap);
       // todo
       float fov = camera->GetFOV() * 2.0f;
-      float wideScreenMultiplier = 2.5f;
+      // Match the projection's vertical FOV. The old linear approximation
+      // culled visible roof sections at wide first-person fields of view.
+      const float verticalNormal = 0.98f / std::tan(camera->GetFOV() * pi / 360.0f);
       vector_Planes bounding;
       Plane plane(cameraPos + cameraRot * Vector3(0, 0, -nearCap), cameraRot * Vector3(0, 0, -1).GetNormalized());
       bounding.push_back(plane);
-      plane.Set(cameraPos, cameraRot * Vector3(0, (3.6f * wideScreenMultiplier) / (fov / 24.0f), -1).GetNormalized());
+      plane.Set(cameraPos, cameraRot * Vector3(0, verticalNormal, -1).GetNormalized());
       bounding.push_back(plane);
-      plane.Set(cameraPos, cameraRot * Vector3(0, (-3.6f * wideScreenMultiplier) / (fov / 24.0f), -1).GetNormalized());
+      plane.Set(cameraPos, cameraRot * Vector3(0, -verticalNormal, -1).GetNormalized());
       bounding.push_back(plane);
       plane.Set(cameraPos, cameraRot * Vector3(2.4f / (fov / 24.0f), 0, -1).GetNormalized());
       bounding.push_back(plane);

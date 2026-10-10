@@ -7,14 +7,15 @@ O executável Windows foi compilado para x64 com MinGW GCC 14.2 e vcpkg.
 ## Resultados
 
 - Compilação nativa e Windows: concluídas, status zero.
-- CTest: 1 teste executado e aprovado; 46 verificações de controles SDL,
+- CTest: 1 teste executado e aprovado; 58 verificações de controles SDL,
   movimento relativo à visão, olhar com bola, retorno da cabeça, carga de
   chute e varredura de colisão. Nenhum teste ignorado.
-- Jogo renderizado: 28 verificações aprovadas, com eventos X11 e
+- Jogo renderizado: 32 verificações aprovadas, com eventos X11 e
   telemetria real da simulação. Usa a configuração que vai no pacote,
   com resolução reduzida e câmera externa inicial para os exercícios prévios.
-- Recursos originais: 510 arquivos de `data` conferidos contra hashes da
-  importação por `scripts/verify_upstream.py --assets-only`.
+- Recursos originais: 509 arquivos de `data` conferidos contra os hashes da
+  importação. O shader de pós-processamento corrigido também foi conferido
+  contra o hash registrado em `training-asset-overrides.json`.
 - Pacote Windows: ZIP íntegro, PE32+ GUI x64, 26 DLLs de runtime; imports
   recursivos satisfeitos pelas DLLs do pacote ou APIs do Windows 11,
   incluindo XInput, AVRT e o contrato `api-ms-win-core-synch-l1-2-0`.
@@ -22,41 +23,45 @@ O executável Windows foi compilado para x64 com MinGW GCC 14.2 e vcpkg.
   sensibilidade e retorno da cabeça conforme `config/training.config`.
 
 O relatório é [validation-firstperson.json](validation-firstperson.json),
-execução `1922c162-63bb-4d45-974b-11dd729d0c2c`. Cada execução recebe um identificador novo
+execução `bc498b5c-dd19-4a02-b817-6fbc26929e8a`. Cada execução recebe um identificador novo
 e registra seu resultado, inclusive quando falha.
 
-SHA-256 do ZIP validado: `d1493a6a8ea95b49dd4917c5a09bcfc5671a95847fe90cd653ac8090ae58cc85`.
+SHA-256 do ZIP validado: `0d99b58dc8930fc4a4395c6acab79aa031859d2d6bc562ad6c039d97b3181a67`.
 
 ## Evidências da simulação
 
 | Verificação | Evidência |
 | --- | --- |
 | rendered game startup | Native simulation emitted live frames |
-| walking and dribbling | Player moved 6.54 m |
+| walking and dribbling | Player moved 4.74 m |
 | animation playback | Original animation frames advanced |
 | release and deceleration | Stopped speed 0.000 m/s |
-| sprinting | Walk 5.00, sprint 7.83 m/s |
-| short pass | Functions [1, 4]; ball speed 25.00 m/s |
-| through pass | Functions [1, 5]; ball speed 24.93 m/s |
-| high pass | Functions [1, 6]; ball speed 22.95 m/s |
-| shot | Functions [1, 8]; ball speed 25.21 m/s |
+| sprinting | Walk 5.00, sprint 7.88 m/s |
+| short pass | Functions [1, 4]; ball speed 25.18 m/s |
+| through pass | Functions [1, 5]; ball speed 25.49 m/s |
+| high pass | Functions [1, 6]; ball speed 23.51 m/s |
+| shot | Functions [1, 8]; ball speed 32.29 m/s |
 | aerial physics | Peak height 3.94 m |
 | super cancel free movement | Player moved away from incoming ball to x=-8.42 m |
 | off-ball sliding | Functions [1, 13] |
-| finishing exercise | Player starts at x=29.75 m |
+| finishing exercise | Player starts at x=30.25 m |
 | goal detection | Goal counter 0 -> 1 |
-| automatic ball reset | Ball returned to x=29.79 m |
-| charged shot elevation | Light (19.4274, 0.1814), charged (30.5488, 3.5669) (speed, height) |
-| LB chip trajectory | Chip (20.5631, 8.7103); charged (30.5488, 3.5669) |
-| free kick exercise | Player starts at [28.1211, -7.8597, 0.0] |
+| automatic ball reset | Ball returned to x=30.65 m |
+| charged shot elevation | Light (27.3104, 1.9741), charged (35.0, 6.282) (speed, height) |
+| quick shot elevation | Quarter-second shot (29.7502, 2.8314) (speed, height) |
+| LB chip trajectory | Chip (22.0, 10.181); charged (35.0, 6.282) |
+| free kick exercise | Player starts at [28.2397, -7.929, 0.0] |
 | first person camera | Camera switches to first person |
-| head free look with ball | Head yaw -1.03, player stays still |
-| gradual head recenter | Head magnitude 1.24 -> 0.11 rad after input release |
-| head look does not steer dribbling | Player delta [6.4858, -0.8712000000000001]; head turns independently |
-| off ball FPS turning | Yaw changed -0.55 rad without ball |
-| first person forward movement | Player moved 2.70 m |
+| head free look with ball | Head yaw -1.07, player stays still |
+| gradual head recenter | Head magnitude 1.34 -> 0.13 rad after input release |
+| head look does not steer dribbling | Player delta [4.1484, 0.0]; head turns independently |
+| straight dribbling | Forward/side displacement [9.4484, 0.0] m |
+| off ball FPS turning | Yaw changed -1.28 rad without ball |
+| first person forward movement | Player moved 2.28 m |
+| front stadium remains visible | Central distant stands cover 83.8% of inspection region |
 | ball stays above turf | Minimum ball center 0.110 m |
-| finite physics state | 611 live samples are finite |
+| finite physics state | 704 live samples are finite |
+| rendered foot contact correction | 40 rendered foot corrections; median error 0.205 -> 0.081 m |
 | external camera restoration | First person cycles back to external view |
 | clean shutdown | Exit status 0 |
 
@@ -65,11 +70,33 @@ atributos e componentes aleatórios; esses números não são garantidos para
 todos os jogadores e situações. A captura de frente, a visão para baixo e
 o retorno à câmera externa também foram inspecionados durante a integração.
 
-Capturas: [primeira pessoa](../artifacts/firstperson-forward.png),
-[olhando para baixo](../artifacts/training.png) e
-[câmera externa](../artifacts/training-external.png).
-
 ## Correções e critérios de teste
+
+O controle remove pequenas entradas laterais perto das direções retas,
+preserva diagonais e intensidade do analógico, e mantém o referencial da
+condução independente das pequenas rotações da animação em repouso.
+A assistência de movimento do treino não altera a direção do analógico;
+as ações de toque conservam sua seleção e suas restrições de alcance.
+
+O chute atinge carga máxima em 520 ms. A curva de elevação responde antes,
+com um toque médio de cerca de 250 ms. O teste aguarda a carga observada
+pela simulação, pois eventos X11 podem chegar entre amostras de telemetria.
+O teste de gol usa carga curta suficiente para chegar à baliza sem ultrapassar
+sua altura; um toque mínimo pode perder velocidade antes de percorrer 22 m.
+
+O jogador é destro, com qualidade de domínio 0,72 no pé esquerdo contra 1,0
+no direito. Isso reduz alcance de assistência e precisão na absorção do impulso,
+e favorece animações de domínio com o direito quando são compatíveis.
+Não adiciona direção lateral aleatória à locomoção. A perna de contato recebe
+uma correção com dois ossos, limitada a 25 cm no esqueleto base, durante uma
+janela curta em torno do toque. O comprimento dos ossos é preservado.
+A telemetria registra o erro da pose antes e depois do ajuste.
+
+O shader antigo convertia profundidade acima de 0,999 em céu. Com o plano
+próximo de 5,5 cm, isso apagava o estádio a partir de cerca de 45 m. Agora
+somente profundidade 1,0 é céu. A seleção vertical de geometria acompanha
+o FOV real da câmera, e a projeção usa o FOV do quadro atual.
+Uma região central da arquibancada distante é verificada na imagem renderizada.
 
 O reset restaurava a direção do corpo para -Y independentemente da direção
 do exercício. Agora restaura o ângulo e a direção corretos. A cabeça local

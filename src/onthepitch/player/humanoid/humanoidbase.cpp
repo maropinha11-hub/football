@@ -736,6 +736,17 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
 
   buf_animApplyBuffer = animApplyBuffer;
   buf_animApplyBuffer.snapshotTime_ms = snapshotTime_ms;
+  buf_animApplyBuffer.trainingTouchBlend = 0;
+  if (TrainingEnabled() && match->GetDesignatedPossessionPlayer() == player && currentAnim->touchFrame >= 0) {
+    const std::string part = currentAnim->anim->GetVariable("touch_bodypart");
+    if (part == "left_foot" || part == "right_foot") {
+      const int delta = currentAnim->frameNum - currentAnim->touchFrame;
+      const float blend = clamp(1.0f - std::fabs(float(delta)) / (delta <= 0 ? 8.0f : 5.0f), 0.0f, 1.0f);
+      buf_animApplyBuffer.trainingTouchBlend = blend * blend * (3 - 2 * blend);
+      buf_animApplyBuffer.trainingTouchTarget = currentAnim->touchPos + currentAnim->positionOffset;
+      buf_animApplyBuffer.trainingTouchLeft = part == "left_foot";
+    }
+  }
   /*
   // some temporal buffers fail when switching anims - can't interpolate between these values from previous and new anim
   if (currentAnim->frameNum == 0) {
@@ -797,6 +808,46 @@ void HumanoidBase::Put() {
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
   // we've just set the humanoid positions for time fetchedbuf_animApplyBuffer.snapshotTime_ms. however, it's eventually going to be displayed in a historic position, for temporal smoothing.
+  if (fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {
+    // Adjust only the contacting leg, before temporal interpolation. Physics and
+    // rendering share the animation's touch target without reading live render
+    // bones from the simulation thread.
+    const std::string side = fetchedbuf_animApplyBuffer.trainingTouchLeft ? "left_" : "right_";
+    const auto hip = nodeMap.at(side + "thigh");
+    const auto knee = nodeMap.at(side + "knee");
+    const auto ankle = nodeMap.at(side + "ankle");
+    const Vector3 root = humanoidNode->GetPosition().Get2D();
+    const Vector3 ballTarget = root + (fetchedbuf_animApplyBuffer.trainingTouchTarget - root) / zMultiplier;
+    const Quaternion footRotation = ankle->GetDerivedRotation();
+    const Vector3 soleOffset = footRotation * Vector3(0, -0.10f, -0.045f);
+    const Vector3 sole = ankle->GetDerivedPosition() + soleOffset;
+    const Vector3 contactTarget = ballTarget - (ballTarget - sole).GetNormalized(Vector3(0, -1, 0)) * (0.11f / zMultiplier);
+    Vector3 adjustment = contactTarget - sole;
+    if (adjustment.GetLength() > 0.25f) adjustment = adjustment.GetNormalized(0) * 0.25f;
+    const Vector3 target = ankle->GetDerivedPosition() + adjustment * fetchedbuf_animApplyBuffer.trainingTouchBlend;
+    const auto pose = training::legPose(hip->GetDerivedPosition(), knee->GetDerivedPosition(), ankle->GetDerivedPosition(), target);
+    auto aimBone = [](const boost::intrusive_ptr<Node> &joint, const Vector3 &from, const Vector3 &to) {
+      const Vector3 a = from.GetNormalized(Vector3(0, 0, -1)), b = to.GetNormalized(a);
+      const float cosine = clamp(a.GetDotProduct(b), -1.0f, 1.0f);
+      Quaternion delta;
+      Vector3 axis = a.GetCrossProduct(b);
+      if (axis.GetLength() < 0.00001f) axis = a.GetCrossProduct(Vector3(1, 0, 0));
+      delta.SetAngleAxis(std::acos(cosine), axis.GetNormalized(Vector3(0, 1, 0)));
+      const Quaternion parent = joint->GetDerivedRotation() * joint->GetRotation().GetInverse();
+      joint->SetRotation((parent.GetInverse() * delta * joint->GetDerivedRotation()).GetNormalized(), false);
+      joint->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    };
+    aimBone(hip, knee->GetDerivedPosition() - hip->GetDerivedPosition(), pose.knee - hip->GetDerivedPosition());
+    aimBone(knee, ankle->GetDerivedPosition() - knee->GetDerivedPosition(), pose.ankle - knee->GetDerivedPosition());
+    ankle->SetRotation((knee->GetDerivedRotation().GetInverse() * footRotation).GetNormalized(), false);
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    if (GetConfiguration()->GetBool("training_telemetry", false)) {
+      const float before = (contactTarget - sole).GetLength() * zMultiplier;
+      const float after = (contactTarget - (ankle->GetDerivedPosition() + soleOffset)).GetLength() * zMultiplier;
+      printf("TRAINING_FOOT_POSE side=%s before=%.4f after=%.4f\n", side.c_str(), before, after);
+    }
+  }
+
   // thus; read out the current values we've just set, insert them in the temporal smoother, and get the historic spatial data instead (GetValue).
   for (unsigned int i = 0; i < buf_TemporalHumanoidNodes.size(); i++) {
     // save the non-historic version in cachedNode

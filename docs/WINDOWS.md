@@ -31,7 +31,8 @@ com SDL como alternativa. O mapeamento usado no treino é:
 Primeira pessoa é o modo inicial. R3 alterna entre primeira pessoa, externa
 e próxima. Com bola o direito não desvia a condução, e a cabeça retorna
 gradualmente ao centro ao soltá-lo. Segurar X aumenta a força e a altura,
-com carga máxima de um segundo. As setas do teclado substituem o direito;
+com carga máxima de 0,52 segundo; cerca de 0,25 segundo já produz elevação.
+Os passes mantêm a carga de um segundo. As setas do teclado substituem o direito;
 Q+K faz cobertura e 5/F3 inicia a cobrança de falta.
 
 `training.config` permite ajustar `firstperson_fov`, `firstperson_look_speed`,

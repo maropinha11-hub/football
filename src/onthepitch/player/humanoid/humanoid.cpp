@@ -397,7 +397,10 @@ void Humanoid::Process() {
     boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
     float desiredBallHeight = desiredBallPosition.coords[2];
 
-    float touchableDistance = 0.4f;
+    const std::string touchingPart = currentAnim->anim->GetVariable("touch_bodypart");
+    const float footQuality = TrainingEnabled() ? training::controlQuality(touchingPart) : 1.0f;
+    const bool trainingFoot = TrainingEnabled() && (touchingPart == "left_foot" || touchingPart == "right_foot");
+    float touchableDistance = trainingFoot ? 0.24f + 0.04f * footQuality : 0.4f;
 
     float fullBallDistance = (match->GetBall()->Predict(0) - (currentAnim->touchPos + currentAnim->positionOffset)).GetLength();
 
@@ -424,6 +427,13 @@ void Humanoid::Process() {
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
+
+      if (trainingFoot) {
+        // The contacting leg targets the actual ball at the animation event.
+        currentAnim->touchPos = match->GetBall()->Predict(0) - currentAnim->positionOffset;
+        if (GetConfiguration()->GetBool("training_telemetry", false))
+          printf("TRAINING_TOUCH foot=%s error=%.4f quality=%.2f function=%d\n", touchingPart.c_str(), fullBallDistance, footQuality, int(currentAnim->functionType));
+      }
 
       radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
 
@@ -1584,6 +1594,20 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   std::stable_sort(dataSet.begin(), dataSet.end(), boost::bind(&Humanoid::CompareFootSimilarity, this, _1, _2));
   #endif
 
+  if (TrainingEnabled() && (command.desiredFunctionType == e_FunctionType_BallControl || command.desiredFunctionType == e_FunctionType_Trap)) {
+    // Prefer the dominant foot among otherwise compatible candidates. The
+    // following velocity/body ranking and reach checks retain gait continuity.
+    auto preferStrong = [&](int first, int second) {
+      return training::controlQuality(anims->GetAnim(first)->GetVariable("touch_bodypart")) >
+             training::controlQuality(anims->GetAnim(second)->GetVariable("touch_bodypart"));
+    };
+    #ifdef dataSetSortable
+    dataSet.sort(preferStrong);
+    #else
+    std::stable_sort(dataSet.begin(), dataSet.end(), preferStrong);
+    #endif
+  }
+
   if (command.desiredFunctionType != e_FunctionType_BallControl) {
     SetIncomingBodyDirectionSimilarityPredicate(spatialState.relBodyDirectionVec);
     #ifdef dataSetSortable
@@ -2176,6 +2200,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         float decayPow = 1.0f;
         float radiusCheatOffset = 0.0f;
         float radiusFactor = 0.3f * (1.0f - touchFrameAwkwardness);
+        if (TrainingEnabled() && (functionType == e_FunctionType_BallControl || functionType == e_FunctionType_Trap))
+          radiusFactor *= training::controlQuality(anim->GetVariable("touch_bodypart"));
 
         if (functionType == e_FunctionType_Deflect) { radiusFactor *= 1.8f; radiusCheatOffset += 0.4f; }
 

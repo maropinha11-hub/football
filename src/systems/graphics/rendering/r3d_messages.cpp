@@ -20,6 +20,7 @@ namespace blunted {
 
     View &view = renderer->GetView(viewID);
 
+    renderer->SetFOV(buffer.cameraFOV);
     Matrix4 projectionMatrix = renderer->CreatePerspectiveMatrix(view.width / (view.height * 1.0f), buffer.cameraNearCap, buffer.cameraFarCap);
     Matrix4 viewMatrix = buffer.cameraMatrix;
 

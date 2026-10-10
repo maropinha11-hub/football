@@ -97,13 +97,16 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
   if (actionMode == 2) {
 
+    const bool trainingShot = TrainingEnabled() && actionButton == e_ButtonFunction_Shot;
+
     if (!hid->GetButton(actionButton) ||
-        (hid->GetButton(actionButton) && gauge_ms >= (TrainingEnabled() ? 1000 : 500)) ||
+        (hid->GetButton(actionButton) && gauge_ms >= (trainingShot ? 520 : (TrainingEnabled() ? 1000 : 500))) ||
         (!CastPlayer()->HasPossession() && !match->IsInSetPiece() && actionBufferTime_ms > 0)) {
 
       int baseTime_ms = 60; // substract a little because we can't really press a button shorter than this
       float gaugeFactor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
       gaugeFactor = clamp(gaugeFactor, 0.0f, 1.0f);
+      if (trainingShot) gaugeFactor = training::shotCharge(gauge_ms);
 
       // action button released!
 
@@ -311,8 +314,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     assert(command.desiredFunctionType == e_FunctionType_Movement); // make sure this is the movement command (is probably guaranteed, check out _MovementCommand)
 
     if (TrainingEnabled()) {
-      // Free movement must not be pulled towards the ball by the match AI.
-      if (!match->TrainingHasBall() || (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint))) {
+      // Stick-driven movement; queued kick/trap animations still meet the ball.
+      if (actionMode != 2 || !match->TrainingHasBall()) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }

@@ -3,6 +3,8 @@
 import argparse
 import json
 import math
+import re
+import statistics
 import os
 from pathlib import Path
 import subprocess
@@ -164,8 +166,9 @@ try:
         check("finishing exercise", abs(shot_origin - 30.0) < 1.0, f"Player starts at x={shot_origin:.2f} m")
         goals_before = frames()[-1]["goals"]
         key("k", True)
-        advance(300)
+        wait_for(lambda: frames()[-1]["shot_active"] and frames()[-1]["charge_ms"] >= 110)
         key("k", False)
+        wait_for(lambda: not frames()[-1]["shot_active"])
         finishing = advance(3500)
         check("goal detection", any(f["goals"] == goals_before + 1 for f in finishing) and max(f["goals"] for f in finishing) == goals_before + 1,
               f"Goal counter {goals_before} -> {frames()[-1]['goals']}")
@@ -173,14 +176,15 @@ try:
         check("automatic ball reset", abs(frames()[-1]["ball"][0] - 30.65) < 1.5,
               f"Ball returned to x={frames()[-1]['ball'][0]:.2f} m")
         trajectories = {}
-        for name, hold_ms, chip in [("light", 150, False), ("charged", 800, False), ("chip", 800, True)]:
+        for name, hold_ms, chip in [("light", 80, False), ("quick", 250, False), ("charged", 520, False), ("chip", 520, True)]:
             reset()
             start = frames()[-1]["t"]
             if chip:
                 key("q", True)
             key("k", True)
-            advance(hold_ms)
+            wait_for(lambda: frames()[-1]["shot_active"] and frames()[-1]["charge_ms"] >= hold_ms)
             key("k", False)
+            wait_for(lambda: not frames()[-1]["shot_active"])
             advance(2500)
             if chip:
                 key("q", False)
@@ -188,6 +192,8 @@ try:
             trajectories[name] = (max(f["ball_speed"] for f in trajectory), max(f["ball"][2] for f in trajectory))
         check("charged shot elevation", trajectories["charged"][1] > trajectories["light"][1] + 0.6,
               f"Light {trajectories['light']}, charged {trajectories['charged']} (speed, height)")
+        check("quick shot elevation", trajectories["quick"][0] > 22 and trajectories["quick"][1] > 0.7,
+              f"Quarter-second shot {trajectories['quick']} (speed, height)")
         check("LB chip trajectory", trajectories["chip"][0] < trajectories["charged"][0] and trajectories["chip"][1] > trajectories["charged"][1],
               f"Chip {trajectories['chip']}; charged {trajectories['charged']}")
         reset("5")
@@ -218,6 +224,16 @@ try:
         check("head look does not steer dribbling", delta[0] > 0.4 and abs(delta[1]) < delta[0] * 0.3 + 0.1 and
               any(f["with_ball"] and abs(f["head_yaw"]) > 0.4 for f in dribbling_look),
               f"Player delta {delta}; head turns independently")
+        reset()
+        origin = frames()[-1]["player"]
+        key("w", True)
+        wait_for(lambda: frames()[-1]["move_active"])
+        straight_run = advance(1700)
+        key("w", False)
+        wait_for(lambda: not frames()[-1]["move_active"])
+        delta = [straight_run[-1]["player"][i] - origin[i] for i in range(2)]
+        check("straight dribbling", delta[0] > 3 and abs(delta[1]) < 0.08 * delta[0] + 0.08,
+              f"Forward/side displacement {delta} m")
         reset("4")
         # Move out of the incoming ball's lane so it cannot become possession
         # during the off-ball camera check on a slow software renderer.
@@ -242,6 +258,11 @@ try:
         reset()
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "x11grab", "-video_size", "960x540",
                         "-i", ":91", "-frames:v", "1", str(output / "firstperson-forward.png")], env=environment, check=True)
+        pixels = subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-i", str(output / "firstperson-forward.png"),
+                                 "-f", "rawvideo", "-pix_fmt", "rgb24", "-frames:v", "1", "pipe:1"], capture_output=True, check=True).stdout
+        covered = sum(max(pixels[(y * 960 + x) * 3:(y * 960 + x) * 3 + 3]) < 215
+                      for y in range(120, 200) for x in range(320, 640)) / (80 * 320)
+        check("front stadium remains visible", covered > 0.8, f"Central distant stands cover {covered:.1%} of inspection region")
         key("Down", True)
         advance(900)
         key("Down", False)
@@ -250,6 +271,10 @@ try:
               f"Minimum ball center {min(f['ball'][2] for f in all_frames):.3f} m")
         check("finite physics state", all(math.isfinite(v) for f in all_frames for v in f["ball"] + f["player"]),
               f"{len(all_frames)} live samples are finite")
+        poses = [tuple(map(float, m)) for m in re.findall(r"TRAINING_FOOT_POSE side=\w+ before=([\d.]+) after=([\d.]+)", log_path.read_text())]
+        check("rendered foot contact correction", len(poses) > 3 and
+              statistics.median(p[1] for p in poses) < statistics.median(p[0] for p in poses),
+              f"{len(poses)} rendered foot corrections; median error {statistics.median(p[0] for p in poses):.3f} -> {statistics.median(p[1] for p in poses):.3f} m" if poses else "No rendered foot corrections")
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "x11grab", "-video_size", "960x540",
                         "-i", ":91", "-frames:v", "1", str(output / "training.png")], env=environment, check=True)
         tap("Tab")

@@ -86,10 +86,17 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 
 Segure e solte A/B/X/Y para graduar a força. X também aumenta a elevação
 com a carga; LB+X produz uma cobertura mais lenta e arqueada. A carga máxima
-é de um segundo; um toque curto mantém a bola baixa. Sem
+do chute é de 0,52 segundo; cerca de 0,25 segundo já levanta a bola, e um
+toque rápido mantém a trajetória baixa. Os passes mantêm a carga de um segundo. Sem
 outro jogador, os passes seguem a direção e força informadas. Não há troca
 de jogador, impedimentos ou interrupções do árbitro no treino. Após gol ou
 bola muito além do campo, o exercício é reposto automaticamente.
+
+O analógico esquerdo corrige pequenos desvios perto das direções retas,
+preservando diagonais e velocidade proporcional. A condução usa um jogador
+destro: o pé esquerdo tem menor alcance de domínio e conserva mais do impulso
+da bola recebida. O contato recebe um ajuste suave da perna no instante do toque,
+com limite de alcance e sem esticar os ossos.
 
 O exercício de bola aérea permite testar domínio, cabeceios e voleios que
 o seletor de animações original escolhe conforme a altura, a posição e o
@@ -121,7 +128,10 @@ python3 scripts/verify_upstream.py --assets-only
 ```
 
 Essa verificação compara os recursos originais com hashes registrados na
-importação. Modelos, campo, texturas e animações são preservados. O código
+importação. Modelos, campo, texturas e animações são preservados. A única
+alteração em `data/` é o shader de pós-processamento, para impedir que o estádio
+distante seja tratado como céu em primeira pessoa. Seu hash e motivo estão em
+`docs/training-asset-overrides.json` e também são verificados. O código
 de física e de apresentação foi adaptado nesta etapa; executar sem
 `--assets-only` também compara esses módulos e informa as mudanças esperadas
 em `ball.cpp`, `humanoidbase.cpp` e `humanoid_utils.cpp`.
