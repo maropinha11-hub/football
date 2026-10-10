@@ -29,6 +29,13 @@ permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia
 o ZIP e abra `abrir-laboratorio.html` com Edge ou Chrome. É uma ferramenta de
 pesquisa; as animações e a física do PES ainda não foram integradas ao treino.
 
+O [processo de recuperação do código PES 3](docs/PES3-ACTIONS.md) acrescenta
+um mapa automático de referências para 506 clips e reescritas verificadas
+de três roteamentos. No [laboratório com filtros de ação](artifacts/pes3-action-research.zip),
+extraia o ZIP e abra `abrir-laboratorio.html` para consultar e exportar o mapa
+sem classificação manual. Os corpos completos das ações e as condições
+físicas ainda precisam de recuperação e validação.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

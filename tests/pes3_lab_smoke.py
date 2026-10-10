@@ -30,11 +30,14 @@ def run(package, browser, screenshot=None):
 
     with zipfile.ZipFile(package) as archive:
         check("package_crc", archive.testzip() is None)
-        check("package_contents", set(archive.namelist()) == {
-            "abrir-laboratorio.html", "LEIA-ME.txt", "manifest.json"})
         html_bytes = archive.read("abrir-laboratorio.html")
         html = html_bytes.decode("utf-8")
         manifest = json.loads(archive.read("manifest.json"))
+        expected_files={"abrir-laboratorio.html", "LEIA-ME.txt", "manifest.json"}
+        if "action_analysis" in manifest:
+            expected_files|={"animation-actions.json","actions.json.gz","action_dispatch.hpp",
+                             "action_dispatch.js","actions-validation.json"}
+        check("package_contents", set(archive.namelist()) == expected_files)
     check("html_manifest_hash", hashlib.sha256(html_bytes).hexdigest() == manifest["html_sha256"])
     encoded = re.search(r'<script id="bundle" type="application/octet-stream">([^<]+)</script>', html)
     check("embedded_bundle_hash", encoded is not None and hashlib.sha256(
@@ -73,6 +76,35 @@ def run(package, browser, screenshot=None):
                   "let bright=0;for(let i=0;i<rgba.length;i+=4){"
                   "if(rgba[i]>210&&rgba[i+1]>210&&rgba[i+2]>210&&rgba[i+3]>200)bright++;}"
                   "return bright>100;}"))
+
+            if "action_analysis" in manifest:
+                check("automatic_code_context_visible", page.locator("#code-context").is_visible())
+                page.locator("#action-filter").select_option("1")
+                count=page.locator("#code-clip option").count()
+                check("action_context_filters_clips", 0<count<1105)
+                page.locator("#substate-filter").select_option("16")
+                check("substate_context_filters_clips", 0<page.locator("#code-clip option").count()<=count)
+                selected=snapshot()["clip"]
+                page.locator("#next-clip").click()
+                check("navigation_uses_filtered_clips", snapshot()["clip"]!=selected
+                      and page.locator("#code-clip").input_value()==str(snapshot()["clip"]))
+                with page.expect_download() as event:
+                    page.locator("#export-code").click()
+                with tempfile.TemporaryDirectory(prefix="pes3-code-export-") as temp:
+                    target=Path(temp)/event.value.suggested_filename
+                    event.value.save_as(target)
+                    code_map=json.loads(target.read_text())
+                check("code_export_includes_all_clips", len(code_map["clips"])==1105
+                      and code_map["summary"]["clips_with_code_references"]==manifest["action_analysis"]["clips_with_code_references"])
+                check("code_export_preserves_source_and_scope", code_map["bundle_sha256"]==manifest["sha256"]
+                      and code_map["sources"][0]["file"]=="SLES_519.12"
+                      and all(c["runtime_enabled"] is False for c in code_map["clips"]))
+                check("code_export_needs_no_manual_annotations", snapshot()["annotationCount"]==0
+                      and any(c["references"] for c in code_map["clips"]))
+                page.locator("#substate-filter").select_option("")
+                page.locator("#action-filter").select_option("")
+                choose(47)
+                check("all_clips_filter_restored", page.locator("#code-clip option").count()==1105)
 
             page.locator("#play").click()
             page.wait_for_function("window.pes3Lab.snapshot().time>1")

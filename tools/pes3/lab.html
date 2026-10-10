@@ -21,6 +21,7 @@ input[type=range]{width:100%;accent-color:#79ceff;margin:15px 0 6px}.time{font-v
 label{display:block;margin-bottom:8px;font-size:14px}label.inline{display:inline-flex;align-items:center;gap:6px;margin:0}
 .stack>*{margin-bottom:14px}.stack input[type=number],.stack select,.stack button{width:100%}.stack input[type=number]{max-width:none}
 .notice{font-size:13px;color:#bdcce0;margin:14px 0 0}.notice strong{color:#e2edf9}#status{color:#99d2fa}#category-status{min-height:22px}
+#code-evidence{font-size:12px;line-height:1.5;overflow-wrap:anywhere;color:#bdcce0}#code-context[hidden]{display:none}#code-context>*{margin-bottom:12px}
 details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{color:#79ceff}#error{background:#482b33;color:#ffd7dd;padding:16px;border-radius:10px;display:none}
 @media(max-width:800px){main{padding:14px}.layout{grid-template-columns:1fr}canvas{height:440px}header{align-items:start}.stack{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stack>*{margin:0}.notice{grid-column:1/-1}}
 </style>
@@ -45,6 +46,12 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
 <div><label class="inline"><input id="follow" type="checkbox" checked>Fixar deslocamento horizontal</label></div>
 <div><label class="inline"><input id="labels" type="checkbox" checked>Mostrar IDs dos ossos</label></div>
 <button id="fit" type="button">Enquadrar esqueleto</button>
+<div id="code-context" hidden>
+<label for="action-filter">Contexto de ação no código</label><select id="action-filter"></select>
+<label for="substate-filter">Subestado da ação 1</label><select id="substate-filter" disabled></select>
+<label for="code-clip">Clips referenciados pelo código</label><select id="code-clip"></select>
+<p id="code-evidence"></p><button id="export-code" type="button">Exportar mapa do código</button>
+</div>
 <div><label for="category">Marcar candidato visual</label><select id="category"><option value="">Sem classificação</option><option value="idle">Parado</option><option value="walk">Caminhada</option><option value="run">Corrida</option><option value="dribble">Condução</option><option value="pass">Passe</option><option value="shot">Chute</option><option value="header">Cabeceio</option><option value="trap">Domínio</option><option value="other">Outro gesto</option></select><p id="category-status" class="muted"></p></div>
 <button id="export" type="button">Exportar catálogo marcado</button>
 <p class="notice"><strong>Prévia de pesquisa.</strong> A pose local foi verificada. O desenho usa composição padrão da hierarquia; mistura, espelhamento e transformações finais do PES ainda precisam ser validados. As marcações não habilitam clips no jogo.</p>
@@ -65,6 +72,7 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
     const initial = motion.initialState(meta.bind_bits), canvas = $("scene"), ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Não foi possível iniciar o desenho. Abra com Edge ou Chrome.");
     const annotations = new Map(); let active = 47, time = 0, playing = false, yaw = .35, pitch = -.04, zoom = 1;
+    let filteredIds=clips.map(c=>c.id);
     let bounds, latestPose, latestWorld, lastTimestamp = null, changed = true;
     const matrix = ([x,y,z,w]) => [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],
       [2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)], [2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];
@@ -92,7 +100,42 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
       active=id;time=0;$("clip").value=id;$("timeline").max=clips[id].duration;
       $("category").value=annotations.get(id)?.category || "";
       $("category-status").textContent=annotations.has(id)?"Candidato anotado; ainda não validado no treino.":"";
+      if(meta.actions){$("code-clip").value=String(id);showCodeEvidence();}
       measure();zoom=1;changed=true;
+    }
+    function showCodeEvidence(){
+      const item=meta.actions.clips[active], refs=item.references;
+      const context=item.action_contexts.length?item.action_contexts.join(", "):"não resolvido";
+      $("code-evidence").textContent="Clip "+active+" · "+refs.length+" chamadas. Ações: "+context+". "+
+        refs.slice(0,3).map(r=>r.role+" em "+r.call_pc).join("; ")+". Referências estáticas: gates físicos e execução completa ainda não validados.";
+    }
+    function filterCode(){
+      const action=$("action-filter").value, substate=$("substate-filter").value;
+      $("substate-filter").disabled=action!=="1";
+      filteredIds=meta.actions.clips.filter(c=>(action===""||c.action_contexts.includes(Number(action)))&&
+        (action!=="1"||substate===""||c.action1_substate_contexts.includes(Number(substate)))).map(c=>c.clip);
+      $("code-clip").replaceChildren(...filteredIds.map(id=>new Option("Clip "+id+" · "+meta.actions.clips[id].references.length+" chamadas",String(id))));
+      if(filteredIds.length)choose(filteredIds.includes(active)?active:filteredIds[0]);
+      else $("code-evidence").textContent="Nenhum clip resolvido neste contexto. O pacote registra as chamadas pendentes.";
+    }
+    function navigate(direction){
+      if(!filteredIds.length)return;
+      const index=filteredIds.indexOf(active);
+      const next=index<0?(direction>0?0:filteredIds.length-1):(index+direction+filteredIds.length)%filteredIds.length;
+      choose(filteredIds[next]);
+    }
+    function downloadJson(data,name){
+      const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+"\n"],{type:"application/json"}));
+      const link=document.createElement("a");link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+    if(meta.actions){
+      $("code-context").hidden=false;
+      $("action-filter").replaceChildren(new Option("Todas as ações",""),...meta.actions.action_codes.map(code=>new Option("Ação "+code,String(code))));
+      $("substate-filter").replaceChildren(new Option("Todos os subestados",""),...meta.actions.action1_substate_codes.map(code=>new Option("Subestado "+code,String(code))));
+      $("action-filter").onchange=filterCode;$("substate-filter").onchange=filterCode;
+      $("code-clip").onchange=()=>choose(Number($("code-clip").value));
+      $("export-code").onclick=()=>downloadJson({...meta.actions,bundle_sha256:meta.bundle_sha256},"pes3-animacoes-codigo.json");
+      $("code-clip").replaceChildren(...filteredIds.map(id=>new Option("Clip "+id+" · "+meta.actions.clips[id].references.length+" chamadas",String(id))));
     }
     function project(p,width,height) {
       const v=p.map((x,i)=>x-bounds.center[i]), c=Math.cos(yaw),s=Math.sin(yaw);
@@ -128,8 +171,8 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
     function play(value) {playing=value;$("play").textContent=value?"Pausar":"Reproduzir";lastTimestamp=null;}
     $("play").onclick=()=>play(!playing);
     $("clip").onchange=()=>choose(Number($("clip").value));
-    $("previous-clip").onclick=()=>choose((active+clips.length-1)%clips.length);
-    $("next-clip").onclick=()=>choose((active+1)%clips.length);
+    $("previous-clip").onclick=()=>navigate(-1);
+    $("next-clip").onclick=()=>navigate(1);
     $("timeline").oninput=()=>{play(false);time=Number($("timeline").value);changed=true;};
     function keyStep(direction) {
       play(false);const keys=[0,...clips[active].times.filter(t=>t>0),clips[active].duration];
@@ -161,8 +204,8 @@ details{margin-top:18px;font-size:13px;color:#a6b5c9}summary{cursor:pointer}a{co
     document.addEventListener("keydown",e=>{
       if (/INPUT|SELECT|BUTTON/.test(e.target.tagName))return;
       if(e.code==="Space"){e.preventDefault();play(!playing);}
-      if(e.code==="ArrowLeft"){e.preventDefault();choose((active+clips.length-1)%clips.length);}
-      if(e.code==="ArrowRight"){e.preventDefault();choose((active+1)%clips.length);}
+      if(e.code==="ArrowLeft"){e.preventDefault();navigate(-1);}
+      if(e.code==="ArrowRight"){e.preventDefault();navigate(1);}
     });
     $("status").textContent=clips.length.toLocaleString("pt-BR")+" clips · 19 articulações";
     $("clip").max=clips.length-1;

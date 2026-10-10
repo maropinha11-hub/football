@@ -6,6 +6,13 @@ Esta etapa acrescenta a conferência dos binários recebidos, um leitor validado
 de animações e um laboratório offline para estudar os gestos. A integração
 ao executável depende da adaptação do esqueleto e da validação dos contatos.
 
+A etapa seguinte já acrescenta [recuperação automática do código](PES3-ACTIONS.md):
+referências para 506 clips, filtros por ação/subestado e reescritas verificadas
+de três roteamentos. O pacote atualizado é
+[pes3-action-research.zip](../artifacts/pes3-action-research.zip); não exige
+marcar os gestos manualmente para exportar as associações recuperadas.
+Os corpos completos das ações e suas condições físicas continuam pendentes.
+
 ## Material recebido e alcance da conferência
 
 Recebemos dois prints da ISO extraída e `analise-pes-sles51912.md`, com

@@ -2,6 +2,7 @@
 """Build a self-contained, offline research viewer from the user's PES data."""
 import argparse
 import base64
+import gzip
 import hashlib
 import json
 import struct
@@ -11,7 +12,7 @@ from pathlib import Path
 from fpsa import EXPECTED_BUNDLE_SHA256, read_bundle
 
 
-def build(core, output):
+def build(core, output, actions=None, validation=None):
     tool = Path(__file__).resolve().parent
     catalogue = json.loads((core / "data/animation_pose_catalog.json").read_text())
     data, inventory = read_bundle(core / "data/pes_animation_tracks.fpsa", catalogue)
@@ -39,6 +40,20 @@ def build(core, output):
                            "block_sha256": e["block_sha256"], "source_offset": e["source_offset"]}
                           for e in catalogue["entries"]],
                 "scope": "Verified local interpolation; diagnostic standard FK, no original final transforms or gameplay."}
+    action_document = action_validation = None
+    if actions:
+        if validation is None:
+            raise ValueError("informe a validação do roteamento com --validation")
+        action_document = json.loads((actions / "actions.json").read_text())
+        action_validation = json.loads(validation.read_text())
+        if (action_validation.get("result") != "passed"
+                or action_validation["sources"] != action_document["sources"]
+                or action_validation["actions_file_sha256"] != hashlib.sha256((actions / "actions.json").read_bytes()).hexdigest()):
+            raise ValueError("mapa de ações não corresponde à validação")
+        metadata["actions"] = {"summary": action_document["summary"], "sources": action_document["sources"],
+            "action_codes": sorted(c["value"] for c in action_document["routing"]["actions"]["cases"]),
+            "action1_substate_codes": sorted(c["value"] for c in action_document["routing"]["action1_substates"]["cases"]),
+            "clips": action_document["clips"], "scope": action_document["scope"]}
     safe_json = json.dumps(metadata, ensure_ascii=True, separators=(",", ":")).replace("</", "<\\/")
     motion = (tool / "motion.js").read_text()
     template = (tool / "lab.html").read_text()
@@ -63,14 +78,36 @@ def build(core, output):
         "desenho é diagnóstica. Mistura, espelhamento e saída final do PES ainda\n"
         "exigem validação. Não é uma atualização do executável de treinamento.\n"
     )
+    if actions:
+        instructions += (
+            "\nEsta edição inclui o mapa automático de referências de animação no código.\n"
+            "Use Contexto de ação/Subestado para filtrar e escolher clips relacionados.\n"
+            "Os números são estados do PES; não foram inventados nomes de passe/chute.\n"
+            "Exportar mapa do código baixa o índice gerado, sem marcação manual.\n\n"
+            "actions.json.gz contém grafos, chamadas, condições e listagens de origem.\n"
+            "action_dispatch.hpp/.js são reescritas do roteamento, com testes contra\n"
+            "instruções originais. Os endereços identificam blocos; não são ponteiros\n"
+            "executáveis no Windows. Corpos completos de ações e gates físicos ainda\n"
+            "precisam ser reescritos/validados para integrar os clips ao nosso treino.\n"
+        )
     manifest = {k: v for k, v in inventory.items() if k != "entries"}
     manifest.update(html_sha256=hashlib.sha256(html.encode()).hexdigest(),
                     motion_js_sha256=hashlib.sha256(motion.encode()).hexdigest(),
                     skeleton_profile_sha256=profile_hash, scope=metadata["scope"])
+    if actions:
+        manifest["action_analysis"] = action_document["summary"]
+        manifest["actions_file_sha256"] = action_validation["actions_file_sha256"]
+        manifest["action_validation_sha256"] = hashlib.sha256(validation.read_bytes()).hexdigest()
     with zipfile.ZipFile(output, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         archive.writestr("abrir-laboratorio.html", html)
         archive.writestr("LEIA-ME.txt", instructions)
         archive.writestr("manifest.json", json.dumps(manifest, indent=2) + "\n")
+        if actions:
+            archive.writestr("animation-actions.json", json.dumps(metadata["actions"], separators=(",", ":")) + "\n")
+            archive.writestr("actions.json.gz", gzip.compress((actions / "actions.json").read_bytes(), compresslevel=9, mtime=0))
+            for name in ("action_dispatch.hpp", "action_dispatch.js"):
+                archive.writestr(name, (actions / name).read_bytes())
+            archive.writestr("actions-validation.json", validation.read_bytes())
     return manifest
 
 
@@ -78,9 +115,11 @@ def main():
     parser = argparse.ArgumentParser(description="Empacotar o laboratório offline do PES 3")
     parser.add_argument("--core", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--actions", type=Path)
+    parser.add_argument("--validation", type=Path)
     args = parser.parse_args()
     try:
-        result = build(args.core, args.output)
+        result = build(args.core, args.output, args.actions, args.validation)
     except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
         parser.exit(1, str(exc) + "\n")
     print(json.dumps(result, indent=2))
