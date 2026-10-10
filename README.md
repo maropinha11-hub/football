@@ -23,6 +23,10 @@ não contêm o motor nem as animações do PES. Fidelidade à base aberta e
 equivalência ao PES são verificações diferentes. Consulte
 [a pesquisa técnica](docs/RESEARCH.md) para a origem e os limites da implementação.
 
+O estudo separado do PES 3, os arquivos necessários e as ferramentas para
+catalogar e conferir recursos estão em [docs/PES3.md](docs/PES3.md).
+Essa preparação ainda não adiciona animações ou física do PES ao treino.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:
