@@ -8,6 +8,11 @@ Também há quatro helpers semânticos que trabalham com vetores e matrizes,
 sem receber memória do PS2. **A importação para o jogador do treinamento
 Windows continua pendente.**
 
+A continuação em [PES3-RIG.md](PES3-RIG.md) acrescenta oito operações de rig
+sem memória PS2 e 1.428 comparações, além de identificar truncamento nas
+chaves salvas e separar campos locais desatualizados da pose composta.
+Os resultados abaixo pertencem à execução anterior e permanecem preservados.
+
 ## Consultar os resultados
 
 Baixe [pes3-pose-research.zip](../artifacts/pes3-pose-research.zip), extraia e

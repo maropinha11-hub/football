@@ -25,6 +25,11 @@ que dispensam a memória do PS2. O [laboratório de poses](../artifacts/pes3-pos
 mostra campos compostos capturados ou reexecutados. As diferenças contra as
 poses finais do emulador e a calibração para o jogador nativo permanecem abertas.
 
+A continuação [PES3-RIG.md](PES3-RIG.md) entrega oito operações de rig em
+estruturas próprias, origem conferida dos canais de rotação e investigação
+da etapa correta de materialização. O [pacote numérico](../artifacts/pes3-rig-research.zip)
+contém vetores e um verificador independente dos arquivos PES.
+
 ## Material recebido e alcance da conferência
 
 Recebemos dois prints da ISO extraída e `analise-pes-sles51912.md`, com

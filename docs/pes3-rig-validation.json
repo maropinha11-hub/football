@@ -1,0 +1,1227 @@
+{
+  "schema_version": 1,
+  "result": "rig_verified_with_captured_pose_equivalence_open",
+  "scope": "Eight own-structure C++ rig operations pass selected host-model original-call comparisons. Packed rotation provenance is verified in the supplied state. Final captured pose bit equality and native training integration remain open.",
+  "rig": {
+    "schema_version": 1,
+    "run_id": "f0f75b0c-943a-4f2a-8e58-da909d63bc38",
+    "completed_at_utc": "2026-10-11T03:07:06.998048+00:00",
+    "result": "passed",
+    "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "sources": [
+      {
+        "file": "SLES_519.12",
+        "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+        "bytes": 2196728
+      },
+      {
+        "file": "OVER.AFS",
+        "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+        "bytes": 6447104
+      },
+      {
+        "file": "game.ovl",
+        "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+        "bytes": 2822528,
+        "base": "0x163b800"
+      }
+    ],
+    "comparisons": 1428,
+    "original_instructions": 2378096,
+    "instruction_words": 940,
+    "by_operation": {
+      "compose_matrices": 44,
+      "ensure_composed": 88,
+      "ensure_local": 88,
+      "mirror_raw": 44,
+      "apply_mirror": 88,
+      "mirror_gate": 352,
+      "materialize": 220,
+      "mix": 504
+    },
+    "by_memory_kind": {
+      "captured_snapshot": 550,
+      "modified_snapshot": 878
+    },
+    "full_translation_cases": 21,
+    "root_only_translation_cases": 483,
+    "compile_command": [
+      "g++",
+      "-std=c++17",
+      "-O0",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-fno-fast-math",
+      "-ffp-contract=off",
+      "-shared",
+      "-fPIC",
+      "/tmp/pes3-rig-pass2/pose_rig.cpp",
+      "-o",
+      "/tmp/pes3-rig-pass2/libpose_rig.so"
+    ],
+    "reference_sha256": {
+      "scratch_field_model.py": "199846d8bf4cfe31e4bfb3cab61873830abd139334206b9e640371a5298341cc",
+      "pose_math_model.py": "a5bfdba5d75f60ca10b20dd4eb7491c2d5897a82033cde9afdab03601383dc56",
+      "mips_integer_reference.py": "2ff253c2fddb8eae6081b80786e9a13502da24e086ce0c88dfb01b50aa77c906",
+      "float_vector_model.py": "3ae41e793c4ea6cfd17fba870f3e504f2601632d6a3bd568480dd9c8c317a0eb"
+    },
+    "tool_sha256": {
+      "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+      "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+      "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+      "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+    },
+    "scope": "Eight semantic rig operations on 19-node numeric structures, including matrix-to-quaternion branches. Captured and deliberately modified inputs, destination/source aliasing, exact bit comparisons with original routines in the declared host model. Clip-decode fallback requires an external evaluator and rejects here; no resumed PS2 frame, ball contacts, retargeting or native gameplay integration."
+  },
+  "rig_files_sha256": {
+    "libpose_rig.so": "2bf8094c726560f991542ab1b14e2a128c0429a280cdc7a0f618924dc70a442d",
+    "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+    "pose_rig.cpp": "15dac877f46caabc1ee28916a6e7660dbb75af4105d7964f878a8f0c8bd580e9",
+    "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+    "rig-instruction-words.json": "12380dc325ee75440aaf8226e737e1e8ec86f8ce0bc6ffc80b8dad25f2e5b79e",
+    "rig-vectors.json": "03b556bf0d1bc14ff7d044f2f76e1a3d93de063b6f2599477f2adec2595e8d3d"
+  },
+  "full_rig_report_sha256": "17b525b0a36fdcd89da5c0a047f16c23c0a83a14b15fab9f3c614e03eec430c2",
+  "channel_provenance": {
+    "run_id": "cb539a9d-a932-4e65-90e5-ed0c020e4865",
+    "completed_at_utc": "2026-10-11T03:19:26.543428+00:00",
+    "result": "all_rotation_channels_matched",
+    "summary": {
+      "channel_sets": 88,
+      "chop_source_key_matches": 88,
+      "matched_components": 6688,
+      "nearest_equal_components": 4384,
+      "nearest_different_components": 2304,
+      "unique_source_keys": 88
+    },
+    "loaded_clips_verified": 999,
+    "report_sha256": "b7b584645872794630f1f81cbca4bd49a22e8ae29c78de69f21f90a42c1c8b0e",
+    "tool_sha256": {
+      "channel_provenance.py": "6483cfc64f549455d2cd60dd3ff225104a47b5cf57f417d4cc69ffc81db52b07",
+      "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+      "fpsa.py": "4246c56e67851417dd013f4040363ef28337a0ba4a4813bccc18363891d00784",
+      "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+      "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+    }
+  },
+  "arithmetic_investigations": [
+    {
+      "run_id": "668c2928-e0fa-4f14-8522-de3f7c19100e",
+      "completed_at_utc": "2026-10-11T03:21:32.021602+00:00",
+      "arithmetic_profile": {
+        "fpu": "nearest",
+        "vu": "nearest",
+        "division": "nearest",
+        "square_root": "nearest"
+      },
+      "result": "investigated_equivalence_open",
+      "original_calls": 572,
+      "original_instructions": 3557401,
+      "instruction_words": 917,
+      "summary": {
+        "raw_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": null,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": false,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1369,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3107,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "composed_translation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "matrix": {
+              "exact_bit_components": 13376,
+              "components": 13376,
+              "max_absolute_delta": 0.0
+            }
+          }
+        },
+        "processed_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1283,
+              "components": 3344,
+              "max_absolute_delta": 0.07835438847541809
+            },
+            "local_translation": {
+              "exact_bit_components": 2970,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 20,
+              "components": 3344,
+              "max_absolute_delta": 0.00038820505142211914
+            },
+            "composed_translation": {
+              "exact_bit_components": 1113,
+              "components": 3344,
+              "max_absolute_delta": 0.3622283935546875
+            },
+            "matrix": {
+              "exact_bit_components": 3711,
+              "components": 13376,
+              "max_absolute_delta": 0.3622283935546875
+            }
+          }
+        },
+        "processed_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1114,
+              "components": 3344,
+              "max_absolute_delta": 0.0783543586730957
+            },
+            "local_translation": {
+              "exact_bit_components": 2968,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 15,
+              "components": 3344,
+              "max_absolute_delta": 0.00038808584213256836
+            },
+            "composed_translation": {
+              "exact_bit_components": 1082,
+              "components": 3344,
+              "max_absolute_delta": 0.3622283935546875
+            },
+            "matrix": {
+              "exact_bit_components": 3708,
+              "components": 13376,
+              "max_absolute_delta": 0.3622283935546875
+            }
+          }
+        },
+        "materialized_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1369,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3123,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 24,
+              "components": 3344,
+              "max_absolute_delta": 1.1324882507324219e-06
+            },
+            "composed_translation": {
+              "exact_bit_components": 1116,
+              "components": 3344,
+              "max_absolute_delta": 0.00115966796875
+            },
+            "matrix": {
+              "exact_bit_components": 3737,
+              "components": 13376,
+              "max_absolute_delta": 0.00115966796875
+            }
+          }
+        },
+        "materialized_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1237,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264789581299
+            },
+            "local_translation": {
+              "exact_bit_components": 3123,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 20,
+              "components": 3344,
+              "max_absolute_delta": 1.0728836059570312e-06
+            },
+            "composed_translation": {
+              "exact_bit_components": 1085,
+              "components": 3344,
+              "max_absolute_delta": 0.0010223388671875
+            },
+            "matrix": {
+              "exact_bit_components": 3730,
+              "components": 13376,
+              "max_absolute_delta": 0.0010223388671875
+            }
+          }
+        }
+      },
+      "report_sha256": "77370acc9b853ebcc0f7f8ab96ac871363f47332fc7848151214b63896797750",
+      "tool_sha256": {
+        "pose_differences.py": "d15fa85757b95b78c4fa4ccc9fd269ec5565075afb3940658045c4a462ce710b",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+      }
+    },
+    {
+      "run_id": "a5f780f5-45f4-4523-925d-6066660f2d5d",
+      "completed_at_utc": "2026-10-11T03:21:32.526577+00:00",
+      "arithmetic_profile": {
+        "fpu": "nearest",
+        "vu": "chop",
+        "division": "nearest",
+        "square_root": "nearest"
+      },
+      "result": "investigated_equivalence_open",
+      "original_calls": 572,
+      "original_instructions": 3557401,
+      "instruction_words": 917,
+      "summary": {
+        "raw_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": null,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": false,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1373,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3118,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "composed_translation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "matrix": {
+              "exact_bit_components": 13376,
+              "components": 13376,
+              "max_absolute_delta": 0.0
+            }
+          }
+        },
+        "processed_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1260,
+              "components": 3344,
+              "max_absolute_delta": 0.07835440337657928
+            },
+            "local_translation": {
+              "exact_bit_components": 2998,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 420,
+              "components": 3344,
+              "max_absolute_delta": 0.00039058923721313477
+            },
+            "composed_translation": {
+              "exact_bit_components": 1556,
+              "components": 3344,
+              "max_absolute_delta": 0.364105224609375
+            },
+            "matrix": {
+              "exact_bit_components": 4744,
+              "components": 13376,
+              "max_absolute_delta": 0.364105224609375
+            }
+          }
+        },
+        "processed_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1397,
+              "components": 3344,
+              "max_absolute_delta": 0.07835440337657928
+            },
+            "local_translation": {
+              "exact_bit_components": 3002,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 389,
+              "components": 3344,
+              "max_absolute_delta": 0.00039058923721313477
+            },
+            "composed_translation": {
+              "exact_bit_components": 1569,
+              "components": 3344,
+              "max_absolute_delta": 0.364105224609375
+            },
+            "matrix": {
+              "exact_bit_components": 4797,
+              "components": 13376,
+              "max_absolute_delta": 0.364105224609375
+            }
+          }
+        },
+        "materialized_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1373,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 437,
+              "components": 3344,
+              "max_absolute_delta": 5.960464477539062e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1606,
+              "components": 3344,
+              "max_absolute_delta": 0.000457763671875
+            },
+            "matrix": {
+              "exact_bit_components": 4833,
+              "components": 13376,
+              "max_absolute_delta": 0.000457763671875
+            }
+          }
+        },
+        "materialized_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1515,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 412,
+              "components": 3344,
+              "max_absolute_delta": 4.76837158203125e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1617,
+              "components": 3344,
+              "max_absolute_delta": 0.000457763671875
+            },
+            "matrix": {
+              "exact_bit_components": 4897,
+              "components": 13376,
+              "max_absolute_delta": 0.000457763671875
+            }
+          }
+        }
+      },
+      "report_sha256": "bc3274632df74cf8d4b4015824c34ee178c76fe076c307b1e5c6060745c0d3b1",
+      "tool_sha256": {
+        "pose_differences.py": "d15fa85757b95b78c4fa4ccc9fd269ec5565075afb3940658045c4a462ce710b",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+      }
+    },
+    {
+      "run_id": "e7868457-3f3e-4019-bfb1-7194e72e31ea",
+      "completed_at_utc": "2026-10-11T03:21:32.024995+00:00",
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "vu": "nearest",
+        "division": "chop",
+        "square_root": "chop"
+      },
+      "result": "investigated_equivalence_open",
+      "original_calls": 572,
+      "original_instructions": 3557401,
+      "instruction_words": 917,
+      "summary": {
+        "raw_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": null,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": false,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 691,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3107,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "composed_translation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "matrix": {
+              "exact_bit_components": 13376,
+              "components": 13376,
+              "max_absolute_delta": 0.0
+            }
+          }
+        },
+        "processed_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 659,
+              "components": 3344,
+              "max_absolute_delta": 0.07835450768470764
+            },
+            "local_translation": {
+              "exact_bit_components": 2975,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 275,
+              "components": 3344,
+              "max_absolute_delta": 0.0003914833068847656
+            },
+            "composed_translation": {
+              "exact_bit_components": 1269,
+              "components": 3344,
+              "max_absolute_delta": 0.3646392822265625
+            },
+            "matrix": {
+              "exact_bit_components": 4196,
+              "components": 13376,
+              "max_absolute_delta": 0.3646392822265625
+            }
+          }
+        },
+        "processed_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1168,
+              "components": 3344,
+              "max_absolute_delta": 0.07835441827774048
+            },
+            "local_translation": {
+              "exact_bit_components": 2972,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 323,
+              "components": 3344,
+              "max_absolute_delta": 0.000390470027923584
+            },
+            "composed_translation": {
+              "exact_bit_components": 1297,
+              "components": 3344,
+              "max_absolute_delta": 0.363677978515625
+            },
+            "matrix": {
+              "exact_bit_components": 4150,
+              "components": 13376,
+              "max_absolute_delta": 0.363677978515625
+            }
+          }
+        },
+        "materialized_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 691,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3123,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 332,
+              "components": 3344,
+              "max_absolute_delta": 5.364418029785156e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1298,
+              "components": 3344,
+              "max_absolute_delta": 0.00034332275390625
+            },
+            "matrix": {
+              "exact_bit_components": 4276,
+              "components": 13376,
+              "max_absolute_delta": 0.00034332275390625
+            }
+          }
+        },
+        "materialized_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1246,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264491558075
+            },
+            "local_translation": {
+              "exact_bit_components": 3123,
+              "components": 3344,
+              "max_absolute_delta": 3.839999794960022
+            },
+            "composed_rotation": {
+              "exact_bit_components": 372,
+              "components": 3344,
+              "max_absolute_delta": 5.364418029785156e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1313,
+              "components": 3344,
+              "max_absolute_delta": 0.000579833984375
+            },
+            "matrix": {
+              "exact_bit_components": 4220,
+              "components": 13376,
+              "max_absolute_delta": 0.000579833984375
+            }
+          }
+        }
+      },
+      "report_sha256": "3d134ba408fa2d79824192eaabf3175361e6b05bb8a894c3589eff2a0514ee50",
+      "tool_sha256": {
+        "pose_differences.py": "d15fa85757b95b78c4fa4ccc9fd269ec5565075afb3940658045c4a462ce710b",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+      }
+    },
+    {
+      "run_id": "9ff1a556-6b46-4061-a05f-d395187d6a98",
+      "completed_at_utc": "2026-10-11T03:21:31.752937+00:00",
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "vu": "chop",
+        "division": "chop",
+        "square_root": "chop"
+      },
+      "result": "investigated_equivalence_open",
+      "original_calls": 572,
+      "original_instructions": 3557401,
+      "instruction_words": 917,
+      "summary": {
+        "raw_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": null,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": false,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 745,
+              "components": 3344,
+              "max_absolute_delta": 0.3248263895511627
+            },
+            "local_translation": {
+              "exact_bit_components": 3118,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "composed_translation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "matrix": {
+              "exact_bit_components": 13376,
+              "components": 13376,
+              "max_absolute_delta": 0.0
+            }
+          }
+        },
+        "processed_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 702,
+              "components": 3344,
+              "max_absolute_delta": 0.07835456728935242
+            },
+            "local_translation": {
+              "exact_bit_components": 2983,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 162,
+              "components": 3344,
+              "max_absolute_delta": 0.0003949403762817383
+            },
+            "composed_translation": {
+              "exact_bit_components": 1307,
+              "components": 3344,
+              "max_absolute_delta": 0.3669281005859375
+            },
+            "matrix": {
+              "exact_bit_components": 4061,
+              "components": 13376,
+              "max_absolute_delta": 0.3669281005859375
+            }
+          }
+        },
+        "processed_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1341,
+              "components": 3344,
+              "max_absolute_delta": 0.07835455238819122
+            },
+            "local_translation": {
+              "exact_bit_components": 3002,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 302,
+              "components": 3344,
+              "max_absolute_delta": 0.00039386749267578125
+            },
+            "composed_translation": {
+              "exact_bit_components": 1380,
+              "components": 3344,
+              "max_absolute_delta": 0.3663482666015625
+            },
+            "matrix": {
+              "exact_bit_components": 4440,
+              "components": 13376,
+              "max_absolute_delta": 0.3663482666015625
+            }
+          }
+        },
+        "materialized_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 745,
+              "components": 3344,
+              "max_absolute_delta": 0.3248263895511627
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 179,
+              "components": 3344,
+              "max_absolute_delta": 1.430511474609375e-06
+            },
+            "composed_translation": {
+              "exact_bit_components": 1336,
+              "components": 3344,
+              "max_absolute_delta": 0.0009002685546875
+            },
+            "matrix": {
+              "exact_bit_components": 4121,
+              "components": 13376,
+              "max_absolute_delta": 0.0009002685546875
+            }
+          }
+        },
+        "materialized_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1397,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264193534851
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 339,
+              "components": 3344,
+              "max_absolute_delta": 7.748603820800781e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1432,
+              "components": 3344,
+              "max_absolute_delta": 0.000640869140625
+            },
+            "matrix": {
+              "exact_bit_components": 4548,
+              "components": 13376,
+              "max_absolute_delta": 0.000640869140625
+            }
+          }
+        }
+      },
+      "report_sha256": "c54249fbaa6cf08b60748bf6d0e6c0b5fe52bb54ccc3d91150599d973980cb56",
+      "tool_sha256": {
+        "pose_differences.py": "d15fa85757b95b78c4fa4ccc9fd269ec5565075afb3940658045c4a462ce710b",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+      }
+    },
+    {
+      "run_id": "4b0632ee-a026-4c63-a062-6707f4a910bc",
+      "completed_at_utc": "2026-10-11T03:21:32.037304+00:00",
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "vu": "chop",
+        "division": "nearest",
+        "square_root": "nearest"
+      },
+      "result": "investigated_equivalence_open",
+      "original_calls": 572,
+      "original_instructions": 3557401,
+      "instruction_words": 917,
+      "summary": {
+        "raw_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": null,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": false,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1284,
+              "components": 3344,
+              "max_absolute_delta": 0.3248263895511627
+            },
+            "local_translation": {
+              "exact_bit_components": 3118,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "composed_translation": {
+              "exact_bit_components": 3344,
+              "components": 3344,
+              "max_absolute_delta": 0.0
+            },
+            "matrix": {
+              "exact_bit_components": 13376,
+              "components": 13376,
+              "max_absolute_delta": 0.0
+            }
+          }
+        },
+        "processed_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1184,
+              "components": 3344,
+              "max_absolute_delta": 0.07835453748703003
+            },
+            "local_translation": {
+              "exact_bit_components": 2986,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 536,
+              "components": 3344,
+              "max_absolute_delta": 0.00039392709732055664
+            },
+            "composed_translation": {
+              "exact_bit_components": 1415,
+              "components": 3344,
+              "max_absolute_delta": 0.3664703369140625
+            },
+            "matrix": {
+              "exact_bit_components": 4666,
+              "components": 13376,
+              "max_absolute_delta": 0.3664703369140625
+            }
+          }
+        },
+        "processed_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 44,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1968,
+              "components": 3344,
+              "max_absolute_delta": 0.07835453748703003
+            },
+            "local_translation": {
+              "exact_bit_components": 3008,
+              "components": 3344,
+              "max_absolute_delta": 3.9584028720855713
+            },
+            "composed_rotation": {
+              "exact_bit_components": 1159,
+              "components": 3344,
+              "max_absolute_delta": 0.00039261579513549805
+            },
+            "composed_translation": {
+              "exact_bit_components": 2059,
+              "components": 3344,
+              "max_absolute_delta": 0.3656158447265625
+            },
+            "matrix": {
+              "exact_bit_components": 7158,
+              "components": 13376,
+              "max_absolute_delta": 0.3656158447265625
+            }
+          }
+        },
+        "materialized_fresh": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 1284,
+              "components": 3344,
+              "max_absolute_delta": 0.3248263895511627
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 594,
+              "components": 3344,
+              "max_absolute_delta": 7.748603820800781e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 1494,
+              "components": 3344,
+              "max_absolute_delta": 0.0005950927734375
+            },
+            "matrix": {
+              "exact_bit_components": 4868,
+              "components": 13376,
+              "max_absolute_delta": 0.0005950927734375
+            }
+          }
+        },
+        "materialized_cached": {
+          "poses": 44,
+          "exact_local_pose_matches": 0,
+          "exact_composed_pose_matches": 0,
+          "captured_local_valid_poses": 41,
+          "result_local_valid_poses": 38,
+          "composed_fields_written": true,
+          "fields": {
+            "local_rotation": {
+              "exact_bit_components": 2057,
+              "components": 3344,
+              "max_absolute_delta": 0.3248264193534851
+            },
+            "local_translation": {
+              "exact_bit_components": 3134,
+              "components": 3344,
+              "max_absolute_delta": 3.8399996757507324
+            },
+            "composed_rotation": {
+              "exact_bit_components": 1256,
+              "components": 3344,
+              "max_absolute_delta": 4.76837158203125e-07
+            },
+            "composed_translation": {
+              "exact_bit_components": 2174,
+              "components": 3344,
+              "max_absolute_delta": 0.0004119873046875
+            },
+            "matrix": {
+              "exact_bit_components": 7478,
+              "components": 13376,
+              "max_absolute_delta": 0.0004119873046875
+            }
+          }
+        }
+      },
+      "report_sha256": "74e0a5f57380feab5b31bc62192a2be3118c7472b5ef42390ffef0dabf2f8cf7",
+      "tool_sha256": {
+        "pose_differences.py": "d15fa85757b95b78c4fa4ccc9fd269ec5565075afb3940658045c4a462ce710b",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "rig.py": "13f82ca7193fa49c831b9a2a979c182853c7ae8a818214e670ae8d161f7951d0",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+      }
+    }
+  ],
+  "profile_isolation": {
+    "result": "passed",
+    "profiles": [
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "nearest",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "checks": 5
+      },
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "checks": 5
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "nearest",
+          "division": "chop",
+          "sqrt": "chop"
+        },
+        "checks": 5
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "chop",
+          "sqrt": "chop"
+        },
+        "checks": 5
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "checks": 5
+      }
+    ],
+    "checks": 30,
+    "public_reference_unchanged": true,
+    "instances_remain_independent": true,
+    "tool_sha256": {
+      "verify_arithmetic_profiles.py": "bfc434680c0eefcd05cf8cdaa80ae0aa011d2e3bcfc4899d56d4794cc8e10d99",
+      "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+      "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375"
+    },
+    "scope": "Selected synthetic instructions verify profile separation, division/sqrt policy and conversion opcode width. No original game frame or hardware claim."
+  },
+  "profile_isolation_report_sha256": "081adb68f8096c38bd36600ac886f905eef8e902c4bd78ce28435aeac8257620",
+  "verification": {
+    "unit_tests": {
+      "result": "passed",
+      "tests": 74,
+      "skipped": 0,
+      "command": "python3 -m unittest discover -s tests -p 'test_pes3*.py' -v",
+      "log_sha256": "2d2329c0f60cdcb50ba431d82d824e0c9092586f5ed2019b8fa9bdb95f0a384f"
+    },
+    "extracted_delivery_recompile": {
+      "result": "passed",
+      "comparisons": 1428,
+      "fixture_sha256": "03b556bf0d1bc14ff7d044f2f76e1a3d93de063b6f2599477f2adec2595e8d3d",
+      "sources_sha256": {
+        "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+        "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+        "pose_rig.cpp": "15dac877f46caabc1ee28916a6e7660dbb75af4105d7964f878a8f0c8bd580e9"
+      },
+      "scope": "Recompiled semantic numeric rig compared in bits with recorded selected-model original-call fixtures. No fresh original execution, hardware or gameplay validation."
+    },
+    "delivery_recompile_report_sha256": "2099640f4573ab46fe2a65d03f6f34c4e65a5f0168f7e061aa65622d69ac2da4"
+  },
+  "external_sources": [
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/Pcsx2Config.cpp",
+      "sha256": "e5c740c30e3f09fbd3d396b0598dadf0e57ee89386931d00fc82e0c1c6fc6c57",
+      "purpose": "Default EE/VU truncation and separate default FPU division-nearest policy"
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/Config.h",
+      "sha256": "e2cda66f55be4108b8a26000e5653622da7880642fbc1384f348269dd4521f0b",
+      "purpose": "Separate FPU, FPU division, VU0 and VU1 control fields"
+    },
+    {
+      "url": "https://github.com/PCSX2/pcsx2/blob/v2.8.2/pcsx2/x86/iFPU.cpp",
+      "sha256": "e8cd2ca18455fffce292ab65f011552e9eddb0c4f7d9cecdac724e41502e1c10",
+      "purpose": "SQRT.S x86 recompilation selects nearest rounding. Emulator implementation not copied."
+    }
+  ],
+  "emulator_settings": {
+    "user_reply": "provavelmente padr\u00e3o, mas n\u00e3o sei dizer, por\u00e9m n\u00e3o lembro de mexer em nada nisso",
+    "actual_settings_confirmed": false
+  },
+  "integration": {
+    "runtime_enabled": false,
+    "native_gameplay_changed": false,
+    "native_baseline_commit": "0cb7ead8dcf294755a0b0581f559cdeb241de0f3",
+    "windows_archive_sha256": "ee913811b5fd1c5a18a3943a2228bb7b59436712b154b23826b7f8505d4b3443",
+    "remaining": [
+      "Final captured composed poses remain bit-different in all five tested arithmetic profiles.",
+      "Native bone basis, side, true reference pose and scale are not calibrated.",
+      "A single complete save does not validate action ordering, timing or ball contacts over a movement.",
+      "Complete native selection/pose/contact integration has not been implemented."
+    ]
+  },
+  "artifact": {
+    "file": "artifacts/pes3-rig-research.zip",
+    "bytes": 750114,
+    "sha256": "9264ecf9e7392380aad444e081ff325f30ca8877b6bad55b3a43e0dc63a52ea9",
+    "members": 19,
+    "crc_verified": true,
+    "manifest_sha256": "d22721dddcb6547309e2e896fb047bda7fa79d2412accee5e09b77f62f02ac0e"
+  }
+}

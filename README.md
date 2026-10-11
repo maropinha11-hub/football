@@ -50,6 +50,13 @@ treino PES” para consultar campos capturados e saídas reexecutadas. A
 divergência contra as poses finais do emulador, a calibração dos ossos e
 os contatos continuam pendentes antes da importação para o jogo Windows.
 
+A [reescrita do esqueleto PES 3](docs/PES3-RIG.md) acrescenta oito operações
+com estruturas próprias, 1.428 comparações aprovadas no modelo declarado e
+conferência dos 6.688 componentes de rotação com as chaves compactadas.
+O [pacote numérico](artifacts/pes3-rig-research.zip) permite recompilar e repetir
+os testes sem arquivos do PES. A investigação corrige a etapa usada para
+comparar poses; diferenças em bits e a integração no treino seguem abertas.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:
