@@ -163,6 +163,14 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
+  if (pes3Preview) {
+    if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
+    if (keyOnce(SDLK_F8)) SpamMessage(pes3Preview->select(1),7000);
+    if (keyOnce(SDLK_F9)) SpamMessage(pes3Preview->select(-1),7000);
+    if (keyOnce(SDLK_F10)) SpamMessage(pes3Preview->pause(),7000);
+    if (keyOnce(SDLK_F11)) SpamMessage(pes3Preview->step(),7000);
+    if (keyOnce(SDLK_c)) SpamMessage(pes3Preview->capturedClip(),7000);
+  }
   if (keyOnce(SDLK_r)) ResetTraining(trainingExercise);
   if (keyOnce(SDLK_F2)) ResetTraining(trainingExercise, true);
   if (keyOnce(SDLK_F3) || keyOnce(SDLK_5)) ResetTraining(4);
@@ -208,6 +216,7 @@ void Match::ProcessTraining() {
   }
   trainingPreviousButtons = buttons;
 
+  if (pes3Preview) pes3Preview->process(pause);
   if (pause) trainingPaceWall_ms = 0;
 
   if (!pause) {

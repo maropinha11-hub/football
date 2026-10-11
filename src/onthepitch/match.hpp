@@ -12,7 +12,9 @@
 #include "referee.hpp"
 #include "officials.hpp"
 #include "trainingcontrol.hpp"
+#include "pes3preview.hpp"
 #include <atomic>
+#include <memory>
 
 #include "../data/matchdata.hpp"
 #include "player/humanoid/animcollection.hpp"
@@ -270,6 +272,7 @@ class Match {
     unsigned long trainingKnockOnUntil_ms = 0;
     unsigned long trainingPaceWall_ms = 0, trainingPaceSim_ms = 0;
     std::atomic<int> trainingCameraMode{2};
+    std::unique_ptr<PES3Preview> pes3Preview;
     training::View trainingView;
     Vector3 trainingEyePosition;
     std::atomic<bool> trainingEyeInitialized{false};

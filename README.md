@@ -18,16 +18,23 @@ sem virar automaticamente para o gol. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
 
-Não é uma decompilação do PES. Os links fornecidos contêm Gameplay Football;
+Não é uma decompilação completa do PES. Os links iniciais contêm Gameplay Football;
 não contêm o motor nem as animações do PES. Fidelidade à base aberta e
 equivalência ao PES são verificações diferentes. Consulte
 [a pesquisa técnica](docs/RESEARCH.md) para a origem e os limites da implementação.
+
+O [estudo PES3 dentro do treino](docs/PES3-ANIMACOES-NO-TREINO.md) reproduz os
+1.105 clips recebidos em um esqueleto de 19 ossos ao lado do jogador. Na versão
+Windows, use `importar-pes3.bat` com seu `fpsoccer-pes-nucleo-v14.zip`, depois
+`estudar-pes3.bat`. Há pausa, avanço de fase e troca de clip. A ligação à malha,
+a seleção completa de ações e os contatos PES ainda precisam ser integrados;
+`run-training.bat` mantém a gameplay nativa aprovada.
 
 O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)
 permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia
 o ZIP e abra `abrir-laboratorio.html` com Edge ou Chrome. É uma ferramenta de
-pesquisa; as animações e a física do PES ainda não foram integradas ao treino.
+pesquisa; a substituição das animações do jogador e da física continua pendente.
 
 O [processo de recuperação do código PES 3](docs/PES3-ACTIONS.md) acrescenta
 um mapa automático de referências para 506 clips e reescritas verificadas

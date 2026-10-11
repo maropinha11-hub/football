@@ -41,6 +41,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     subprocess.run([stripper, "--strip-debug", "-o", str(stripped), str(executable)], check=True)
 
     for entry in (project / "data").iterdir():
+        if entry.name == "pes3":
+            continue  # Source animation bank is installed from the user's local file.
         if entry.is_dir():
             shutil.copytree(entry, stage / entry.name)
         else:
@@ -48,6 +50,15 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "config" / "training.config", stage / "training.config")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
+    shutil.copy2(project / "scripts/import-pes3.ps1", stage / "import-pes3.ps1")
+    for filename, command in [
+        ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
+        ("estudar-pes3.bat", 'gameplayfootball.exe --config training.config --training --pes3-preview %*'),
+    ]:
+        (stage / filename).write_text(
+            '@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n' + command + '\r\npause\r\n',
+            encoding="ascii", newline="",
+        )
 
     # vcpkg's applocal deployment already identifies the direct DLLs.  Copying
     # every release DLL from the triplet also covers optional image/font/audio
@@ -109,8 +120,17 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "O pacote contém o executável x64, SDL2, OpenAL, Boost, SQLite e os\n"
         "recursos necessários. O primeiro lançamento pode mostrar o SmartScreen\n"
         "porque o binário não é assinado; confirme a origem local do arquivo.\n\n"
-        "A base é o projeto Gameplay Football e o modo de treinamento mantido.\n"
-        "Não é uma decompilação de PES nem inclui conteúdo proprietário.\n",
+        "Estudo de animacoes PES3 (opcional): execute importar-pes3.bat e selecione\n"
+        "fpsoccer-pes-nucleo-v14.zip que voce ja possui. Execute estudar-pes3.bat.\n"
+        "Um esqueleto de estudo de 19 ossos reproduz os clips ao lado do jogador.\n"
+        "F7 abre/fecha; F8/F9 seguinte/anterior; F10 pausa/reinicia; F11 +1;\n"
+        "C percorre os clips observados nos saves. Cada clip para no final.\n"
+        "O ritmo de estudo e 60 unidades de fase por segundo, ajustavel na config\n"
+        "com pes3_preview_units_per_second. Nao e uma medicao da cadencia do PES.\n"
+        "Esse estudo nao substitui animacoes, contatos ou fisica do jogador nativo.\n\n"
+        "A base e o projeto Gameplay Football e o modo de treinamento mantido.\n"
+        "A gameplay completa do PES ainda nao esta integrada. Os dados originais\n"
+        "das animacoes sao importados do seu arquivo local e nao vem neste ZIP.\n",
         encoding="utf-8",
     )
 

@@ -4,3 +4,5 @@ __pycache__/
 artifacts/
 .cache/
 *.log
+/data/pes3/
+/pes3/

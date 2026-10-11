@@ -1,0 +1,711 @@
+{
+  "schema_version": 1,
+  "result": "passed_with_scope_limits",
+  "scope": "Initialized source-format PES3 animation playback in a separate 19-node study rig inside native training. Full PES gameplay is not integrated.",
+  "native_gameplay_replaced": false,
+  "source_data_distributed": false,
+  "source_bank": {
+    "filename": "pes_animation_tracks.fpsa",
+    "bytes": 6310088,
+    "clips": 1105,
+    "bones": 19,
+    "crc32": "353ff124",
+    "sha256": "c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5"
+  },
+  "original_sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "pipeline": {
+    "run_id": "77ed0d5c-e9b2-469f-b5fa-1e1c908cfed8",
+    "completed_at_utc": "2026-10-11T18:53:37.893971+00:00",
+    "state_sha256": "3d240b6390d5acf84e7b9eca18622ba07c52885cb26a8ec81e81026c1a74cca9",
+    "fresh_original_pipeline_cases": 90,
+    "compared_words_per_case": 1376,
+    "original_instructions": 941379,
+    "distinct_reached_instruction_words": 923,
+    "all_clip_domain_samples": 3315,
+    "sealed_decoder_local_pose_cases": 6697,
+    "arithmetic_profile": "nearest FPU/VU; nearest division/sqrt",
+    "production_sources_sha256": {
+      "src/pes3/animation_bank.cpp": "efbfcac3511c957e000b6b68f4cfb2c5e95b6a34c87e999adead485c810d3e06",
+      "src/pes3/animation_bank.hpp": "93c83f4ab34f8caf20e81d7614c3aba3aa47597b3a0dd9c8ca9f0a6c514a082b",
+      "src/pes3/pes_animation_pose.cpp": "616b5d12dcc2559b2485bb2d3d0c4213faf43abb39339b203415e00244584fc3",
+      "src/pes3/pes_animation_pose.h": "5b2db3f4c1395724112b0717ca3bebfb80a47a7946e7751a66e80c36d69328ad",
+      "src/pes3/pes_pose_math.cpp": "034ee30b248f20060986f32743aff1b665a0fe6eff75fea05553e02beacc49f5",
+      "src/pes3/pes_pose_math_internal.h": "3719d4c9b7fc44c0d9d9806161f2de66a60f56361ca22191f2e639a3e8ab20cd",
+      "src/pes3/pes_skeleton_bind_bits.h": "88d091386c65b66677b00889e8045d6e03f54891d6b68f42c23e28366c7b1b13"
+    }
+  },
+  "source_calls": [
+    "0x01113CC0",
+    "0x01115130",
+    "0x01115EA0"
+  ],
+  "unchanged_v14_core_files": [
+    "pes_animation_pose.h",
+    "pes_animation_pose.cpp",
+    "pes_pose_math_internal.h",
+    "pes_pose_math.cpp",
+    "pes_skeleton_bind_bits.h"
+  ],
+  "unit_tests": {
+    "result": "passed",
+    "tests": 148,
+    "failures": 0,
+    "skips": 0,
+    "seconds": 14.498,
+    "command": "python3 -m unittest discover -s tests -p 'test_pes3_*.py' -v"
+  },
+  "ctest": {
+    "result": "passed",
+    "tests": [
+      "xbox_controller",
+      "pes3_motion_runtime"
+    ],
+    "seconds": 1.59,
+    "physical_controller_tested": false
+  },
+  "native_training_regression": {
+    "run_id": "6c3f3cc5-fe07-48aa-88d9-0c500be99fd9",
+    "checks": [
+      {
+        "check": "rendered game startup",
+        "result": "passed",
+        "evidence": "Native simulation emitted live frames"
+      },
+      {
+        "check": "walking and dribbling",
+        "result": "passed",
+        "evidence": "Player moved 6.64 m"
+      },
+      {
+        "check": "walking retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.61/0.57 m; controlled 15/15 frames"
+      },
+      {
+        "check": "animation playback",
+        "result": "passed",
+        "evidence": "Original animation frames advanced"
+      },
+      {
+        "check": "release and deceleration",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "sprinting",
+        "result": "passed",
+        "evidence": "Walk 5.00, sprint 7.72 m/s"
+      },
+      {
+        "check": "sprinting retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.98/0.75 m; controlled 16/16 frames"
+      },
+      {
+        "check": "short pass",
+        "result": "passed",
+        "evidence": "Functions [1, 4]; ball speed 24.82 m/s"
+      },
+      {
+        "check": "through pass",
+        "result": "passed",
+        "evidence": "Functions [1, 5]; ball speed 25.04 m/s"
+      },
+      {
+        "check": "high pass",
+        "result": "passed",
+        "evidence": "Functions [1, 6]; ball speed 30.99 m/s"
+      },
+      {
+        "check": "shot",
+        "result": "passed",
+        "evidence": "Functions [1, 8]; ball speed 32.65 m/s"
+      },
+      {
+        "check": "aerial physics",
+        "result": "passed",
+        "evidence": "Peak height 3.93 m"
+      },
+      {
+        "check": "super cancel free movement",
+        "result": "passed",
+        "evidence": "Player moved away from incoming ball to x=-16.14 m"
+      },
+      {
+        "check": "off-ball sliding",
+        "result": "passed",
+        "evidence": "Functions [1, 13]"
+      },
+      {
+        "check": "finishing exercise",
+        "result": "passed",
+        "evidence": "Player starts at x=30.25 m"
+      },
+      {
+        "check": "goal detection",
+        "result": "passed",
+        "evidence": "Goal counter 0 -> 1"
+      },
+      {
+        "check": "automatic ball reset",
+        "result": "passed",
+        "evidence": "Ball returned to x=30.65 m"
+      },
+      {
+        "check": "charged shot elevation",
+        "result": "passed",
+        "evidence": "Light (22.3231, 0.5388), charged (33.8514, 6.2843) (speed, height); delivered charge {'light': 130, 'quick': 420, 'charged': 520, 'chip': 520}"
+      },
+      {
+        "check": "quick shot elevation",
+        "result": "passed",
+        "evidence": "Target 250 ms, delivered 420 ms; shot (32.91, 4.3434) (speed, height)"
+      },
+      {
+        "check": "LB chip trajectory",
+        "result": "passed",
+        "evidence": "Chip (20.7202, 10.1741); charged (33.8514, 6.2843)"
+      },
+      {
+        "check": "free kick exercise",
+        "result": "passed",
+        "evidence": "Player starts at [28.2395, -7.929, 0.0]"
+      },
+      {
+        "check": "first person camera",
+        "result": "passed",
+        "evidence": "Camera switches to first person"
+      },
+      {
+        "check": "head free look with ball",
+        "result": "passed",
+        "evidence": "Head yaw -0.97, player stays still"
+      },
+      {
+        "check": "gradual head recenter",
+        "result": "passed",
+        "evidence": "Head magnitude 1.22 -> 0.11 rad after input release"
+      },
+      {
+        "check": "head look does not steer dribbling",
+        "result": "passed",
+        "evidence": "Player delta [4.0588, 0.0]; head turns independently"
+      },
+      {
+        "check": "straight dribbling",
+        "result": "passed",
+        "evidence": "Forward/side displacement [7.8988, 0.0] m"
+      },
+      {
+        "check": "straight movement retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.83/0.39 m; controlled 17/17 frames"
+      },
+      {
+        "check": "held right keeps turning relative to new front",
+        "result": "passed",
+        "evidence": "Successive right-turn angles -1.18/-1.30 rad"
+      },
+      {
+        "check": "continuous relative turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.65/0.65 m; controlled 14/14 frames"
+      },
+      {
+        "check": "forward follows new front after turn",
+        "result": "passed",
+        "evidence": "New front -2.95 rad; forward/side travel 5.83/0.49 m"
+      },
+      {
+        "check": "new forward retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.44/0.41 m; controlled 12/12 frames"
+      },
+      {
+        "check": "RT preserves new forward direction",
+        "result": "passed",
+        "evidence": "RT forward/side travel 5.24/-0.25 m; speed 3.84 m/s"
+      },
+      {
+        "check": "RT after turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.46/0.41 m; controlled 12/12 frames"
+      },
+      {
+        "check": "idle RT does not turn player toward goal",
+        "result": "passed",
+        "evidence": "Idle RT changed actual body heading 0.00 rad; no automatic goal-facing turn"
+      },
+      {
+        "check": "down moves behind the current front",
+        "result": "passed",
+        "evidence": "First 500 ms backwards travel -0.40 m; side -0.08 m"
+      },
+      {
+        "check": "held down reverses relative to each new front",
+        "result": "passed",
+        "evidence": "Body/camera turned 9.05 rad; 2 completed turns requested a new behind while down stayed held"
+      },
+      {
+        "check": "repeated backward turns retain ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.63/0.27 m; controlled 27/27 frames"
+      },
+      {
+        "check": "up follows the front after backward turns",
+        "result": "passed",
+        "evidence": "New forward/side travel 4.87/1.33 m"
+      },
+      {
+        "check": "forward after backwards retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.45/0.42 m; controlled 12/12 frames"
+      },
+      {
+        "check": "simulation keeps real-time pace",
+        "result": "passed",
+        "evidence": "5000 ms simulation / 5000 ms monotonic clock; ratio 1.000"
+      },
+      {
+        "check": "reset cancels buffered shot",
+        "result": "passed",
+        "evidence": "Functions [1]; no stale shot after reset"
+      },
+      {
+        "check": "forward before turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.83/0.37 m; controlled 12/12 frames"
+      },
+      {
+        "check": "left turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.91/0.57 m; controlled 12/12 frames"
+      },
+      {
+        "check": "right reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.77/0.64 m; controlled 16/16 frames"
+      },
+      {
+        "check": "backward turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.66/0.66 m; controlled 12/12 frames"
+      },
+      {
+        "check": "stopping after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.43/0.35 m; controlled 7/7 frames"
+      },
+      {
+        "check": "stopping after turns releases movement",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "restart after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.53/0.40 m; controlled 18/18 frames"
+      },
+      {
+        "check": "turning uses original ball-control animations",
+        "result": "passed",
+        "evidence": "Functions [1, 2]"
+      },
+      {
+        "check": "close control diagonal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.45/0.41 m; controlled 22/22 frames"
+      },
+      {
+        "check": "close control reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.44/0.42 m; controlled 16/16 frames"
+      },
+      {
+        "check": "first person sprint retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.99/0.70 m; controlled 25/25 frames"
+      },
+      {
+        "check": "original knock-on and recovery",
+        "result": "passed",
+        "evidence": "Long-touch distance max 2.17 m; recovered to 0.55 m after releasing RT"
+      },
+      {
+        "check": "sprint knock-on turns retain control",
+        "result": "passed",
+        "evidence": "Turning with RB+RT: distance max 2.10 m, controlled 25/25 frames"
+      },
+      {
+        "check": "simulation pace during sprint knock-on turns",
+        "result": "passed",
+        "evidence": "2500 ms simulation / 2500 ms real; ratio 1.000"
+      },
+      {
+        "check": "knock-on turn recovers without reset",
+        "result": "passed",
+        "evidence": "Recovered to 0.54 m after turning and releasing RT"
+      },
+      {
+        "check": "pass releases possession",
+        "result": "passed",
+        "evidence": "Ball distance 21.22 m"
+      },
+      {
+        "check": "off ball idle does not chase",
+        "result": "passed",
+        "evidence": "Idle displacement 0.000 m; speed 0.000 m/s"
+      },
+      {
+        "check": "off ball movement is free after pass",
+        "result": "passed",
+        "evidence": "Sideways displacement 3.64 m without super cancel"
+      },
+      {
+        "check": "manual approach recovers passed ball",
+        "result": "passed",
+        "evidence": "Recovered in 8.4 s; ball distance 0.41 m; functions [1, 2]"
+      },
+      {
+        "check": "off ball FPS turning",
+        "result": "passed",
+        "evidence": "Yaw changed -0.78 rad without ball"
+      },
+      {
+        "check": "first person forward movement",
+        "result": "passed",
+        "evidence": "Player moved 2.80 m"
+      },
+      {
+        "check": "headed pass before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.17 m away"
+      },
+      {
+        "check": "headed pass before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 4 at z=1.5652 m; peak speed 18.66 m/s"
+      },
+      {
+        "check": "headed shot before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 4.85 m away"
+      },
+      {
+        "check": "headed shot before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 8 at z=1.4114 m; peak speed 19.26 m/s"
+      },
+      {
+        "check": "first-time short pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.85 m away"
+      },
+      {
+        "check": "first-time short pass",
+        "result": "passed",
+        "evidence": "First contact right_foot / function 4 at z=0.1100 m; peak speed 18.77 m/s"
+      },
+      {
+        "check": "first-time through pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.56 m away"
+      },
+      {
+        "check": "first-time through pass",
+        "result": "passed",
+        "evidence": "First contact left_foot / function 5 at z=0.1100 m; peak speed 32.05 m/s"
+      },
+      {
+        "check": "first-time shot accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.83 m away"
+      },
+      {
+        "check": "first-time shot",
+        "result": "passed",
+        "evidence": "First contact left_foot / function 8 at z=0.1100 m; peak speed 25.38 m/s"
+      },
+      {
+        "check": "front stadium remains visible",
+        "result": "passed",
+        "evidence": "Central distant roof covers 100.0% of inspection band"
+      },
+      {
+        "check": "ball stays above turf",
+        "result": "passed",
+        "evidence": "Minimum ball center 0.110 m"
+      },
+      {
+        "check": "finite physics state",
+        "result": "passed",
+        "evidence": "1614 live samples are finite"
+      },
+      {
+        "check": "rendered foot contact correction",
+        "result": "passed",
+        "evidence": "73 rendered foot corrections; median error 0.234 -> 0.105 m"
+      },
+      {
+        "check": "external camera restoration",
+        "result": "passed",
+        "evidence": "First person cycles back to external view"
+      },
+      {
+        "check": "clean shutdown",
+        "result": "passed",
+        "evidence": "Exit status 0"
+      }
+    ],
+    "total": 78,
+    "result": "passed"
+  },
+  "native_training_regression_scope": "Rendered Linux native-training checks. Later changes affect only the optional preview material/mesh; gameplay paths were not changed after this run.",
+  "source_preview_rendered_smoke": {
+    "run_id": "2b38910b-61f0-48b4-b0cf-c23b8e3012a2",
+    "result": "passed",
+    "checks": [
+      {
+        "check": "source bank loaded in native game",
+        "result": "passed",
+        "evidence": 1105
+      },
+      {
+        "check": "19-bone source geometry rendered",
+        "result": "passed",
+        "evidence": 888
+      },
+      {
+        "check": "clip advances then clamps",
+        "result": "passed",
+        "evidence": {
+          "clip": 47,
+          "phase": 52.0,
+          "playing": 0,
+          "revision": 87,
+          "point": [
+            -10.663672,
+            -622.27832,
+            42.365028
+          ]
+        }
+      },
+      {
+        "check": "endpoint remains stopped",
+        "result": "passed",
+        "evidence": 87
+      },
+      {
+        "check": "browsing paused clips preserves phase zero",
+        "result": "passed",
+        "evidence": {
+          "clip": 48,
+          "phase": 0.0,
+          "playing": 0,
+          "revision": 88,
+          "point": [
+            -7.290573,
+            -613.494202,
+            68.708473
+          ]
+        }
+      },
+      {
+        "check": "pause holds source phase",
+        "result": "passed",
+        "evidence": {
+          "clip": 48,
+          "phase": 4.2,
+          "playing": 0,
+          "revision": 96,
+          "point": [
+            -4.418809,
+            -618.589294,
+            77.10984
+          ]
+        }
+      },
+      {
+        "check": "single source-phase step",
+        "result": "passed",
+        "evidence": {
+          "clip": 48,
+          "phase": 5.2,
+          "playing": 0,
+          "revision": 97,
+          "point": [
+            -3.547456,
+            -620.218018,
+            77.864044
+          ]
+        }
+      },
+      {
+        "check": "observed source clips can be rendered",
+        "result": "passed",
+        "evidence": [
+          47,
+          48,
+          120,
+          206,
+          219,
+          224,
+          236,
+          264,
+          269,
+          275,
+          304,
+          313,
+          317,
+          366,
+          372,
+          797
+        ]
+      },
+      {
+        "check": "finite source points",
+        "result": "passed",
+        "evidence": 113
+      },
+      {
+        "check": "closing preview stops source work",
+        "result": "passed",
+        "evidence": 150
+      },
+      {
+        "check": "native training controls remain functional",
+        "result": "passed",
+        "evidence": [
+          5.3478,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "check": "clean game exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ]
+  },
+  "source_preview_rendered_platform": "Linux SDL2 / Xvfb / software OpenGL; manually inspected the 960x540 render. Study geometry is dark under current lighting. Original player skin and materials are not integrated.",
+  "importer": {
+    "result": "passed",
+    "powershell": "7.4.6 on Linux",
+    "source_sha256": "c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5",
+    "checks": [
+      {
+        "case": "fpsa",
+        "result": "passed",
+        "exit_code": 0
+      },
+      {
+        "case": "zip_backslash",
+        "result": "passed",
+        "exit_code": 0
+      },
+      {
+        "case": "reinstall_atomic",
+        "result": "passed",
+        "exit_code": 0
+      },
+      {
+        "case": "bad_hash_preserves_existing",
+        "result": "passed",
+        "exit_code": 1
+      },
+      {
+        "case": "duplicate_rejected",
+        "result": "passed",
+        "exit_code": 1
+      },
+      {
+        "case": "bad_type_rejected",
+        "result": "passed",
+        "exit_code": 1
+      },
+      {
+        "case": "bad_size_rejected",
+        "result": "passed",
+        "exit_code": 1
+      }
+    ]
+  },
+  "importer_scope": "Actual PowerShell 7.4.6 CLI on Linux; Windows 5.1 GUI picker was not exercised on a Windows desktop.",
+  "display_transform": {
+    "rotation": "X,Y,Z -> X,Z,-Y",
+    "fit": "1.8 / 670.5759",
+    "source_unit_conversion_proved": false
+  },
+  "playback": {
+    "policy": "Clamp once at endpoint; no automatic looping",
+    "units_per_second": 60,
+    "original_cadence_proved": false
+  },
+  "builds": {
+    "linux": "passed",
+    "windows": "passed (MinGW x86_64 cross-compilation)",
+    "windows_desktop_execution_tested": false
+  },
+  "unresolved": [
+    "Adaptation to the native player mesh and bone sides/bind frames/physical scale",
+    "Source animation selection for every action in live gameplay",
+    "Mirroring and blending in the original live context",
+    "Original simulation and animation cadence",
+    "Complete reconstruction of saved-state poses (previous mismatch remains open)",
+    "Synchronization of physical ball contact with feet/head and source action events",
+    "Original ball simulation and complete gameplay behavior"
+  ],
+  "native_preview_sources_sha256": {
+    "src/onthepitch/pes3preview.cpp": "e6a6c52ac59f174a2f26910d5f0eea167d7662a5c9794658f8c1a32d36d7996e",
+    "src/onthepitch/pes3preview.hpp": "93c9a28a208f1e0933f347f75d91633828c6f317304128dd2aa0d4c74febaf36",
+    "tests/pes3_preview_smoke.py": "d8e5dea7216c50f864e7dece5060c384499ebae6c56a6df49384cf7e4a197d87",
+    "scripts/import-pes3.ps1": "54ad67c864338280604f2ba70742d935af05ae177d24a8f00acd825b5687f5ea"
+  },
+  "windows_package": {
+    "result": "passed",
+    "archive_bytes": 31347770,
+    "archive_sha256": "15aac1d6835bfcc8775a0d12e526f2a04aa762b5f00a0b01ca657b9ffc3e235d",
+    "executable_sha256": "66c7c1cc1b9da5961e0310d9fd1c6bf66e59573717bb6b2c4beb36f679f3f7cf",
+    "zip_crc": "all members passed",
+    "architecture": "PE32+ x86_64",
+    "members": 546,
+    "dll_count": 26,
+    "missing_non_system_dlls": [],
+    "source_bank_included": false,
+    "exe_imports": [
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "libSDL2_gfx.dll",
+      "SDL2_image.dll",
+      "SDL2_ttf.dll",
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "libboost_thread-gcc14-mt-x64-1_92.dll",
+      "libsqlite3.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "USER32.dll",
+      "XINPUT9_1_0.dll",
+      "libgcc_s_seh-1.dll",
+      "libstdc++-6.dll"
+    ]
+  }
+}

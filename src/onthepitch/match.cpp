@@ -379,6 +379,8 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
     trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
     SetMatchPhase(e_MatchPhase_1stHalf);
     ResetTraining(0);
+    pes3Preview.reset(new PES3Preview(dynamicNode));
+    if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);
   }
 
   Log(e_Notice, "Match", "Match", "Done creating match!");
@@ -422,6 +424,7 @@ void Match::Exit() {
   if (Verbose()) scene3D->PrintTree();
 
 
+  pes3Preview.reset();
   delete possessionSideHistory;
 
   anims.reset();
@@ -1187,6 +1190,7 @@ void Match::PreparePutBuffers() {
 
   buf_matchTime_ms = matchTime_ms;
   buf_actualTime_ms = actualTime_ms;
+  if (pes3Preview) pes3Preview->prepare(designatedPossessionPlayer->GetPosition(),designatedPossessionPlayer->GetDirectionVec());
 }
 
 void Match::FetchPutBuffers() {
@@ -1203,6 +1207,7 @@ void Match::FetchPutBuffers() {
 
   fetchedbuf_matchTime_ms = buf_matchTime_ms;
   fetchedbuf_actualTime_ms = buf_actualTime_ms;
+  if (pes3Preview) pes3Preview->fetch();
 
   fetchedbuf_cameraOrientation = buf_cameraOrientation.GetValue(putTime_ms);
   fetchedbuf_cameraNodeOrientation = buf_cameraNodeOrientation.GetValue(putTime_ms);
@@ -1285,6 +1290,7 @@ void Match::Put() {
     ProcessReplayMessages();
   }
 
+  if (pes3Preview) pes3Preview->put();
   GetDynamicNode()->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
   if (TrainingEnabled() && IsFirstPerson()) {

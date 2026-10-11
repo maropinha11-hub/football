@@ -298,6 +298,7 @@ int main(int argc, const char** argv) {
   int trainingOverride = -1;
   bool controllerTest = false;
   bool telemetry = false;
+  bool pes3Preview = false;
   for (int i = 1; i < argc; ++i) {
     std::string arg(argv[i]);
     if (arg == "--help" || arg == "-h") {
@@ -306,6 +307,7 @@ int main(int argc, const char** argv) {
              "  --training        Solo training, original player/field/animations\n"
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
+             "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
              "  --test-controller Test virtual SDL Xbox input and reconnection\n");
       delete config;
       return 0;
@@ -313,6 +315,7 @@ int main(int argc, const char** argv) {
     else if (arg == "--training") trainingOverride = 1;
     else if (arg == "--match") trainingOverride = 0;
     else if (arg == "--telemetry") telemetry = true;
+    else if (arg == "--pes3-preview") pes3Preview = true;
     else if (arg == "--test-controller") controllerTest = true;
     else if (arg.size() > 0 && arg[0] != '-') configFile = arg;
     else {
@@ -330,6 +333,7 @@ int main(int argc, const char** argv) {
   config->LoadFile(configFile.c_str());
   if (trainingOverride >= 0) config->SetBool("training_mode", trainingOverride == 1);
   if (telemetry) config->SetBool("training_telemetry", true);
+  if (pes3Preview) { config->SetBool("pes3_preview",true); config->SetBool("training_mode",true); }
 
   Initialize(*config);
 
