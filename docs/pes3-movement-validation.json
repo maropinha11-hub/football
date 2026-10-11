@@ -1,0 +1,735 @@
+{
+  "schema_version": 1,
+  "runtime_enabled": false,
+  "runs": {
+    "direction": {
+      "schema_version": 1,
+      "run_id": "56907def-ff99-4f56-84ec-83bb68a60f09",
+      "completed_at_utc": "2026-10-11T04:33:51.526574+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 1805,
+      "original_instructions": 572762,
+      "instruction_words": 385,
+      "entry": "0x018783b0",
+      "stop_before": "0x0187866c",
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-direction-v1/direction.cpp",
+        "-o",
+        "/tmp/pes3-direction-v1/direction.so"
+      ],
+      "arithmetic_profile": "Selected host binary32 nearest subtraction, integer conversions truncate as in pinned reference. Not a complete PS2 arithmetic model.",
+      "tool_sha256": {
+        "verify_direction.py": "d8573d0533f104f4d81fd1f1113420555df3668ec7403f2cd1837ef768f9808e",
+        "direction_abi.py": "e40161ad6f6311faa141dfc016472cc1254c8d0e247b5a128b11e2c5e7ca6b56",
+        "recover_locomotion_tables.py": "72f9c94a54fa32e87fd5bd50a2d566f7dcc76c4b117dd4d32d4845967c122d29",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "direction-instruction-words.json": "9dac6ce593fb8dbeacbe495a1f57d50e0b4cc7bba641cf733a89593e1ff19f83",
+        "direction-vectors.json": "3b2ea1967babf9d35ee4d07977ad9ec447aca1e3a9d1ecde20584387aa39c429",
+        "direction.cpp": "67b68b2d1333b32d5026d85f580290567321b34457d2ea6ce268950b418a9fd8",
+        "direction.so": "7d86ec74887dbc396ebd87463dd24f9289ff18d979c3088e215b11298499ddda",
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0"
+      },
+      "scope": "Owned direction block plus actual original heading/turn/angle/distance helpers and recovered quantized tables. All scenarios enter the block on modified copies of the stationary save. No full action/frame, PS2 hardware, native units, retarget/contact or complete gameplay equivalence."
+    },
+    "selection": {
+      "schema_version": 1,
+      "run_id": "7a564dbd-70ba-49ef-abc2-cadc15961020",
+      "completed_at_utc": "2026-10-11T04:49:11.999027+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 92,
+      "original_instructions": 31577,
+      "instruction_words": 704,
+      "by_outcome": {
+        "clip_47": 43,
+        "clip_61": 9,
+        "no_change": 40
+      },
+      "restart_true_cases": 1,
+      "chase_gate_true_cases": 5,
+      "helper_dependency_scope": "Predicates, chase prediction, clip change and refresh execute unchanged in the original. Their reached dependency values are explicit semantic boundary inputs. They are not rewritten by this decision API or injected into the original.",
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-selection-v4/selector.cpp",
+        "-o",
+        "/tmp/pes3-selection-v4/selector.so"
+      ],
+      "tool_sha256": {
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "selection-instruction-words.json": "c8af07d8018017532e7d013101d07096b843426f20822f59a2799e7c16282842",
+        "selection-vectors.json": "cd7b917efc3c7dec5517feba4f7c3ba57d47f0ede20e801b4ab847331f7dc42c",
+        "selector.cpp": "e7d47d6432503c44129163a3417815b50469777b1d98f37cc3b19cedfbb9aaa2",
+        "selector.so": "21732cee976d8a38b327943612f8b21799575db869373ee7e88b517683210f58"
+      },
+      "composed_speed_comparisons": 92,
+      "scope": "Common locomotion decision of action 1/substate 16, clip-47 frame override and composed integer speed tail to 0187930C. Numeric owned structs, original integer units/headings. No complete action, prediction rewrite, pose retargeting, native request mapping, foot/head contact or full PES gameplay equivalence."
+    },
+    "speed": {
+      "schema_version": 1,
+      "run_id": "65e93ea1-411c-4183-89d5-b5f6586793f4",
+      "result": "passed",
+      "completed_at_utc": "2026-10-11T04:01:16.423189+00:00",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "entry": "0x0187927c",
+      "stop_before": "0x0187930c",
+      "comparisons": 1153,
+      "original_instructions": 102786,
+      "instruction_words": 170,
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-speed-v1/speed.cpp",
+        "-o",
+        "/tmp/pes3-speed-v1/speed.so"
+      ],
+      "tool_sha256": {
+        "verify_speed.py": "889636219a209022f763bd23d645f212a7be1295d9647f04c221060eef5899b3",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "speed-instruction-words.json": "262ac9780d0eed2fb779c9fe81c4eb576300a12a42ca966df9b9bc3d34c7ac8a",
+        "speed-vectors.json": "2744835ceb1b90dbc8f7e87455be1e46b86bda1f274b4b50c84e0cff4b34c30b",
+        "speed.cpp": "02eccb8e243c707c570b83270f0fc36f5db9189a6bb79bd1e4c71e3730968592",
+        "speed.so": "5c68c4c867d15cfca298c14d540cb6088e13635ee4c983c226aa282c89ab0a24"
+      },
+      "scope": "Semantic integer speed tail including stat scale, profile, acceleration/braking and mode predicate. Original helpers execute unchanged. Owned numeric fields; no opponent/prediction stubs. Original amplitudes per call, no verified native metres/second or time conversion, position integration, complete action/frame, contact or gameplay equivalence."
+    },
+    "prediction-nearest": {
+      "schema_version": 1,
+      "run_id": "9020d233-ef32-46e8-84a1-867bc0b54f94",
+      "completed_at_utc": "2026-10-11T04:41:12.984870+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "prediction_comparisons": 646,
+      "gate_comparisons": 141,
+      "gate_true_cases": 51,
+      "original_instructions": 784114,
+      "instruction_words": 267,
+      "arithmetic_profile": {
+        "fpu": "nearest",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-prediction-nearest-v1/prediction.cpp",
+        "-o",
+        "/tmp/pes3-prediction-nearest-v1/prediction.so"
+      ],
+      "tool_sha256": {
+        "verify_prediction.py": "36a1364bb20b0af202a1a0e99df5867853c26d885111d579b23949a99ca4c5a2",
+        "prediction_abi.py": "dcd3e70897a5aa9f17abaa8d95db19965470dece0b5946fa1033b3c089c970fe",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "prediction-instruction-words.json": "2eba874899d0b4b3bbc1db2da82157b8426fb0fc12111724f6c86df4a3e0778d",
+        "prediction-vectors.json": "7835d279ddcea553b1b1ea0e74c8ef3f1dbe839c19aa1077fa4e6392f81355aa",
+        "prediction.cpp": "e00fb93de51b7226f85b0145d16ad4a1937b6c4f12c82d3330f53ce8c12be4ff",
+        "prediction.so": "646e33cbbd4a42cf20072f6635bbc27af247e1c3a6726e2a4d77a9fd9ad7d4d2"
+      },
+      "scope": "Owned chase prediction from an existing 129-sample forecast and gate predicate from reached original selected-other-player distance. Full original helpers execute unchanged on copied stationary RAM. No forecast generation, opponent lookup rewrite, full action/frame, hardware equivalence, native unit conversion or gameplay integration."
+    },
+    "prediction-chop": {
+      "schema_version": 1,
+      "run_id": "48786cd4-337d-46c0-a525-ecf2348f67df",
+      "completed_at_utc": "2026-10-11T04:41:12.854163+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "prediction_comparisons": 646,
+      "gate_comparisons": 141,
+      "gate_true_cases": 51,
+      "original_instructions": 784114,
+      "instruction_words": 267,
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-prediction-chop-v1/prediction.cpp",
+        "-o",
+        "/tmp/pes3-prediction-chop-v1/prediction.so"
+      ],
+      "tool_sha256": {
+        "verify_prediction.py": "36a1364bb20b0af202a1a0e99df5867853c26d885111d579b23949a99ca4c5a2",
+        "prediction_abi.py": "dcd3e70897a5aa9f17abaa8d95db19965470dece0b5946fa1033b3c089c970fe",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "prediction-instruction-words.json": "2eba874899d0b4b3bbc1db2da82157b8426fb0fc12111724f6c86df4a3e0778d",
+        "prediction-vectors.json": "37fb601b1e2d80f60e3000fe0df4880e0a7e4133ce75102777133a062af5c82b",
+        "prediction.cpp": "e00fb93de51b7226f85b0145d16ad4a1937b6c4f12c82d3330f53ce8c12be4ff",
+        "prediction.so": "646e33cbbd4a42cf20072f6635bbc27af247e1c3a6726e2a4d77a9fd9ad7d4d2"
+      },
+      "scope": "Owned chase prediction from an existing 129-sample forecast and gate predicate from reached original selected-other-player distance. Full original helpers execute unchanged on copied stationary RAM. No forecast generation, opponent lookup rewrite, full action/frame, hardware equivalence, native unit conversion or gameplay integration."
+    },
+    "special": {
+      "schema_version": 1,
+      "run_id": "b9c6cb16-5ac0-4c50-8039-7b0d4e29840f",
+      "completed_at_utc": "2026-10-11T04:54:41.082313+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 210,
+      "composed_speed_comparisons": 210,
+      "original_instructions": 66831,
+      "instruction_words": 904,
+      "entry": "0x0187866c",
+      "stop_before": "0x0187930c",
+      "compile_command": [
+        "g++",
+        "-std=c++17",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-special-v2/special.cpp",
+        "-o",
+        "/tmp/pes3-special-v2/special.so"
+      ],
+      "tool_sha256": {
+        "verify_special.py": "81cf8925e87ee2c9859dd2116845528a83c54a961bcc7bd94f3706fe153fa34a",
+        "special_abi.py": "a9efd60a3ecd66572e508e726c570d83dd7dea9197e5bd4b0c16b0dbc0bd43fc",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_special.hpp": "c25327b2d2d3a424ad6f9d802966fb1759741c8439e3087cef7c7e10645785cd",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "special-instruction-words.json": "56ff60b645b8ce1866c2f2fdc3d74674f27798aa0aa972e5f2826b6a600f3540",
+        "special-vectors.json": "579a7ed6466b45c38de4a66a77acd53dd96cd5eddf2291416b02c3fc0c67d75b",
+        "special.cpp": "c5d3c449e2ba3dbf44c333d17243632d137796b1e67d124cc22c02d16f937d03",
+        "special.so": "a101911a4bb12cbd64169fd04117dfed1cad3a7dead4ebd8454ae4a8ea89a220"
+      },
+      "scope": "Owned 61/62/63 post-direction decisions plus composed integer speed; reached original gate/prediction/restart helpers supply explicit numeric boundary inputs and run unchanged. Modified copies of stationary save with explicit near-distance register. No full action/frame, all clips, contact retarget, native units or complete gameplay equivalence."
+    },
+    "variant-nearest": {
+      "schema_version": 1,
+      "run_id": "0203dca6-0e5d-4425-8e17-5b26912432d4",
+      "completed_at_utc": "2026-10-11T04:54:14.553787+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 319,
+      "composed_speed_comparisons": 319,
+      "original_instructions": 136140,
+      "instruction_words": 1439,
+      "entry": "0x0187866c",
+      "stop_before": "0x0187930c",
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-variants-nearest-v3/variants.cpp",
+        "-o",
+        "/tmp/pes3-variants-nearest-v3/variants.so"
+      ],
+      "arithmetic": {
+        "fpu": "nearest",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "tool_sha256": {
+        "verify_variants.py": "a78c10c6d5c2835ee13a3f1011e027a5b3946bf639233e38300dcbc1c3cee1d0",
+        "variant_abi.py": "bf2849d7d4138a6d07c7319453f1e672964bb87b52dc808c5e1728409267ba3d",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_special.hpp": "c25327b2d2d3a424ad6f9d802966fb1759741c8439e3087cef7c7e10645785cd",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "locomotion_variants.hpp": "d3c4aff8e4a6e1d74dd166658fddd8ffa7a18b96cf7777ba5b7795a524c1a14b",
+        "variant-instruction-words.json": "05140dee1123be4914cf9ecf6f3c98a8999f6e4416794dd430357e3d5c87bf4c",
+        "variant-vectors.json": "f2d1bb27df3b1cca8350964324beea03ad7e411286fc5b61816272196218a6fc",
+        "variants.cpp": "0a2e126d5b6f19739345eeaff8fd83530225a91cd29906411df0fbd2cf6f15a8",
+        "variants.so": "e26f74a5ff17e52491def2427d8a28fc7939bbf4ecbc9fe06581cb0478da1018"
+      },
+      "scope": "Owned branches 28/35/48/864 with actual original dependencies running. Chase/restart boundary values observed; rate compared before the later phase helper can overwrite it; phase/encoded requests compared before original helper execution. Modified stationary snapshot and supplied near/difference registers. No full action/frame, retarget or native gameplay parity."
+    },
+    "variant-chop": {
+      "schema_version": 1,
+      "run_id": "8c4132c9-819d-44df-8463-44fc4b6546a7",
+      "completed_at_utc": "2026-10-11T04:54:42.714641+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 319,
+      "composed_speed_comparisons": 319,
+      "original_instructions": 136140,
+      "instruction_words": 1439,
+      "entry": "0x0187866c",
+      "stop_before": "0x0187930c",
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-variants-chop-v1/variants.cpp",
+        "-o",
+        "/tmp/pes3-variants-chop-v1/variants.so"
+      ],
+      "arithmetic": {
+        "fpu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "tool_sha256": {
+        "verify_variants.py": "a78c10c6d5c2835ee13a3f1011e027a5b3946bf639233e38300dcbc1c3cee1d0",
+        "variant_abi.py": "bf2849d7d4138a6d07c7319453f1e672964bb87b52dc808c5e1728409267ba3d",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+      },
+      "files_sha256": {
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_special.hpp": "c25327b2d2d3a424ad6f9d802966fb1759741c8439e3087cef7c7e10645785cd",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "locomotion_variants.hpp": "d3c4aff8e4a6e1d74dd166658fddd8ffa7a18b96cf7777ba5b7795a524c1a14b",
+        "variant-instruction-words.json": "05140dee1123be4914cf9ecf6f3c98a8999f6e4416794dd430357e3d5c87bf4c",
+        "variant-vectors.json": "fc5c7047a9084dce33712178a68b023c5b2d26af6e753b80f09cfdb31fa16498",
+        "variants.cpp": "0a2e126d5b6f19739345eeaff8fd83530225a91cd29906411df0fbd2cf6f15a8",
+        "variants.so": "e26f74a5ff17e52491def2427d8a28fc7939bbf4ecbc9fe06581cb0478da1018"
+      },
+      "scope": "Owned branches 28/35/48/864 with actual original dependencies running. Chase/restart boundary values observed; rate compared before the later phase helper can overwrite it; phase/encoded requests compared before original helper execution. Modified stationary snapshot and supplied near/difference registers. No full action/frame, retarget or native gameplay parity."
+    },
+    "chain-nearest": {
+      "schema_version": 1,
+      "run_id": "f72b7716-2121-4176-8421-a8f9bb71fdf1",
+      "completed_at_utc": "2026-10-11T05:04:19.568312+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 254,
+      "original_instructions": 171008,
+      "instruction_words": 1988,
+      "entry": "0x018783b0",
+      "stop_before": "0x0187930c",
+      "arithmetic": {
+        "fpu": "nearest",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-chain-nearest-v1/chain.cpp",
+        "-o",
+        "/tmp/pes3-chain-nearest-v1/chain.so"
+      ],
+      "tool_sha256": {
+        "verify_locomotion_chain.py": "c3ae6cedc5fb0a468f9995e50df2f0454d60f278f64257aff7b67e494764999d",
+        "chain_abi.py": "65bc2937dffb1c6d8be6200ed72b7e263cec3e07cfce7b4e151e5249303bb117",
+        "direction_abi.py": "e40161ad6f6311faa141dfc016472cc1254c8d0e247b5a128b11e2c5e7ca6b56",
+        "variant_abi.py": "bf2849d7d4138a6d07c7319453f1e672964bb87b52dc808c5e1728409267ba3d",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a",
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83"
+      },
+      "files_sha256": {
+        "chain-instruction-words.json": "444b305ede5d93394d6b10edf6cafefc4238e5fd05dc477a4e14ad2be3167a1f",
+        "chain-vectors.json": "8319120fdfb5b503e3ea39212cc792cd26f4c7aaf4bd960961c2257e7f95cb31",
+        "chain.cpp": "a3cebc7f6f9d678dc45cb2e2a2c81d2bfc29f9dd9610250596e4429ac933c110",
+        "chain.so": "bd241ff3a91196fd9a9d523c8d23872001531fafbda48ac364d1d0b07b21297b",
+        "locomotion_chain.hpp": "5a1975109c8142fcb7e65ca764a91bb58fa37059d8774860e71bba048705657b",
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_special.hpp": "c25327b2d2d3a424ad6f9d802966fb1759741c8439e3087cef7c7e10645785cd",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "locomotion_variants.hpp": "d3c4aff8e4a6e1d74dd166658fddd8ffa7a18b96cf7777ba5b7795a524c1a14b"
+      },
+      "scope": "Consecutive original direction/selected dispatch/speed, eleven clip paths; requests/rate observed before phase/encoded helpers. Helpers execute original code and provide numeric chase/gate/restart/cap boundaries without native result injection. Modified stationary snapshot, not resumed frames. Excludes other special paths, full clock/poses/actions, contacts/physics, units/retarget and native gameplay integration."
+    },
+    "chain-chop": {
+      "schema_version": 1,
+      "run_id": "92f2896b-7607-4db0-a473-b2345f90a510",
+      "completed_at_utc": "2026-10-11T05:05:25.806593+00:00",
+      "result": "passed",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "comparisons": 254,
+      "original_instructions": 171008,
+      "instruction_words": 1988,
+      "entry": "0x018783b0",
+      "stop_before": "0x0187930c",
+      "arithmetic": {
+        "fpu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-chain-chop-v1/chain.cpp",
+        "-o",
+        "/tmp/pes3-chain-chop-v1/chain.so"
+      ],
+      "tool_sha256": {
+        "verify_locomotion_chain.py": "c3ae6cedc5fb0a468f9995e50df2f0454d60f278f64257aff7b67e494764999d",
+        "chain_abi.py": "65bc2937dffb1c6d8be6200ed72b7e263cec3e07cfce7b4e151e5249303bb117",
+        "direction_abi.py": "e40161ad6f6311faa141dfc016472cc1254c8d0e247b5a128b11e2c5e7ca6b56",
+        "variant_abi.py": "bf2849d7d4138a6d07c7319453f1e672964bb87b52dc808c5e1728409267ba3d",
+        "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+        "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+        "arithmetic.py": "48ac6fe4583d2077f5c5c8bd52de3fbbf7fcee6f9669279a40eb76c8d5d49a7c",
+        "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+        "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a",
+        "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83"
+      },
+      "files_sha256": {
+        "chain-instruction-words.json": "444b305ede5d93394d6b10edf6cafefc4238e5fd05dc477a4e14ad2be3167a1f",
+        "chain-vectors.json": "f09d125d9bcc90a5675e13ee548fee401a85ac2fd0f291d8b05c6cc8c0e45eae",
+        "chain.cpp": "a3cebc7f6f9d678dc45cb2e2a2c81d2bfc29f9dd9610250596e4429ac933c110",
+        "chain.so": "bd241ff3a91196fd9a9d523c8d23872001531fafbda48ac364d1d0b07b21297b",
+        "locomotion_chain.hpp": "5a1975109c8142fcb7e65ca764a91bb58fa37059d8774860e71bba048705657b",
+        "locomotion_direction.hpp": "d96030ab63d437b87817beb60327968bf9ae68af137c9fdaf17835d1914c7872",
+        "locomotion_prediction.hpp": "fca0d80d31c246b0fb8bfdcfa8f728137cfcabd45e38e4f9cefa662abfb5b338",
+        "locomotion_selection.hpp": "ae84fcc836cb4f501ae18b11405dad889bdd303bd5d22ca5bf51040199562c89",
+        "locomotion_special.hpp": "c25327b2d2d3a424ad6f9d802966fb1759741c8439e3087cef7c7e10645785cd",
+        "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+        "locomotion_tables.hpp": "b33a462997ddf2648b4cc11df85dabf8b88257b36ae66acc90f321ce30be98e0",
+        "locomotion_variants.hpp": "d3c4aff8e4a6e1d74dd166658fddd8ffa7a18b96cf7777ba5b7795a524c1a14b"
+      },
+      "scope": "Consecutive original direction/selected dispatch/speed, eleven clip paths; requests/rate observed before phase/encoded helpers. Helpers execute original code and provide numeric chase/gate/restart/cap boundaries without native result injection. Modified stationary snapshot, not resumed frames. Excludes other special paths, full clock/poses/actions, contacts/physics, units/retarget and native gameplay integration."
+    }
+  },
+  "offline_replay": {
+    "schema_version": 1,
+    "result": "passed",
+    "comparisons": 6920,
+    "by_run": {
+      "direction": 1805,
+      "selection": 184,
+      "speed": 1153,
+      "prediction-nearest": 787,
+      "prediction-chop": 787,
+      "special": 420,
+      "variant-nearest": 638,
+      "variant-chop": 638,
+      "chain-nearest": 254,
+      "chain-chop": 254
+    },
+    "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "runtime_enabled": false,
+    "scope": "Offline replay of hashed recorded numeric fixtures against recompiled owned C++14. No original PES instructions are executed here; fresh reference reports are included separately. No native runtime, full-frame, PS2 hardware or gameplay parity assertion."
+  },
+  "unit_tests": {
+    "result": "passed",
+    "tests": 115,
+    "command": "PES3_TEST_PWSH=/tmp/football-powershell-7.4.6/pwsh python3 -m unittest discover -s tests -p test_pes3_*.py -v",
+    "duration_seconds": 10.405,
+    "powershell_archive_sha256": "6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e157561",
+    "collector_platform": "PowerShell 7.4.6/Linux, synthetic AFS; Windows GUI/batch/5.1 not run"
+  },
+  "scope": "Verified numeric locomotion domains and ordered direction/selected dispatch/speed. No new playable Windows runtime, complete action/gameplay, PS2 hardware equivalence, native-unit calibration or enabled retarget."
+}

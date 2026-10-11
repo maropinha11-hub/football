@@ -27,7 +27,7 @@ struct Decision {
 };
 inline bool special_clip(std::uint16_t clip) {
   switch (clip) {
-    case 28: case 48: case 49: case 51: case 52: case 54: case 56: case 61:
+    case 28: case 35: case 48: case 49: case 51: case 52: case 54: case 56: case 61:
     case 62: case 63: case 213: case 214: case 215: case 216: case 864: return true;
     default: return false;
   }

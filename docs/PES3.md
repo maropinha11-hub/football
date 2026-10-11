@@ -6,6 +6,11 @@ Esta etapa acrescenta a conferência dos binários recebidos, um leitor validado
 de animações e um laboratório offline para estudar os gestos. A integração
 ao executável depende da adaptação do esqueleto e da validação dos contatos.
 
+A continuação em [PES3-LOCOMOTION.md](PES3-LOCOMOTION.md) recupera direção,
+predição, ramos especiais e sua execução consecutiva, com código C++14 e
+vetores verificáveis. Inclui um coletor Windows para os recursos de
+inicialização ausentes. A gameplay PES completa ainda não está integrada.
+
 A etapa seguinte já acrescenta [recuperação automática do código](PES3-ACTIONS.md):
 referências para 506 clips, filtros por ação/subestado e reescritas verificadas
 de três roteamentos. O pacote atualizado é

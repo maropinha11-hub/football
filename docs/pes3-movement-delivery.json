@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "artifacts": {
+    "pes3-locomotion-research.zip": {
+      "bytes": 385297,
+      "sha256": "c9e7efa86efdfc65e341d8857a817efa1a06cc5e4cfaab1f4717104b1f6881f2"
+    },
+    "pes3-resource-collector-windows.zip": {
+      "bytes": 6619,
+      "sha256": "7cc170df43b8fad20432a2614d0c7a2d85fa9dda1b87acc9ab2e8b2313dd2fda"
+    }
+  },
+  "offline_replay": {
+    "schema_version": 1,
+    "result": "passed",
+    "comparisons": 6920,
+    "by_run": {
+      "direction": 1805,
+      "selection": 184,
+      "speed": 1153,
+      "prediction-nearest": 787,
+      "prediction-chop": 787,
+      "special": 420,
+      "variant-nearest": 638,
+      "variant-chop": 638,
+      "chain-nearest": 254,
+      "chain-chop": 254
+    },
+    "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "runtime_enabled": false,
+    "scope": "Offline replay of hashed recorded numeric fixtures against recompiled owned C++14. No original PES instructions are executed here; fresh reference reports are included separately. No native runtime, full-frame, PS2 hardware or gameplay parity assertion."
+  },
+  "runtime_enabled": false,
+  "scope": "Verified numeric locomotion domains and ordered direction/selected dispatch/speed. No new playable Windows runtime, complete action/gameplay, PS2 hardware equivalence, native-unit calibration or enabled retarget."
+}

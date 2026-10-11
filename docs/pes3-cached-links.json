@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+  "ee_memory_sha256": "dff465421161cc88efe4c9ac853bff7c03026aaead7ce32471ae98d9481bafbd",
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "resources": [
+    {
+      "reported_name": "body_lnk.bin",
+      "resource_id": "0x470000",
+      "loader_entry": "0x11801f0",
+      "checked_words": {
+        "0x11801fc": "0xc449974",
+        "0x1180220": "0xaf82991c"
+      },
+      "global_pointer_address": "0x12a780c",
+      "captured_global_pointer": "0x0",
+      "reported_unpacked_bytes": 1315982,
+      "memory_candidates": [
+        {
+          "ram_address": "0xf4f000",
+          "stored_bytes": 1313583,
+          "stored_sha256": "2bf3c7f5ff856ac50168f59f9b65b874863072c7705dd2e10f9745d3f261d025",
+          "zlib_valid": false,
+          "reason": "fluxo zlib inv\u00e1lido: Error -3 while decompressing data: invalid distance code"
+        }
+      ]
+    },
+    {
+      "reported_name": "mon_lnk.bin",
+      "resource_id": "0x470001",
+      "loader_entry": "0x11a2cd0",
+      "checked_words": {
+        "0x11a2ce0": "0xc449974",
+        "0x11a2d04": "0xaf829a4c"
+      },
+      "global_pointer_address": "0x12a793c",
+      "captured_global_pointer": "0x0",
+      "reported_unpacked_bytes": 678945,
+      "memory_candidates": []
+    }
+  ],
+  "scope": "Checks actual loader resource calls/global pointer stores and captured memory. Matching reported header sizes identify candidates, not verified DATA assets. Null resource pointers and failed zlib streams cannot provide complete original link initialization data. No bind pose/axes/units assertion."
+}

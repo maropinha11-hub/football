@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "descriptor_address": "0x0129d440",
+  "descriptor_count": 92,
+  "descriptor_bytes": 1104,
+  "descriptor_sha256": "8e19ca70557b5e05e2a9f684cc379e5ab5b7340e820c6abc3138a3a67f8b5bd7",
+  "paths": [
+    {
+      "resource_id": "0x470000",
+      "reported_name": "body_lnk.bin",
+      "indices": [
+        14,
+        2,
+        0
+      ],
+      "container_counts": [
+        17,
+        4,
+        2
+      ]
+    },
+    {
+      "resource_id": "0x470001",
+      "reported_name": "mon_lnk.bin",
+      "indices": [
+        14,
+        2,
+        1
+      ],
+      "container_counts": [
+        17,
+        4,
+        2
+      ]
+    },
+    {
+      "resource_id": "0x370000",
+      "reported_name": "anime2.bin",
+      "indices": [
+        14,
+        0,
+        0
+      ],
+      "container_counts": [
+        17,
+        4,
+        3
+      ]
+    },
+    {
+      "resource_id": "0x370001",
+      "reported_name": "anime3.bin",
+      "indices": [
+        14,
+        0,
+        1
+      ],
+      "container_counts": [
+        17,
+        4,
+        3
+      ]
+    },
+    {
+      "resource_id": "0x80000",
+      "reported_name": "anime.bin",
+      "indices": [
+        1,
+        1,
+        2,
+        0,
+        0
+      ],
+      "container_counts": [
+        17,
+        2,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "resource_id": "0x80001",
+      "reported_name": "game.mbc",
+      "indices": [
+        1,
+        1,
+        2,
+        0,
+        1
+      ],
+      "container_counts": [
+        17,
+        2,
+        4,
+        3,
+        2
+      ]
+    }
+  ],
+  "scope": "Paths/counts recovered from executable. Resource names are reported by supplied study; DATA E/F/G/I/S bytes have not been received or verified. Collector checks archive counts/ranges and preserves compressed bytes for independent validation."
+}

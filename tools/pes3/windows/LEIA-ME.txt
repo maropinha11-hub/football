@@ -1,0 +1,21 @@
+COLETAR RECURSOS PES 3 - WINDOWS 11
+
+1. Extraia este ZIP numa pasta normal (nao execute de dentro do ZIP).
+2. Abra ColetarPES3.bat e selecione a pasta 01_ISO_EXTRAIDA com os DATA_*.AFS.
+3. Espere aparecer "Pronto". Envie o PES3-recursos-....zip criado nesta pasta.
+
+Tambem pode arrastar a pasta 01_ISO_EXTRAIDA sobre ColetarPES3.bat.
+Nao precisa instalar Python, outro Windows ou extrair cada animacao.
+
+O coletor le os arquivos e cria uma pasta/ZIP novos. Usa os indices de bancos
+recuperados do SLES_519.12, confere limites/contagens e calcula hashes SHA256.
+Recolhe body_lnk.bin, mon_lnk.bin, anime.bin, anime2.bin, anime3.bin e game.mbc.
+Preserva os bytes armazenados; descompactacao/CRC, quando presentes, serao
+conferidos na nuvem. game.mbc de 1782 bytes e preservado como recurso bruto.
+Conteudo equivalente entre DATA de idiomas diferentes e deduplicado por hash.
+SLES_519.12, se presente, precisa corresponder a revisao enviada na conversa.
+
+Se aparecer ERRO, copie a mensagem. Se nenhuma DATA corresponder, envie
+somente manifesto.json da nova pasta indicada, para examinar a divergencia.
+
+Este pacote e um coletor, nao uma atualizacao do executavel do jogo.

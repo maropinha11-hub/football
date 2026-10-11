@@ -1,5 +1,11 @@
 # Seleção de locomoção PES 3 e ligação com o Football
 
+A continuação [PES3-LOCOMOTION.md](PES3-LOCOMOTION.md) acrescenta direção,
+predição, ramos especiais e sua execução em sequência. Também corrige a
+fronteira da API comum para rejeitar o clip 35, que possui um ramo próprio.
+O pacote abaixo preserva a entrega anterior; a revisão atual está no pacote
+de locomoção e nos relatórios da continuação.
+
 Esta etapa reescreve a decisão comum de locomoção da ação 1/subestado 16 e
 o ajuste de velocidade seguinte. O código recebe estruturas numéricas
 próprias, sem ponteiros de jogadores ou RAM do PS2. **A gameplay completa e

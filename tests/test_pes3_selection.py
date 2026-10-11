@@ -75,7 +75,7 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual((r.requested_clip, r.selected_amplitude), (61, 214748363))
 
     def test_special_and_invalid_inputs_preserve_output(self):
-        for name, value, expected in (('clip', 61, -1), ('clip', 864, -1), ('direction_mask', 16, 0),
+        for name, value, expected in (('clip', 35, -1), ('clip', 61, -1), ('clip', 864, -1), ('direction_mask', 16, 0),
                                       ('chase_gate', 2, 0), ('clip_restart', 2, 0)):
             i = Input(); setattr(i, name, value)
             out = Decision.from_buffer_copy(b'\x2a' * C.sizeof(Decision)); before = bytes(out)
