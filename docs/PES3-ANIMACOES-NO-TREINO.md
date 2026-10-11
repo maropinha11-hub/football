@@ -62,7 +62,7 @@ recebido. O importador confere também o SHA-256
 Dados inválidos não substituem um banco instalado.
 
 O renderizador recebe snapshots com os 19 pontos. Não lê as poses mutáveis
-da tarefa de simulação. A transformação de exibição `(X,Z,-Y)` e o ajuste de
+da tarefa de simulação. A transformação de exibição `(-X,-Z,-Y)` e o ajuste de
 altura para visualização ficam separados dos dados originais e da física.
 Eles **não certificam os eixos, lados ou metros necessários ao retarget**.
 

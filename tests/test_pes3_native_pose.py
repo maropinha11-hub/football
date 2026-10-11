@@ -58,8 +58,8 @@ class NativePoseTests(unittest.TestCase):
         out=self.adapt(current);self.same(out[0],axis(2,-math.pi/2))
         for q in list(out)[1:]:self.same(q,(0,0,0,1))
     def test_parent_motion_is_not_applied_twice_to_elbow(self):
-        source=identity(Source);source[12]=source[14]=axis(0,.7)
-        out=self.adapt(source);self.same(out[3],axis(0,.7));self.same(out[4],(0,0,0,1))
+        source=identity(Source);source[11]=source[13]=axis(0,.7)
+        out=self.adapt(source);self.same(out[3],axis(0,-.7));self.same(out[4],(0,0,0,1))
         for i in range(13):
             if i not in (3,):self.same(out[i],(0,0,0,1))
     def test_quaternion_sign_does_not_change_pose(self):

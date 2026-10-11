@@ -10,7 +10,7 @@
 
 using namespace blunted;
 namespace {
-// Display-only rotation X,Y,Z -> X,Z,-Y. Display fit is deliberately separate
+// Display and body share the source/native orientation. Display fit is separate
 // from source units and from the native player/ball collision geometry.
 const float displayScale = 1.8f/670.5759f;
 struct Vertex { Vector3 position, normal; };
@@ -73,7 +73,7 @@ PES3Preview::PES3Preview(boost::intrusive_ptr<Node> target) {
   for (unsigned i=0;i<19;++i) referenceRotations[i]=pose.rig.bones[i].composed_rotation;
   for(unsigned i=0;i<19;++i) {
     const auto& p=pose.rig.bones[i].composed_translation;
-    referencePoints[i]={{p[0]*displayScale,p[2]*displayScale,-p[1]*displayScale}};
+    referencePoints[i]=pes3::scalePoint(pes3::sourcePointToNative({{p[0],p[1],p[2]}}),displayScale);
   }
   playback.select(47);
   // Load a named surface rather than depending on ASE submaterial ordering.
@@ -188,7 +188,8 @@ void PES3Preview::prepare(const Vector3& position,const Vector3& direction) {
   buffer.rotation.SetAngleAxis(std::atan2(direction.coords[1],direction.coords[0])+0.5f*pi,Vector3(0,0,1));
   for (unsigned i=0;i<19;++i) {
     const auto& p=pose.rig.bones[i].composed_translation;
-    buffer.points[i]=Vector3(p[0],p[2],-p[1])*displayScale;
+    const auto converted=pes3::sourcePointToNative({{p[0],p[1],p[2]}});
+    buffer.points[i]=Vector3(converted[0],converted[1],converted[2])*displayScale;
     buffer.rotations[i]=pose.rig.bones[i].composed_rotation;
   }
   buffer.revision=revision;

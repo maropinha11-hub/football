@@ -917,6 +917,16 @@ void HumanoidBase::Put() {
     }
     printf("PES3_BODY_GEOMETRY direction_error=%.8f root_z=%.6f applied_root_z=%.6f applied_fk_error=%.8f\n",
       studyPose.maximumDirectionError,studyPose.rootHeight,origin.coords[2],fkError);
+    const auto inverseFacing=facing.GetInverse();
+    const auto chestForward=inverseFacing*(nodeMap.at("middle")->GetDerivedRotation()*Vector3(0,-1,0));
+    const auto headForward=inverseFacing*(nodeMap.at("neck")->GetDerivedRotation()*Vector3(0,-1,0));
+    const auto leftForward=inverseFacing*(nodeMap.at("left_ankle")->GetDerivedRotation()*Vector3(0,-1,0));
+    const auto rightForward=inverseFacing*(nodeMap.at("right_ankle")->GetDerivedRotation()*Vector3(0,-1,0));
+    const auto leftKnee=nodeMap.at("left_knee")->GetRotation();
+    const auto rightKnee=nodeMap.at("right_knee")->GetRotation();
+    printf("PES3_BODY_ORIENTATION knee_flex=[%.6f,%.6f] chest_z=%.6f head_y=%.6f toes_y=[%.6f,%.6f]\n",
+      leftKnee.elements[0]*leftKnee.elements[3],rightKnee.elements[0]*rightKnee.elements[3],
+      chestForward.coords[2],headForward.coords[1],leftForward.coords[1],rightForward.coords[1]);
   }
 
   // we've just set the humanoid positions for time fetchedbuf_animApplyBuffer.snapshotTime_ms. however, it's eventually going to be displayed in a historic position, for temporal smoothing.

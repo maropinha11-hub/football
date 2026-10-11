@@ -11,9 +11,9 @@ SourcePoints=Point*19
 NativeRotations=Rotation*13
 NativePoints=Point*13
 PARENTS=(-1,0,1,1,3,1,5,0,7,8,0,10,11)
-MAPPING=(0,8,16,12,14,11,13,3,5,7,2,4,6)
+MAPPING=(0,8,16,11,13,12,14,2,4,6,3,5,7)
 CHILDREN=(1,2,-1,4,-1,6,-1,8,9,-1,11,12,-1)
-SOURCE_CHILDREN=(8,16,-1,14,18,13,17,5,7,-1,4,6,-1)
+SOURCE_CHILDREN=(8,16,-1,13,17,14,18,4,6,-1,5,7,-1)
 
 class NativeBind(C.Structure):
     _fields_=[('rotations',NativeRotations),('offsets',NativePoints),('footMin',Point*2),('footMax',Point*2)]
@@ -30,6 +30,10 @@ extern "C" int retarget(const pes3::SourceRotations* c,const pes3::SourceRotatio
  const pes3::SourcePoints* p,const pes3::SourcePoints* s,const pes3::NativeBind* b,pes3::NativePose* o) {
  return pes3::retargetSkeleton(*c,*r,*p,*s,*b,*o);
 }
+extern "C" void basis_point(const pes3::Point* p,pes3::Point* out) {
+ *out=pes3::sourcePointToNative(*p);
+}
+extern "C" void basis_rotation(pes3::Rotation* out) { *out=pes3::sourceToNativeBasis; }
 ''')
     path=output/'retarget_abi.so'
     subprocess.run(['g++','-std=c++14','-O2','-Wall','-Wextra','-Werror','-fno-fast-math','-ffp-contract=off',
@@ -38,6 +42,8 @@ extern "C" int retarget(const pes3::SourceRotations* c,const pes3::SourceRotatio
     lib.retarget.argtypes=[C.POINTER(SourceRotations),C.POINTER(SourceRotations),C.POINTER(SourcePoints),
                           C.POINTER(SourcePoints),C.POINTER(NativeBind),C.POINTER(NativePose)]
     lib.retarget.restype=C.c_int
+    lib.basis_point.argtypes=[C.POINTER(Point),C.POINTER(Point)]
+    lib.basis_rotation.argtypes=[C.POINTER(Rotation)]
     return lib
 
 def from_log(path):

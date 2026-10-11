@@ -15,6 +15,12 @@ do adaptador não prova gameplay idêntica.
 
 ## Testar no Windows
 
+Se já tem o jogo e as animações instalados, use
+`artifacts/football-windows-corrigir-orientacao.zip`: feche o jogo, copie
+`gameplayfootball.exe` desse ZIP para a pasta que já usa e substitua o
+executável antigo. Abra `estudar-pes3.bat`. Essa atualização usa os recursos
+e a pasta `pes3` já instalados. A versão completa também está disponível.
+
 1. Extraia a nova versão Windows em uma pasta nova.
 2. Execute `importar-pes3.bat` e selecione seu `fpsoccer-pes-nucleo-v14.zip`.
 3. Execute `estudar-pes3.bat` e, com o jogador parado, pressione **V**.
@@ -63,7 +69,7 @@ snapshot. Ao voltar aos comandos do treino, o histórico visual é limpo e
 as animações e seus ajustes nativos são restaurados.
 
 As mudanças de rotação global são transportadas pela rotação de exibição
-`(X,Y,Z) → (X,Z,-Y)`. Não se transforma isso em metros nem em uma identificação
+`(X,Y,Z) → (-X,-Z,-Y)`. Não se transforma isso em metros nem em uma identificação
 do pé preferido do PES. Os comprimentos e offsets dos ossos nativos continuam
 os mesmos; não são os comprimentos e a malha originais do PES.
 
@@ -72,15 +78,22 @@ os mesmos; não são os comprimentos e a malha originais do PES.
 | body | 0 |
 | middle | 8 |
 | neck | 16 |
-| left_shoulder / left_elbow | 12 / 14 |
-| right_shoulder / right_elbow | 11 / 13 |
-| left_thigh / left_knee / left_ankle | 3 / 5 / 7 |
-| right_thigh / right_knee / right_ankle | 2 / 4 / 6 |
+| left_shoulder / left_elbow | 11 / 13 |
+| right_shoulder / right_elbow | 12 / 14 |
+| left_thigh / left_knee / left_ankle | 2 / 4 / 6 |
+| right_thigh / right_knee / right_ankle | 3 / 5 / 7 |
 
-Na referência recebida, os ramos 3 e 12 ocupam o lado +X, correspondente ao
-lado esquerdo do personagem nativo que olha para −Y. Isso confere o lado da
-adaptação visual, sem atribuir nomes anatômicos aos campos desconhecidos do
-executável nem presumir o significado dos atributos de habilidade.
+Na referência recebida, as dobras dos joelhos avançam para +Z da fonte;
+a frente do personagem nativo é −Y. A conversão anterior `(X,Z,-Y)` invertia
+essa relação, deixando joelhos e tronco dobrados para trás, embora os
+comprimentos e a posição dos segmentos passassem nos testes matemáticos.
+
+A conversão corrigida leva a frente +Z da fonte para −Y nativo e o alto −Y
+da fonte para +Z nativo. É uma rotação própria, com determinante +1. Ela
+também troca os lados visíveis de X, por isso as correspondências dos pares
+foram corrigidas junto com a conversão. Os ramos 2 e 11 ocupam agora +X
+nativo, o lado esquerdo ao olhar para −Y. Não se atribuem nomes recuperados
+aos campos desconhecidos do executável nem se presumem habilidades.
 
 O renderizador recebe as 19 rotações pelo snapshot de preparação/fetch.
 Ele não acessa canais mutáveis da simulação. A adaptação valida os quaternions
@@ -98,7 +111,12 @@ Confere **77.350 direções**, comprimentos, composição e apoio dos pés.
 O teste renderizado reproduz os clips observados, examina os vértices reais
 da pele, a conservação das distâncias dos vértices rígidos, o apoio dos pés,
 a estabilidade da pausa e a restauração dos comandos nativos.
-Os resultados da correção estão em `pes3-native-retarget-validation.json`.
+Também verifica o sentido das dobras dos joelhos, a inclinação do tronco e
+a orientação da cabeça e das pontas dos pés na referência. A rotação de
+pontos e a rotação de quaternions usam a mesma conversão de eixos.
+Os resultados atuais estão em `pes3-native-orientation-validation.json`.
+`pes3-native-retarget-validation.json` registra a versão anterior, cujos
+testes de comprimentos e direções ainda não conferiam a frente anatômica.
 `pes3-native-body-validation.json` é o registro histórico da primeira versão;
 sua comparação de matrizes não detectava o desalinhamento físico relatado.
 

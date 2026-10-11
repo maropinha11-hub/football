@@ -37,6 +37,11 @@ Retomar os comandos restaura as animações nativas. A câmera externa aproxima
 o corpo durante a inspeção. A seleção automática das jogadas PES e seus
 contatos continuam pendentes.
 
+A [atualização Windows de orientação](artifacts/football-windows-corrigir-orientacao.zip)
+permite substituir apenas `gameplayfootball.exe` na instalação existente.
+Ela corrige a frente da animação, os pares esquerdo/direito e a flexão dos
+membros. A pasta `pes3`, as DLLs e os recursos já instalados continuam em uso.
+
 O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)
 permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia

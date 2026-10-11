@@ -97,6 +97,15 @@ try:
     tap('Tab');tap('Tab')
     tap('F9');wait(lambda:states()[-1]['clip']==47)
     tap('c');wait(lambda:states()[-1]['phase']<10)
+    orientation_pattern=re.compile(r'PES3_BODY_ORIENTATION knee_flex=\[([^]]+)\] chest_z=([-\d.]+) head_y=([-\d.]+) toes_y=\[([^]]+)\]')
+    old_orientation_count=len(orientation_pattern.findall(log.read_text()))
+    wait(lambda:len(orientation_pattern.findall(log.read_text()))>old_orientation_count)
+    reference_orientation=orientation_pattern.findall(log.read_text())[-1]
+    flex=[float(v)for v in reference_orientation[0].split(',')]
+    toes=[float(v)for v in reference_orientation[3].split(',')]
+    check('reference body faces forward with authored knee flexion',min(flex)>0 and
+          float(reference_orientation[1])<0 and float(reference_orientation[2])<-.99 and max(toes)<-.99,
+          {'knee_flex':flex,'chest_z':float(reference_orientation[1]),'head_y':float(reference_orientation[2]),'toes_y':toes})
     from PIL import ImageGrab
     ImageGrab.grab(xdisplay=environment['DISPLAY']).save(args.output/'native-clip-47.png')
     # Observed clip IDs, rather than fabricated names for pass/header gestures.

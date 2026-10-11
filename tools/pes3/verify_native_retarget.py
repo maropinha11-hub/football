@@ -16,7 +16,7 @@ def floats(words):return struct.unpack('<4f',struct.pack('<4I',*words))
 def rotations(frame):return SourceRotations(*(Rotation(*floats(b.composed_rotation))for b in frame.rig.bones))
 def points(frame):
     fit=1.8/670.5759
-    return SourcePoints(*(Point(p[0]*fit,p[2]*fit,-p[1]*fit)
+    return SourcePoints(*(Point(-p[0]*fit,-p[2]*fit,-p[1]*fit)
                           for p in (floats(b.composed_translation)for b in frame.rig.bones)))
 def norm(v):return math.sqrt(sum(a*a for a in v))
 def unit(v):return [a/norm(v)for a in v]
@@ -29,6 +29,7 @@ def main():
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=False)
     banklib,_=build_bank(args.output);adapter=build_adapter(args.output);bind=from_log(args.engine_log)
     bank=banklib.bank_create();cases=0;max_direction=0;max_length=0;max_fk=0;min_floor=100;max_height=0
+    reference_orientation=None
     raw=args.bundle.read_bytes();count=struct.unpack_from('<I',raw,8)[0]
     try:
         assert banklib.bank_load(bank,str(args.bundle.resolve()).encode())
@@ -43,6 +44,19 @@ def main():
                 qs=rotations(frame);ps=points(frame)
                 assert adapter.retarget(C.byref(qs),C.byref(qref),C.byref(ps),C.byref(pref),C.byref(bind),C.byref(out)),(clip,phase,'rejected')
                 globals_=globals_for(out.local)
+                if clip==47 and fraction==0:
+                    flex=[float(out.local[i][0]*out.local[i][3])for i in (8,11)]
+                    chest=rotate(globals_[1],(0,-1,0))
+                    head=rotate(globals_[2],(0,-1,0))
+                    feet=[rotate(globals_[i],(0,-1,0))for i in (9,12)]
+                    assert ps[2][0]>ps[3][0]and ps[11][0]>ps[12][0],'native left/right orientation'
+                    assert ps[4][1]<ps[2][1]and ps[5][1]<ps[3][1],'reference knees face native forward -Y'
+                    assert min(flex)>0,'knees bend opposite the authored native hinge'
+                    assert chest[2]<0 and head[1]<-.99 and all(p[1]<-.99 for p in feet),'chest/head/toe facing'
+                    reference_orientation={'clip':47,'phase':0,'knee_flex_xw':flex,
+                      'chest_forward':chest,'head_forward':head,'foot_forward':feet,
+                      'left_branches':[2,11],'source_to_native_axes':'(-X,-Z,-Y)',
+                      'scope':'Native anatomical facing and signed flexion in the reference pose, not identification of original named PES fields.'}
                 for i,parent in enumerate(PARENTS):
                     assert abs(norm(out.local[i])-1)<2e-6,(clip,phase,i,'quaternion')
                     if parent>=0:
@@ -69,6 +83,7 @@ def main():
         result={'result':'passed','source_clips':count,'poses':cases,'directions_checked':cases*10,
                 'maximum_unit_direction_error':max_direction,'maximum_bone_length_error':max_length,
                 'maximum_forward_kinematics_error':max_fk,'minimum_foot_box_z':min_floor,'maximum_root_height':max_height,
+                'reference_orientation':reference_orientation,
                 'native_bind':{'rotations':[list(q)for q in bind.rotations],'offsets':[list(p)for p in bind.offsets],
                                'foot_min':[list(p)for p in bind.footMin],'foot_max':[list(p)for p in bind.footMax]},
                 'source_bank_sha256':hashlib.sha256(raw).hexdigest(),

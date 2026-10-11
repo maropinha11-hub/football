@@ -145,3 +145,21 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             if path.is_file():
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
+    # Existing players already have the DLLs, media and their local PES bank.
+    # A small executable update avoids asking them to move imported folders.
+    update = artifacts / "football-windows-corrigir-orientacao.zip"
+    with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
+        output.write(stripped,"gameplayfootball.exe")
+        for filename in ("LICENSE","NOTICE"):
+            output.write(stage/filename,filename)
+        output.writestr("LEIA-ATUALIZACAO.txt",
+            "Atualizacao Windows x64 — orientacao das animacoes PES3\r\n\r\n"
+            "Feche o jogo. Abra este ZIP e copie gameplayfootball.exe para a pasta\r\n"
+            "do jogo que voce ja usa, onde ficam estudar-pes3.bat e o executavel\r\n"
+            "antigo. Aceite Substituir o arquivo. Abra estudar-pes3.bat e teste V/F10.\r\n"
+            "R3/Tab muda a camera para observar o corpo.\r\n\r\n"
+            "Esta atualizacao usa as DLLs, midia e animacoes ja instaladas na sua\r\n"
+            "pasta atual. A versao completa continua disponivel no repositorio:\r\n"
+            "https://github.com/maropinha11-hub/football\r\n"
+            "A selecao automatica completa de jogadas PES ainda esta pendente.\r\n")
+    print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

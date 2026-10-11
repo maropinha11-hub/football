@@ -14,7 +14,7 @@ def reference_points():
     for i,v in {0:(0,0,1),2:(-.09,0,.95),3:(.09,0,.95),4:(-.09,-.05,.54),5:(.09,-.05,.54),
                 6:(-.09,-.1,.09),7:(.09,-.1,.09),8:(0,0,1.1),16:(0,0,1.62),
                 11:(-.2,0,1.57),12:(.2,0,1.57),13:(-.26,-.03,1.3),14:(.26,-.03,1.3),
-                17:(-.24,-.15,1.06),18:(.24,-.15,1.06)}.items():p[i]=Point(*v)
+                17:(-.24,-.15,1.06),18:(.24,-.15,1.06)}.items():p[i]=Point(-v[0],v[1],v[2])
     return p
 def native_bind():
     offsets=((0,0,.96),(0,0,.15),(0,-.03,.5),(.16,-.01,.48),(-.01,0,-.33),(-.16,-.01,.48),
@@ -56,6 +56,23 @@ class RetargetTests(unittest.TestCase):
                 lowest=min(lowest,out.positions[ankle][2]+rotate(qs[ankle],point)[2])
         self.assertGreaterEqual(lowest,.00799)
     def test_bent_source_reference_is_not_mistaken_for_native_straight_bind(self):self.evaluate()
+    def test_source_front_up_and_lateral_axes_are_a_proper_rotation(self):
+        q=Rotation();self.lib.basis_rotation(C.byref(q))
+        for source,expected in (((1,0,0),(-1,0,0)),((0,-1,0),(0,0,1)),((0,0,1),(0,-1,0))):
+            out=Point();self.lib.basis_point(C.byref(Point(*source)),C.byref(out))
+            self.assertEqual(tuple(out),expected)
+            self.assertLess(math.dist(rotate(q,source),expected),2e-6)
+        # Rotation keeps chirality; no mirror that reverses joint twisting.
+        x=rotate(q,(1,0,0));y=rotate(q,(0,1,0));z=rotate(q,(0,0,1))
+        cross=(x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0])
+        self.assertGreater(sum(a*b for a,b in zip(cross,z)),.99999)
+    def test_reference_knees_flex_in_the_authored_native_direction(self):
+        out=self.evaluate()
+        for i in (8,11):
+            # Authored native knees bend with positive local X rotation.
+            self.assertGreater(out.local[i][0]*out.local[i][3],0)
+        qs=globals_for(out.local)
+        for i in (2,9,12):self.assertLess(rotate(qs[i],(0,-1,0))[1],-.99)
     def test_collapsed_spine_tracks_endpoints_with_independent_upper_body_rotation(self):
         p=reference_points();p[16]=Point(.12,-.12,1.6);p[18]=Point(.3,-.2,1.2)
         self.evaluate(p)

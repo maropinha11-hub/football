@@ -23,10 +23,12 @@ struct NativePose {
   float maximumDirectionError=0;
 };
 
-// Native left is +X when looking down -Y. In the displayed reference pose,
-// source branches 3/5/7 and 12/14 occupy +X. These are display correspondences;
-// the original game's preferred-foot field is not inferred from them.
-constexpr unsigned nativeSourceBones[13] = {0,8,16,12,14,11,13,3,5,7,2,4,6};
+// Native up is +Z and forward is -Y. The source reference knee bends face
+// +Z, and source up is -Y. This proper rotation also swaps the visible X
+// sides; retaining the old side mapping would turn the chest/hips backwards.
+constexpr Rotation sourceToNativeBasis={{0,.7071067811865475f,-.7071067811865475f,0}};
+inline Point sourcePointToNative(Point p) { return {{-p[0],-p[2],-p[1]}}; }
+constexpr unsigned nativeSourceBones[13] = {0,8,16,11,13,12,14,2,4,6,3,5,7};
 constexpr int nativeParents[13] = {-1,0,1,1,3,1,5,0,7,8,0,10,11};
 constexpr const char* nativeBoneNames[13] = {
   "body","middle","neck","left_shoulder","left_elbow","right_shoulder",
@@ -106,9 +108,9 @@ inline bool retargetSkeleton(const SourceRotations& current,const SourceRotation
     for(float p:native.offsets[i])if(!std::isfinite(p)||std::fabs(p)>4)return false;
   }
   // Points are already in the display basis; rotations remain source format.
-  const Rotation basis={{-.7071067811865475f,0,0,.7071067811865475f}};
+  const Rotation basis=sourceToNativeBasis;
   const int child[13]={1,2,-1,4,-1,6,-1,8,9,-1,11,12,-1};
-  const int sourceChild[13]={8,16,-1,14,18,13,17,5,7,-1,4,6,-1};
+  const int sourceChild[13]={8,16,-1,13,17,14,18,4,6,-1,5,7,-1};
   auto direction=[&](const SourcePoints& p,unsigned i) {
     if(i==0)return subtractPoint(p[8],scalePoint(addPoint(p[2],p[3]),.5f));
     return subtractPoint(p[sourceChild[i]],p[nativeSourceBones[i]]);
@@ -122,8 +124,8 @@ inline bool retargetSkeleton(const SourceRotations& current,const SourceRotation
     const auto d=productRotation(productRotation(basis,delta),inverseRotation(basis));
     if(!unitRotation(productRotation(d,aligned[i]),global[i]))return false;
     if(segment&&!alignPrimary(global[i],axis,direction(points,i),global[i]))return false;
-    if(i==0&&!alignSide(global[i],axis,direction(points,i),{{1,0,0}},subtractPoint(points[3],points[2]),global[i]))return false;
-    if(i==1&&!alignSide(global[i],axis,direction(points,i),{{1,0,0}},subtractPoint(points[12],points[11]),global[i]))return false;
+    if(i==0&&!alignSide(global[i],axis,direction(points,i),{{1,0,0}},subtractPoint(points[2],points[3]),global[i]))return false;
+    if(i==1&&!alignSide(global[i],axis,direction(points,i),{{1,0,0}},subtractPoint(points[11],points[12]),global[i]))return false;
   }
   NativePose result;
   for(unsigned i=0;i<13;++i) {
@@ -166,8 +168,8 @@ inline bool retargetSkeleton(const SourceRotations& current,const SourceRotation
 // offsets, root placement, height, physics and touch IK. Output is atomic.
 inline bool adaptNativePose(const SourceRotations& current,const SourceRotations& reference,
                             const NativeRotations& nativeReference,NativeRotations& out) {
-  // Proper rotation (X,Y,Z)->(X,Z,-Y), not a reflection or a physical scale.
-  const Rotation basis={{-0.7071067811865475f,0,0,0.7071067811865475f}};
+  // Proper rotation (X,Y,Z)->(-X,-Z,-Y), shared with point conversion.
+  const Rotation basis=sourceToNativeBasis;
   SourceRotations source{},rest{};
   NativeRotations base{},global{},local{};
   for (unsigned i=0;i<19;++i)

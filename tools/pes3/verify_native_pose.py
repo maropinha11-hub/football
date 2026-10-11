@@ -18,11 +18,11 @@ ROOT=Path(__file__).resolve().parents[2]
 Rotation=C.c_float*4
 Source=Rotation*19
 Native=Rotation*13
-MAPPING=(0,8,16,12,14,11,13,3,5,7,2,4,6)
+MAPPING=(0,8,16,11,13,12,14,2,4,6,3,5,7)
 PARENTS=(-1,0,1,1,3,1,5,0,7,8,0,10,11)
 NAMES=('body','middle','neck','left_shoulder','left_elbow','right_shoulder','right_elbow',
        'left_thigh','left_knee','left_ankle','right_thigh','right_knee','right_ankle')
-BASIS=((1,0,0),(0,0,1),(0,-1,0))
+BASIS=((-1,0,0),(0,0,-1),(0,-1,0))
 IDENTITY=((1,0,0),(0,1,0),(0,0,1))
 
 def floats(words):return struct.unpack('<4f',struct.pack('<4I',*words))
