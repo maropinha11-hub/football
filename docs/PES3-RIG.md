@@ -157,7 +157,9 @@ eixos, pose de referência e escala, além do instante de contato com a bola.
 O modelo compartilhado encontrado na RAM contém uma pose já avaliada;
 tratá-lo como T-pose de referência produziria uma calibração sem comprovação.
 O [plano de adaptação](pes3-retarget-plan.json) conserva essas pendências
-e `runtime_enabled: false`.
+e `runtime_enabled: false`. A [etapa posterior com os recursos recebidos](PES3-RECURSOS.md)
+recuperou a inicialização original de referência; adaptação aos ossos nativos,
+unidades, eixos e contatos continuam abertos.
 
 Para validar seleção e contatos ao longo do movimento, a evidência seguinte
 precisa incluir uma sequência de quadros PES do mesmo gesto, com estados
@@ -166,8 +168,9 @@ mostra o jogador parado com a bola. Ele é nossa referência de repouso com a
 bola; não registra a sequência de um chute. Estados adicionais permitiriam
 verificar relógio, caches, apoio,
 mistura e liberação da bola contra o movimento capturado. A referência do
-esqueleto ainda precisa ser recuperada do recurso de modelo ou de sua
-inicialização original; uma sequência em movimento não substitui essa referência.
+esqueleto foi posteriormente recuperada do recurso de modelo e de sua
+inicialização original. Uma sequência em movimento é necessária para validar
+o caminho avaliado até os contatos, além dessa referência.
 
 O executável e os recursos do treinamento aprovado permanecem com os mesmos
 bytes; seu ZIP Windows tem SHA-256

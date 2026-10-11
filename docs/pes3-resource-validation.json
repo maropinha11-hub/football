@@ -1,0 +1,1423 @@
+{
+  "schema_version": 1,
+  "result": "passed",
+  "collector_zip_sha256": "8258add78a08875fe5f2b40079d0d24a6156749d4f79a421a7c05fab993163c5",
+  "resources": {
+    "source_records": [
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00470000",
+        "Indices": [
+          14,
+          2,
+          0
+        ],
+        "AbsoluteOffset": 245463040,
+        "StoredFile": "00470000-body_lnk.bin-0b2f3d0adffcfdf6.stored"
+      },
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00470001",
+        "Indices": [
+          14,
+          2,
+          1
+        ],
+        "AbsoluteOffset": 246777856,
+        "StoredFile": "00470001-mon_lnk.bin-a1a6a30059a4355b.stored"
+      },
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00370000",
+        "Indices": [
+          14,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 168085504,
+        "StoredFile": "00370000-anime2.bin-b3cc35f3658b68d5.stored"
+      },
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00370001",
+        "Indices": [
+          14,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 169185280,
+        "StoredFile": "00370001-anime3.bin-6d094653c28c71d9.stored"
+      },
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00080000",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 1124352,
+        "StoredFile": "00080000-anime.bin-bf9bdbd5bf560ba0.stored"
+      },
+      {
+        "Source": "DATA_F.AFS",
+        "SourceSha256": "d074cdfc7605becb2a4dc0800e090c61b849deaf072ea3239c4f670093172657",
+        "SourceBytes": 533415936,
+        "ResourceId": "0x00080001",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 4331520,
+        "StoredFile": "00080001-game.mbc-3d22936c4b473ff6.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00470000",
+        "Indices": [
+          14,
+          2,
+          0
+        ],
+        "AbsoluteOffset": 246437888,
+        "StoredFile": "00470000-body_lnk.bin-0b2f3d0adffcfdf6.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00470001",
+        "Indices": [
+          14,
+          2,
+          1
+        ],
+        "AbsoluteOffset": 247752704,
+        "StoredFile": "00470001-mon_lnk.bin-a1a6a30059a4355b.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00370000",
+        "Indices": [
+          14,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 169060352,
+        "StoredFile": "00370000-anime2.bin-b3cc35f3658b68d5.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00370001",
+        "Indices": [
+          14,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 170160128,
+        "StoredFile": "00370001-anime3.bin-6d094653c28c71d9.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00080000",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 1124352,
+        "StoredFile": "00080000-anime.bin-bf9bdbd5bf560ba0.stored"
+      },
+      {
+        "Source": "DATA_G.AFS",
+        "SourceSha256": "bf34bda51c12043300e86fbed349d30ec1c4cfacf60b794801e28449343dc8d2",
+        "SourceBytes": 594624512,
+        "ResourceId": "0x00080001",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 4331520,
+        "StoredFile": "00080001-game.mbc-3d22936c4b473ff6.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00470000",
+        "Indices": [
+          14,
+          2,
+          0
+        ],
+        "AbsoluteOffset": 245856256,
+        "StoredFile": "00470000-body_lnk.bin-0b2f3d0adffcfdf6.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00470001",
+        "Indices": [
+          14,
+          2,
+          1
+        ],
+        "AbsoluteOffset": 247171072,
+        "StoredFile": "00470001-mon_lnk.bin-a1a6a30059a4355b.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00370000",
+        "Indices": [
+          14,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 168478720,
+        "StoredFile": "00370000-anime2.bin-b3cc35f3658b68d5.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00370001",
+        "Indices": [
+          14,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 169578496,
+        "StoredFile": "00370001-anime3.bin-6d094653c28c71d9.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00080000",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          0
+        ],
+        "AbsoluteOffset": 1124352,
+        "StoredFile": "00080000-anime.bin-bf9bdbd5bf560ba0.stored"
+      },
+      {
+        "Source": "DATA_S.AFS",
+        "SourceSha256": "312aeb5ad8af16b8968b32cbe12a62abd6cbcf3d311ef8e1183e136b412baa6c",
+        "SourceBytes": 596027392,
+        "ResourceId": "0x00080001",
+        "Indices": [
+          1,
+          1,
+          2,
+          0,
+          1
+        ],
+        "AbsoluteOffset": 4331520,
+        "StoredFile": "00080001-game.mbc-3d22936c4b473ff6.stored"
+      }
+    ],
+    "clips": 1105,
+    "poses": 36378,
+    "bundle_sha256": "c40813d6b23f77834877ba4a5863ae54f8b829f6fc8f2c606d373c618d26bbe5",
+    "bundle_bytes": 6310088,
+    "body_variants": 13,
+    "body_models": 65,
+    "models_19": 26,
+    "models_17": 39,
+    "mon_entries": 280,
+    "data_source_hashes_independently_verified": false
+  },
+  "original_bind_runs": [
+    {
+      "schema_version": 1,
+      "result": "passed",
+      "run_id": "6f6357a4-5a86-4d8f-8d58-96499d6dd426",
+      "completed_at_utc": "2026-10-11T17:16:11.574704+00:00",
+      "collector_zip_sha256": "8258add78a08875fe5f2b40079d0d24a6156749d4f79a421a7c05fab993163c5",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "parents": [
+        -1,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        8,
+        8,
+        9,
+        10,
+        11,
+        12,
+        8,
+        15,
+        13,
+        14
+      ],
+      "mirror_pairs": [
+        -1,
+        -1,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6,
+        -1,
+        10,
+        9,
+        12,
+        11,
+        14,
+        13,
+        -1,
+        -1,
+        18,
+        17
+      ],
+      "comparisons": 26,
+      "compared_words": 25792,
+      "original_instructions": 220542,
+      "instruction_words": 911,
+      "constant_trigonometry_calls": {
+        "0x10a7af0": 52,
+        "0x10a77c0": 52
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-model-bind-nearest-final-v1/model_bind.cpp",
+        "-o",
+        "/tmp/pes3-model-bind-nearest-final-v1/libmodel_bind.so"
+      ],
+      "unique_matrix_sets": 3,
+      "arithmetic_profile": {
+        "fpu": "nearest",
+        "vu": "nearest",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "runtime_enabled": false,
+      "scope": "Complete reached initialization on canonical zeroed node storage with original matrices and ELF parent/mirror tables for every received 19-node model. Original instruction-model outputs, not native oracle injections or observed new PS2 frames. 17-node LODs, exact PS2 arithmetic, metres/time/axis conversion, gameplay selection and contacts are outside this verification.",
+      "tool_sha256": {
+        "verify_model_bind.py": "4b4fa4b543b1b5a98533065b59cb91167f15598044c1558fd417c4e5563c1668",
+        "model_reference.py": "5085c11355f4129458e0d31254bc701e5655284f02002372a37e5740216e963b",
+        "collected_assets.py": "e16d56840bb19d6c336bc5e8c6c834ac1bce4e9794406e6f64b04fb172a49095"
+      },
+      "abi": {
+        "model_bind_bytes": 3968,
+        "matrix_bytes": 1216,
+        "words_per_case": 992,
+        "endianness": "little"
+      },
+      "files_sha256": {
+        "model_bind.hpp": "6523c41bf6737ad58f1cccd7cf12940e965a70dd11892d5ceb484df967d6bd0a",
+        "bind_arithmetic.hpp": "fb36c4edea6dd3336074ad84437f7615dac75e21a6fa8a5726f1a83efb374cb5",
+        "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+        "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+        "model_bind.cpp": "3d031849b7ebc3bceb7b70f40fb432e9d7e1742ce583c3b144e7a3412febd6f7",
+        "model-bind-vectors.json": "bcd657e4490ed4803cfa33a3338fa1e21aa651cfdcd6c27cb56b860a2bfdb561",
+        "model-bind-instructions.json": "863719d614a0176ca04a8387d292bf659dd4d3db83a3f36a7261347271c54c1a"
+      }
+    },
+    {
+      "schema_version": 1,
+      "result": "passed",
+      "run_id": "73519e21-3e16-47e9-ac37-b7f67ac6f093",
+      "completed_at_utc": "2026-10-11T17:16:11.631279+00:00",
+      "collector_zip_sha256": "8258add78a08875fe5f2b40079d0d24a6156749d4f79a421a7c05fab993163c5",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "parents": [
+        -1,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        8,
+        8,
+        9,
+        10,
+        11,
+        12,
+        8,
+        15,
+        13,
+        14
+      ],
+      "mirror_pairs": [
+        -1,
+        -1,
+        3,
+        2,
+        5,
+        4,
+        7,
+        6,
+        -1,
+        10,
+        9,
+        12,
+        11,
+        14,
+        13,
+        -1,
+        -1,
+        18,
+        17
+      ],
+      "comparisons": 26,
+      "compared_words": 25792,
+      "original_instructions": 220542,
+      "instruction_words": 911,
+      "constant_trigonometry_calls": {
+        "0x10a7af0": 52,
+        "0x10a77c0": 52
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-model-bind-chop-final-v1/model_bind.cpp",
+        "-o",
+        "/tmp/pes3-model-bind-chop-final-v1/libmodel_bind.so"
+      ],
+      "unique_matrix_sets": 3,
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "vu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "runtime_enabled": false,
+      "scope": "Complete reached initialization on canonical zeroed node storage with original matrices and ELF parent/mirror tables for every received 19-node model. Original instruction-model outputs, not native oracle injections or observed new PS2 frames. 17-node LODs, exact PS2 arithmetic, metres/time/axis conversion, gameplay selection and contacts are outside this verification.",
+      "tool_sha256": {
+        "verify_model_bind.py": "4b4fa4b543b1b5a98533065b59cb91167f15598044c1558fd417c4e5563c1668",
+        "model_reference.py": "5085c11355f4129458e0d31254bc701e5655284f02002372a37e5740216e963b",
+        "collected_assets.py": "e16d56840bb19d6c336bc5e8c6c834ac1bce4e9794406e6f64b04fb172a49095"
+      },
+      "abi": {
+        "model_bind_bytes": 3968,
+        "matrix_bytes": 1216,
+        "words_per_case": 992,
+        "endianness": "little"
+      },
+      "files_sha256": {
+        "model_bind.hpp": "6523c41bf6737ad58f1cccd7cf12940e965a70dd11892d5ceb484df967d6bd0a",
+        "bind_arithmetic.hpp": "fb36c4edea6dd3336074ad84437f7615dac75e21a6fa8a5726f1a83efb374cb5",
+        "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+        "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+        "model_bind.cpp": "3d031849b7ebc3bceb7b70f40fb432e9d7e1742ce583c3b144e7a3412febd6f7",
+        "model-bind-vectors.json": "897df409ca2eba54072f91205e4eeadaf11124620cd56099f47cb59e0761ece9",
+        "model-bind-instructions.json": "863719d614a0176ca04a8387d292bf659dd4d3db83a3f36a7261347271c54c1a"
+      }
+    }
+  ],
+  "original_render_runs": [
+    {
+      "schema_version": 1,
+      "result": "passed",
+      "run_id": "6aa66d3d-9352-4b73-8080-46d27a503d51",
+      "completed_at_utc": "2026-10-11T17:26:31.244879+00:00",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "arithmetic_profile": {
+        "fpu": "nearest",
+        "vu": "nearest",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "matrix_comparisons": 264,
+      "position_comparisons": 22,
+      "saved_position_matches": 1,
+      "saved_matrix_matches": 0,
+      "captured_matrix_checks": [
+        {
+          "actor": 1,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "6a0b40c75c90b4df4d8abdff4d979d14628563c13d92af9f364b27489dfaba56",
+          "original_output_sha256": "15fdbd4cb7ee168995386b7b0fadc74e6f4e535b91e452bb1d0ff049d8b323b0",
+          "saved_equal_words": 194
+        },
+        {
+          "actor": 2,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "4ba1f5fa5441d1beb820889298d09663de7157ba8a76c2c3248fc32c902b9693",
+          "original_output_sha256": "80dbcb3ff24d83cd4d7690be6a2bdf5e829015d209d881bc3acb5054ad364f57",
+          "saved_equal_words": 197
+        },
+        {
+          "actor": 3,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "8dd74f076e5cc504ba7f8b86099523f15539a46f3841d19f0cfd3588fb0ce157",
+          "original_output_sha256": "8cae42cd5296b834340fe78ff731e4920524bef5e3fb34a360d7cb5b78f2d0e0",
+          "saved_equal_words": 199
+        },
+        {
+          "actor": 4,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "8ee6e9495fd1711daa6c6e91685145df2a7305a8ea194f73d922028e346968b1",
+          "original_output_sha256": "c7c10ae09b70a2f69d8232ba3b239af6d29b837062274dd01f764ec85d6b9174",
+          "saved_equal_words": 177
+        },
+        {
+          "actor": 5,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "bffcf41f1d77e04a5397b98bc022773ae74b3f715393f3d31fe0df8a37422d51",
+          "original_output_sha256": "8724e4b35eb1d25c0ab8ed963b2bd6c04a4d7bb4750b49bcacc117f84341a0a2",
+          "saved_equal_words": 166
+        },
+        {
+          "actor": 6,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "9bfde326b7f70af4cc9e267dd21ba8a5cae8cb05910a5903ddff49ea6c0436df",
+          "original_output_sha256": "ddf26c9d4d72013ffc9f29c8e8555fe8541afb640bead9426613647311691a60",
+          "saved_equal_words": 164
+        },
+        {
+          "actor": 7,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "b94b07d6a9ef876f594d40746b9231810474ffbda8421dd7c756cdeab9672ce9",
+          "original_output_sha256": "cb490ce5096e52795499f0033d964e46c00011265cf5ab75ddce9e704945787b",
+          "saved_equal_words": 167
+        },
+        {
+          "actor": 8,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "a66ca9030657ac305deced9c5d9b68266fa0f7f9fa4c5b7aceb1d5f69677c05a",
+          "original_output_sha256": "2a6a44c585cc2a119cb279f068c4d4889b515b71af5f6feb686b61e24e02b8d0",
+          "saved_equal_words": 168
+        },
+        {
+          "actor": 9,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "f794fe056c51e3b583ae4f003aa41f0cd53ee4b2eb3591469997cd99563adc0f",
+          "original_output_sha256": "8b72ada98a60a85630e9a4be6185aa4a51df53d34c4ea4e600b19f477f4e9824",
+          "saved_equal_words": 175
+        },
+        {
+          "actor": 10,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "2c518d6f9374817d1082fdb9507ae6e21c25b4cef65a4debc3ab5dc4e5463fbd",
+          "original_output_sha256": "9bac3b69e1443ad331bba77d1a00da3eaf66d16b185492874b0c83163db78adf",
+          "saved_equal_words": 170
+        },
+        {
+          "actor": 11,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": false,
+          "saved_sha256": "c79cd65c327f48308f9dcf7c153f6e2840589f733e576804276be47e388b4e65",
+          "original_output_sha256": "a89ab622766d4c0b6aebc535d4a320656a18eafd59fb334d7ea04cee7948675e",
+          "saved_equal_words": 176
+        },
+        {
+          "actor": 12,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "4731a100954dc6b9993b16550e7ced6a1a606e5f5793a8a933bd43fff4f4a0dd",
+          "original_output_sha256": "6916146ea2be5c09f61ae003cbfa28e5b150de699b8753a15546c637d6ad146c",
+          "saved_equal_words": 191
+        },
+        {
+          "actor": 13,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "5c79eb5627b45fd3d86f8aed1a831462e488af4e3504302b6b9b358d336b618d",
+          "original_output_sha256": "1b0deaeb8b773552b1596b7d4242b5f41fb6a12e118c1805a8aa53869f1a12a0",
+          "saved_equal_words": 185
+        },
+        {
+          "actor": 14,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "5690f4ec5f1791d8919febf24dea5270ff48f0937c687f5511065dd6d025dd6d",
+          "original_output_sha256": "ec2dc5bb962d1222e200373023d911ce12bc09d4aeca1da90722d40f54cc3701",
+          "saved_equal_words": 192
+        },
+        {
+          "actor": 15,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "893a8ef1d878c183a4dab032b82d5fd8e214d6292cbae4273ba5b75f86ea1851",
+          "original_output_sha256": "babf71a6422d63bf35f58b1b707a6af2c1cea1b54b59ce9c3bdcd8fc173c70dc",
+          "saved_equal_words": 183
+        },
+        {
+          "actor": 16,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "45104307529eaa0c3b4933121f51ec376020240cbdb701c7f6a74cfdcdbbdcd9",
+          "original_output_sha256": "53548fdde7d7b2545516e0623ac232df0de2cf1fc5985c455356cc02afc9c7b5",
+          "saved_equal_words": 174
+        },
+        {
+          "actor": 17,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "2cf83d37329aa82ad2f8a89a2b6ffc70bf11905699d32a32236a5167b235238f",
+          "original_output_sha256": "ff2618908cea34ee7c75021d31ec6c543e5b5234585f1b11d4ecbb8c56d31287",
+          "saved_equal_words": 202
+        },
+        {
+          "actor": 18,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "721efad2478a845afa252be40d34c750a538b9c32ae2a0a442adab57c57d1bb3",
+          "original_output_sha256": "03e1739c2f3f77529f6fa3ec55b375cc7151e302c621bfe37df7c37cf5894c8e",
+          "saved_equal_words": 187
+        },
+        {
+          "actor": 19,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "05852204a56bf1c95133f14fcc953a229e38aed6d44f2547cb23277cd017ac0b",
+          "original_output_sha256": "64b0407a4a396f494284b360ff3440b950522e27625d58db864d939da25398ef",
+          "saved_equal_words": 187
+        },
+        {
+          "actor": 20,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "755a70c35d86a168f550ca3af51b757320321c0c23a6a2af0e2432ef5f56407a",
+          "original_output_sha256": "bf3b03e1f89ffc720738999140fad00fc9478e5da061b7fd16297e80300f1e3b",
+          "saved_equal_words": 176
+        },
+        {
+          "actor": 21,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "2dce7eade4bf4626289d59ea5fa6eed74e5a322ae283fea4f080e092319048a1",
+          "original_output_sha256": "0c55ee4f55539d2de3732033db13b73fed72b6007ee6d4be51d404d22f038bce",
+          "saved_equal_words": 189
+        },
+        {
+          "actor": 22,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": false,
+          "saved_sha256": "fa2a5787fdc3f766a1b30965e903590113101f0ef8cebbc6fdb13a8ff71ca501",
+          "original_output_sha256": "ac5650a76dd7c4c129867d7c3be061eaec842ee1f4ec215a7724ca856ab3f528",
+          "saved_equal_words": 189
+        }
+      ],
+      "compared_words": 80322,
+      "original_instructions": 115830,
+      "instruction_words": 99,
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-render-nearest-final-v1/render_pose.cpp",
+        "-o",
+        "/tmp/pes3-render-nearest-final-v1/librender_pose.so"
+      ],
+      "tool_sha256": {
+        "verify_render_pose.py": "53b10e6d3acd40437f8a27655803ba60fec08e19e250cfa762964e3b909f518b",
+        "model_reference.py": "5085c11355f4129458e0d31254bc701e5655284f02002372a37e5740216e963b"
+      },
+      "files_sha256": {
+        "render_pose.hpp": "e60f080375db4157c1482a716814a56b468c2c385410d5443c863c5268554fc1",
+        "bind_arithmetic.hpp": "fb36c4edea6dd3336074ad84437f7615dac75e21a6fa8a5726f1a83efb374cb5",
+        "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+        "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+        "render_pose.cpp": "a46a5f0be415b5f3f7b21cc31ccba2e127ccd0f879149b1423513653072ea359",
+        "render-vectors.json": "a77e22ed99d0b1781040d8526b8ad602a8d082913e73c5c27cdc5852d76e0c79",
+        "render-instructions.json": "401d7698f7e4698765e556cd7d68f3ea6b92ce4b971601d49e4c1a1a83948363"
+      },
+      "runtime_enabled": false,
+      "scope": "Reached pose-to-render bridge on captured 19-node buffers, copying matrices or applying actual per-column appearance scales for destination counts 0/17/19, and physics-to-render positions for all 22 actors. Separately compares actual selected descriptor matrices in the save (14x19 and 8x17) with the original-call outputs. Source pose evaluation, 17-node bind topology, render orientation, metres, video cadence, contact events and native retargeting are outside this proof."
+    },
+    {
+      "schema_version": 1,
+      "result": "passed",
+      "run_id": "c1dde4d2-2146-44b9-a1b3-ad4a80104821",
+      "completed_at_utc": "2026-10-11T17:26:31.312509+00:00",
+      "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+      "sources": [
+        {
+          "file": "SLES_519.12",
+          "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+          "bytes": 2196728
+        },
+        {
+          "file": "OVER.AFS",
+          "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+          "bytes": 6447104
+        },
+        {
+          "file": "game.ovl",
+          "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+          "bytes": 2822528,
+          "base": "0x163b800"
+        }
+      ],
+      "arithmetic_profile": {
+        "fpu": "chop",
+        "vu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "matrix_comparisons": 264,
+      "position_comparisons": 22,
+      "saved_position_matches": 22,
+      "saved_matrix_matches": 22,
+      "captured_matrix_checks": [
+        {
+          "actor": 1,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "6a0b40c75c90b4df4d8abdff4d979d14628563c13d92af9f364b27489dfaba56",
+          "original_output_sha256": "6a0b40c75c90b4df4d8abdff4d979d14628563c13d92af9f364b27489dfaba56",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 2,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "4ba1f5fa5441d1beb820889298d09663de7157ba8a76c2c3248fc32c902b9693",
+          "original_output_sha256": "4ba1f5fa5441d1beb820889298d09663de7157ba8a76c2c3248fc32c902b9693",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 3,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "8dd74f076e5cc504ba7f8b86099523f15539a46f3841d19f0cfd3588fb0ce157",
+          "original_output_sha256": "8dd74f076e5cc504ba7f8b86099523f15539a46f3841d19f0cfd3588fb0ce157",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 4,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "8ee6e9495fd1711daa6c6e91685145df2a7305a8ea194f73d922028e346968b1",
+          "original_output_sha256": "8ee6e9495fd1711daa6c6e91685145df2a7305a8ea194f73d922028e346968b1",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 5,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "bffcf41f1d77e04a5397b98bc022773ae74b3f715393f3d31fe0df8a37422d51",
+          "original_output_sha256": "bffcf41f1d77e04a5397b98bc022773ae74b3f715393f3d31fe0df8a37422d51",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 6,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "9bfde326b7f70af4cc9e267dd21ba8a5cae8cb05910a5903ddff49ea6c0436df",
+          "original_output_sha256": "9bfde326b7f70af4cc9e267dd21ba8a5cae8cb05910a5903ddff49ea6c0436df",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 7,
+          "source_buffer": 0,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "b94b07d6a9ef876f594d40746b9231810474ffbda8421dd7c756cdeab9672ce9",
+          "original_output_sha256": "b94b07d6a9ef876f594d40746b9231810474ffbda8421dd7c756cdeab9672ce9",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 8,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "a66ca9030657ac305deced9c5d9b68266fa0f7f9fa4c5b7aceb1d5f69677c05a",
+          "original_output_sha256": "a66ca9030657ac305deced9c5d9b68266fa0f7f9fa4c5b7aceb1d5f69677c05a",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 9,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "f794fe056c51e3b583ae4f003aa41f0cd53ee4b2eb3591469997cd99563adc0f",
+          "original_output_sha256": "f794fe056c51e3b583ae4f003aa41f0cd53ee4b2eb3591469997cd99563adc0f",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 10,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "2c518d6f9374817d1082fdb9507ae6e21c25b4cef65a4debc3ab5dc4e5463fbd",
+          "original_output_sha256": "2c518d6f9374817d1082fdb9507ae6e21c25b4cef65a4debc3ab5dc4e5463fbd",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 11,
+          "source_buffer": 1,
+          "count": 17,
+          "saved_equal": true,
+          "saved_sha256": "c79cd65c327f48308f9dcf7c153f6e2840589f733e576804276be47e388b4e65",
+          "original_output_sha256": "c79cd65c327f48308f9dcf7c153f6e2840589f733e576804276be47e388b4e65",
+          "saved_equal_words": 272
+        },
+        {
+          "actor": 12,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "4731a100954dc6b9993b16550e7ced6a1a606e5f5793a8a933bd43fff4f4a0dd",
+          "original_output_sha256": "4731a100954dc6b9993b16550e7ced6a1a606e5f5793a8a933bd43fff4f4a0dd",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 13,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "5c79eb5627b45fd3d86f8aed1a831462e488af4e3504302b6b9b358d336b618d",
+          "original_output_sha256": "5c79eb5627b45fd3d86f8aed1a831462e488af4e3504302b6b9b358d336b618d",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 14,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "5690f4ec5f1791d8919febf24dea5270ff48f0937c687f5511065dd6d025dd6d",
+          "original_output_sha256": "5690f4ec5f1791d8919febf24dea5270ff48f0937c687f5511065dd6d025dd6d",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 15,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "893a8ef1d878c183a4dab032b82d5fd8e214d6292cbae4273ba5b75f86ea1851",
+          "original_output_sha256": "893a8ef1d878c183a4dab032b82d5fd8e214d6292cbae4273ba5b75f86ea1851",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 16,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "45104307529eaa0c3b4933121f51ec376020240cbdb701c7f6a74cfdcdbbdcd9",
+          "original_output_sha256": "45104307529eaa0c3b4933121f51ec376020240cbdb701c7f6a74cfdcdbbdcd9",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 17,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "2cf83d37329aa82ad2f8a89a2b6ffc70bf11905699d32a32236a5167b235238f",
+          "original_output_sha256": "2cf83d37329aa82ad2f8a89a2b6ffc70bf11905699d32a32236a5167b235238f",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 18,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "721efad2478a845afa252be40d34c750a538b9c32ae2a0a442adab57c57d1bb3",
+          "original_output_sha256": "721efad2478a845afa252be40d34c750a538b9c32ae2a0a442adab57c57d1bb3",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 19,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "05852204a56bf1c95133f14fcc953a229e38aed6d44f2547cb23277cd017ac0b",
+          "original_output_sha256": "05852204a56bf1c95133f14fcc953a229e38aed6d44f2547cb23277cd017ac0b",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 20,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "755a70c35d86a168f550ca3af51b757320321c0c23a6a2af0e2432ef5f56407a",
+          "original_output_sha256": "755a70c35d86a168f550ca3af51b757320321c0c23a6a2af0e2432ef5f56407a",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 21,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "2dce7eade4bf4626289d59ea5fa6eed74e5a322ae283fea4f080e092319048a1",
+          "original_output_sha256": "2dce7eade4bf4626289d59ea5fa6eed74e5a322ae283fea4f080e092319048a1",
+          "saved_equal_words": 304
+        },
+        {
+          "actor": 22,
+          "source_buffer": 0,
+          "count": 19,
+          "saved_equal": true,
+          "saved_sha256": "fa2a5787fdc3f766a1b30965e903590113101f0ef8cebbc6fdb13a8ff71ca501",
+          "original_output_sha256": "fa2a5787fdc3f766a1b30965e903590113101f0ef8cebbc6fdb13a8ff71ca501",
+          "saved_equal_words": 304
+        }
+      ],
+      "compared_words": 80322,
+      "original_instructions": 115830,
+      "instruction_words": 99,
+      "compile_command": [
+        "g++",
+        "-std=c++14",
+        "-O0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-fast-math",
+        "-ffp-contract=off",
+        "-shared",
+        "-fPIC",
+        "/tmp/pes3-render-chop-final-v1/render_pose.cpp",
+        "-o",
+        "/tmp/pes3-render-chop-final-v1/librender_pose.so"
+      ],
+      "tool_sha256": {
+        "verify_render_pose.py": "53b10e6d3acd40437f8a27655803ba60fec08e19e250cfa762964e3b909f518b",
+        "model_reference.py": "5085c11355f4129458e0d31254bc701e5655284f02002372a37e5740216e963b"
+      },
+      "files_sha256": {
+        "render_pose.hpp": "e60f080375db4157c1482a716814a56b468c2c385410d5443c863c5268554fc1",
+        "bind_arithmetic.hpp": "fb36c4edea6dd3336074ad84437f7615dac75e21a6fa8a5726f1a83efb374cb5",
+        "pose_rig.hpp": "820ed58e09143c113681de854801a39a4cab5b5d782512b7b3a95a77d958283f",
+        "pose_ops.hpp": "d15cc64ad1dc8316dde61e53a084d5170a6eaca1c69f10605051c47a7253c118",
+        "render_pose.cpp": "a46a5f0be415b5f3f7b21cc31ccba2e127ccd0f879149b1423513653072ea359",
+        "render-vectors.json": "5410e5f6f2bd109be357177a0e2ff38b3a350b14b95d6ac8bb4dc84f921b2be0",
+        "render-instructions.json": "401d7698f7e4698765e556cd7d68f3ea6b92ce4b971601d49e4c1a1a83948363"
+      },
+      "runtime_enabled": false,
+      "scope": "Reached pose-to-render bridge on captured 19-node buffers, copying matrices or applying actual per-column appearance scales for destination counts 0/17/19, and physics-to-render positions for all 22 actors. Separately compares actual selected descriptor matrices in the save (14x19 and 8x17) with the original-call outputs. Source pose evaluation, 17-node bind topology, render orientation, metres, video cadence, contact events and native retargeting are outside this proof."
+    }
+  ],
+  "captured_resource_provenance": {
+    "schema_version": 1,
+    "result": "passed",
+    "run_id": "d7af3ee8-dbef-4ba2-b62d-234a73e1f529",
+    "completed_at_utc": "2026-10-11T17:17:38.402692+00:00",
+    "collector_zip_sha256": "8258add78a08875fe5f2b40079d0d24a6156749d4f79a421a7c05fab993163c5",
+    "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "bind_inputs": [
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "nearest",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "run_id": "6f6357a4-5a86-4d8f-8d58-96499d6dd426",
+        "report_sha256": "6ae436261a61152ceaa6f4771084f397eb24a4c56a5519f36e49a3064fcf1bd3"
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "run_id": "73519e21-3e16-47e9-ac37-b7f67ac6f093",
+        "report_sha256": "720ecff67f53eec3f41830aca045fa9994af9dbac225f984bc5b466f7046c016"
+      }
+    ],
+    "loaded_motion_blocks": 999,
+    "loaded_metadata_records": 999,
+    "loaded_motion_profiles": 999,
+    "unloaded_clips": 106,
+    "bind_field_comparisons": [
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "nearest",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "8f058811ba04faf9304cd618f4c3d2852760932c2afeb88ca6709f7856a9f44c",
+        "source_models": [
+          {
+            "variant": 0,
+            "model": 0
+          },
+          {
+            "variant": 0,
+            "model": 1
+          },
+          {
+            "variant": 1,
+            "model": 0
+          },
+          {
+            "variant": 1,
+            "model": 1
+          },
+          {
+            "variant": 2,
+            "model": 0
+          },
+          {
+            "variant": 2,
+            "model": 1
+          },
+          {
+            "variant": 3,
+            "model": 0
+          },
+          {
+            "variant": 3,
+            "model": 1
+          },
+          {
+            "variant": 4,
+            "model": 0
+          },
+          {
+            "variant": 4,
+            "model": 1
+          },
+          {
+            "variant": 5,
+            "model": 0
+          },
+          {
+            "variant": 5,
+            "model": 1
+          },
+          {
+            "variant": 6,
+            "model": 0
+          },
+          {
+            "variant": 6,
+            "model": 1
+          },
+          {
+            "variant": 7,
+            "model": 0
+          },
+          {
+            "variant": 7,
+            "model": 1
+          },
+          {
+            "variant": 8,
+            "model": 0
+          },
+          {
+            "variant": 8,
+            "model": 1
+          },
+          {
+            "variant": 9,
+            "model": 0
+          }
+        ],
+        "nonroot_a_translation_sha256": "8041eb4515bf32bca7283fed23a2091568ea4a97a31dd47e8819b4b252303a76",
+        "mirror_correction_sha256": "ff06479a1ff75800a8599a844290bb720ad4f745286c3d394571c3212f03b468",
+        "translation_buffers_equal": 0,
+        "translation_words_equal": 2244,
+        "mirror_buffers_equal": 44
+      },
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "nearest",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "2d5d0ec9e000cd4b2fb2436b4f3c0c0d3aedffaa746b8f565f16628839d24ba8",
+        "source_models": [
+          {
+            "variant": 10,
+            "model": 0
+          },
+          {
+            "variant": 12,
+            "model": 0
+          }
+        ],
+        "nonroot_a_translation_sha256": "d9294c4180a466d40fbc6ad3473e4ea7efe46d4c71eb3b4a02cee4d7c3f76f69",
+        "mirror_correction_sha256": "ff06479a1ff75800a8599a844290bb720ad4f745286c3d394571c3212f03b468",
+        "translation_buffers_equal": 0,
+        "translation_words_equal": 2288,
+        "mirror_buffers_equal": 44
+      },
+      {
+        "profile": {
+          "fpu": "nearest",
+          "vu": "nearest",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "ba55e84ea91f09ca02bcc4020c2b48f784f7c6a1e03bff04aad71150d2a51c00",
+        "source_models": [
+          {
+            "variant": 11,
+            "model": 0
+          },
+          {
+            "variant": 11,
+            "model": 1
+          },
+          {
+            "variant": 11,
+            "model": 2
+          },
+          {
+            "variant": 11,
+            "model": 3
+          },
+          {
+            "variant": 11,
+            "model": 4
+          }
+        ],
+        "nonroot_a_translation_sha256": "7d59e0a1187d6e4ae972d09d661e54bd33b18450167b603b1e92e68a285f4a65",
+        "mirror_correction_sha256": "ff06479a1ff75800a8599a844290bb720ad4f745286c3d394571c3212f03b468",
+        "translation_buffers_equal": 0,
+        "translation_words_equal": 2244,
+        "mirror_buffers_equal": 44
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "8f058811ba04faf9304cd618f4c3d2852760932c2afeb88ca6709f7856a9f44c",
+        "source_models": [
+          {
+            "variant": 0,
+            "model": 0
+          },
+          {
+            "variant": 0,
+            "model": 1
+          },
+          {
+            "variant": 1,
+            "model": 0
+          },
+          {
+            "variant": 1,
+            "model": 1
+          },
+          {
+            "variant": 2,
+            "model": 0
+          },
+          {
+            "variant": 2,
+            "model": 1
+          },
+          {
+            "variant": 3,
+            "model": 0
+          },
+          {
+            "variant": 3,
+            "model": 1
+          },
+          {
+            "variant": 4,
+            "model": 0
+          },
+          {
+            "variant": 4,
+            "model": 1
+          },
+          {
+            "variant": 5,
+            "model": 0
+          },
+          {
+            "variant": 5,
+            "model": 1
+          },
+          {
+            "variant": 6,
+            "model": 0
+          },
+          {
+            "variant": 6,
+            "model": 1
+          },
+          {
+            "variant": 7,
+            "model": 0
+          },
+          {
+            "variant": 7,
+            "model": 1
+          },
+          {
+            "variant": 8,
+            "model": 0
+          },
+          {
+            "variant": 8,
+            "model": 1
+          },
+          {
+            "variant": 9,
+            "model": 0
+          }
+        ],
+        "nonroot_a_translation_sha256": "c78daf2e7a7b80926b1ae14a710ab2b054be349cde9bd3786b6c82c4039e2b45",
+        "mirror_correction_sha256": "5df06eab9a4ff900f1e3868fb05a5db9e834c9249072861849f0edd3faacb472",
+        "translation_buffers_equal": 44,
+        "translation_words_equal": 3168,
+        "mirror_buffers_equal": 0
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "2d5d0ec9e000cd4b2fb2436b4f3c0c0d3aedffaa746b8f565f16628839d24ba8",
+        "source_models": [
+          {
+            "variant": 10,
+            "model": 0
+          },
+          {
+            "variant": 12,
+            "model": 0
+          }
+        ],
+        "nonroot_a_translation_sha256": "e9335c484b656a70db70e98b8fa5b43f5183892a6b16a4256a788d0e2dc86405",
+        "mirror_correction_sha256": "5df06eab9a4ff900f1e3868fb05a5db9e834c9249072861849f0edd3faacb472",
+        "translation_buffers_equal": 0,
+        "translation_words_equal": 2992,
+        "mirror_buffers_equal": 0
+      },
+      {
+        "profile": {
+          "fpu": "chop",
+          "vu": "chop",
+          "division": "nearest",
+          "sqrt": "nearest"
+        },
+        "matrix_sha256": "ba55e84ea91f09ca02bcc4020c2b48f784f7c6a1e03bff04aad71150d2a51c00",
+        "source_models": [
+          {
+            "variant": 11,
+            "model": 0
+          },
+          {
+            "variant": 11,
+            "model": 1
+          },
+          {
+            "variant": 11,
+            "model": 2
+          },
+          {
+            "variant": 11,
+            "model": 3
+          },
+          {
+            "variant": 11,
+            "model": 4
+          }
+        ],
+        "nonroot_a_translation_sha256": "1794e1fd6d1ebcc4cde442a616dc8f0577971b2b99bb172d4728962489940d3b",
+        "mirror_correction_sha256": "5df06eab9a4ff900f1e3868fb05a5db9e834c9249072861849f0edd3faacb472",
+        "translation_buffers_equal": 0,
+        "translation_words_equal": 2640,
+        "mirror_buffers_equal": 0
+      }
+    ],
+    "unique_nonroot_translation_source": {
+      "profile": {
+        "fpu": "chop",
+        "vu": "chop",
+        "division": "nearest",
+        "sqrt": "nearest"
+      },
+      "matrix_sha256": "8f058811ba04faf9304cd618f4c3d2852760932c2afeb88ca6709f7856a9f44c",
+      "nonroot_a_translation_sha256": "c78daf2e7a7b80926b1ae14a710ab2b054be349cde9bd3786b6c82c4039e2b45"
+    },
+    "translation_components": 3168,
+    "complete_pose_equivalence": false,
+    "runtime_enabled": false,
+    "tool_sha256": "4a920b1f8a86a66a3479b87e76331975dbe2a9472067a1242f3431137d9260cf",
+    "scope": "Original resource bytes compared with actual saved motion blocks/profiles/metadata, and fresh original-initialization bind fields compared separately with saved nonroot A translations and mirror corrections. Root A translation is animated and excluded. These fields do not establish whole-pose arithmetic, clock/video cadence, contact events, animation choices over time, or native gameplay integration."
+  },
+  "offline_delivery_verification": {
+    "result": "passed",
+    "comparisons": 624,
+    "compared_words": 212228,
+    "by_run": {
+      "bind-nearest": 26,
+      "bind-chop": 26,
+      "render-nearest": 286,
+      "render-chop": 286
+    },
+    "collector_zip_sha256": "8258add78a08875fe5f2b40079d0d24a6156749d4f79a421a7c05fab993163c5",
+    "runtime_enabled": false,
+    "scope": "Recompiled portable C++14 compared in bits with recorded selected-model original-instruction outputs. No new original calls, emulator frames, hardware test, whole-pose equivalence or gameplay integration."
+  },
+  "fresh_original_instructions": 672744,
+  "artifact": {
+    "path": "artifacts/pes3-model-resources-research.zip",
+    "bytes": 274305,
+    "sha256": "86db3535f8a56cd6b5b2638bd0c2ad8bfccbe89e9c926d328add60ce3b1bb89e"
+  },
+  "complete_pose_equivalence": false,
+  "runtime_enabled": false,
+  "scope": "All received original clip blocks and nested compressed containers verified. Owned bind initialization and pose-to-render bridge compared with original calls in explicit finite arithmetic profiles; selected saved fields independently compared. Complete native animation retarget, timing, action choice and ball contacts remain pending."
+}

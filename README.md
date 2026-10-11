@@ -64,6 +64,12 @@ independentes de velocidade e um mapa automático de condições. O
 sem arquivos PES. O contrato preserva os comandos e requisitos do seletor
 nativo; a seleção completa e a importação das animações continuam pendentes.
 
+A [conferência dos recursos originais recebidos](docs/PES3-RECURSOS.md)
+valida os 1.105 clips e recupera a inicialização de referência dos 19 ossos.
+A ponte de desenho reescrita reproduz as matrizes e posições dos 22 jogadores
+salvos a partir das poses já compostas. São 624 comparações C++14 registradas;
+a avaliação completa das poses, os contatos e a integração Windows seguem pendentes.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

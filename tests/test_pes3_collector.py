@@ -169,6 +169,29 @@ class ResourceImportTests(unittest.TestCase):
             with self.assertRaises(ValueError):import_archive(archive,root/'out')
             self.assertFalse((root/'out').exists())
 
+    def test_windows_framework_backslashes_import_with_checksums(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder); original=root/'original.zip'; files,_=self.fixture(original)
+            archive=root/'windows.zip'
+            with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as zipped:
+                for name,data in files.items(): zipped.writestr(name.replace('/', '\\'),data)
+            report=import_archive(archive,root/'out')
+            self.assertEqual(len(report['resources']),6)
+            for row in report['resources']:
+                self.assertEqual(hashlib.sha256((root/'out'/row['stored_file']).read_bytes()).hexdigest(),row['stored_sha256'])
+
+    def test_normalized_aliases_and_windows_traversal_reject_atomically(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);original=root/'original.zip';files,_=self.fixture(original)
+            member=next(name for name in files if name.startswith('recursos/'))
+            for index,alias in enumerate((member.replace('/', '\\'), 'recursos\\..\\escape', 'C:\\escape', '\\\\server\\share')):
+                archive=root/(str(index)+'.zip')
+                with zipfile.ZipFile(archive,'w') as zipped:
+                    for name,data in files.items(): zipped.writestr(name,data)
+                    zipped.writestr(alias,files[member])
+                with self.assertRaises(ValueError): import_archive(archive,root/'out')
+                self.assertFalse((root/'out').exists())
+
     def test_extra_files_and_traversal_are_rejected_before_output(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)

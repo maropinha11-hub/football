@@ -4,7 +4,8 @@ Esta continuação recupera código em estruturas próprias e verifica a ligaç�
 entre direção, seleção e velocidade. **A importação para o treino continua
 pendente.** O [pacote de locomoção](../artifacts/pes3-locomotion-research.zip)
 contém código e vetores; o [coletor Windows](../artifacts/pes3-resource-collector-windows.zip)
-recolhe os recursos de inicialização que faltam. Ele não atualiza o jogo.
+recolhe os recursos de inicialização. O ZIP já foi recebido e conferido na
+[etapa de recursos e referência](PES3-RECURSOS.md). O coletor não atualiza o jogo.
 
 ## Código e conferência
 
@@ -52,7 +53,7 @@ coleta/importação de AFS sintéticos. O coletor foi exercitado com PowerShell
 dos arquivos de entrada e ZIP/importação. A interface gráfica, batch Windows
 11 e PowerShell 5.1 não foram executados nesta máquina.
 
-## Recursos ausentes e investigação do save
+## Busca de recursos no save antes da coleta
 
 O save recebido é o atleta parado com bola, conforme informado pelo usuário.
 Os cenários modificam cópias da memória; não retomam quadros do emulador.
@@ -112,7 +113,8 @@ python3 tools/pes3/import_collected_resources.py PES3-recursos.zip --output /tmp
 ```
 
 Ainda faltam outros caminhos especiais, preparação/ações completas,
-relógio/poses/contatos, colisões e física completa. Os recursos coletados
-precisam ser classificados e comparados com FPSANM14, e escala/eixos/apoio
-precisam ser calibrados. O runtime do treino aprovado permanece o mesmo;
+relógio/poses/contatos, colisões e física completa. Os recursos recebidos
+agora coincidem com FPSANM14 e sua inicialização de referência foi recuperada
+([conferência](PES3-RECURSOS.md)); escala/eixos/apoio para o motor nativo
+ainda precisam ser calibrados. O runtime do treino aprovado permanece o mesmo;
 IDs PES não foram convertidos diretamente para tipos de ações nativos.

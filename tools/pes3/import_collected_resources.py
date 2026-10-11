@@ -29,19 +29,23 @@ def validate(archive):
         entries = zipped.infolist(); members = {}
         if len(entries) > 128: raise ValueError('ZIP tem entradas demais')
         for entry in entries:
-            path = PurePosixPath(entry.filename)
-            if '\\' in entry.filename or path.is_absolute() or '..' in path.parts or str(path) != entry.filename.rstrip('/'):
+            # .NET Framework on Windows writes backslashes into ZIP member
+            # names. Normalize before validation and duplicate detection;
+            # never use the original member name as an extraction path.
+            name = entry.filename.replace('\\', '/')
+            path = PurePosixPath(name)
+            if path.is_absolute() or '..' in path.parts or str(path) != name.rstrip('/'):
                 raise ValueError('caminho ZIP inseguro')
-            if entry.filename in members: raise ValueError('entrada ZIP duplicada')
+            if name in members: raise ValueError('entrada ZIP duplicada')
             if entry.compress_type not in (zipfile.ZIP_STORED,zipfile.ZIP_DEFLATED): raise ValueError('compactacao ZIP inesperada')
             if (entry.external_attr >> 16) & 0o170000 == 0o120000: raise ValueError('link ZIP inesperado')
             if entry.is_dir():
-                if entry.filename != 'recursos/': raise ValueError('diretorio ZIP inesperado')
+                if name != 'recursos/': raise ValueError('diretorio ZIP inesperado')
                 continue
             if entry.file_size > LIMIT: raise ValueError('entrada ZIP excede limite')
-            if entry.filename != 'manifesto.json' and not re.fullmatch(r'recursos/[0-9a-f]{8}-[a-z0-9_.]+-[0-9a-f]{16}\.stored',entry.filename):
+            if name != 'manifesto.json' and not re.fullmatch(r'recursos/[0-9a-f]{8}-[a-z0-9_.]+-[0-9a-f]{16}\.stored',name):
                 raise ValueError('arquivo ZIP inesperado')
-            members[entry.filename]=entry
+            members[name]=entry
         if 'manifesto.json' not in members or members['manifesto.json'].file_size > 1024*1024:
             raise ValueError('manifesto ausente ou grande demais')
         manifest=json.loads(zipped.read('manifesto.json').decode('utf-8-sig'))
@@ -67,7 +71,7 @@ def validate(archive):
                 raise ValueError('intervalo de recurso invalido')
             if members[member].file_size != size: raise ValueError('tamanho armazenado divergente')
             if name not in resources:
-                stored=zipped.read(member)  # zipfile checks its CRC.
+                stored=zipped.read(members[member])  # zipfile checks its CRC.
                 if sha(stored) != claimed: raise ValueError('SHA256 do recurso divergente')
                 tag,_,unpacked_bytes=struct.unpack_from('<III',stored)
                 if tag != row.get('HeaderTag') or unpacked_bytes != row.get('UnpackedBytes'):
