@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "run_id": "af0af6ad-a5c3-4ee8-9c8d-55714ad60e7e",
+  "completed_at_utc": "2026-10-11T04:03:14.343741+00:00",
+  "result": "passed",
+  "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "comparisons": 92,
+  "original_instructions": 31577,
+  "instruction_words": 704,
+  "by_outcome": {
+    "clip_47": 43,
+    "clip_61": 9,
+    "no_change": 40
+  },
+  "restart_true_cases": 1,
+  "chase_gate_true_cases": 5,
+  "helper_dependency_scope": "Predicates, chase prediction, clip change and refresh execute unchanged in the original. Their reached dependency values are explicit semantic boundary inputs. They are not rewritten by this decision API or injected into the original.",
+  "compile_command": [
+    "g++",
+    "-std=c++17",
+    "-O0",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fno-fast-math",
+    "-ffp-contract=off",
+    "-shared",
+    "-fPIC",
+    "/tmp/pes3-selection-v3/selector.cpp",
+    "-o",
+    "/tmp/pes3-selection-v3/selector.so"
+  ],
+  "tool_sha256": {
+    "verify_selection.py": "26960b1c98bebee43ee48c4c547e147f35e5f53d0f1730db22ad0c7507ae5e83",
+    "selection_abi.py": "fac8fc06c5ead0b30384e5b92fabe442f090ce0fdf174bd46ab5f94304995ef8",
+    "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+    "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+    "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+    "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+  },
+  "files_sha256": {
+    "locomotion_selection.hpp": "913060645a7b9325c06d6de3d74d289857382ea3980913574ef3970d381b6ee4",
+    "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+    "selection-instruction-words.json": "c8af07d8018017532e7d013101d07096b843426f20822f59a2799e7c16282842",
+    "selection-vectors.json": "cd7b917efc3c7dec5517feba4f7c3ba57d47f0ede20e801b4ab847331f7dc42c",
+    "selector.cpp": "e7d47d6432503c44129163a3417815b50469777b1d98f37cc3b19cedfbb9aaa2",
+    "selector.so": "4801516fd6480f34f44ac8a2c30c51f92118b4154dcb8b79fded4e907e8cbb02"
+  },
+  "composed_speed_comparisons": 92,
+  "scope": "Common locomotion decision of action 1/substate 16, clip-47 frame override and composed integer speed tail to 0187930C. Numeric owned structs, original integer units/headings. No complete action, prediction rewrite, pose retargeting, native request mapping, foot/head contact or full PES gameplay equivalence."
+}

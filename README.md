@@ -57,6 +57,13 @@ O [pacote numérico](artifacts/pes3-rig-research.zip) permite recompilar e repet
 os testes sem arquivos do PES. A investigação corrige a etapa usada para
 comparar poses; diferenças em bits e a integração no treino seguem abertas.
 
+A [reescrita da seleção de locomoção PES 3](docs/PES3-SELECTION.md) acrescenta
+92 decisões conferidas com ajuste de velocidade em sequência, 1.153 cenários
+independentes de velocidade e um mapa automático de condições. O
+[pacote de código](artifacts/pes3-selection-research.zip) repete as comparações
+sem arquivos PES. O contrato preserva os comandos e requisitos do seletor
+nativo; a seleção completa e a importação das animações continuam pendentes.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

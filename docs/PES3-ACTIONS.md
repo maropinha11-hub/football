@@ -147,3 +147,11 @@ no PES não vira automaticamente um gesto compatível com os 14 canais da base
 aberta. A adaptação dos 19 ossos e a validação dos contatos precedem a
 habilitação no treino. Esta entrega é uma ferramenta separada de pesquisa;
 o executável Windows aprovado conserva seu hash e comportamento.
+
+A etapa em [PES3-SELECTION.md](PES3-SELECTION.md) acrescenta uma reescrita
+semântica da decisão comum da ação 1/subestado 16 e do ajuste inteiro de
+velocidade. As condições para os clips 47 e 61 foram conferidas em 92
+cenários em sequência; o ajuste também passou em 1.153 cenários independentes.
+O mapa automático distingue essas regras verificadas dos demais contextos
+estáticos e registra o contrato para o seletor nativo. Não habilita a
+importação de clips ou substitui o corpo completo das ações.

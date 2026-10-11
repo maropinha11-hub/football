@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "run_id": "65e93ea1-411c-4183-89d5-b5f6586793f4",
+  "result": "passed",
+  "completed_at_utc": "2026-10-11T04:01:16.423189+00:00",
+  "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "entry": "0x0187927c",
+  "stop_before": "0x0187930c",
+  "comparisons": 1153,
+  "original_instructions": 102786,
+  "instruction_words": 170,
+  "compile_command": [
+    "g++",
+    "-std=c++17",
+    "-O0",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-shared",
+    "-fPIC",
+    "/tmp/pes3-speed-v1/speed.cpp",
+    "-o",
+    "/tmp/pes3-speed-v1/speed.so"
+  ],
+  "tool_sha256": {
+    "verify_speed.py": "889636219a209022f763bd23d645f212a7be1295d9647f04c221060eef5899b3",
+    "speed_abi.py": "412e8439eceb42772f9c441f5826b97d2aba9a7506beb55adfcc5f8ef717bb36",
+    "pose.py": "2ff4bd0cc8691570892196a62aaf5cccee6e15141538b1b3d26e4e649c9a6e09",
+    "pose_reference.py": "8664698113dcacfac8ab7421c853d5d61e832632a61dc24757c721954773f375",
+    "savestate.py": "2738a343e6239c30827bc3b93ee614f7eb85a2cfcd056fad2ecb844365ea286a"
+  },
+  "files_sha256": {
+    "locomotion_speed.hpp": "b167b52bff65e42bd9988b6dd256c19f4a7bfb29322d552124561413543a3d98",
+    "speed-instruction-words.json": "262ac9780d0eed2fb779c9fe81c4eb576300a12a42ca966df9b9bc3d34c7ac8a",
+    "speed-vectors.json": "2744835ceb1b90dbc8f7e87455be1e46b86bda1f274b4b50c84e0cff4b34c30b",
+    "speed.cpp": "02eccb8e243c707c570b83270f0fc36f5db9189a6bb79bd1e4c71e3730968592",
+    "speed.so": "5c68c4c867d15cfca298c14d540cb6088e13635ee4c983c226aa282c89ab0a24"
+  },
+  "scope": "Semantic integer speed tail including stat scale, profile, acceleration/braking and mode predicate. Original helpers execute unchanged. Owned numeric fields; no opponent/prediction stubs. Original amplitudes per call, no verified native metres/second or time conversion, position integration, complete action/frame, contact or gameplay equivalence."
+}

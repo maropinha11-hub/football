@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "kind": "pes3_common_locomotion_delivery",
+  "selection": {
+    "run_id": "af0af6ad-a5c3-4ee8-9c8d-55714ad60e7e",
+    "comparisons": 92,
+    "composed_speed_comparisons": 92,
+    "original_instructions": 31577,
+    "original_instruction_words": 704,
+    "by_outcome": {
+      "clip_47": 43,
+      "clip_61": 9,
+      "no_change": 40
+    },
+    "report_sha256": "74d0b88620b703ca3b3996398d1b31d9dd8658060294b39297a0ac8faa62015a"
+  },
+  "speed": {
+    "run_id": "65e93ea1-411c-4183-89d5-b5f6586793f4",
+    "comparisons": 1153,
+    "original_instructions": 102786,
+    "original_instruction_words": 170,
+    "report_sha256": "aa2f48e445de902eb804ce65263943e001580d4a875bb90ea74e72c4a069d110"
+  },
+  "native_contract_sha256": "925f60ad514ba727efef39d27b24ddfeab8f090b2605368cdd7d06d9045e5129",
+  "package": {
+    "path": "artifacts/pes3-selection-research.zip",
+    "bytes": 129792,
+    "sha256": "2cc1b0ce2234cdd89356e8114b0d23e5fb1479ff56968095c2f1f7ee457627c9",
+    "members": 19,
+    "offline_verification": {
+      "result": "passed",
+      "selection_comparisons": 92,
+      "composed_speed_comparisons": 92,
+      "speed_comparisons": 1153,
+      "selection_run_id": "af0af6ad-a5c3-4ee8-9c8d-55714ad60e7e",
+      "speed_run_id": "65e93ea1-411c-4183-89d5-b5f6586793f4",
+      "package_manifest_sha256": "b57d035f29eab0f793ac918431658daebcf5e079f5f1aa1d87f94f519d64df56",
+      "scope": "Recompiled owned C++ decisions and integer speed compared with recorded original-instruction outputs in the declared reference model. No fresh original execution, hardware, full action/frame, imported animation or gameplay validation."
+    }
+  },
+  "python_tests": {
+    "result": "passed",
+    "count": 90,
+    "skipped": 0,
+    "duration_seconds": 3.487,
+    "log_sha256": "e45d17761339e6eb2bbf7224ce561d8dbcc08fa707d5a3b177479fc6aa033c27"
+  },
+  "state_context": {
+    "status": "user_report",
+    "description": "Jogador parado com bola, confirmado pelo usu\u00e1rio. Cen\u00e1rios modificados s\u00e3o experimentos em c\u00f3pias da RAM; n\u00e3o s\u00e3o novas jogadas capturadas."
+  },
+  "runtime_enabled": false,
+  "scope": "Verified owned common locomotion decision and integer speed update in the declared original-instruction model. Automatic rules and native source contract. No complete action/gameplay, native units or request conversion, calibrated retarget/contact, PS2/PCSX2 full frame or Windows runtime update."
+}
