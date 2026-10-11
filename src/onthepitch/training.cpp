@@ -337,7 +337,9 @@ void Match::ProcessTraining() {
   } else if (trainingCameraMode == 1) {
     cameraOrientation.SetAngleAxis(0.34f * pi, Vector3(1, 0, 0));
     cameraNodeOrientation = QUATERNION_IDENTITY;
-    cameraNodePosition = designatedPossessionPlayer->GetPosition() + Vector3(0, -13, 9);
+    const bool inspectingPose=pes3Preview && pes3Preview->studyingBody();
+    cameraNodePosition = designatedPossessionPlayer->GetPosition() +
+        (inspectingPose ? Vector3(0,-4.5f,3.6f) : Vector3(0,-13,9));
     cameraFOV = 48.0f;
     cameraNearCap = 0.3f;
     cameraFarCap = 250.0f;

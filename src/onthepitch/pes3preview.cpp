@@ -71,6 +71,10 @@ PES3Preview::PES3Preview(boost::intrusive_ptr<Node> target) {
   }
   if (!bank.sample(47,0,pose)) { loadError="Falha ao avaliar pose PES3"; return; }
   for (unsigned i=0;i<19;++i) referenceRotations[i]=pose.rig.bones[i].composed_rotation;
+  for(unsigned i=0;i<19;++i) {
+    const auto& p=pose.rig.bones[i].composed_translation;
+    referencePoints[i]={{p[0]*displayScale,p[2]*displayScale,-p[1]*displayScale}};
+  }
   playback.select(47);
   // Load a named surface rather than depending on ASE submaterial ordering.
   material = Material{};
@@ -118,8 +122,11 @@ void PES3Preview::releaseBodyForGameplay() {
     if (GetConfiguration()->GetBool("training_telemetry",false)) printf("PES3_BODY released reason=gameplay_input\n");
   }
 }
-bool PES3Preview::bodyPose(const pes3::NativeRotations& reference,pes3::NativeRotations& out) const {
-  return fetched.visible && fetched.body && pes3::adaptNativePose(fetched.rotations,referenceRotations,reference,out);
+bool PES3Preview::bodyPose(const pes3::NativeBind& reference,pes3::NativePose& out) const {
+  if(!fetched.visible||!fetched.body)return false;
+  pes3::SourcePoints points;
+  for(unsigned i=0;i<19;++i)for(unsigned a=0;a<3;++a)points[i][a]=fetched.points[i].coords[a];
+  return pes3::retargetSkeleton(fetched.rotations,referenceRotations,points,referencePoints,reference,out);
 }
 std::string PES3Preview::select(int offset) {
   if (visible && geometry) {

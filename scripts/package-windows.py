@@ -128,6 +128,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "V aplica a pose ao corpo do jogador parado (teste de adaptacao).\n"
         "Analogico esquerdo, corrida, dominio, passe ou chute restauram a animacao\n"
         "nativa automaticamente. V tambem remove a pose; R3/Tab muda a camera.\n"
+        "A camera externa aproxima o corpo durante V para conferir a animacao.\n"
         "Essa adaptacao nao escolhe as animacoes PES das jogadas nem seus contatos.\n"
         "O ritmo de estudo e 60 unidades de fase por segundo, ajustavel na config\n"
         "com pes3_preview_units_per_second. Nao e uma medicao da cadencia do PES.\n"

@@ -217,10 +217,6 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
   animApplyBuffer.orientation = 0;
   animApplyBuffer.offsets.clear();
   animApplyBuffer.anim->Apply(nodeMap, animApplyBuffer.frameNum, 0, animApplyBuffer.smooth, animApplyBuffer.smoothFactor, animApplyBuffer.position, animApplyBuffer.orientation, animApplyBuffer.offsets, 0, false, true);
-  for (unsigned i=0;i<13;++i) {
-    const auto rotation=nodeMap.at(pes3::nativeBoneNames[i])->GetDerivedRotation().GetNormalized();
-    for (unsigned lane=0;lane<4;++lane) pes3NativeReference[i][lane]=rotation.elements[lane];
-  }
   std::vector < boost::intrusive_ptr<Node> > jointsVec;
   humanoidNode->GetNodes(jointsVec, true);
 
@@ -398,6 +394,41 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
     joints.at(i).origPos = jointsVec[i]->GetDerivedPosition();
   }
 
+  // Bind to the straight skin reference, not the bent base animation used
+  // while undoing the authored mesh pose. Record actual native bone offsets.
+  for(unsigned i=0;i<13;++i) {
+    auto node=nodeMap.at(pes3::nativeBoneNames[i]);
+    const auto rotation=node->GetDerivedRotation().GetNormalized();
+    for(unsigned a=0;a<4;++a)pes3NativeReference.rotations[i][a]=rotation.elements[a];
+    for(unsigned a=0;a<3;++a)pes3NativeReference.offsets[i][a]=node->GetPosition().coords[a];
+  }
+  for(unsigned f=0;f<2;++f) {
+    pes3NativeReference.footMin[f]={{1,1,1}};
+    pes3NativeReference.footMax[f]={{-1,-1,-1}};
+  }
+  for(unsigned m=0;m<weightedVerticesVec.size();++m)for(const auto& vertex:weightedVerticesVec[m]) {
+    if(vertex.bones.size()!=1)continue;
+    const auto& j=joints[vertex.bones[0].jointID];
+    const std::string name=j.node->GetName();
+    const int f=name=="left_ankle"?0:(name=="right_ankle"?1:-1);
+    if(f<0)continue;
+    for(unsigned a=0;a<3;++a) {
+      const float value=uniqueFullbodyMesh[m].data[vertex.vertexID*3+a]/zMultiplier-j.origPos.coords[a];
+      pes3NativeReference.footMin[f][a]=std::min(pes3NativeReference.footMin[f][a],value);
+      pes3NativeReference.footMax[f][a]=std::max(pes3NativeReference.footMax[f][a],value);
+    }
+  }
+  if(GetConfiguration()->GetBool("training_telemetry",false)) {
+    for(unsigned i=0;i<13;++i) {
+      const auto& p=pes3NativeReference.offsets[i];const auto& q=pes3NativeReference.rotations[i];
+      printf("PES3_BIND bone=%u offset=[%.8f,%.8f,%.8f] rotation=[%.8f,%.8f,%.8f,%.8f]\n",i,p[0],p[1],p[2],q[0],q[1],q[2],q[3]);
+    }
+    for(unsigned f=0;f<2;++f) {
+      const auto& a=pes3NativeReference.footMin[f];const auto& b=pes3NativeReference.footMax[f];
+      printf("PES3_BIND_FOOT side=%u min=[%.8f,%.8f,%.8f] max=[%.8f,%.8f,%.8f]\n",f,a[0],a[1],a[2],b[0],b[1],b[2]);
+    }
+  }
+
   delete straightAnim;
   delete baseAnim;
 
@@ -443,6 +474,9 @@ bool HumanoidBase::NeedsModelUpdate() {
 }
 
 void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
+  const bool studyTelemetry=!updateSrc && pes3StudyWasApplied && GetConfiguration()->GetBool("training_telemetry",false);
+  float studyRigidError=0,studyFootMinimum=100,studyRadius=0;
+  unsigned studyVertexCount=0,studyInvalidCount=0;
 
   const bool hideHead = !updateSrc && TrainingEnabled() && match->IsFirstPerson() &&
                         match->GetDesignatedPossessionPlayer() == player;
@@ -558,6 +592,19 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
 
       }
 
+      if(studyTelemetry) {
+        ++studyVertexCount;
+        for(float value:resultVertex.coords)if(!std::isfinite(value))++studyInvalidCount;
+        studyRadius=std::max(studyRadius,resultVertex.GetLength());
+        if(weightedVertices[v].bones.size()==1) {
+          const auto& joint=joints[weightedVertices[v].bones[0].jointID];
+          const float original=(origVertex-joint.origPos*zMultiplier).GetLength();
+          const float rendered=(resultVertex-joint.position*zMultiplier).GetLength();
+          studyRigidError=std::max(studyRigidError,std::fabs(original-rendered));
+          const std::string name=joint.node->GetName();
+          if(name=="left_ankle"||name=="right_ankle")studyFootMinimum=std::min(studyFootMinimum,resultVertex.coords[2]);
+        }
+      }
       if (updateSrc) {
         if (uploadVertices)   memcpy(&uniqueMesh.data[weightedVertices[v].vertexID * 3],                           resultVertex.coords,    3 * sizeof(float));
         if (uploadNormals)    memcpy(&uniqueMesh.data[weightedVertices[v].vertexID * 3 + uniqueElementOffset],     resultNormal.coords,    3 * sizeof(float));
@@ -575,6 +622,9 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
     }
 
   } // subgeom
+
+  if(studyTelemetry)printf("PES3_BODY_SKIN vertices=%u invalid=%u rigid_error=%.8f foot_min_z=%.6f radius=%.6f\n",
+    studyVertexCount,studyInvalidCount,studyRigidError,studyFootMinimum,studyRadius);
 
   fullbodyGeometryData->resourceMutex.unlock();
 
@@ -802,15 +852,22 @@ void HumanoidBase::Put() {
     buf_TemporalHumanoidNodes.at(i).actualNode->SetPosition(buf_TemporalHumanoidNodes.at(i).cachedPosition, false);
     buf_TemporalHumanoidNodes.at(i).actualNode->SetRotation(buf_TemporalHumanoidNodes.at(i).cachedOrientation, false);
   }
+  // Undo the previous visual lift before applying any new animation; the
+  // engine keeps cached local positions across renders.
+  if(pes3RootCorrection!=0) {
+    auto body=nodeMap.at("body");
+    body->SetPosition(body->GetPosition()-Vector3(0,0,pes3RootCorrection),false);
+    pes3RootCorrection=0;
+  }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
   //printf("anim ptr: %i\n", fetchedbuf_animApplyBuffer.anim);
   //printf("nodemap size: %i\n", nodeMap.size());
-  // Explicit study override only. The actor/root position, joint offsets,
-  // proportions, skin weights, gameplay events and physics remain native.
-  pes3::NativeRotations studyRotations;
-  const bool studyApplied=match->PES3StudyBodyPose(player,pes3NativeReference,studyRotations);
+  // Explicit study override only. Actor movement, joint offsets, proportions,
+  // skin weights, gameplay events and physics remain native.
+  pes3::NativePose studyPose;
+  const bool studyApplied=match->PES3StudyBodyPose(player,pes3NativeReference,studyPose);
   const bool restoreNative=pes3StudyWasApplied && !studyApplied;
   if (restoreNative) {
     movementHistory.clear();
@@ -823,24 +880,47 @@ void HumanoidBase::Put() {
     &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false);
   pes3StudyWasApplied=studyApplied;
   if (studyApplied) {
+    Quaternion facing;
+    facing.SetAngleAxis(fetchedbuf_animApplyBuffer.orientation,Vector3(0,0,1));
     for (unsigned i=0;i<13;++i) {
-      const auto& q=studyRotations[i];
-      nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(Quaternion(q[0],q[1],q[2],q[3]),false);
+      const auto& q=studyPose.local[i];
+      const Quaternion local(q[0],q[1],q[2],q[3]);
+      nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(i==0 ? facing*local : local,false);
     }
+    auto body=nodeMap.at("body");
+    // The native player node itself carries the animation's vertical offset
+    // (not just the pelvis). Solve support in derived/world height, otherwise
+    // a correct local pose still renders below the pitch. Its parent is the
+    // upright player root, so a local Z correction is also a world Z change.
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    pes3RootCorrection=studyPose.rootHeight-body->GetDerivedPosition().coords[2];
+    body->SetPosition(body->GetPosition()+Vector3(0,0,pes3RootCorrection),false);
   }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
   if (studyApplied && GetConfiguration()->GetBool("training_telemetry",false)) {
-    const auto& q=studyRotations[8];
+    const auto& q=studyPose.local[8];
     const auto left=nodeMap.at("left_ankle")->GetDerivedPosition();
     const auto right=nodeMap.at("right_ankle")->GetDerivedPosition();
     const auto head=nodeMap.at("neck")->GetDerivedPosition();
     printf("PES3_BODY_APPLY joints=13 knee=[%.6f,%.6f,%.6f,%.6f] ankles_z=[%.6f,%.6f] head_z=%.6f\n",
       q[0],q[1],q[2],q[3],left.coords[2],right.coords[2],head.coords[2]);
+    Quaternion facing;
+    facing.SetAngleAxis(fetchedbuf_animApplyBuffer.orientation,Vector3(0,0,1));
+    const auto origin=nodeMap.at("body")->GetDerivedPosition();
+    float fkError=0;
+    for(unsigned i=0;i<13;++i) {
+      const auto& p=studyPose.positions[i];const auto& root=studyPose.positions[0];
+      const Vector3 expected(p[0]-root[0],p[1]-root[1],p[2]-root[2]);
+      const auto actual=facing.GetInverse()*(nodeMap.at(pes3::nativeBoneNames[i])->GetDerivedPosition()-origin);
+      fkError=std::max(fkError,(actual-expected).GetLength());
+    }
+    printf("PES3_BODY_GEOMETRY direction_error=%.8f root_z=%.6f applied_root_z=%.6f applied_fk_error=%.8f\n",
+      studyPose.maximumDirectionError,studyPose.rootHeight,origin.coords[2],fkError);
   }
 
   // we've just set the humanoid positions for time fetchedbuf_animApplyBuffer.snapshotTime_ms. however, it's eventually going to be displayed in a historic position, for temporal smoothing.
-  if (fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {
+  if (!studyApplied && fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {
     // Adjust only the contacting leg, before temporal interpolation. Physics and
     // rendering share the animation's touch target without reading live render
     // bones from the simulation thread.
@@ -890,8 +970,13 @@ void HumanoidBase::Put() {
     buf_TemporalHumanoidNodes.at(i).position.SetValue(buf_TemporalHumanoidNodes.at(i).actualNode->GetPosition(), fetchedbuf_animApplyBuffer.snapshotTime_ms);
     buf_TemporalHumanoidNodes.at(i).orientation.SetValue(buf_TemporalHumanoidNodes.at(i).actualNode->GetRotation(), fetchedbuf_animApplyBuffer.snapshotTime_ms);
 
-    buf_TemporalHumanoidNodes.at(i).actualNode->SetPosition(buf_TemporalHumanoidNodes.at(i).position.GetValue(match->GetPreviousPutTime_ms()), false);
-    buf_TemporalHumanoidNodes.at(i).actualNode->SetRotation(buf_TemporalHumanoidNodes.at(i).orientation.GetValue(match->GetPreviousPutTime_ms()), false);
+    // The source graph and the body must use the same fetched pose. Native
+    // smoothing can blend a new limb rotation with an old pelvis height,
+    // making correctly supported feet penetrate the pitch or drift apart.
+    if(!studyApplied) {
+      buf_TemporalHumanoidNodes.at(i).actualNode->SetPosition(buf_TemporalHumanoidNodes.at(i).position.GetValue(match->GetPreviousPutTime_ms()), false);
+      buf_TemporalHumanoidNodes.at(i).actualNode->SetRotation(buf_TemporalHumanoidNodes.at(i).orientation.GetValue(match->GetPreviousPutTime_ms()), false);
+    }
   }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);

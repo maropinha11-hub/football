@@ -31,9 +31,11 @@ Windows, use `importar-pes3.bat` com seu `fpsoccer-pes-nucleo-v14.zip`, depois
 `run-training.bat` mantém a gameplay nativa aprovada.
 
 O [teste de poses na malha nativa](docs/PES3-CORPO-NATIVO.md), ativado com V
-no estudo, transfere as rotações para os ossos do personagem. Retomar os
-comandos restaura as animações nativas. A seleção automática das jogadas PES
-e seus contatos continuam pendentes.
+no estudo, alinha os membros usando a pose reta da malha e as direções dos
+segmentos PES, conserva os comprimentos e corrige o apoio visual dos pés.
+Retomar os comandos restaura as animações nativas. A câmera externa aproxima
+o corpo durante a inspeção. A seleção automática das jogadas PES e seus
+contatos continuam pendentes.
 
 O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)

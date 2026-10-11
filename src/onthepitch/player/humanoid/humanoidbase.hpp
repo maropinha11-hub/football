@@ -325,8 +325,9 @@ class HumanoidBase {
 
     boost::shared_ptr<AnimCollection> anims;
     NodeMap nodeMap;
-    pes3::NativeRotations pes3NativeReference{};
+    pes3::NativeBind pes3NativeReference{};
     bool pes3StudyWasApplied = false;
+    float pes3RootCorrection = 0;
 
     AnimApplyBuffer animApplyBuffer;
 

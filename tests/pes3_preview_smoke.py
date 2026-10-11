@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import struct
 import time
 import uuid
 
@@ -16,13 +17,18 @@ p.add_argument('--output',type=Path,required=True)
 args=p.parse_args();root=Path(__file__).resolve().parents[1]
 args.output.mkdir(parents=True,exist_ok=False)
 environment=os.environ.copy()
-environment.update(DISPLAY=':92',ALSOFT_DRIVERS='null',LIBGL_ALWAYS_SOFTWARE='1',LP_NUM_THREADS='2')
+runtime=args.output.resolve()/'xdg-runtime';runtime.mkdir(mode=0o700)
+environment.update(DISPLAY=':92',SDL_VIDEODRIVER='x11',ALSOFT_DRIVERS='null',LIBGL_ALWAYS_SOFTWARE='1',LP_NUM_THREADS='2',
+                   XDG_RUNTIME_DIR=str(runtime),XDG_CACHE_HOME=str(args.output.resolve()/'xdg-cache'))
 config=args.output/'preview.config'
 config.write_text((root/'config/training.config').read_text()+
                   '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "2"\n'+
-                  '"pes3_animation_file" '+json.dumps(str(args.bundle.resolve()))+'\n')
+                  '"pes3_animation_file" '+json.dumps(str(args.bundle.resolve()))+'\n'+
+                  '"pes3_preview_units_per_second" "20"\n')
+bundle_data=args.bundle.read_bytes()
+durations=[struct.unpack_from('<f',bundle_data,32+16*i+4)[0]for i in range(1105)]
 log=args.output/'preview-smoke.log';checks=[];game=None;server=None;window=None;held=set()
-report={'run_id':str(uuid.uuid4()),'result':'running','checks':checks}
+report={'run_id':str(uuid.uuid4()),'result':'running','study_phase_units_per_second':20,'checks':checks}
 pattern=re.compile(r'PES3_PREVIEW clip=(\d+) phase=([-\d.]+) playing=(\d) revision=(\d+) point16=\[([^]]+)\]')
 
 def states():
@@ -50,8 +56,17 @@ def check(name,condition,evidence):
     checks.append({'check':name,'result':'passed','evidence':evidence});print('PASS',name,evidence,flush=True)
 
 try:
-    server=subprocess.Popen(['Xvfb',':92','-screen','0','960x540x24','-nolisten','tcp'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env=environment)
-    time.sleep(.3)
+    with (args.output/'xvfb.log').open('w')as stream:
+        server=subprocess.Popen(['Xvfb',':92','-screen','0','960x540x24','-nolisten','tcp'],stdout=stream,stderr=subprocess.STDOUT,env=environment)
+    # Wait for an actual X11 connection. A fixed delay can race startup and
+    # SDL may silently choose its offscreen driver, leaving no test window.
+    until=time.monotonic()+10
+    while True:
+        if server.poll()is not None:raise RuntimeError('Xvfb exited '+str(server.returncode))
+        ready=subprocess.run(['xdpyinfo'],env=environment,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        if ready.returncode==0:break
+        if time.monotonic()>until:raise TimeoutError('X11 server readiness')
+        time.sleep(.05)
     with log.open('w') as stream:
         game=subprocess.Popen([str(args.build.resolve()/'gameplayfootball'),'--training','--pes3-preview','--telemetry','--config',str(config.resolve())],
                               cwd=args.build.resolve(),env=environment,stdout=stream,stderr=subprocess.STDOUT)
@@ -82,10 +97,19 @@ try:
     tap('Tab');tap('Tab')
     tap('F9');wait(lambda:states()[-1]['clip']==47)
     tap('c');wait(lambda:states()[-1]['phase']<10)
+    from PIL import ImageGrab
+    ImageGrab.grab(xdisplay=environment['DISPLAY']).save(args.output/'native-clip-47.png')
     # Observed clip IDs, rather than fabricated names for pass/header gestures.
     for expected in (236,313,304,224,219,269,120,372,264,206,797,275,317,366):
         tap('c');wait(lambda:states()[-1]['clip']==expected)
         wait(lambda:'PES3_RENDER clip='+str(expected)+' ' in log.read_text())
+        tap('F10');wait(lambda:states()[-1]['clip']==expected and states()[-1]['phase']>0)
+        if expected in (236,269,797,366):
+            wait(lambda:states()[-1]['phase']>=durations[expected]*.4)
+            ImageGrab.grab(xdisplay=environment['DISPLAY']).save(args.output/('native-clip-'+str(expected)+'.png'))
+        wait(lambda:states()[-1]['playing']==0)
+        check('native body playback completes clip '+str(expected),
+              abs(states()[-1]['phase']-durations[expected])<.0001,states()[-1]['phase'])
     all_states=states()
     check('observed source clips can be rendered',len({s['clip']for s in all_states})>=15,sorted({s['clip']for s in all_states}))
     check('finite source points',all(math.isfinite(v)for s in all_states for v in s['point']),len(all_states))
@@ -94,8 +118,24 @@ try:
     check('source rotations reach the native player',len(bodies)>10 and len({tuple(b[0])for b in bodies})>10,len(bodies))
     check('native study rotations and positions finite',all(math.isfinite(v)for q,feet,head in bodies for v in q+feet+[head]) and
           all(abs(sum(v*v for v in q)-1)<.00002 for q,_,_ in bodies),len(bodies))
-    tap('F10')
-    from PIL import ImageGrab
+    geometry=re.findall(r'PES3_BODY_GEOMETRY direction_error=([-\d.]+) root_z=([-\d.]+)',log.read_text())
+    check('physical limb directions follow source segments',len(geometry)>100 and
+          all(math.isfinite(float(e))and float(e)<.00002 for e,_ in geometry),max(float(e)for e,_ in geometry))
+    applied=re.findall(r'PES3_BODY_GEOMETRY[^\n]*root_z=([-\d.]+) applied_root_z=([-\d.]+) applied_fk_error=([-\d.]+)',log.read_text())
+    check('applied native bones match the solved pose in actor facing',len(applied)>100 and
+          all(abs(float(expected)-float(actual))<.00001 and math.isfinite(float(error))and float(error)<.00005
+              for expected,actual,error in applied),max(float(error)for _,_,error in applied))
+    skin=re.findall(r'PES3_BODY_SKIN vertices=(\d+) invalid=(\d+) rigid_error=([-\d.]+) foot_min_z=([-\d.]+) radius=([-\d.]+)',log.read_text())
+    check('actual native skin remains finite without rigid stretching',len(skin)>100 and
+          all(int(n)>500 and int(bad)==0 and math.isfinite(float(error))and float(error)<.00002 and
+              math.isfinite(float(radius))and float(radius)<4 for n,bad,error,_,radius in skin),len(skin))
+    check('actual foot vertices stay above the pitch',all(math.isfinite(float(z))and float(z)>=.007 for _,_,_,z,_ in skin),
+          min(float(z)for _,_,_,z,_ in skin))
+    # Holding a paused pose must not accumulate the pelvis height correction.
+    count=len(skin);time.sleep(.5)
+    paused=re.findall(r'PES3_BODY_SKIN vertices=(\d+) invalid=(\d+) rigid_error=([-\d.]+) foot_min_z=([-\d.]+) radius=([-\d.]+)',log.read_text())[count:]
+    check('paused body retains stable ground support',len(paused)>2 and
+          max(float(s[3])for s in paused)-min(float(s[3])for s in paused)<.00001,len(paused))
     ImageGrab.grab(xdisplay=environment['DISPLAY']).save(args.output/'preview.png')
     tap('v');before=len(body_pattern.findall(log.read_text()));time.sleep(.3)
     check('closing body study restores native animation',len(body_pattern.findall(log.read_text()))==before and

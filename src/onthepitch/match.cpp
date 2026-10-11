@@ -1153,8 +1153,8 @@ void Match::Process() {
   iterations.Unlock();
 }
 
-bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeRotations& reference,
-                            pes3::NativeRotations& out) const {
+bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
+                            pes3::NativePose& out) const {
   return pes3Preview && actor==designatedPossessionPlayer && pes3Preview->bodyPose(reference,out);
 }
 

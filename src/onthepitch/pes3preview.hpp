@@ -15,7 +15,8 @@ class PES3Preview {
   std::string step();
   std::string toggleBody();
   void releaseBodyForGameplay();
-  bool bodyPose(const pes3::NativeRotations& reference,pes3::NativeRotations& out) const;
+  bool studyingBody() const { return visible && bodyEnabled; }
+  bool bodyPose(const pes3::NativeBind& reference,pes3::NativePose& out) const;
   void process(bool matchPaused);
   void prepare(const blunted::Vector3& playerPosition, const blunted::Vector3& direction);
   void fetch() { fetched = buffer; }
@@ -39,6 +40,7 @@ class PES3Preview {
   bool visible = false;
   bool bodyEnabled = false;
   pes3::SourceRotations referenceRotations{};
+  pes3::SourcePoints referencePoints{};
   bool poseDirty = true;
   float rate = 60;
   unsigned capturedIndex = 0;
