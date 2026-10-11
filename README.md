@@ -70,6 +70,12 @@ A ponte de desenho reescrita reproduz as matrizes e posições dos 22 jogadores
 salvos a partir das poses já compostas. São 624 comparações C++14 registradas;
 a avaliação completa das poses, os contatos e a integração Windows seguem pendentes.
 
+A [análise dos dez novos saves de treino](docs/PES3-TREINO-ESTADOS.md)
+confere 35 chamadas recompiladas e reescreve a regra temporal dos marcadores
+e o ponto de referência variável do clip 741. São 4.526 comparações desses
+dois módulos próprios, com índice automático dos marcadores observados.
+A adaptação das poses e a integração ao treino Windows continuam pendentes.
+
 ## Executar no Linux
 
 Em Debian/Ubuntu, instale as dependências normais do sistema:

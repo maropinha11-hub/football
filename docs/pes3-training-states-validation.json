@@ -1,0 +1,700 @@
+{
+  "schema_version": 1,
+  "result": "passed",
+  "state_run_id": "0fbe0404-aca9-48e2-907e-304bf3da6b24",
+  "event_run_id": "169c31e6-cbf9-4d04-abe9-018c16caf41e",
+  "sources": [
+    {
+      "file": "SLES_519.12",
+      "sha256": "a3d39bf0f1d0030ccd4be17428d1dbdb7010e0b7a06ee545b5d614d378640b53",
+      "bytes": 2196728
+    },
+    {
+      "file": "OVER.AFS",
+      "sha256": "aa1942fd00fd60c7bdbedea766e94bbe6b7865593a4ca1479c89681e464166f3",
+      "bytes": 6447104
+    },
+    {
+      "file": "game.ovl",
+      "sha256": "f2e3c4dc6d81a3a8b1908a09a7b295a44137185dc0fe78efd45330a8dd423b92",
+      "bytes": 2822528,
+      "base": "0x163b800"
+    }
+  ],
+  "state_summary": {
+    "states": 10,
+    "distinct_state_hashes": 10,
+    "verified_code_words_per_state": [
+      386812
+    ],
+    "cases": 35,
+    "native_function_comparisons": 35,
+    "blocked_cases": 0,
+    "original_instructions": 114461,
+    "events_by_role": {
+      "ball_release": 1,
+      "ball_release_core": 1,
+      "animation_change": 1,
+      "blend_start": 1,
+      "animation_phase_gate": 10,
+      "phase_change": 1
+    },
+    "translated_instruction_words": 19149
+  },
+  "states": [
+    {
+      "slot": "01",
+      "filename": "SLES-51912 (3D653E04).01.p2s",
+      "sha256": "3d240b6390d5acf84e7b9eca18622ba07c52885cb26a8ec81e81026c1a74cca9",
+      "controlled_actor": 9,
+      "probed_actors": [
+        9
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4222,
+        "nearest_different_components": 2466,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 9,
+        "address": "0x14c30a0",
+        "action": 1,
+        "substate": 16,
+        "clip": 47,
+        "phase": 48.34891891479492,
+        "phase_bits": "0x4241654b",
+        "amplitude_i32": 6497,
+        "heading_u16": 32768,
+        "position_source": [
+          4833.34375,
+          0.0,
+          -4445.109375
+        ],
+        "action_handler": "0x1876b50"
+      }
+    },
+    {
+      "slot": "02",
+      "filename": "SLES-51912 (3D653E04).02.p2s",
+      "sha256": "e483236feb8225ac14d9f5185430656b34cb77bbac61cc7983c6a5454bc8b794",
+      "controlled_actor": 5,
+      "probed_actors": [
+        5,
+        9
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4243,
+        "nearest_different_components": 2445,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 5,
+        "address": "0x14c1da0",
+        "action": 11,
+        "substate": 32,
+        "clip": 313,
+        "phase": 22.0,
+        "phase_bits": "0x41b00000",
+        "amplitude_i32": 4864,
+        "heading_u16": 17264,
+        "position_source": [
+          515.48046875,
+          0.0,
+          5750.41015625
+        ],
+        "action_handler": "0x18392d0"
+      }
+    },
+    {
+      "slot": "03",
+      "filename": "SLES-51912 (3D653E04).03.p2s",
+      "sha256": "487c8d4a5e4c7907c8b31831770700b0ef5419429768c7db1fa37bc72467011f",
+      "controlled_actor": 5,
+      "probed_actors": [
+        5
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4267,
+        "nearest_different_components": 2421,
+        "unique_source_keys": 87
+      },
+      "controlled": {
+        "id": 5,
+        "address": "0x14c1da0",
+        "action": 0,
+        "substate": 2,
+        "clip": 304,
+        "phase": 22.0,
+        "phase_bits": "0x41b00000",
+        "amplitude_i32": 0,
+        "heading_u16": 17264,
+        "position_source": [
+          492.5625,
+          0.0,
+          5781.421875
+        ],
+        "action_handler": "0x187b540"
+      }
+    },
+    {
+      "slot": "04",
+      "filename": "SLES-51912 (3D653E04).04.p2s",
+      "sha256": "3d3200777f5a572faf94e37165686475b03faed5447460822c05218197bc1d49",
+      "controlled_actor": 10,
+      "probed_actors": [
+        5,
+        10
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4194,
+        "nearest_different_components": 2494,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 10,
+        "address": "0x14c3560",
+        "action": 27,
+        "substate": 32,
+        "clip": 219,
+        "phase": 23.0,
+        "phase_bits": "0x41b80000",
+        "amplitude_i32": 3538,
+        "heading_u16": 57024,
+        "position_source": [
+          5417.328125,
+          0.0,
+          -983.43359375
+        ],
+        "action_handler": "0x17ff080"
+      }
+    },
+    {
+      "slot": "05",
+      "filename": "SLES-51912 (3D653E04).05.p2s",
+      "sha256": "a164240c193cbc99676b5cb76d0cdc43b5197146491507a38af63e29db30874a",
+      "controlled_actor": 10,
+      "probed_actors": [
+        10
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4249,
+        "nearest_different_components": 2439,
+        "unique_source_keys": 87
+      },
+      "controlled": {
+        "id": 10,
+        "address": "0x14c3560",
+        "action": 0,
+        "substate": 2,
+        "clip": 304,
+        "phase": 3.0,
+        "phase_bits": "0x40400000",
+        "amplitude_i32": 0,
+        "heading_u16": 53433,
+        "position_source": [
+          6335.62890625,
+          0.0,
+          -489.72265625
+        ],
+        "action_handler": "0x187b540"
+      }
+    },
+    {
+      "slot": "06",
+      "filename": "SLES-51912 (3D653E04).06.p2s",
+      "sha256": "7d0c4ec1c790ff1dfd645a20dfeb108287968a944fbba400f9099bb1864eb291",
+      "controlled_actor": 10,
+      "probed_actors": [
+        10,
+        11
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4234,
+        "nearest_different_components": 2454,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 10,
+        "address": "0x14c3560",
+        "action": 4,
+        "substate": 34,
+        "clip": 269,
+        "phase": 40.0,
+        "phase_bits": "0x42200000",
+        "amplitude_i32": 2829,
+        "heading_u16": 60240,
+        "position_source": [
+          7414.22265625,
+          0.0,
+          600.50390625
+        ],
+        "action_handler": "0x1884e60"
+      }
+    },
+    {
+      "slot": "07",
+      "filename": "SLES-51912 (3D653E04).07.p2s",
+      "sha256": "bfc13c4a51a919cd33d0cd9ad261b0acab31cf59c0675702f36a5b062c0a9236",
+      "controlled_actor": 11,
+      "probed_actors": [
+        11
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4248,
+        "nearest_different_components": 2440,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 11,
+        "address": "0x14c3a20",
+        "action": 1,
+        "substate": 16,
+        "clip": 47,
+        "phase": 46.48436737060547,
+        "phase_bits": "0x4239effe",
+        "amplitude_i32": 6542,
+        "heading_u16": 59192,
+        "position_source": [
+          12141.234375,
+          0.0,
+          2885.56640625
+        ],
+        "action_handler": "0x1876b50"
+      }
+    },
+    {
+      "slot": "08",
+      "filename": "SLES-51912 (3D653E04).08.p2s",
+      "sha256": "be991018171ee3bc1cd6ce621edb4a4423b3fecbdd68055a12bd97cd87f711bf",
+      "controlled_actor": 10,
+      "probed_actors": [
+        10,
+        11
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4190,
+        "nearest_different_components": 2498,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 10,
+        "address": "0x14c3560",
+        "action": 27,
+        "substate": 2,
+        "clip": 206,
+        "phase": 13.599994659423828,
+        "phase_bits": "0x41599994",
+        "amplitude_i32": 1632,
+        "heading_u16": 42601,
+        "position_source": [
+          9536.2109375,
+          0.0,
+          -1379.31640625
+        ],
+        "action_handler": "0x17ff080"
+      }
+    },
+    {
+      "slot": "09",
+      "filename": "SLES-51912 (3D653E04).09.p2s",
+      "sha256": "087116970641852d62bc17c411bb11cc370181fec79713559d9ab9ddc02d8a7c",
+      "controlled_actor": 8,
+      "probed_actors": [
+        8
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4243,
+        "nearest_different_components": 2445,
+        "unique_source_keys": 88
+      },
+      "controlled": {
+        "id": 8,
+        "address": "0x14c2be0",
+        "action": 14,
+        "substate": 21,
+        "clip": 797,
+        "phase": 25.0,
+        "phase_bits": "0x41c80000",
+        "amplitude_i32": 462,
+        "heading_u16": 54736,
+        "position_source": [
+          9041.82421875,
+          0.0,
+          -1472.296875
+        ],
+        "action_handler": "0x18b4b40"
+      }
+    },
+    {
+      "slot": "10",
+      "filename": "SLES-51912 (3D653E04).10.p2s",
+      "sha256": "969112aad5a23ce64d4a73d9328e47caf220ef6fa28265ec0e86bef07af1eae2",
+      "controlled_actor": 8,
+      "probed_actors": [
+        8,
+        10
+      ],
+      "loaded_clips_verified": 999,
+      "rotation_channel_summary": {
+        "channel_sets": 88,
+        "chop_source_key_matches": 88,
+        "matched_components": 6688,
+        "nearest_equal_components": 4211,
+        "nearest_different_components": 2477,
+        "unique_source_keys": 86
+      },
+      "controlled": {
+        "id": 8,
+        "address": "0x14c2be0",
+        "action": 4,
+        "substate": 17,
+        "clip": 275,
+        "phase": 25.0,
+        "phase_bits": "0x41c80000",
+        "amplitude_i32": 4475,
+        "heading_u16": 61094,
+        "position_source": [
+          9665.125,
+          0.0,
+          -130.29296875
+        ],
+        "action_handler": "0x1884e60"
+      }
+    }
+  ],
+  "event_summary": {
+    "comparisons": 4280,
+    "captured_field_comparisons": 1320,
+    "boundary_comparisons": 2960,
+    "anchor_741_comparisons": 246,
+    "anchor_741_choices": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "original_instructions": 372012,
+    "instruction_words": 1111,
+    "arithmetic_profiles": [
+      "nearest",
+      "chop"
+    ],
+    "division": "nearest"
+  },
+  "observed_temporal_checks": [
+    {
+      "state_index": 4,
+      "state_sha256": "3d3200777f5a572faf94e37165686475b03faed5447460822c05218197bc1d49",
+      "actor": 5,
+      "selected_actor": 10,
+      "case": "actor-5-1880490-",
+      "action": 8,
+      "substate": 5,
+      "clip": 224,
+      "marker": 16,
+      "phase_at_check": 41.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x1823f14",
+      "input_fields": {
+        "marker_i32": 16,
+        "phase_bits": "0x42240000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 2,
+      "state_sha256": "e483236feb8225ac14d9f5185430656b34cb77bbac61cc7983c6a5454bc8b794",
+      "actor": 9,
+      "selected_actor": 5,
+      "case": "actor-9-1880490-",
+      "action": 5,
+      "substate": 33,
+      "clip": 236,
+      "marker": 10,
+      "phase_at_check": 48.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x1830f74",
+      "input_fields": {
+        "marker_i32": 10,
+        "phase_bits": "0x42400000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 2,
+      "state_sha256": "e483236feb8225ac14d9f5185430656b34cb77bbac61cc7983c6a5454bc8b794",
+      "actor": 9,
+      "selected_actor": 5,
+      "case": "actor-9-1880490-",
+      "action": 5,
+      "substate": 33,
+      "clip": 236,
+      "marker": 11,
+      "phase_at_check": 48.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x1830fa4",
+      "input_fields": {
+        "marker_i32": 11,
+        "phase_bits": "0x42400000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 8,
+      "state_sha256": "be991018171ee3bc1cd6ce621edb4a4423b3fecbdd68055a12bd97cd87f711bf",
+      "actor": 11,
+      "selected_actor": 10,
+      "case": "actor-11-1880490-",
+      "action": 9,
+      "substate": 5,
+      "clip": 264,
+      "marker": 18,
+      "phase_at_check": 30.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x17d3418",
+      "input_fields": {
+        "marker_i32": 18,
+        "phase_bits": "0x41f00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 8,
+      "state_sha256": "be991018171ee3bc1cd6ce621edb4a4423b3fecbdd68055a12bd97cd87f711bf",
+      "actor": 11,
+      "selected_actor": 10,
+      "case": "actor-11-1880490-",
+      "action": 9,
+      "substate": 5,
+      "clip": 264,
+      "marker": 20,
+      "phase_at_check": 30.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x17d34f4",
+      "input_fields": {
+        "marker_i32": 20,
+        "phase_bits": "0x41f00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 6,
+      "state_sha256": "7d0c4ec1c790ff1dfd645a20dfeb108287968a944fbba400f9099bb1864eb291",
+      "actor": 10,
+      "selected_actor": 10,
+      "case": "actor-10-1880490-",
+      "action": 4,
+      "substate": 34,
+      "clip": 269,
+      "marker": 16,
+      "phase_at_check": 41.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x1885594",
+      "input_fields": {
+        "marker_i32": 16,
+        "phase_bits": "0x42240000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 10,
+      "state_sha256": "969112aad5a23ce64d4a73d9328e47caf220ef6fa28265ec0e86bef07af1eae2",
+      "actor": 8,
+      "selected_actor": 8,
+      "case": "actor-8-1880490-",
+      "action": 4,
+      "substate": 17,
+      "clip": 275,
+      "marker": 17,
+      "phase_at_check": 26.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x182e148",
+      "input_fields": {
+        "marker_i32": 17,
+        "phase_bits": "0x41d00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 10,
+      "state_sha256": "969112aad5a23ce64d4a73d9328e47caf220ef6fa28265ec0e86bef07af1eae2",
+      "actor": 8,
+      "selected_actor": 8,
+      "case": "actor-8-1880490-",
+      "action": 4,
+      "substate": 17,
+      "clip": 275,
+      "marker": 16,
+      "phase_at_check": 26.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x18859d8",
+      "input_fields": {
+        "marker_i32": 16,
+        "phase_bits": "0x41d00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 9,
+      "state_sha256": "087116970641852d62bc17c411bb11cc370181fec79713559d9ab9ddc02d8a7c",
+      "actor": 8,
+      "selected_actor": 8,
+      "case": "actor-8-1880490-",
+      "action": 14,
+      "substate": 21,
+      "clip": 797,
+      "marker": 10,
+      "phase_at_check": 26.0,
+      "step_at_check": 1.0,
+      "eligible": false,
+      "original_call_site": "0x18b97b8",
+      "input_fields": {
+        "marker_i32": 10,
+        "phase_bits": "0x41d00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    },
+    {
+      "state_index": 9,
+      "state_sha256": "087116970641852d62bc17c411bb11cc370181fec79713559d9ab9ddc02d8a7c",
+      "actor": 8,
+      "selected_actor": 8,
+      "case": "actor-8-1880490-",
+      "action": 14,
+      "substate": 21,
+      "clip": 797,
+      "marker": 26,
+      "phase_at_check": 26.0,
+      "step_at_check": 1.0,
+      "eligible": true,
+      "original_call_site": "0x18b9f24",
+      "input_fields": {
+        "marker_i32": 26,
+        "phase_bits": "0x41d00000",
+        "step_bits": "0x3f800000",
+        "blend_window": 0,
+        "blend_tick": 0,
+        "cycle_fix": 0
+      },
+      "meaning": "temporal_check_unclassified"
+    }
+  ],
+  "proof_reports_sha256": {
+    "state-study.json": "a65e279254487274e955aa0be1ed395f3cbfa6d73b8d93a96ffbc14f71e72b0a",
+    "event-report.json": "2bf373e24d7302caa91900407ee8ec2dc6d60103e43964a2fc42979c66a78826"
+  },
+  "package": {
+    "bytes": 422287,
+    "members": 20,
+    "sha256": "200fb5f31b8d27188690368c476f3105160f67733a75eb120f71b229227add85",
+    "offline_verification": {
+      "result": "passed",
+      "phase_gate_comparisons": 4280,
+      "anchor_741_comparisons": 246,
+      "scope": "Offline regression against sealed original-call outputs. No fresh PES execution."
+    },
+    "path": "artifacts/pes3-training-states-research.zip"
+  },
+  "runtime_enabled": false,
+  "remaining": [
+    "Complete gesture selection and contact/release conditions across contexts",
+    "Source pose evaluation and blend agreement with captured PCSX2 poses",
+    "Confirmed axes, units, anatomical retarget and timing in the native engine",
+    "Playable Windows integration and regression testing"
+  ],
+  "scope": "Independent explicit original calls on unmodified captured memory, then static C++ recompilation checked against full EE RAM, scratchpad, low GPR/FPU registers and instruction paths. Labels do not imply consecutive frames. Event arguments are observed at actual callee entries after delay slots. No resumed PCSX2 frame, complete gesture, action name guessed from an ID, hardware-exact arithmetic or native game integration.",
+  "references_sha256": {
+    "mips_integer_reference.py": "2ff253c2fddb8eae6081b80786e9a13502da24e086ce0c88dfb01b50aa77c906",
+    "float_vector_model.py": "3ae41e793c4ea6cfd17fba870f3e504f2601632d6a3bd568480dd9c8c317a0eb",
+    "pose_math_model.py": "a5bfdba5d75f60ca10b20dd4eb7491c2d5897a82033cde9afdab03601383dc56",
+    "scratch_field_model.py": "199846d8bf4cfe31e4bfb3cab61873830abd139334206b9e640371a5298341cc"
+  },
+  "tests": {
+    "suite": "test_pes3_*.py",
+    "passed": 142,
+    "failed": 0,
+    "skipped": 0,
+    "log": "/tmp/pes3-states-full-tests-v1.log"
+  }
+}
