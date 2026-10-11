@@ -70,6 +70,7 @@ PES3Preview::PES3Preview(boost::intrusive_ptr<Node> target) {
     return;
   }
   if (!bank.sample(47,0,pose)) { loadError="Falha ao avaliar pose PES3"; return; }
+  for (unsigned i=0;i<19;++i) referenceRotations[i]=pose.rig.bones[i].composed_rotation;
   playback.select(47);
   // Load a named surface rather than depending on ASE submaterial ordering.
   material = Material{};
@@ -102,10 +103,24 @@ std::string PES3Preview::caption() const {
   std::ostringstream text;
   text << "Estudo PES3: clip " << playback.clip << " fase " << playback.phase << '/' << bank.duration(playback.clip)
        << (playback.playing ? " | reproduzindo" : " | parado")
-       << " | F8/F9: clip | F10: pausa/reinicio | F11: +1 | C: capturados | F7: sair";
+       << " | V: corpo " << (bodyEnabled ? "ON" : "OFF")
+       << " | F8/F9: clip | F10: pausa | F11: +1 | C: capturados | F7: sair";
   return text.str();
 }
 std::string PES3Preview::toggle() { if (geometry) visible=!visible; return caption(); }
+std::string PES3Preview::toggleBody() {
+  if (visible && geometry) bodyEnabled=!bodyEnabled;
+  return caption();
+}
+void PES3Preview::releaseBodyForGameplay() {
+  if (bodyEnabled) {
+    bodyEnabled=false;
+    if (GetConfiguration()->GetBool("training_telemetry",false)) printf("PES3_BODY released reason=gameplay_input\n");
+  }
+}
+bool PES3Preview::bodyPose(const pes3::NativeRotations& reference,pes3::NativeRotations& out) const {
+  return fetched.visible && fetched.body && pes3::adaptNativePose(fetched.rotations,referenceRotations,reference,out);
+}
 std::string PES3Preview::select(int offset) {
   if (visible && geometry) {
     const int count=bank.count();
@@ -159,6 +174,7 @@ void PES3Preview::process(bool matchPaused) {
 }
 void PES3Preview::prepare(const Vector3& position,const Vector3& direction) {
   buffer.visible=visible && bool(geometry);
+  buffer.body=bodyEnabled;
   if (!buffer.visible) return;
   const Vector3 right(direction.coords[1],-direction.coords[0],0);
   buffer.position=position.Get2D()+direction*2.8f+right*1.1f;
@@ -166,6 +182,7 @@ void PES3Preview::prepare(const Vector3& position,const Vector3& direction) {
   for (unsigned i=0;i<19;++i) {
     const auto& p=pose.rig.bones[i].composed_translation;
     buffer.points[i]=Vector3(p[0],p[2],-p[1])*displayScale;
+    buffer.rotations[i]=pose.rig.bones[i].composed_rotation;
   }
   buffer.revision=revision;
   buffer.clip=playback.clip; buffer.phase=playback.phase;

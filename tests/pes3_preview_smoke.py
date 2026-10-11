@@ -77,6 +77,9 @@ try:
     tap('F11');wait(lambda:states()[-1]['revision']>before['revision'])
     after=states()[-1]
     check('single source-phase step',after['playing']==0 and abs(after['phase']-before['phase']-1)<.00001,after)
+    tap('v');wait(lambda:'PES3_BODY_APPLY joints=13' in log.read_text())
+    # Third-person view exposes the skinned native player, not just the graph.
+    tap('Tab');tap('Tab')
     tap('F9');wait(lambda:states()[-1]['clip']==47)
     tap('c');wait(lambda:states()[-1]['phase']<10)
     # Observed clip IDs, rather than fabricated names for pass/header gestures.
@@ -86,9 +89,29 @@ try:
     all_states=states()
     check('observed source clips can be rendered',len({s['clip']for s in all_states})>=15,sorted({s['clip']for s in all_states}))
     check('finite source points',all(math.isfinite(v)for s in all_states for v in s['point']),len(all_states))
+    body_pattern=re.compile(r'PES3_BODY_APPLY joints=13 knee=\[([^]]+)\] ankles_z=\[([^]]+)\] head_z=([-\d.]+)')
+    bodies=[([float(v)for v in m[1].split(',')],[float(v)for v in m[2].split(',')],float(m[3]))for m in body_pattern.finditer(log.read_text())]
+    check('source rotations reach the native player',len(bodies)>10 and len({tuple(b[0])for b in bodies})>10,len(bodies))
+    check('native study rotations and positions finite',all(math.isfinite(v)for q,feet,head in bodies for v in q+feet+[head]) and
+          all(abs(sum(v*v for v in q)-1)<.00002 for q,_,_ in bodies),len(bodies))
     tap('F10')
     from PIL import ImageGrab
     ImageGrab.grab(xdisplay=environment['DISPLAY']).save(args.output/'preview.png')
+    tap('v');before=len(body_pattern.findall(log.read_text()));time.sleep(.3)
+    check('closing body study restores native animation',len(body_pattern.findall(log.read_text()))==before and
+          'PES3_BODY_RESTORE native=1' in log.read_text(),before)
+    tap('v');wait(lambda:len(body_pattern.findall(log.read_text()))>before)
+    key('w',True);time.sleep(.3);key('w',False);time.sleep(.2)
+    released=len(body_pattern.findall(log.read_text()));time.sleep(.2)
+    check('movement automatically restores gameplay pose','PES3_BODY released reason=gameplay_input' in log.read_text() and
+          len(body_pattern.findall(log.read_text()))==released,released)
+    for action_key in ('j','k','i','l','Shift_L','space'):
+        old_count=len(body_pattern.findall(log.read_text()))
+        old_releases=log.read_text().count('PES3_BODY released reason=gameplay_input')
+        tap('v');wait(lambda:len(body_pattern.findall(log.read_text()))>old_count)
+        tap(action_key);wait(lambda:log.read_text().count('PES3_BODY released reason=gameplay_input')>old_releases)
+        held_count=len(body_pattern.findall(log.read_text()));time.sleep(.2)
+        check('action restores gameplay pose '+action_key,len(body_pattern.findall(log.read_text()))==held_count,held_count)
     tap('F7');before=len(states());time.sleep(.3)
     check('closing preview stops source work',len(states())==before,before)
     frames=[json.loads(line[len('TRAINING_FRAME '):])for line in log.read_text().splitlines()if line.startswith('TRAINING_FRAME ')]

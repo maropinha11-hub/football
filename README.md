@@ -26,9 +26,14 @@ equivalência ao PES são verificações diferentes. Consulte
 O [estudo PES3 dentro do treino](docs/PES3-ANIMACOES-NO-TREINO.md) reproduz os
 1.105 clips recebidos em um esqueleto de 19 ossos ao lado do jogador. Na versão
 Windows, use `importar-pes3.bat` com seu `fpsoccer-pes-nucleo-v14.zip`, depois
-`estudar-pes3.bat`. Há pausa, avanço de fase e troca de clip. A ligação à malha,
-a seleção completa de ações e os contatos PES ainda precisam ser integrados;
+`estudar-pes3.bat`. Há pausa, avanço de fase e troca de clip. A ligação definitiva
+à malha, a seleção completa de ações e os contatos PES ainda precisam ser integrados;
 `run-training.bat` mantém a gameplay nativa aprovada.
+
+O [teste de poses na malha nativa](docs/PES3-CORPO-NATIVO.md), ativado com V
+no estudo, transfere as rotações para os ossos do personagem. Retomar os
+comandos restaura as animações nativas. A seleção automática das jogadas PES
+e seus contatos continuam pendentes.
 
 O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)

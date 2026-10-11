@@ -14,6 +14,7 @@
 #include "animcollection.hpp"
 
 #include "../../AIsupport/mentalimage.hpp"
+#include "../../../pes3/native_pose.hpp"
 
 using namespace blunted;
 
@@ -324,6 +325,8 @@ class HumanoidBase {
 
     boost::shared_ptr<AnimCollection> anims;
     NodeMap nodeMap;
+    pes3::NativeRotations pes3NativeReference{};
+    bool pes3StudyWasApplied = false;
 
     AnimApplyBuffer animApplyBuffer;
 

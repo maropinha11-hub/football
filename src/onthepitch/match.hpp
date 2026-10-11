@@ -119,6 +119,8 @@ class Match {
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
     bool TrainingHasBall() const { return trainingView.withBall; }
     bool IsFirstPerson() const { return trainingCameraMode.load() == 2; }
+    bool PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeRotations& reference,
+                          pes3::NativeRotations& out) const;
     bool IsTrainingFreeKick() const { return trainingExercise == 4; }
     void UpdateTrainingView(IHIDevice *input);
     void ResolveTrainingBallContacts(const Vector3 &from);

@@ -164,6 +164,7 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
   if (pes3Preview) {
+    if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
     if (keyOnce(SDLK_F8)) SpamMessage(pes3Preview->select(1),7000);
     if (keyOnce(SDLK_F9)) SpamMessage(pes3Preview->select(-1),7000);
@@ -216,6 +217,11 @@ void Match::ProcessTraining() {
   }
   trainingPreviousButtons = buttons;
 
+  if (pes3Preview && (input->GetDirection().GetLength()>0.1f ||
+      input->GetButton(e_ButtonFunction_ShortPass) || input->GetButton(e_ButtonFunction_LongPass) ||
+      input->GetButton(e_ButtonFunction_HighPass) || input->GetButton(e_ButtonFunction_Shot) ||
+      input->GetButton(e_ButtonFunction_Sprint) || input->GetButton(e_ButtonFunction_Dribble)))
+    pes3Preview->releaseBodyForGameplay();
   if (pes3Preview) pes3Preview->process(pause);
   if (pause) trainingPaceWall_ms = 0;
 

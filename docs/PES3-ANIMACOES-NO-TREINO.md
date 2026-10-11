@@ -5,6 +5,10 @@ PES3 recebido, dentro do campo, em um esqueleto de estudo com **19 ossos** ao la
 do jogador. Esse esqueleto conserva a hierarquia original; não passa pela
 redução para os 13 ossos da malha nativa.
 
+A continuação [PES3-CORPO-NATIVO.md](PES3-CORPO-NATIVO.md) acrescenta um teste
+de aplicação das rotações à malha do jogador, ativado com V. É uma adaptação
+visual; ainda não seleciona automaticamente as animações das jogadas.
+
 **A gameplay completa do PES ainda não substitui a gameplay nativa.** O jogador
 controlável, as colisões, os passes, os chutes, as cabeçadas e a câmera continuam
 usando o treino aprovado. O esqueleto de estudo não participa da física.
@@ -26,6 +30,7 @@ somente os dados numéricos do arquivo local, sem executar código do ZIP.
 | Tecla | Função no estudo |
 | --- | --- |
 | F7 | Mostrar/ocultar o esqueleto PES3 |
+| V | Aplicar/remover a pose de estudo na malha do jogador parado |
 | F8 / F9 | Clip seguinte/anterior, mantendo o estado de pausa |
 | F10 | Pausar/continuar; reiniciar se chegou ao final |
 | F11 | Pausar e avançar uma unidade de fase |

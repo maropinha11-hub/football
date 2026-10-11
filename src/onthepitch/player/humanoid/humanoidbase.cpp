@@ -217,6 +217,10 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
   animApplyBuffer.orientation = 0;
   animApplyBuffer.offsets.clear();
   animApplyBuffer.anim->Apply(nodeMap, animApplyBuffer.frameNum, 0, animApplyBuffer.smooth, animApplyBuffer.smoothFactor, animApplyBuffer.position, animApplyBuffer.orientation, animApplyBuffer.offsets, 0, false, true);
+  for (unsigned i=0;i<13;++i) {
+    const auto rotation=nodeMap.at(pes3::nativeBoneNames[i])->GetDerivedRotation().GetNormalized();
+    for (unsigned lane=0;lane<4;++lane) pes3NativeReference[i][lane]=rotation.elements[lane];
+  }
   std::vector < boost::intrusive_ptr<Node> > jointsVec;
   humanoidNode->GetNodes(jointsVec, true);
 
@@ -803,9 +807,37 @@ void HumanoidBase::Put() {
 
   //printf("anim ptr: %i\n", fetchedbuf_animApplyBuffer.anim);
   //printf("nodemap size: %i\n", nodeMap.size());
-  fetchedbuf_animApplyBuffer.anim->Apply(nodeMap, fetchedbuf_animApplyBuffer.frameNum, -1, fetchedbuf_animApplyBuffer.smooth, fetchedbuf_animApplyBuffer.smoothFactor, fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets, &movementHistory, timeDiff_ms, fetchedbuf_animApplyBuffer.noPos, false);
+  // Explicit study override only. The actor/root position, joint offsets,
+  // proportions, skin weights, gameplay events and physics remain native.
+  pes3::NativeRotations studyRotations;
+  const bool studyApplied=match->PES3StudyBodyPose(player,pes3NativeReference,studyRotations);
+  const bool restoreNative=pes3StudyWasApplied && !studyApplied;
+  if (restoreNative) {
+    movementHistory.clear();
+    for (auto& node:buf_TemporalHumanoidNodes) { node.position.Clear(); node.orientation.Clear(); }
+    if (GetConfiguration()->GetBool("training_telemetry",false)) printf("PES3_BODY_RESTORE native=1\n");
+  }
+  fetchedbuf_animApplyBuffer.anim->Apply(nodeMap, fetchedbuf_animApplyBuffer.frameNum, -1,
+    fetchedbuf_animApplyBuffer.smooth && !restoreNative, fetchedbuf_animApplyBuffer.smoothFactor,
+    fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets,
+    &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false);
+  pes3StudyWasApplied=studyApplied;
+  if (studyApplied) {
+    for (unsigned i=0;i<13;++i) {
+      const auto& q=studyRotations[i];
+      nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(Quaternion(q[0],q[1],q[2],q[3]),false);
+    }
+  }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  if (studyApplied && GetConfiguration()->GetBool("training_telemetry",false)) {
+    const auto& q=studyRotations[8];
+    const auto left=nodeMap.at("left_ankle")->GetDerivedPosition();
+    const auto right=nodeMap.at("right_ankle")->GetDerivedPosition();
+    const auto head=nodeMap.at("neck")->GetDerivedPosition();
+    printf("PES3_BODY_APPLY joints=13 knee=[%.6f,%.6f,%.6f,%.6f] ankles_z=[%.6f,%.6f] head_z=%.6f\n",
+      q[0],q[1],q[2],q[3],left.coords[2],right.coords[2],head.coords[2]);
+  }
 
   // we've just set the humanoid positions for time fetchedbuf_animApplyBuffer.snapshotTime_ms. however, it's eventually going to be displayed in a historic position, for temporal smoothing.
   if (fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {

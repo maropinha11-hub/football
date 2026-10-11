@@ -10,6 +10,9 @@ selecione seu `fpsoccer-pes-nucleo-v14.zip` e execute `estudar-pes3.bat`.
 O modo mostra um esqueleto de 19 ossos ao lado do jogador, com pausa e avanço
 de fase. A substituição da gameplay do PES ainda está pendente.
 Os controles e os limites estão em [PES3-ANIMACOES-NO-TREINO.md](PES3-ANIMACOES-NO-TREINO.md).
+Com o jogador parado, V aplica a pose PES à malha nativa para teste.
+Movimentar, correr, dominar, passar ou chutar restaura automaticamente a animação
+nativa. Consulte [PES3-CORPO-NATIVO.md](PES3-CORPO-NATIVO.md).
 
 `run-controller-test.bat` executa testes automáticos com controle virtual,
 câmera, carga de chute e colisões. Execute o teste com controles físicos
