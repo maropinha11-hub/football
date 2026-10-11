@@ -2,6 +2,12 @@
   "schema_version": 1,
   "result": "rig_verified_with_captured_pose_equivalence_open",
   "scope": "Eight own-structure C++ rig operations pass selected host-model original-call comparisons. Packed rotation provenance is verified in the supplied state. Final captured pose bit equality and native training integration remain open.",
+  "captured_state_context": {
+    "source": "user_report",
+    "description": "Jogador parado com a bola no treino, conforme confirmado pelo usuário.",
+    "state_sha256": "b24f8ae70f608efc6c78a3a5ff249ee86ccd8c3043ebc752fca5a573ad2a87cb",
+    "use": "Referência de repouso com a bola; não é uma sequência de chute nem uma validação temporal de contato."
+  },
   "rig": {
     "schema_version": 1,
     "run_id": "f0f75b0c-943a-4f2a-8e58-da909d63bc38",

@@ -34,6 +34,11 @@ O identificador informa **PCSX2 v2.8.2**, formato `0x9A590000`. Os 16 membros
 passaram nas verificações de tamanho e CRC. O estado usa ZIP com Zstandard,
 método 93, para as regiões de memória.
 
+O usuário confirmou que capturou este estado com o jogador parado com a bola.
+Esse contexto visual vem do relato do usuário; os códigos de ação/subestado
+abaixo continuam sendo os valores numéricos lidos da memória. O estado serve
+como referência de repouso com a bola, sem registrar a sequência de um chute.
+
 | Conferência | Resultado |
 | --- | --- |
 | EE RAM | 33.554.432 bytes; SHA-256 `dff465421161cc88efe4c9ac853bff7c03026aaead7ce32471ae98d9481bafbd` |

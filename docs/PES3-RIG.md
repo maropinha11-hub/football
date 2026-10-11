@@ -161,8 +161,10 @@ e `runtime_enabled: false`.
 
 Para validar seleção e contatos ao longo do movimento, a evidência seguinte
 precisa incluir uma sequência de quadros PES do mesmo gesto, com estados
-antes, no contato e depois. O único save completo disponível é um instante
-do treino. Estados adicionais permitiriam verificar relógio, caches, apoio,
+antes, no contato e depois. O usuário confirmou que o save completo disponível
+mostra o jogador parado com a bola. Ele é nossa referência de repouso com a
+bola; não registra a sequência de um chute. Estados adicionais permitiriam
+verificar relógio, caches, apoio,
 mistura e liberação da bola contra o movimento capturado. A referência do
 esqueleto ainda precisa ser recuperada do recurso de modelo ou de sua
 inicialização original; uma sequência em movimento não substitui essa referência.
