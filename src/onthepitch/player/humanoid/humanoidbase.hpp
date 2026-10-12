@@ -4,6 +4,7 @@
 
 #ifndef _HPP_HUMANOIDBASE
 #define _HPP_HUMANOIDBASE
+#include <memory>
 
 #include "base/math/vector3.hpp"
 #include "scene/scene3d/node.hpp"
@@ -154,6 +155,10 @@ struct AnimApplyBuffer {
     trainingTouchBlend = src.trainingTouchBlend;
     trainingTouchTarget = src.trainingTouchTarget;
     trainingTouchLeft = src.trainingTouchLeft;
+    dribbleTrialBlend = src.dribbleTrialBlend;
+    dribbleTrialPhase = src.dribbleTrialPhase;
+    dribbleTrialLegBlend = src.dribbleTrialLegBlend;
+    dribbleTrialFunction = src.dribbleTrialFunction;
   }
   Animation *anim;
   int frameNum;
@@ -167,6 +172,10 @@ struct AnimApplyBuffer {
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
+  float dribbleTrialBlend = 0;
+  float dribbleTrialPhase = 0;
+  float dribbleTrialLegBlend = 0;
+  int dribbleTrialFunction = 0;
 };
 
 struct TemporalHumanoidNode {
@@ -328,6 +337,10 @@ class HumanoidBase {
     pes3::NativeBind pes3NativeReference{};
     bool pes3StudyWasApplied = false;
     float pes3RootCorrection = 0;
+    std::unique_ptr<Animation> dribbleTrialAnimation;
+    float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
+    float dribbleTrialSourceSpeed = 4.3653779f;
+    unsigned long dribbleTrialSnapshot_ms = 0;
 
     AnimApplyBuffer animApplyBuffer;
 

@@ -116,10 +116,18 @@ void Match::ProcessTraining() {
   auto keyOnce = [&events](SDL_Keycode key) {
     return events.ConsumeKeyPress(key);
   };
+  auto toggleDribbleAnimation = [this]() {
+    const bool enabled = !GetConfiguration()->GetBool("training_fbx_dribble", false);
+    GetConfiguration()->SetBool("training_fbx_dribble", enabled);
+    SpamMessage(enabled ? "Conducao: DefenseJog_F | L3/T: original" : "Conducao: original | L3/T: DefenseJog_F", 4000);
+    printf("TRAINING_FBX_TOGGLE enabled=%d\n", enabled ? 1 : 0);
+    fflush(stdout);
+  };
 
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
+  if (keyOnce(SDLK_t)) toggleDribbleAnimation();
   if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
@@ -159,6 +167,9 @@ void Match::ProcessTraining() {
   if ((buttons & 2u) && !(trainingPreviousButtons & 2u)) ResetTraining(trainingExercise);
   if (trainingController > 0) {
     int slot = static_cast<HIDGamepad*>(input)->GetGamepadID();
+    const unsigned int trialMask = 1u << 7;
+    if (events.GetControllerButton(slot, SDL_CONTROLLER_BUTTON_LEFTSTICK)) buttons |= trialMask;
+    if ((buttons & trialMask) && !(trainingPreviousButtons & trialMask)) toggleDribbleAnimation();
     const SDL_GameControllerButton shortcuts[] = {SDL_CONTROLLER_BUTTON_DPAD_UP,
         SDL_CONTROLLER_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_DOWN,
         SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK};
@@ -245,8 +256,8 @@ void Match::ProcessTraining() {
       for (unsigned int i = 0; i < 11; ++i)
         if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
       const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6};
-      for (unsigned int i = 0; i < 12; ++i)
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t};
+      for (unsigned int i = 0; i < 13; ++i)
         if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);
@@ -296,7 +307,7 @@ void Match::ProcessTraining() {
     cameraNodeOrientation = QUATERNION_IDENTITY;
     const bool inspectingPose=pes3Preview && pes3Preview->studyingBody();
     cameraNodePosition = designatedPossessionPlayer->GetPosition() +
-        (inspectingPose ? Vector3(0,-4.5f,3.6f) : Vector3(0,-13,9));
+        (inspectingPose ? Vector3(0,-4.5f,3.6f) : Vector3(0,-4.5f,2.8f));
     cameraFOV = 48.0f;
     cameraNearCap = 0.3f;
     cameraFarCap = 250.0f;

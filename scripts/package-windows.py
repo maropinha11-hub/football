@@ -121,6 +121,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
+        "Teste da animacao DefenseJog_F: L3 (clique no analogico esquerdo)\n"
+        "ou T alterna entre a conducao original e a nova. Comeca na original.\n"
+        "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n"
+        "Corridas, viradas e jogadas usam as animacoes e contatos nativos.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
@@ -169,14 +173,14 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
     update = artifacts / ("football-windows-gameplay-original.zip" if approved_binary is not None else
-                          "football-windows-original-primeira-pessoa.zip")
+                          "football-windows-teste-animacao-fbx.zip")
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            ("Windows x64 — Football original, primeira pessoa e tempo normal\r\n\r\n" if approved_binary is None else
+            ("Windows x64 — teste de conducao DefenseJog_F\r\n\r\n" if approved_binary is None else
              "Windows x64 — gameplay original com primeira pessoa\r\n\r\n") +
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
@@ -184,15 +188,15 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "3. Aceite substituir os arquivos.\r\n"
             "4. Abra run-training.bat.\r\n\r\n"
             + ("Restaurada a base aprovada 37a5543.\r\n" if approved_binary is not None else
-             "Restaurados os arquivos originais da fisica da bola e dos\r\n"
-             "impulsos de conducao, dominio, passe e chute (vi3itor 68159a2).\r\n"
-             "Mantidos a camera e os comandos em primeira pessoa aprovados.\r\n"
-             "Retirados os ajustes de velocidade, distancia, perna dominante,\r\n"
-             "toques, colisores extras e interrupcao antecipada dos passos.\r\n"
-             "RB permite correr. RT fica reservado e sem funcao no treino.\r\n"
-             "O tempo do jogo e normal; a simulacao mantem passos de 10 ms.\r\n") +
-            "O ZIP inclui training.config para restaurar o modo nativo e a\r\n"
-            "primeira pessoa como padrao. Sem novas animacoes nesta restauracao.\r\n"
+             "L3 (clique no analogico esquerdo) ou T alterna original/nova.\r\n"
+             "Comeca na original; conduza reto com bola, sem corrida, para testar.\r\n"
+             "R3 alterna as cameras para ver o corpo completo.\r\n"
+             "Fisica, comandos e contatos da base aprovada continuam nativos.\r\n"
+             "RB permite correr. RT continua reservado.\r\n") +
+            "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
         output.write(stage / "training.config", "training.config")
+        if approved_binary is None:
+            for path in sorted((stage / "media" / "training").glob("DefenseJog_F.*")):
+                output.write(path, path.relative_to(stage))
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

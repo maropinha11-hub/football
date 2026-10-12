@@ -1,0 +1,216 @@
+{
+  "description": "Actual straight skin bind captured from the native model after PrepareFullbodyModel",
+  "native_object_sha256": "f6dfb25c5578d6b806c7818130dd052aec86907e01733912c59e1e0d19728e61",
+  "bones": [
+    {
+      "name": "body",
+      "offset": [
+        0.0,
+        0.0,
+        0.95999998
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "middle",
+      "offset": [
+        0.0,
+        0.0,
+        0.15000001
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "neck",
+      "offset": [
+        0.0,
+        -0.03,
+        0.5
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "left_shoulder",
+      "offset": [
+        0.16,
+        -0.01,
+        0.47999999
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "left_elbow",
+      "offset": [
+        -0.01,
+        0.0,
+        -0.33000001
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "right_shoulder",
+      "offset": [
+        -0.16,
+        -0.01,
+        0.47999999
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "right_elbow",
+      "offset": [
+        0.01,
+        0.0,
+        -0.33000001
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "left_thigh",
+      "offset": [
+        0.087,
+        0.0,
+        -0.01
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "left_knee",
+      "offset": [
+        0.0,
+        0.0,
+        -0.41999999
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "left_ankle",
+      "offset": [
+        0.0,
+        -0.04,
+        -0.44
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "right_thigh",
+      "offset": [
+        -0.087,
+        0.0,
+        -0.01
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "right_knee",
+      "offset": [
+        0.0,
+        0.0,
+        -0.41999999
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "right_ankle",
+      "offset": [
+        0.0,
+        -0.04,
+        -0.44
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "feet": [
+    {
+      "side": 0,
+      "min": [
+        -0.04703253,
+        -0.16062167,
+        -0.08918186
+      ],
+      "max": [
+        0.05194387,
+        -0.04065631,
+        -0.02426594
+      ]
+    },
+    {
+      "side": 1,
+      "min": [
+        -0.05268589,
+        -0.16033891,
+        -0.08914915
+      ],
+      "max": [
+        0.04799089,
+        -0.04065705,
+        -0.02426576
+      ]
+    }
+  ]
+}

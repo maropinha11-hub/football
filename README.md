@@ -8,6 +8,14 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+O [teste Windows de condução DefenseJog_F](artifacts/football-training-windows-x86_64.zip)
+inclui a animação FBX enviada pelo usuário, adaptada ao esqueleto nativo.
+Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
+L3 (clicar no analógico esquerdo) ou T alterna original/nova; a original é
+o padrão. Conduza reto com bola, sem RB, e use R3 para ver o corpo.
+As viradas, corridas e jogadas continuam nativas; física e controles
+aprovados permanecem. Consulte [o teste de animação](docs/ANIMACAO-FBX-TESTE.md).
+
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o
 direito olha ao redor sem alterar a direção do movimento. Após virar, empurre
@@ -156,7 +164,8 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Mover / conduzir | Analógico esquerdo | WASD |
 | Virar sem bola / olhar com bola | Analógico direito | Setas |
 | Correr | RB + analógico | Shift + WASD |
-| Domínio próximo / frear | RT | Espaço |
+| Reservado no treino | RT | Espaço |
+| Alternar condução original / DefenseJog_F | Clique do analógico esquerdo (L3) | T |
 | Passe curto | A | J |
 | Passe em profundidade | Y | I |
 | Passe alto / carrinho sem bola | B | L |
@@ -164,7 +173,6 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Cobertura | LB + X | Q + K |
 | Cancelar chute ou passe alto | A durante a preparação | J durante a preparação |
 | Modificador especial original | LT | Ctrl esquerdo |
-| Super cancel / toque à frente | RB + RT | Shift + Espaço |
 | Recomeçar exercício | View | R |
 | Trazer bola à posição atual | — | F2 |
 | Pausar / retomar | Menu | P |

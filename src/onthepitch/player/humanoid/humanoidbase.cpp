@@ -139,6 +139,13 @@ HumanoidBase::HumanoidBase(PlayerBase *player, Match *match, boost::intrusive_pt
   FillTemporalHumanoidNodes(humanoidNode, buf_TemporalHumanoidNodes);
 
   PrepareFullbodyModel(colorCoords);
+  if (TrainingEnabled() && boost::filesystem::exists("media/training/DefenseJog_F.anim")) {
+    dribbleTrialAnimation.reset(new Animation());
+    dribbleTrialAnimation->Load("media/training/DefenseJog_F.anim");
+    const float sourceSpeed = std::atof(dribbleTrialAnimation->GetVariable("source_speed_mps").c_str());
+    if (sourceSpeed > .1f) dribbleTrialSourceSpeed = sourceSpeed;
+    printf("TRAINING_FBX_LOADED frames=%d\n", dribbleTrialAnimation->GetFrameCount());
+  }
   buf_bodyUpdatePhase = 0;
 
 
@@ -475,6 +482,8 @@ bool HumanoidBase::NeedsModelUpdate() {
 
 void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
   const bool studyTelemetry=!updateSrc && pes3StudyWasApplied && GetConfiguration()->GetBool("training_telemetry",false);
+  const bool fbxTelemetry=!updateSrc && !pes3StudyWasApplied &&
+    fetchedbuf_animApplyBuffer.dribbleTrialBlend>0 && GetConfiguration()->GetBool("training_telemetry",false);
   float studyRigidError=0,studyFootMinimum=100,studyRadius=0;
   unsigned studyVertexCount=0,studyInvalidCount=0;
 
@@ -592,7 +601,7 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
 
       }
 
-      if(studyTelemetry) {
+      if(studyTelemetry || fbxTelemetry) {
         ++studyVertexCount;
         for(float value:resultVertex.coords)if(!std::isfinite(value))++studyInvalidCount;
         studyRadius=std::max(studyRadius,resultVertex.GetLength());
@@ -624,6 +633,8 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
   } // subgeom
 
   if(studyTelemetry)printf("PES3_BODY_SKIN vertices=%u invalid=%u rigid_error=%.8f foot_min_z=%.6f radius=%.6f\n",
+    studyVertexCount,studyInvalidCount,studyRigidError,studyFootMinimum,studyRadius);
+  if(fbxTelemetry)printf("TRAINING_FBX_SKIN vertices=%u invalid=%u rigid_error=%.8f foot_min_z=%.6f radius=%.6f\n",
     studyVertexCount,studyInvalidCount,studyRigidError,studyFootMinimum,studyRadius);
 
   fullbodyGeometryData->resourceMutex.unlock();
@@ -790,6 +801,44 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
 
   buf_animApplyBuffer = animApplyBuffer;
   buf_animApplyBuffer.snapshotTime_ms = snapshotTime_ms;
+  // Snapshot the trial on the simulation thread; render never reads live
+  // controller state or changes a native animation/ball contact command.
+  const float trialDt = match->GetPause() ? 0 : (dribbleTrialSnapshot_ms ? clamp(snapshotTime_ms - dribbleTrialSnapshot_ms, 0ul, 100ul) * .001f : .01f);
+  dribbleTrialSnapshot_ms = snapshotTime_ms;
+  bool trialEligible = false;
+  if (dribbleTrialAnimation && TrainingEnabled() && match->TrainingHasBall() &&
+      match->GetDesignatedPossessionPlayer() == player && player->GetExternalController() &&
+      (currentAnim->functionType == e_FunctionType_Movement || currentAnim->functionType == e_FunctionType_BallControl)) {
+    auto *human = static_cast<HumanController*>(player->GetExternalController());
+    const Vector3 movement = spatialState.movement.Get2D();
+    const Vector3 intent = human->GetDirection().Get2D();
+    const Vector3 stick = human->GetHIDevice()->GetDirection();
+    const bool forwardInput = !match->IsFirstPerson() || (stick.coords[1] > .1f && std::fabs(stick.coords[0]) < .15f);
+    trialEligible = forwardInput && human->GetActionMode() == 0 &&
+        !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
+        movement.GetLength() > 1.0f && movement.GetLength() < 6.0f &&
+        spatialState.bodyDirectionVec.GetDotProduct(movement.GetNormalized(0)) > .93f &&
+        movement.GetNormalized(0).GetDotProduct(intent.GetNormalized(0)) > .97f &&
+        match->GetBall()->Predict(0).coords[2] < .5f;
+  }
+  const bool requested = GetConfiguration()->GetBool("training_fbx_dribble", false) && trialEligible;
+  dribbleTrialBlend = clamp(dribbleTrialBlend + (requested ? 1 : -1) * trialDt / .16f, 0.0f, 1.0f);
+  if (dribbleTrialAnimation && dribbleTrialBlend > 0) {
+    // FBX root travels 8.003 m in 1.833 s; advance the visual cycle by the
+    // real player pace, leaving root translation and simulation timing native.
+    dribbleTrialPhase = std::fmod(dribbleTrialPhase + spatialState.movement.GetLength() * trialDt * 100 / dribbleTrialSourceSpeed,
+                                 float(dribbleTrialAnimation->GetEffectiveFrameCount()));
+  }
+  buf_animApplyBuffer.dribbleTrialBlend = dribbleTrialBlend;
+  buf_animApplyBuffer.dribbleTrialPhase = dribbleTrialPhase;
+  buf_animApplyBuffer.dribbleTrialFunction = int(currentAnim->functionType);
+  float contactWeight = 1.0f;
+  if (currentAnim->touchFrame >= 0) {
+    const float delta = std::fabs(float(currentAnim->frameNum - currentAnim->touchFrame));
+    const float ramp = clamp(delta / 7.0f, 0.0f, 1.0f);
+    contactWeight = ramp * ramp * (3 - 2 * ramp);
+  }
+  buf_animApplyBuffer.dribbleTrialLegBlend = dribbleTrialBlend * contactWeight;
   /*
   // some temporal buffers fail when switching anims - can't interpolate between these values from previous and new anim
   if (currentAnim->frameNum == 0) {
@@ -939,6 +988,60 @@ void HumanoidBase::Put() {
   }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+
+  if (!studyApplied && dribbleTrialAnimation && fetchedbuf_animApplyBuffer.dribbleTrialBlend > 0) {
+    const float blend = fetchedbuf_animApplyBuffer.dribbleTrialBlend;
+    const float phase = fetchedbuf_animApplyBuffer.dribbleTrialPhase;
+    const int frame = int(std::floor(phase)), next = frame + 1;
+    Quaternion facing;
+    facing.SetAngleAxis(fetchedbuf_animApplyBuffer.orientation, Vector3(0,0,1));
+    float largestChange = 0;
+    for (unsigned i = 0; i < 13; ++i) {
+      Quaternion a, b; Vector3 unused;
+      dribbleTrialAnimation->GetKeyFrame(pes3::nativeBoneNames[i], frame, a, unused);
+      dribbleTrialAnimation->GetKeyFrame(pes3::nativeBoneNames[i], next, b, unused);
+      Quaternion pose = a.GetSlerped(phase-frame, b).GetNormalized();
+      if (i == 0) pose = facing * pose;
+      auto node = nodeMap.at(pes3::nativeBoneNames[i]);
+      const Quaternion native = node->GetRotation();
+      const float amount = (i == 0 || i >= 7) ? fetchedbuf_animApplyBuffer.dribbleTrialLegBlend : blend;
+      const Quaternion result = native.GetSlerped(amount, pose).GetNormalized();
+      float difference = 0;
+      for (unsigned a = 0; a < 4; ++a) difference += std::fabs(result.elements[a]-native.elements[a]);
+      largestChange = std::max(largestChange, difference);
+      node->SetRotation(result, false);
+    }
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    // Solve support against the actual native shoe volumes, after blending
+    // native contact legs. Never write this lift into cached simulation pose.
+    float lowest = 100;
+    for (unsigned side = 0; side < 2; ++side) {
+      auto ankle = nodeMap.at(side ? "right_ankle" : "left_ankle");
+      for (unsigned corner = 0; corner < 8; ++corner) {
+        Vector3 point;
+        for (unsigned a = 0; a < 3; ++a) point.coords[a] = (corner & (1u << a)) ?
+            pes3NativeReference.footMax[side][a] : pes3NativeReference.footMin[side][a];
+        lowest = std::min(lowest, (ankle->GetDerivedPosition() + ankle->GetDerivedRotation()*point).coords[2]);
+      }
+    }
+    auto body = nodeMap.at("body");
+    const float lift = .008f - lowest;
+    body->SetPosition(body->GetPosition()+Vector3(0,0,lift), false);
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    float lengthError = 0, maximumRadius = 0;
+    for (unsigned i = 1; i < 13; ++i) {
+      const Vector3 joint = nodeMap.at(pes3::nativeBoneNames[i])->GetDerivedPosition();
+      const Vector3 parent = nodeMap.at(pes3::nativeBoneNames[pes3::nativeParents[i]])->GetDerivedPosition();
+      const auto &offset = pes3NativeReference.offsets[i];
+      const float expected = Vector3(offset[0],offset[1],offset[2]).GetLength();
+      lengthError = std::max(lengthError, std::fabs((joint-parent).GetLength()-expected));
+      maximumRadius = std::max(maximumRadius, (joint-body->GetDerivedPosition()).GetLength());
+    }
+    if (GetConfiguration()->GetBool("training_telemetry", false))
+      printf("TRAINING_FBX_POSE t=%lu blend=%.4f legs=%.4f phase=%.4f change=%.4f sole_z=%.4f lift=%.4f function=%d length_error=%.6f radius=%.4f\n",
+             fetchedbuf_animApplyBuffer.snapshotTime_ms, blend, fetchedbuf_animApplyBuffer.dribbleTrialLegBlend,
+             phase, largestChange, lowest+lift, lift, fetchedbuf_animApplyBuffer.dribbleTrialFunction, lengthError, maximumRadius);
+  }
 
   UpdateFullbodyNodes();
 }
