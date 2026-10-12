@@ -10,7 +10,7 @@ KEY_BITS={key:1<<i for i,key in enumerate([
     'Left','Right','Up','Down','r','1','2','3','4','5','Tab','6'])}
 
 class NativeTraining:
-    def __init__(self,build,output,display=':94',analog_pad=False):
+    def __init__(self,build,output,display=':94',analog_pad=False,camera=2,config_overrides=None):
         self.build=Path(build).resolve();self.output=Path(output).resolve()
         self.output.mkdir(parents=True,exist_ok=False)
         self.log=self.output/'game.log';self.cache=[];self.offset=0;self.pending=b''
@@ -20,6 +20,8 @@ class NativeTraining:
         self.env.update(DISPLAY=display,SDL_VIDEODRIVER='x11',ALSOFT_DRIVERS='null',
                         LIBGL_ALWAYS_SOFTWARE='1',LP_NUM_THREADS=os.environ.get('FOOTBALL_TEST_GL_THREADS','2'),
                         XDG_RUNTIME_DIR=str(runtime),XDG_CACHE_HOME=str(self.output/'cache'))
+        self.camera=camera
+        self.config_overrides=config_overrides or {}
         self.pad_file=None;self.pad_values=[0,0,0,0,-32768,-32768,0]
         if analog_pad:
             root=Path(__file__).resolve().parents[1]
@@ -84,8 +86,9 @@ class NativeTraining:
     def __enter__(self):
         root=Path(__file__).resolve().parents[1];config=self.output/'test.config'
         config.write_text((root/'config/training.config').read_text()+
-                          '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "2"\n'+
-                          '"pes3_preview" "false"\n')
+                          '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "'+str(self.camera)+'"\n'+
+                          '"pes3_preview" "false"\n'+
+                          ''.join('"'+key+'" "'+str(value)+'"\n' for key,value in self.config_overrides.items()))
         socket=Path('/tmp/.X11-unix')/('X'+self.env['DISPLAY'].lstrip(':'))
         if socket.exists():raise RuntimeError('test display already in use')
         try:

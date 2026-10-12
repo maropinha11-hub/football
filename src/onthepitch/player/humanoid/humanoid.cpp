@@ -433,27 +433,6 @@ void Humanoid::Process() {
     bumpyRideBias = curve(bumpyRideBias, 0.5f);
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
-    auto finishPullback = [&](Vector3 touch) {
-      if (!trainingFoot || !match->IsFirstPerson() || !match->TrainingHasBall() ||
-          match->GetBall()->Predict(0).coords[2] >= 0.45f || !CastPlayer()->GetExternalController()) return touch;
-      auto *human = static_cast<HumanController*>(CastPlayer()->GetExternalController());
-      if (human->GetActionMode() == 2 || human->GetFloatVelocity() <= 0.1f) return touch;
-      const Vector3 intent = human->GetDirection().Get2D().GetNormalized(0);
-      const bool reversing = (currentBallVec.Get2D().GetLength() > 0.5f &&
-          currentBallVec.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.8f) ||
-          touch.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.8f ||
-          (match->GetBall()->Predict(0)-spatialState.position).Get2D().GetNormalized(0).GetDotProduct(intent) < -0.8f;
-      if (!reversing) return touch;
-      // The reception/error blend above must not restore forward momentum
-      // after a requested pullback. Apply only at this accepted native event.
-      const Vector3 pull = intent * (2.5f * clamp(human->GetHIDevice()->GetDirection().GetLength(), 0.0f, 1.0f));
-      touch.coords[0] = pull.coords[0]; touch.coords[1] = pull.coords[1];
-      if (GetConfiguration()->GetBool("training_telemetry", false))
-        printf("TRAINING_PULLBACK t=%lu part=%s velocity=[%.4f,%.4f]\n",
-               match->GetActualTime_ms(), touchingPart.c_str(), touch.coords[0], touch.coords[1]);
-      return touch;
-    };
-
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
 
       match->NotifyTrainingTouch(currentAnim->functionType,
@@ -481,7 +460,6 @@ void Humanoid::Process() {
         }
 
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
-        touchVec = finishPullback(touchVec);
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (trap): %f\n", bumpyRideBias);
 
         match->GetBall()->Touch(touchVec);
@@ -500,7 +478,6 @@ void Humanoid::Process() {
         }
 
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
-        touchVec = finishPullback(touchVec);
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (ballcontrol): %f\n", bumpyRideBias);
 
         match->GetBall()->Touch(touchVec);

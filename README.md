@@ -18,14 +18,17 @@ sem virar automaticamente para o gol. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
 
-A [atualização Windows da puxada](artifacts/football-windows-puxada-corrigida.zip)
-parte da base nativa restaurada (`37a5543`) e corrige apenas a virada com a bola.
-O impulso final segue a direção pedida no contato da animação; os colisores
-simplificados das pernas não acrescentam um segundo rebote durante a puxada.
-A câmera, os controles, a seleção de animações e a renderização permanecem da
-base aprovada. Feche o jogo, extraia na pasta onde estão `run-training.bat` e
+A [atualização Windows das viradas](artifacts/football-windows-viradas-nativas.zip)
+parte da base nativa restaurada (`37a5543`) e corrige a virada com a bola.
+Os colisores simplificados das pernas respeitam a posse e os toques recentes,
+sem acrescentar rebotes durante a condução, em todas as câmeras. Os impulsos
+dos toques voltam à lógica nativa, sem a força artificial da atualização anterior.
+A velocidade normal foi reduzida em 10%, e a condução sem corrida planeja a
+bola um pouco mais à frente entre os toques. A câmera, as direções dos controles,
+a seleção de animações e a renderização permanecem da base aprovada.
+Feche o jogo, extraia na pasta onde estão `run-training.bat` e
 `media`, aceite substituir e execute `run-training.bat`.
-Consulte [a correção](docs/PUXADA-NATIVA.md). O
+Consulte [a correção e as verificações](docs/VIRADAS-NATIVAS.md). O
 [executável original sem esta correção](artifacts/football-windows-gameplay-original.zip)
 continua arquivado.
 

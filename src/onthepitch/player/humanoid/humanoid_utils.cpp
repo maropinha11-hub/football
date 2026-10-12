@@ -243,6 +243,20 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   // don't want to go below physics velo, else we will run over ball and stuff like that
   // don't want to go over physics velo too much either, else ball will be so far away!
   float velocity = clamp(desiredMovement.GetLength(), outgoingMovement.GetLength(), outgoingMovement.GetLength() + maximumOverdrive_mps);
+  if (TrainingEnabled() && player->HasPossession() && player->GetExternalController() &&
+      currentAnim->functionType == e_FunctionType_BallControl && ball->Predict(0).coords[2] < 0.45f) {
+    auto *human = static_cast<HumanController*>(player->GetExternalController());
+    const float pace = human->GetFloatVelocity();
+    if (!human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
+        !human->GetHIDevice()->GetButton(e_ButtonFunction_Dribble) && human->GetActionMode() != 2 &&
+        pace > 0.1f && outgoingMovement.Get2D().GetNormalized(0).GetDotProduct(
+            human->GetDirection().Get2D().GetNormalized(0)) > 0.8f) {
+      // A discrete 3.5/5 m/s animation must not plan a full-speed kick when
+      // the analog stick requests a slower step. Match the existing planner
+      // to that pace, so light-stick walking can still reach its next touch.
+      velocity = std::min(velocity, pace);
+    }
+  }
   desiredMovement = desiredMovement.GetNormalized(Vector3(0, -1, 0).GetRotated2D(nextStartAngle)) * velocity;
   Vector3 physicsMovement = Vector3(0, -1, 0).GetRotated2D(nextStartAngle) * velocity;
 
@@ -256,6 +270,21 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   float heightFFOOffset = NormalizedClamp(ball->Predict(0).coords[2], 0.5f, 1.0f) * 0.5f; // bounce high balls off body - else they keep colliding inside body and stuff like that
   FFO += FFOsrc * heightFFOOffset * 0.5f +
          player->GetBodyDirectionVec() * heightFFOOffset * 0.5f;
+  if (TrainingEnabled() && currentAnim->functionType == e_FunctionType_BallControl &&
+      player->HasPossession() && player->GetExternalController() && ball->Predict(0).coords[2] < 0.45f) {
+    auto *human = static_cast<HumanController*>(player->GetExternalController());
+    const Vector3 travel = outgoingMovement.Get2D().GetNormalized(0);
+    const Vector3 intent = human->GetDirection().Get2D().GetNormalized(0);
+    if (!human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
+        !human->GetHIDevice()->GetButton(e_ButtonFunction_Dribble) && human->GetActionMode() != 2 &&
+        human->GetFloatVelocity() > 0.1f && outgoingMovement.GetLength() > 0.5f &&
+        travel.GetDotProduct(intent) > 0.8f) {
+      // A small lead in the existing planner gives the ball room between
+      // real touches. Do not lengthen a reversing touch or move the ball
+      // outside an animation event, and leave close control/sprints native.
+      FFO += travel * clamp(GetConfiguration()->GetReal("training_dribble_spacing_m", 0.12f), 0.0f, 0.25f);
+    }
+  }
 
   Vector3 desiredPlannedBallPos = nextStartPos;
   Vector3 physicsPlannedBallPos = nextStartPos;

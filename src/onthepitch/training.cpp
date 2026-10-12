@@ -137,24 +137,23 @@ void Match::ResolveTrainingBallContacts(const Vector3 &from) {
   const Vector3 movement = player->GetMovement();
   const Vector3 displacement = movement * 0.01f;
   const Vector3 to = ball->Predict(0);
-  auto *human = player->GetExternalController() ? static_cast<HumanController*>(player->GetExternalController()) : nullptr;
-  const Vector3 intent = human ? human->GetDirection().Get2D().GetNormalized(0) : forward;
-  const Vector3 ballMovement = ball->GetMovement().Get2D();
-  const bool reversing = human && human->GetFloatVelocity()>0.1f &&
-      (intent.GetDotProduct(player->GetDirectionVec()) < -0.8f ||
-       (ballMovement.GetLength()>0.5f && ballMovement.GetNormalized(0).GetDotProduct(player->GetDirectionVec()) < -0.8f) ||
-       (to-root).Get2D().GetNormalized(0).GetDotProduct(intent) < -0.8f);
-  // These extra, rigid leg proxies do not follow the native support step.
-  // Do not let them apply a second rebound during an owned foot pullback.
-  const bool ownedGroundBall = IsFirstPerson() && TrainingHasBall() && human && human->GetActionMode()!=2 &&
-      to.coords[2]<0.45f && (to-root).Get2D().GetLength()<1.25f;
-  const bool nativePullback = ownedGroundBall && reversing;
+  const e_FunctionType function = player->GetCurrentFunctionType();
+  const bool controlAnimation = function == e_FunctionType_Movement ||
+      function == e_FunctionType_BallControl || function == e_FunctionType_Trap;
+  // The original match excludes the possessor and recent toucher from
+  // accidental body rebounds. The training-only rigid leg capsules must
+  // respect that same ownership, for every cut and every camera. They do
+  // not track the animated support leg and were hitting the ball a second
+  // time before the native turning touch could complete.
+  const bool nativeControl = controlAnimation &&
+      (player->HasUniquePossession() || TrainingHasBall());
+  const bool protectNativeLegTouch = to.coords[2] < 0.45f &&
+      (nativeControl || player->GetLastTouchBias(200) > 0.01f);
   training::Contact earliest;
-  int collider = -1;
   for (int i = 0; i < 4; ++i) {
-    if (i<2 && nativePullback) continue;
+    if (i < 2 && protectNativeLegTouch) continue;
     const auto hit = training::sweep(from + displacement, to, a[i], b[i], radii[i]);
-    if (hit.hit && (!earliest.hit || hit.time < earliest.time)) { earliest = hit; collider = i; }
+    if (hit.hit && (!earliest.hit || hit.time < earliest.time)) earliest = hit;
   }
   if (!earliest.hit) return;
   const Vector3 incoming = ball->GetMovement() - movement;
@@ -163,14 +162,6 @@ void Match::ResolveTrainingBallContacts(const Vector3 &from) {
       (to - root).GetLength() > (from - root).GetLength()) return;
   Vector3 corrected = earliest.point + earliest.normal * 0.003f;
   Vector3 velocity = training::rebound(incoming, earliest.normal, 0.42f) + movement;
-  if (collider<2 && ownedGroundBall) {
-    // Incidental support contact must not add the body's running velocity
-    // as another kick after a native trap or pullback.
-    const Vector3 before = ball->GetMovement();
-    velocity = before - earliest.normal * std::min(0.0f, before.GetDotProduct(earliest.normal));
-    if (GetConfiguration()->GetBool("training_telemetry", false))
-      printf("TRAINING_SUPPORT_CONTACT t=%lu before=%.4f after=%.4f\n",actualTime_ms,before.GetLength(),velocity.GetLength());
-  }
   corrected += velocity * (0.01f * (1 - earliest.time));
   ball->ResolveContact(corrected, velocity);
   ++trainingContacts;

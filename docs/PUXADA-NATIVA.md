@@ -1,3 +1,5 @@
+> Registro da tentativa anterior, substituída pela [correção das viradas nativas](VIRADAS-NATIVAS.md).
+
 # Puxada na gameplay nativa
 
 Esta correção parte da base restaurada `37a5543`. Ela altera apenas dois pontos:

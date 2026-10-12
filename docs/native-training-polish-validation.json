@@ -1,0 +1,1753 @@
+{
+  "result": "passed",
+  "date": "2026-10-12",
+  "starting_revision": "fed31f37d76d331601886500f33fc1bdd9471987",
+  "approved_base": "37a5543fb30efb09e9b084733ee836478fff2b61",
+  "native_executable_sha256": "efaf5be8c27f8e35230d39bf64dea2861c9d95e20537d91bb9c894d1ff297bea",
+  "changes": {
+    "owned_ground_ball": "Rigid training legs respect native possession and recent touches in every camera.",
+    "walking_speed_scale": 0.9,
+    "partial_stick": "Native assistance cannot exceed the normal-pace limit scaled by stick magnitude.",
+    "planned_dribble_lead_m": 0.12,
+    "sprint_speed": "original",
+    "camera_control_directions": "approved original",
+    "animations": "approved native"
+  },
+  "production_changes_against_restored_original": [
+    "src/onthepitch/player/controller/humancontroller.cpp",
+    "src/onthepitch/player/humanoid/humanoid_utils.cpp",
+    "src/onthepitch/training.cpp"
+  ],
+  "turns": {
+    "result": "passed",
+    "checks": [
+      {
+        "check": "camera 0 opposite cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9616048512772801,
+          "end_distance_m": 0.3984078437982872,
+          "path_m": 16.641084982892966,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 opposite cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9616048512772801,
+          "end_distance_m": 0.3984078437982872,
+          "path_m": 16.641084982892966,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 opposite cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9616048512772801,
+          "end_distance_m": 0.3984078437982872,
+          "path_m": 16.641084982892966,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9306091983211868,
+          "end_distance_m": 0.404447524408296,
+          "path_m": 18.443518444898242,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9306091983211868,
+          "end_distance_m": 0.404447524408296,
+          "path_m": 18.443518444898242,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9306091983211868,
+          "end_distance_m": 0.404447524408296,
+          "path_m": 18.443518444898242,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7740999999999998,
+          "end_distance_m": 0.3392003685139507,
+          "path_m": 41.685156721785575,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7740999999999998,
+          "end_distance_m": 0.3392003685139507,
+          "path_m": 41.685156721785575,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7740999999999998,
+          "end_distance_m": 0.3392003685139507,
+          "path_m": 41.685156721785575,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 keeps native animations",
+        "result": "passed",
+        "evidence": "No study animation applied"
+      },
+      {
+        "check": "camera 0 clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "camera 2 opposite cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8016999999999999,
+          "end_distance_m": 0.2767735717152201,
+          "path_m": 16.963781371406583,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 opposite cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8016999999999999,
+          "end_distance_m": 0.2767735717152201,
+          "path_m": 16.963781371406583,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 opposite cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8016999999999999,
+          "end_distance_m": 0.2767735717152201,
+          "path_m": 16.963781371406583,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.5447699789819558,
+          "path_m": 20.98860202406575,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.5447699789819558,
+          "path_m": 20.98860202406575,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.5447699789819558,
+          "path_m": 20.98860202406575,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.41262410254370685,
+          "path_m": 33.952018602768504,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.41262410254370685,
+          "path_m": 33.952018602768504,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.41262410254370685,
+          "path_m": 33.952018602768504,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 keeps native animations",
+        "result": "passed",
+        "evidence": "No study animation applied"
+      },
+      {
+        "check": "camera 2 clean exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ],
+    "cases": [
+      {
+        "camera": 0,
+        "case": "opposite cuts",
+        "evidence": {
+          "max_distance_m": 0.9616048512772801,
+          "end_distance_m": 0.3984078437982872,
+          "path_m": 16.641084982892966,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 0,
+        "case": "side cuts",
+        "evidence": {
+          "max_distance_m": 0.9306091983211868,
+          "end_distance_m": 0.404447524408296,
+          "path_m": 18.443518444898242,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 0,
+        "case": "circling",
+        "evidence": {
+          "max_distance_m": 0.7740999999999998,
+          "end_distance_m": 0.3392003685139507,
+          "path_m": 41.685156721785575,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "opposite cuts",
+        "evidence": {
+          "max_distance_m": 0.8016999999999999,
+          "end_distance_m": 0.2767735717152201,
+          "path_m": 16.963781371406583,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "side cuts",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.5447699789819558,
+          "path_m": 20.98860202406575,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "circling",
+        "evidence": {
+          "max_distance_m": 0.8034000000000001,
+          "end_distance_m": 0.41262410254370685,
+          "path_m": 33.952018602768504,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      }
+    ]
+  },
+  "native_pullbacks": {
+    "result": "passed",
+    "checks": [
+      {
+        "check": "standing pulls at native foot contacts",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5125000000000001,
+          "first_500ms_ball_delta_m": -1.234,
+          "max_ball_distance_m": 0.5490402171061789,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "standing pull responds within 500 ms",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5125000000000001,
+          "first_500ms_ball_delta_m": -1.234,
+          "max_ball_distance_m": 0.5490402171061789,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "standing retains the ball",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5125000000000001,
+          "first_500ms_ball_delta_m": -1.234,
+          "max_ball_distance_m": 0.5490402171061789,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "standing continues in the new front",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.577402346721937,
+          "travel": 2.669424945564119
+        }
+      },
+      {
+        "check": "walking pulls at native foot contacts",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5106999999999999,
+          "first_500ms_ball_delta_m": 2.2020999999999997,
+          "max_ball_distance_m": 0.5815683708731071,
+          "native_foot_contacts": 5,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "walking retains the ball",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5106999999999999,
+          "first_500ms_ball_delta_m": 2.2020999999999997,
+          "max_ball_distance_m": 0.5815683708731071,
+          "native_foot_contacts": 5,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "walking continues in the new front",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.5252337098854188,
+          "travel": 4.68260067270315
+        }
+      },
+      {
+        "check": "sprint release pulls at native foot contacts",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.13889999999999958,
+          "first_500ms_ball_delta_m": 0.3521000000000001,
+          "max_ball_distance_m": 1.9702789294919643,
+          "native_foot_contacts": 4,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "sprint release retains the ball",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.13889999999999958,
+          "first_500ms_ball_delta_m": 0.3521000000000001,
+          "max_ball_distance_m": 1.9702789294919643,
+          "native_foot_contacts": 4,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "sprint release continues in the new front",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4793753018251987,
+          "travel": 3.987392773479931
+        }
+      },
+      {
+        "check": "sprint held pulls at native foot contacts",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.14039999999999964,
+          "first_500ms_ball_delta_m": 0.5313999999999997,
+          "max_ball_distance_m": 1.9602293054640327,
+          "native_foot_contacts": 3,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "sprint held retains the ball",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.14039999999999964,
+          "first_500ms_ball_delta_m": 0.5313999999999997,
+          "max_ball_distance_m": 1.9602293054640327,
+          "native_foot_contacts": 3,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "sprint held continues in the new front",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.7296252873907247,
+          "travel": 4.814691138588227
+        }
+      },
+      {
+        "check": "RT control pulls at native foot contacts",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.43539999999999957,
+          "first_500ms_ball_delta_m": 0.19629999999999992,
+          "max_ball_distance_m": 0.415250502708906,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "RT control retains the ball",
+        "result": "passed",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.43539999999999957,
+          "first_500ms_ball_delta_m": 0.19629999999999992,
+          "max_ball_distance_m": 0.415250502708906,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "check": "RT control continues in the new front",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4307886488755246,
+          "travel": 4.1047359927284
+        }
+      },
+      {
+        "check": "native player pose remains active",
+        "result": "passed",
+        "evidence": "No study pose applied to the player"
+      },
+      {
+        "check": "pullbacks use original native impulses",
+        "result": "passed",
+        "evidence": "No forced replacement velocity"
+      },
+      {
+        "check": "native pullbacks have no extra leg rebounds",
+        "result": "passed",
+        "evidence": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "check": "clean exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ],
+    "cases": [
+      {
+        "case": "standing",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5125000000000001,
+          "first_500ms_ball_delta_m": -1.234,
+          "max_ball_distance_m": 0.5490402171061789,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "case": "walking",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.5106999999999999,
+          "first_500ms_ball_delta_m": 2.2020999999999997,
+          "max_ball_distance_m": 0.5815683708731071,
+          "native_foot_contacts": 5,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "case": "sprint release",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.13889999999999958,
+          "first_500ms_ball_delta_m": 0.3521000000000001,
+          "max_ball_distance_m": 1.9702789294919643,
+          "native_foot_contacts": 4,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "case": "sprint held",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.14039999999999964,
+          "first_500ms_ball_delta_m": 0.5313999999999997,
+          "max_ball_distance_m": 1.9602293054640327,
+          "native_foot_contacts": 3,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      },
+      {
+        "case": "RT control",
+        "evidence": {
+          "minimum_backward_ball_step_m": -0.43539999999999957,
+          "first_500ms_ball_delta_m": 0.19629999999999992,
+          "max_ball_distance_m": 0.415250502708906,
+          "native_foot_contacts": 6,
+          "controlled_samples": 22,
+          "samples": 22,
+          "added_body_contacts": 0
+        }
+      }
+    ]
+  },
+  "pace_and_spacing": {
+    "result": "passed",
+    "checks": [
+      {
+        "check": "native pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 3.6306000000000003,
+          "median_ball_distance_m": 0.350462645852773,
+          "max_ball_distance_m": 0.4335999999999993,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 3.6306000000000003,
+          "median_ball_distance_m": 0.350462645852773,
+          "max_ball_distance_m": 0.4335999999999993,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "requested pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6801500000000003,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6801500000000003,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 2.0085,
+          "median_ball_distance_m": 0.3150500000000007,
+          "max_ball_distance_m": 0.3490000000000002,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 2.0085,
+          "median_ball_distance_m": 0.3150500000000007,
+          "max_ball_distance_m": 0.3490000000000002,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.91425,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7085970928531932,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.91425,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7085970928531932,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "normal movement is modestly slower",
+        "result": "passed",
+        "evidence": {
+          "before": 4.9998,
+          "after": 4.4998
+        }
+      },
+      {
+        "check": "light stick still reduces pace",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 2.0085,
+          "median_ball_distance_m": 0.3150500000000007,
+          "max_ball_distance_m": 0.3490000000000002,
+          "samples": 30
+        }
+      },
+      {
+        "check": "sprint keeps original speed",
+        "result": "passed",
+        "evidence": {
+          "before": 7.914350000000001,
+          "after": 7.91425
+        }
+      },
+      {
+        "check": "normal dribble gives the ball more room",
+        "result": "passed",
+        "evidence": {
+          "before": 0.38675000000000015,
+          "after": 0.6801500000000003
+        }
+      }
+    ],
+    "cases": [
+      {
+        "mode": "native pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 3.6306000000000003,
+          "median_ball_distance_m": 0.350462645852773,
+          "max_ball_distance_m": 0.4335999999999993,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6801500000000003,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 2.0085,
+          "median_ball_distance_m": 0.3150500000000007,
+          "max_ball_distance_m": 0.3490000000000002,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.91425,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7085970928531932,
+          "samples": 30
+        }
+      }
+    ]
+  },
+  "initial_pace_check": {
+    "result": "failed",
+    "checks": [
+      {
+        "check": "native pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9999,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9999,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 3.93835,
+          "median_ball_distance_m": 0.42683542022173465,
+          "max_ball_distance_m": 0.4965040281810409,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 3.93835,
+          "median_ball_distance_m": 0.42683542022173465,
+          "max_ball_distance_m": 0.4965040281810409,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "requested pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.5,
+          "median_ball_distance_m": 0.6800500000000005,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.5,
+          "median_ball_distance_m": 0.6800500000000005,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.1345,
+          "median_ball_distance_m": 0.488592431626991,
+          "max_ball_distance_m": 0.60998591787024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.1345,
+          "median_ball_distance_m": 0.488592431626991,
+          "max_ball_distance_m": 0.60998591787024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "normal movement is modestly slower",
+        "result": "passed",
+        "evidence": {
+          "before": 4.9999,
+          "after": 4.5
+        }
+      },
+      {
+        "check": "light stick still reduces pace",
+        "result": "failed",
+        "evidence": {
+          "speed_mps": 4.1345,
+          "median_ball_distance_m": 0.488592431626991,
+          "max_ball_distance_m": 0.60998591787024,
+          "samples": 30
+        }
+      },
+      {
+        "check": "sprint keeps original speed",
+        "result": "passed",
+        "evidence": {
+          "before": 7.9113500000000005,
+          "after": 7.914350000000001
+        }
+      },
+      {
+        "check": "normal dribble gives the ball more room",
+        "result": "passed",
+        "evidence": {
+          "before": 0.38675000000000015,
+          "after": 0.6800500000000005
+        }
+      }
+    ],
+    "cases": [
+      {
+        "mode": "native pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.9999,
+          "median_ball_distance_m": 0.38675000000000015,
+          "max_ball_distance_m": 0.39729999999999954,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 3.93835,
+          "median_ball_distance_m": 0.42683542022173465,
+          "max_ball_distance_m": 0.4965040281810409,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.5,
+          "median_ball_distance_m": 0.6800500000000005,
+          "max_ball_distance_m": 0.7764000000000024,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 4.1345,
+          "median_ball_distance_m": 0.488592431626991,
+          "max_ball_distance_m": 0.60998591787024,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      }
+    ]
+  },
+  "intermediate_partial_stick_check": {
+    "result": "failed",
+    "checks": [
+      {
+        "check": "native pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.3844499999999993,
+          "max_ball_distance_m": 0.3973000000000013,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.3844499999999993,
+          "max_ball_distance_m": 0.3973000000000013,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 2.0586,
+          "median_ball_distance_m": 1.7631823206681139,
+          "max_ball_distance_m": 2.066878390230059,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 2.0586,
+          "median_ball_distance_m": 1.7631823206681139,
+          "max_ball_distance_m": 2.066878390230059,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "check": "native pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "requested pace walking retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6680499999999991,
+          "max_ball_distance_m": 0.7774000000000001,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace walking has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6680499999999991,
+          "max_ball_distance_m": 0.7774000000000001,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick retains control",
+        "result": "failed",
+        "evidence": {
+          "speed_mps": 1.9,
+          "median_ball_distance_m": 2.2406500000000005,
+          "max_ball_distance_m": 2.5339,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace light stick has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 1.9,
+          "median_ball_distance_m": 2.2406500000000005,
+          "max_ball_distance_m": 2.5339,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint retains control",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace sprint has no extra rebounds",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      },
+      {
+        "check": "requested pace clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "normal movement is modestly slower",
+        "result": "passed",
+        "evidence": {
+          "before": 4.9998,
+          "after": 4.4998
+        }
+      },
+      {
+        "check": "light stick still reduces pace",
+        "result": "passed",
+        "evidence": {
+          "speed_mps": 1.9,
+          "median_ball_distance_m": 2.2406500000000005,
+          "max_ball_distance_m": 2.5339,
+          "samples": 30
+        }
+      },
+      {
+        "check": "sprint keeps original speed",
+        "result": "passed",
+        "evidence": {
+          "before": 7.9113500000000005,
+          "after": 7.914350000000001
+        }
+      },
+      {
+        "check": "normal dribble gives the ball more room",
+        "result": "passed",
+        "evidence": {
+          "before": 0.3844499999999993,
+          "after": 0.6680499999999991
+        }
+      }
+    ],
+    "cases": [
+      {
+        "mode": "native pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.9998,
+          "median_ball_distance_m": 0.3844499999999993,
+          "max_ball_distance_m": 0.3973000000000013,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 2.0586,
+          "median_ball_distance_m": 1.7631823206681139,
+          "max_ball_distance_m": 2.066878390230059,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "native pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.9113500000000005,
+          "median_ball_distance_m": 0.5959851369382692,
+          "max_ball_distance_m": 0.7108527977014643,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "walking",
+        "evidence": {
+          "speed_mps": 4.4998,
+          "median_ball_distance_m": 0.6680499999999991,
+          "max_ball_distance_m": 0.7774000000000001,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "light stick",
+        "evidence": {
+          "speed_mps": 1.9,
+          "median_ball_distance_m": 2.2406500000000005,
+          "max_ball_distance_m": 2.5339,
+          "samples": 30
+        }
+      },
+      {
+        "mode": "requested pace",
+        "case": "sprint",
+        "evidence": {
+          "speed_mps": 7.914350000000001,
+          "median_ball_distance_m": 0.5944922327763045,
+          "max_ball_distance_m": 0.7086105065549069,
+          "samples": 30
+        }
+      }
+    ]
+  },
+  "gameplay": {
+    "run_id": "74efbe9d-c190-441b-a804-ad5f19dc4cb7",
+    "checks": [
+      {
+        "check": "rendered game startup",
+        "result": "passed",
+        "evidence": "Native simulation emitted live frames"
+      },
+      {
+        "check": "walking and dribbling",
+        "result": "passed",
+        "evidence": "Player moved 6.66 m"
+      },
+      {
+        "check": "walking retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.78/0.72 m; controlled 15/15 frames"
+      },
+      {
+        "check": "animation playback",
+        "result": "passed",
+        "evidence": "Original animation frames advanced"
+      },
+      {
+        "check": "release and deceleration",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "sprinting",
+        "result": "passed",
+        "evidence": "Walk 4.50, sprint 7.79 m/s"
+      },
+      {
+        "check": "sprinting retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.98/0.71 m; controlled 16/16 frames"
+      },
+      {
+        "check": "short pass",
+        "result": "passed",
+        "evidence": "Functions [1, 4]; ball speed 24.82 m/s"
+      },
+      {
+        "check": "through pass",
+        "result": "passed",
+        "evidence": "Functions [1, 5]; ball speed 25.49 m/s"
+      },
+      {
+        "check": "high pass",
+        "result": "passed",
+        "evidence": "Functions [1, 6]; ball speed 30.66 m/s"
+      },
+      {
+        "check": "shot",
+        "result": "passed",
+        "evidence": "Functions [1, 8]; ball speed 35.00 m/s"
+      },
+      {
+        "check": "aerial physics",
+        "result": "passed",
+        "evidence": "Peak height 3.93 m"
+      },
+      {
+        "check": "super cancel free movement",
+        "result": "passed",
+        "evidence": "Player moved away from incoming ball to x=-15.02 m"
+      },
+      {
+        "check": "off-ball sliding",
+        "result": "passed",
+        "evidence": "Functions [1, 13]"
+      },
+      {
+        "check": "finishing exercise",
+        "result": "passed",
+        "evidence": "Player starts at x=30.25 m"
+      },
+      {
+        "check": "goal detection",
+        "result": "passed",
+        "evidence": "Goal counter 0 -> 1"
+      },
+      {
+        "check": "automatic ball reset",
+        "result": "passed",
+        "evidence": "Ball returned to x=30.65 m"
+      },
+      {
+        "check": "charged shot elevation",
+        "result": "passed",
+        "evidence": "Light (25.8348, 1.3581), charged (35.0, 6.282) (speed, height); delivered charge {'light': 220, 'quick': 310, 'charged': 520, 'chip': 520}"
+      },
+      {
+        "check": "quick shot elevation",
+        "result": "passed",
+        "evidence": "Target 250 ms, delivered 310 ms; shot (28.3515, 2.531) (speed, height)"
+      },
+      {
+        "check": "LB chip trajectory",
+        "result": "passed",
+        "evidence": "Chip (20.9963, 10.1771); charged (35.0, 6.282)"
+      },
+      {
+        "check": "free kick exercise",
+        "result": "passed",
+        "evidence": "Player starts at [28.2395, -7.929, 0.0]"
+      },
+      {
+        "check": "first person camera",
+        "result": "passed",
+        "evidence": "Camera switches to first person"
+      },
+      {
+        "check": "head free look with ball",
+        "result": "passed",
+        "evidence": "Head yaw -0.97, player stays still"
+      },
+      {
+        "check": "gradual head recenter",
+        "result": "passed",
+        "evidence": "Head magnitude 1.09 -> 0.11 rad after input release"
+      },
+      {
+        "check": "head look does not steer dribbling",
+        "result": "passed",
+        "evidence": "Player delta [3.9694000000000003, 0.0]; head turns independently"
+      },
+      {
+        "check": "straight dribbling",
+        "result": "passed",
+        "evidence": "Forward/side displacement [6.8372, 0.0] m"
+      },
+      {
+        "check": "straight movement retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.81/0.65 m; controlled 17/17 frames"
+      },
+      {
+        "check": "held right keeps turning relative to new front",
+        "result": "passed",
+        "evidence": "Successive right-turn angles -0.73/-1.36 rad"
+      },
+      {
+        "check": "continuous relative turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.76/0.58 m; controlled 14/14 frames"
+      },
+      {
+        "check": "forward follows new front after turn",
+        "result": "passed",
+        "evidence": "New front -2.87 rad; forward/side travel 5.35/0.48 m"
+      },
+      {
+        "check": "new forward retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.69/0.54 m; controlled 12/12 frames"
+      },
+      {
+        "check": "RT preserves new forward direction",
+        "result": "passed",
+        "evidence": "RT forward/side travel 5.01/0.47 m; speed 4.32 m/s"
+      },
+      {
+        "check": "RT after turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.66/0.51 m; controlled 12/12 frames"
+      },
+      {
+        "check": "idle RT does not turn player toward goal",
+        "result": "passed",
+        "evidence": "Idle RT changed actual body heading 0.01 rad; no automatic goal-facing turn"
+      },
+      {
+        "check": "down moves behind the current front",
+        "result": "passed",
+        "evidence": "First 500 ms backwards travel -1.11 m; side -0.06 m"
+      },
+      {
+        "check": "held down reverses relative to each new front",
+        "result": "passed",
+        "evidence": "Body/camera turned 9.25 rad; 2 completed turns requested a new behind while down stayed held"
+      },
+      {
+        "check": "repeated backward turns retain ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.59/0.30 m; controlled 27/27 frames"
+      },
+      {
+        "check": "up follows the front after backward turns",
+        "result": "passed",
+        "evidence": "New forward/side travel 4.83/-0.31 m"
+      },
+      {
+        "check": "forward after backwards retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.60/0.60 m; controlled 12/12 frames"
+      },
+      {
+        "check": "simulation keeps real-time pace",
+        "result": "passed",
+        "evidence": "5000 ms simulation / 5000 ms monotonic clock; ratio 1.000"
+      },
+      {
+        "check": "reset cancels buffered shot",
+        "result": "passed",
+        "evidence": "Functions [1]; no stale shot after reset"
+      },
+      {
+        "check": "forward before turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.81/0.73 m; controlled 12/12 frames"
+      },
+      {
+        "check": "left turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.66/0.66 m; controlled 12/12 frames"
+      },
+      {
+        "check": "right reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.65/0.62 m; controlled 16/16 frames"
+      },
+      {
+        "check": "backward turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.54/0.49 m; controlled 12/12 frames"
+      },
+      {
+        "check": "stopping after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.49/0.41 m; controlled 7/7 frames"
+      },
+      {
+        "check": "stopping after turns releases movement",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "restart after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.76/0.63 m; controlled 18/18 frames"
+      },
+      {
+        "check": "turning uses original ball-control animations",
+        "result": "passed",
+        "evidence": "Functions [1, 2]"
+      },
+      {
+        "check": "close control diagonal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.46/0.43 m; controlled 22/22 frames"
+      },
+      {
+        "check": "close control reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.45/0.42 m; controlled 16/16 frames"
+      },
+      {
+        "check": "first person sprint retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.98/0.70 m; controlled 25/25 frames"
+      },
+      {
+        "check": "original knock-on and recovery",
+        "result": "passed",
+        "evidence": "Long-touch distance max 2.17 m; recovered to 0.64 m after releasing RT"
+      },
+      {
+        "check": "sprint knock-on turns retain control",
+        "result": "passed",
+        "evidence": "Turning with RB+RT: distance max 2.11 m, controlled 25/25 frames"
+      },
+      {
+        "check": "simulation pace during sprint knock-on turns",
+        "result": "passed",
+        "evidence": "2500 ms simulation / 2501 ms real; ratio 1.000"
+      },
+      {
+        "check": "knock-on turn recovers without reset",
+        "result": "passed",
+        "evidence": "Recovered to 0.56 m after turning and releasing RT"
+      },
+      {
+        "check": "pass releases possession",
+        "result": "passed",
+        "evidence": "Ball distance 21.78 m"
+      },
+      {
+        "check": "off ball idle does not chase",
+        "result": "passed",
+        "evidence": "Idle displacement 0.000 m; speed 0.000 m/s"
+      },
+      {
+        "check": "off ball movement is free after pass",
+        "result": "passed",
+        "evidence": "Sideways displacement 3.79 m without super cancel"
+      },
+      {
+        "check": "manual approach recovers passed ball",
+        "result": "passed",
+        "evidence": "Recovered in 8.8 s; ball distance 0.38 m; functions [1, 2]"
+      },
+      {
+        "check": "off ball FPS turning",
+        "result": "passed",
+        "evidence": "Yaw changed -0.78 rad without ball"
+      },
+      {
+        "check": "first person forward movement",
+        "result": "passed",
+        "evidence": "Player moved 2.95 m"
+      },
+      {
+        "check": "headed pass before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.09 m away"
+      },
+      {
+        "check": "headed pass before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 4 at z=1.6965 m; peak speed 21.31 m/s"
+      },
+      {
+        "check": "headed shot before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.33 m away"
+      },
+      {
+        "check": "headed shot before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 8 at z=1.5652 m; peak speed 26.96 m/s"
+      },
+      {
+        "check": "first-time short pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.60 m away"
+      },
+      {
+        "check": "first-time short pass",
+        "result": "passed",
+        "evidence": "First contact right_foot / function 4 at z=0.1100 m; peak speed 29.47 m/s"
+      },
+      {
+        "check": "first-time through pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 6.05 m away"
+      },
+      {
+        "check": "first-time through pass",
+        "result": "passed",
+        "evidence": "First contact left_foot / function 5 at z=0.1100 m; peak speed 23.01 m/s"
+      },
+      {
+        "check": "first-time shot accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 5.79 m away"
+      },
+      {
+        "check": "first-time shot",
+        "result": "passed",
+        "evidence": "First contact left_foot / function 8 at z=0.1100 m; peak speed 24.44 m/s"
+      },
+      {
+        "check": "front stadium remains visible",
+        "result": "passed",
+        "evidence": "Central distant roof covers 100.0% of inspection band"
+      },
+      {
+        "check": "ball stays above turf",
+        "result": "passed",
+        "evidence": "Minimum ball center 0.110 m"
+      },
+      {
+        "check": "finite physics state",
+        "result": "passed",
+        "evidence": "1612 live samples are finite"
+      },
+      {
+        "check": "rendered foot contact correction",
+        "result": "passed",
+        "evidence": "65 rendered foot corrections; median error 0.222 -> 0.078 m"
+      },
+      {
+        "check": "external camera restoration",
+        "result": "passed",
+        "evidence": "First person cycles back to external view"
+      },
+      {
+        "check": "clean shutdown",
+        "result": "passed",
+        "evidence": "Exit status 0"
+      }
+    ],
+    "total": 78,
+    "result": "passed"
+  },
+  "unit_tests": {
+    "result": "passed",
+    "executed": 4,
+    "failed": 0
+  },
+  "full_windows_package": {
+    "result": "passed",
+    "archive_bytes": 31362889,
+    "archive_sha256": "f1355cd722f149ad9c4f960a4b32ef0ca7a5c76d88fef73d41e884feeca65b6e",
+    "executable_sha256": "2dd2682db71bde5a465b06e06403825ebce2e0bd93df2edcdba2b3f70183e69e",
+    "zip_crc": "all members passed",
+    "architecture": "PE32+ x86_64",
+    "members": 546,
+    "dll_count": 26,
+    "missing_non_system_dlls": {},
+    "source_bank_included": false,
+    "exe_imports": [
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "libSDL2_gfx.dll",
+      "SDL2_image.dll",
+      "SDL2_ttf.dll",
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "libboost_thread-gcc14-mt-x64-1_92.dll",
+      "libsqlite3.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "USER32.dll",
+      "XINPUT9_1_0.dll",
+      "libgcc_s_seh-1.dll",
+      "libstdc++-6.dll"
+    ],
+    "windows_execution_tested": false
+  },
+  "windows_update": {
+    "result": "passed",
+    "archive_sha256": "9a882a65ffe7ec81476c841450219a30bf67c067db08a360ceb10a3285fe16ef",
+    "archive_bytes": 1494109,
+    "exe_sha256": "2dd2682db71bde5a465b06e06403825ebce2e0bd93df2edcdba2b3f70183e69e",
+    "original_uploaded_bat_preserved": true,
+    "config_matches_shipped": true,
+    "matches_full_executable": true,
+    "zip_crc": "all members passed"
+  },
+  "limits": {
+    "rendered_game_tested_on": "Linux with SDL virtual Xbox and X11 keyboard input",
+    "windows_gui_execution_tested": false,
+    "physical_xbox_series_controller_tested": false
+  },
+  "passed_rendered_checks": 138
+}

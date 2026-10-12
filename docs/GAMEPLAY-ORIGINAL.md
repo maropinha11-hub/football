@@ -1,4 +1,4 @@
-> Registro da restauração sem correções. A versão atual acrescenta apenas o [ajuste da puxada](PUXADA-NATIVA.md).
+> Registro da restauração sem correções. A versão atual acrescenta a [correção das viradas nativas](VIRADAS-NATIVAS.md).
 
 # Gameplay original restaurada
 

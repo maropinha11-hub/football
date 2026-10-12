@@ -37,17 +37,10 @@ try:
          dict(distance=math.dist(continued[-1]['player'],continued[-1]['ball']),travel=math.dist(continued[0]['player'],continued[-1]['player'])))
   log=game.log.read_text()
   check('native player pose remains active','PES3_BODY_APPLY'not in log,'No study pose applied to the player')
-  pulls=[(int(t),part,float(x),float(y))for t,part,x,y in re.findall(
-         r'TRAINING_PULLBACK t=(\d+) part=(\w+) velocity=\[([^,]+),([^]]+)\]',log)]
-  events={(int(t),part)for t,part,kind in re.findall(r'TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+)',log)if int(kind)in(2,3)}
   if not args.observe:
-   check('pullback force follows accepted native foot events',bool(pulls)and all((t,part)in events for t,part,_,_ in pulls),len(pulls))
-   check('pullback force stays within dribble speed',bool(pulls)and max(math.hypot(x,y)for _,_,x,y in pulls)<=2.5001,
-         max((math.hypot(x,y)for _,_,x,y in pulls),default=0))
-   support=[(float(before),float(after))for before,after in re.findall(
-            r'TRAINING_SUPPORT_CONTACT t=\d+ before=([\d.]+) after=([\d.]+)',log)]
-   check('support contacts do not add another kick',bool(support)and all(after<=before+.001 for before,after in support),
-         dict(contacts=len(support),maximum_speed_gain=max((after-before for before,after in support),default=0)))
+   check('pullbacks use original native impulses','TRAINING_PULLBACK'not in log,'No forced replacement velocity')
+   check('native pullbacks have no extra leg rebounds',all(c['evidence']['added_body_contacts']==0 for c in cases),
+         [c['evidence']['added_body_contacts']for c in cases])
   game.keys(['Escape'],True);game.game.wait(timeout=15);check('clean exit',game.game.returncode==0,game.game.returncode)
  report['result']='passed'if all(c['result']=='passed'for c in checks)else'failed'
 except BaseException as error:report['result']='failed';report['error']=str(error);raise
