@@ -193,7 +193,8 @@ void Humanoid::Process() {
     const bool trainingMovement = TrainingEnabled() && CastPlayer()->GetExternalController() &&
                                   (currentAnim->functionType == e_FunctionType_Movement ||
                                    (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl &&
-                                    currentAnim->frameNum > currentAnim->touchFrame + 5));
+                                    ((currentAnim->trainingTouchTaken && match->GetActualTime_ms() >= CastPlayer()->GetLastTouchTime_ms() + 60) ||
+                                     (!currentAnim->trainingTouchTaken && currentAnim->touchFrame>=0 && currentAnim->frameNum>currentAnim->touchFrame+4))));
     if (( trainingMovement ||
           (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
@@ -369,7 +370,7 @@ void Humanoid::Process() {
   // ------------------------ EXPERIMENTAL ------------------------------------------------
   bool controlledBallCollision = CastPlayer()->IsControlledBallCollisionTriggered();
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
+  if (!TrainingEnabled() && enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -396,7 +397,10 @@ void Humanoid::Process() {
   }
   // ---------------------- / EXPERIMENTAL ------------------------------------------------
 
-  if (currentAnim->touchFrame == currentAnim->frameNum) {
+  const bool touchWindow=TrainingEnabled()?currentAnim->touchFrame>=0 && !currentAnim->trainingTouchTaken &&
+      currentAnim->frameNum<=currentAnim->touchFrame+4:
+      currentAnim->touchFrame==currentAnim->frameNum;
+  if (touchWindow) {
 
     Vector3 desiredBallPosition;
     boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
@@ -441,9 +445,11 @@ void Humanoid::Process() {
       const Vector3 intent = human->GetDirection().Get2D().GetNormalized(0);
       Vector3 cutDirection = intent;
       bool aroundSupport = false;
+      const bool relativePull=human->GetFloatVelocity()>0.1f && match->GetBall()->Predict(0).coords[2]<0.45f &&
+          (match->GetBall()->Predict(0)-spatialState.position).Get2D().GetNormalized(0).GetDotProduct(intent)<-0.25f;
       if (human->GetFloatVelocity() > 0.1f && match->GetBall()->Predict(0).coords[2] < 0.45f &&
-          (currentBallVec.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f ||
-           touch.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f ||
+          (currentBallVec.Get2D().GetNormalized(0).GetDotProduct(intent) < 0.5f ||
+           touch.Get2D().GetNormalized(0).GetDotProduct(intent) < 0.5f ||
            (match->GetBall()->Predict(0) - spatialState.position).Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f)) {
         // Pull around the planted support foot, rather than launching a
         // straight reversal through it. This is still a real foot impulse.
@@ -452,26 +458,53 @@ void Humanoid::Process() {
         const int active = touchingPart == "right_foot" ? 1 : 0, other = 1 - active;
         const Vector3 ballPoint = match->GetBall()->Predict(0);
         const Vector3 end = ballPoint + intent * 0.8f;
-        if (training::sweep(ballPoint, end, legs[other].ankle, legs[other].knee, 0.20f).hit ||
-            training::sweep(ballPoint, end, legs[other].heel, legs[other].toe, 0.19f).hit) {
+        if (training::sweep(ballPoint, end, legs[other].ankle, legs[other].knee, 0.17f).hit ||
+            training::sweep(ballPoint, end, legs[other].heel, legs[other].toe, 0.16f).hit) {
           const Vector3 lateral(intent.coords[1], -intent.coords[0], 0);
           const Vector3 support = (legs[other].heel + legs[other].toe) * 0.5f;
-          const float side = (legs[active].ankle - legs[other].ankle).GetDotProduct(lateral) >= 0 ? 1.0f : -1.0f;
+          float sideOffset=(ballPoint-support).GetDotProduct(lateral);
+          if(std::fabs(sideOffset)<0.02f)sideOffset=(legs[active].ankle-legs[other].ankle).GetDotProduct(lateral);
+          const float side=sideOffset>=0?1.0f:-1.0f;
           const Vector3 waypoint = support + lateral * (side * 0.28f) + intent * 0.20f;
           const Vector3 delta = (waypoint - ballPoint).Get2D();
           const float along = std::max(0.2f, delta.GetDotProduct(intent));
           const float across = training::limit(delta.GetDotProduct(lateral), -along * 0.7f, along * 0.7f);
           cutDirection = (intent * along + lateral * across).GetNormalized(intent);
+          auto clearSupport=[&](const Vector3 &direction) {
+            const auto shin=training::sweep(ballPoint,ballPoint+direction*0.8f,legs[other].ankle,legs[other].knee,0.17f);
+            const auto foot=training::sweep(ballPoint,ballPoint+direction*0.8f,legs[other].heel,legs[other].toe,0.16f);
+            for(const auto &hit:{shin,foot})if(hit.hit && (hit.time>0 || direction.GetDotProduct(hit.normal)<0))return false;
+            return true;
+          };
+          for(int degrees=15;degrees<=80;degrees+=5) {
+            const float angle=degrees*training::pi/180;
+            const Vector3 candidate=intent*std::cos(angle)+lateral*(side*std::sin(angle));
+            if(clearSupport(candidate)){cutDirection=candidate;break;}
+          }
           aroundSupport = true;
         }
       }
       Vector3 corrected = training::finishControlTouch(touch, currentBallVec,
           cutDirection, human->GetFloatVelocity());
-      if (aroundSupport) {
+      const bool sharp=human->GetFloatVelocity()>0.1f && match->GetBall()->Predict(0).coords[2]<0.45f &&
+          currentBallVec.Get2D().GetLength()>0.5f && (currentBallVec.Get2D().GetNormalized(0).GetDotProduct(intent)<0.5f ||
+          touch.Get2D().GetNormalized(0).GetDotProduct(intent)<0.5f);
+      const bool pulling=aroundSupport || relativePull || sharp || (corrected-touch).GetLength()>0.001f;
+      if (aroundSupport || relativePull || sharp) {
         const Vector3 cut = cutDirection * std::min(2.5f, human->GetFloatVelocity());
         corrected.coords[0] = cut.coords[0]; corrected.coords[1] = cut.coords[1];
       }
-      if ((corrected - touch).GetLength() > 0.001f &&
+      if(match->TrainingDominantControl() && !pulling && human->GetFloatVelocity()>0.1f &&
+          spatialState.movement.GetLength()>=3.0f && match->GetBall()->Predict(0).coords[2]<0.4f &&
+          intent.GetDotProduct(spatialState.directionVec)>0.8f &&
+          corrected.Get2D().GetNormalized(0).GetDotProduct(intent)>0.85f) {
+        // A normal control touch leaves a rolling phase ahead of the shoe.
+        // Keep turning/reception braking separate from this forward roll.
+        const float rollingSpeed=spatialState.movement.GetLength()+0.5f;
+        const Vector3 roll=corrected.Get2D().GetNormalized(intent)*rollingSpeed;
+        corrected.coords[0]=roll.coords[0];corrected.coords[1]=roll.coords[1];
+      }
+      if (pulling && (corrected - touch).GetLength() > 0.001f &&
           GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_PULLBACK t=%lu part=%s before=[%.4f,%.4f] after=[%.4f,%.4f] direction=[%.4f,%.4f]\n",
             match->GetActualTime_ms(), touchingPart.c_str(), touch.coords[0], touch.coords[1],
@@ -479,13 +512,31 @@ void Humanoid::Process() {
       return corrected;
     };
 
-    if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
+    const float surfaceDistance=TrainingEnabled()?TrainingTouchDistance(touchingPart,match->GetBall()->Predict(0)):0;
+    const bool control=currentAnim->functionType==e_FunctionType_BallControl || currentAnim->functionType==e_FunctionType_Trap;
+    const Vector3 intent=CastPlayer()->GetExternalController()?CastPlayer()->GetExternalController()->GetDirection():spatialState.directionVec;
+    const bool physicalContact=!TrainingEnabled() || (surfaceDistance>=0.095f && surfaceDistance<=0.112f &&
+        (!control || match->TrainingControlTouchReady(match->GetActualTime_ms(),intent)));
+    if(!physicalContact && GetConfiguration()->GetBool("training_telemetry",false))
+      printf("TRAINING_MISSED_TOUCH t=%lu part=%s surface_distance=%.5f animation=%s\n",match->GetActualTime_ms(),touchingPart.c_str(),surfaceDistance,currentAnim->anim->GetName().c_str());
+    if (physicalContact && (TrainingEnabled() ||
+        (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f))) {
+      if(TrainingEnabled()) {
+        currentAnim->trainingTouchTaken=true;
+        currentAnim->trainingTouchDirection=control?intent:currentAnim->originatingCommand.touchInfo.desiredDirection;
+        currentAnim->touchPos=match->GetBall()->Predict(0)-currentAnim->positionOffset;
+        // The skin contact has already accounted for the actual geometric
+        // error; do not weaken a real strike using the old proxy-centre gap.
+        bumpyRideBias=0;
+      }
 
       match->NotifyTrainingTouch(currentAnim->functionType,
           (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0, touchingPart);
       if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_ACTION_TOUCH t=%lu part=%s function=%d z=%.4f\n", match->GetActualTime_ms(),
             touchingPart.c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2]);
+      if(TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry",false))
+        printf("TRAINING_SURFACE_TOUCH t=%lu part=%s distance=%.5f\n",match->GetActualTime_ms(),touchingPart.c_str(),surfaceDistance);
 
       if (trainingFoot) {
         // The contacting leg targets the actual ball at the animation event.
@@ -1186,7 +1237,9 @@ void Humanoid::SelectRetainAnim() {
   currentAnim->anim = anims->GetAnim(*dataSet.begin());
   currentAnim->id = *dataSet.begin();
   currentAnim->frameNum = 0;
+    currentAnim->trainingTouchTaken = false;
   currentAnim->touchFrame = -1;
+  currentAnim->trainingTouchTaken = false;
   currentAnim->fullActionSmuggle = Vector3(0);
   currentAnim->actionSmuggle = Vector3(0);
   currentAnim->actionSmuggleOffset = Vector3(0);
@@ -1231,6 +1284,9 @@ float Humanoid::GetHasteFactor(bool considerOpponentProximity) const {
 }
 
 bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInterruptAnim, bool preferPassAndShot) { // returns false on no applicable anim found
+  const bool trainingStandingPull=TrainingEnabled() && match->IsFirstPerson() && match->TrainingHasBall() &&
+      CastPlayer()->GetExternalController() && spatialState.movement.GetLength()<1.0f &&
+      CastPlayer()->GetExternalController()->GetDirection().Get2D().GetDotProduct(spatialState.directionVec)<-0.5f;
   assert(command.desiredDirection.coords[2] == 0.0f);
 
 
@@ -1268,7 +1324,8 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     // remaining locomotion without cancelling or duplicating that touch.
     const bool trainingPostTouch = TrainingEnabled() && match->IsFirstPerson() &&
         currentAnim->functionType == e_FunctionType_BallControl &&
-        currentAnim->frameNum > currentAnim->touchFrame + 5;
+        ((currentAnim->trainingTouchTaken && match->GetActualTime_ms() >= CastPlayer()->GetLastTouchTime_ms() + 60) ||
+         (!currentAnim->trainingTouchTaken && currentAnim->touchFrame>=0 && currentAnim->frameNum>currentAnim->touchFrame+4));
     if (trainingPostTouch && currentAnim->frameNum + minRemainingMovementReQueueFrames >
         currentAnim->anim->GetEffectiveFrameCount()) return false;
 
@@ -1559,7 +1616,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       float allowedBaseAngle = 0.0f * pi;
       int allowedVelocitySteps = 0; // last ditch anims are always allowed > 0 velocity steps, as long as strict is false
       DataSet dominantSteps;
-      if (TrainingEnabled() && match->TrainingDominantControl() && match->TrainingHasBall() &&
+      if (TrainingEnabled() && (match->TrainingDominantControl() || trainingStandingPull) && match->TrainingHasBall() &&
           CastPlayer()->GetExternalController() && match->GetBall()->Predict(0).coords[2] < 0.5f &&
           static_cast<HumanController*>(CastPlayer()->GetExternalController())->GetActionMode() != 2) {
         // Choose the best direction within the dominant foot's native steps
@@ -1760,7 +1817,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   */
 
   int selectedAnimID = -1;
-  if (TrainingEnabled() && match->TrainingDominantControl() && CastPlayer()->GetExternalController() &&
+  if (TrainingEnabled() && (match->TrainingDominantControl() || trainingStandingPull) && CastPlayer()->GetExternalController() &&
       command.desiredFunctionType == e_FunctionType_BallControl && match->GetBall()->Predict(0).coords[2] < 0.5f) {
     // Prefer the right-footed player's dominant foot among compatible native
     // steps. The existing physical reach test still rejects an impossible
@@ -1885,6 +1942,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     currentAnim->id = selectedAnimID;
     currentAnim->functionType = command.desiredFunctionType;//StringToFunctionType(currentAnim->anim->GetVariable("type"));
     currentAnim->frameNum = 0;
+    currentAnim->trainingTouchTaken = false;
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->originatingInterrupt = localInterruptAnim;
     currentAnim->radiusOffset = radiusOffset_tmp;
@@ -2204,7 +2262,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       if (TrainingEnabled() && (functionType == e_FunctionType_BallControl || functionType == e_FunctionType_Trap) &&
           (contactPart == "left_foot" || contactPart == "right_foot") &&
           match->GetBall()->Predict(0).coords[2] < 0.6f &&
-          !match->TrainingControlTouchReady(match->GetActualTime_ms() + animTouchFrame * 10, desiredDirection)) {
+          !match->TrainingControlTouchReady(match->GetActualTime_ms(),CastPlayer()->GetExternalController()?
+              CastPlayer()->GetExternalController()->GetDirection():desiredDirection)) {
         ++touchNum;
         continue;
       }

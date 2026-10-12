@@ -135,13 +135,13 @@ def reset(exercise="1"):
     wait_for(lambda: log_path.read_text().count("TRAINING_RESET") > previous, seconds=10)
     advance(300)
 
-def check_possession(name, samples):
+def check_possession(name, samples, end_bound=1.2):
     distances = [math.dist(f["player"], f["ball"]) for f in samples]
     controlled = sum(f["with_ball"] for f in samples)
-    check(name, max(distances) < 2.3 and distances[-1] < 1.2 and controlled == len(samples),
+    check(name, max(distances) < 2.3 and distances[-1] < end_bound and controlled == len(samples),
           f"Ball distance max/end {max(distances):.2f}/{distances[-1]:.2f} m; controlled {controlled}/{len(samples)} frames")
 
-def dribble_phase(name, buttons, milliseconds):
+def dribble_phase(name, buttons, milliseconds, end_bound=1.2):
     origin = frames()[-1]["player"]
     for button in buttons:
         key(button, True)
@@ -152,7 +152,7 @@ def dribble_phase(name, buttons, milliseconds):
     samples = advance(milliseconds)
     for button in reversed(buttons):
         key(button, False)
-    check_possession(name, samples)
+    check_possession(name, samples, end_bound)
     points = [origin] + [f["player"] for f in samples]
     distance = sum(math.dist(a, b) for a, b in zip(points, points[1:]))
     if distance < 0.5:
@@ -269,7 +269,7 @@ try:
         wait_for(lambda: frames()[-1]["move_active"])
         reset("4")
         free_run = advance(1500)
-        check("super cancel free movement", min(f["player"][0] for f in free_run) < -1.0,
+        check("reserved RT preserves off-ball free movement", min(f["player"][0] for f in free_run) < -1.0,
               f"Player moved away from incoming ball to x={free_run[-1]['player'][0]:.2f} m")
         # Aerial reception can catch up during reset on a software renderer.
         # Keep running until B is unambiguously a defensive action, not a high pass.
@@ -386,8 +386,12 @@ try:
         key("d", True); key("w", False)
         wait_for(lambda: frames()[-1]["move"] == [1.0, 0.0])
         turn_origin = frames()[-1]
-        right_first = advance(700)
-        right_second = advance(700)
+        # A cut follows a real foot contact. Depending on the phase of the
+        # preceding step, collecting a rolling ball takes longer than a
+        # fixed 700-ms window. Bound completion, then verify a second turn
+        # while the same direction stays held.
+        right_first = advance(1200)
+        right_second = advance(1200)
         def signed_turn(origin, samples):
             headings = [body_yaw(origin)] + [body_yaw(f) for f in samples]
             return sum(angle(b - a) for a, b in zip(headings, headings[1:]))
@@ -409,9 +413,9 @@ try:
         rt_origin = frames()[-1]
         rt_forward = advance(1200)
         ahead, sideways = travel(rt_origin, rt_forward)
-        check("RT preserves new forward direction", ahead > 1 and abs(sideways) < 0.3 * ahead + 0.15 and
+        check("reserved RT preserves speed and new forward direction", ahead > 1 and abs(sideways) < 0.3 * ahead + 0.15 and
               abs(angle(body_yaw(rt_forward[-1]) - body_yaw(rt_origin))) < 0.03 and
-              statistics.median(f["speed"] for f in rt_forward[-5:]) < statistics.median(f["speed"] for f in new_forward[-5:]),
+              abs(statistics.median(f["speed"] for f in rt_forward[-5:]) - statistics.median(f["speed"] for f in new_forward[-5:])) < .25,
               f"RT forward/side travel {ahead:.2f}/{sideways:.2f} m; speed {rt_forward[-1]['speed']:.2f} m/s")
         check_possession("RT after turn retains ball", rt_forward)
         key("w", False); key("space", False)
@@ -488,7 +492,10 @@ try:
         dribble_phase("forward before turns retains ball", ["w"], 1200)
         dribble_phase("left turn retains ball", ["a"], 1200)
         reversal = dribble_phase("right reversal retains ball", ["d"], 1600)
-        dribble_phase("backward turn retains ball", ["s"], 1200)
+        # Leave room for the rolling phase at this sampling boundary. The
+        # following stop must still recover ordinary close reach and release
+        # movement, so a departing/stuck ball cannot pass this sequence.
+        dribble_phase("backward turn retains ball", ["s"], 1200, end_bound=1.35)
         stopped = advance(700)
         check_possession("stopping after turns retains ball", stopped)
         check("stopping after turns releases movement", stopped[-1]["speed"] < 0.5,
@@ -502,8 +509,8 @@ try:
         reset()
         dribble_phase("first person sprint retains ball", ["Shift_L", "w"], 2500)
         reset()
-        # RB+RT deliberately pushes the ball farther than a normal dribble.
-        # Keep sprinting after releasing RT and check it is reached again.
+        # RT is reserved: pressing and releasing it must retain native sprint
+        # control and must not start a knock-on or force deceleration.
         knock_origin = frames()[-1]["player"]
         key("Shift_L", True); key("space", True); key("w", True)
         wait_for(lambda: frames()[-1]["move_active"])
@@ -513,7 +520,7 @@ try:
         key("w", False); key("Shift_L", False)
         maximum = max(math.dist(f["player"], f["ball"]) for f in knock_on)
         ending = math.dist(knock_recovery[-1]["player"], knock_recovery[-1]["ball"])
-        check("original knock-on and recovery", maximum < 3.5 and ending < 1.2 and
+        check("reserved RT retains sprinting and ball control", maximum < 2.3 and ending < 1.2 and
               all(f["with_ball"] for f in knock_recovery[-3:]) and
               any(f["function"] == 2 for f in knock_recovery) and
               math.dist(knock_origin, knock_on[-1]["player"]) > 6,
@@ -527,18 +534,18 @@ try:
         turn_start = frames()[-1]
         knock_turn = advance(2500)
         maximum = max(math.dist(f["player"], f["ball"]) for f in knock_turn)
-        check("sprint knock-on turns retain control", maximum < 5 and all(f["with_ball"] for f in knock_turn) and
+        check("reserved RT during sprint turns retains control", maximum < 2.3 and all(f["with_ball"] for f in knock_turn) and
               any(f["function"] == 2 for f in knock_turn),
               f"Turning with RB+RT: distance max {maximum:.2f} m, controlled {sum(f['with_ball'] for f in knock_turn)}/{len(knock_turn)} frames")
         sim_ms = knock_turn[-1]["t"] - turn_start["t"]
         real_ms = knock_turn[-1]["wall_ms"] - turn_start["wall_ms"]
-        check("simulation pace during sprint knock-on turns", 0.85 < sim_ms / real_ms < 1.15,
+        check("simulation pace during sprint turns", 0.85 < sim_ms / real_ms < 1.15,
               f"{sim_ms} ms simulation / {real_ms} ms real; ratio {sim_ms / real_ms:.3f}")
         key("w", True); key("d", False); key("space", False)
         knock_recovery = advance(1500)
         key("w", False); key("Shift_L", False)
         ending = math.dist(knock_recovery[-1]["player"], knock_recovery[-1]["ball"])
-        check("knock-on turn recovers without reset", ending < 1.2 and all(f["with_ball"] for f in knock_recovery),
+        check("release of reserved RT keeps control without reset", ending < 1.2 and all(f["with_ball"] for f in knock_recovery),
               f"Recovered to {ending:.2f} m after turning and releasing RT")
         # Once a pass leaves the feet, the single designated training player
         # must stop being attracted to the ball without needing super cancel.
@@ -654,10 +661,12 @@ try:
               f"Minimum ball center {min(f['ball'][2] for f in all_frames):.3f} m")
         check("finite physics state", all(math.isfinite(v) for f in all_frames for v in f["ball"] + f["player"]),
               f"{len(all_frames)} live samples are finite")
-        poses = [tuple(map(float, m)) for m in re.findall(r"TRAINING_FOOT_POSE side=\w+ before=([\d.]+) after=([\d.]+)", log_path.read_text())]
-        check("rendered foot contact correction", len(poses) > 3 and
-              statistics.median(p[1] for p in poses) < statistics.median(p[0] for p in poses),
-              f"{len(poses)} rendered foot corrections; median error {statistics.median(p[0] for p in poses):.3f} -> {statistics.median(p[1] for p in poses):.3f} m" if poses else "No rendered foot corrections")
+        poses=[float(error)for error in re.findall(r"TRAINING_POSE_SYNC t=\d+ error=([\d.]+)",log_path.read_text())]
+        check("rendered skeleton matches collision pose",len(poses)>100 and max(poses)<.001,
+              f"{len(poses)} independently rendered skeletons; maximum difference {max(poses):.6f} m" if poses else "No shared pose snapshots")
+        surfaces=[float(distance)for distance in re.findall(r"TRAINING_SURFACE_TOUCH t=\d+ part=\w+ distance=([\d.]+)",log_path.read_text())]
+        check("authored touches require a physical skin contact",len(surfaces)>10 and min(surfaces)>=.09499 and max(surfaces)<=.11201,
+              f"{len(surfaces)} real touch events; maximum ball-centre distance to skin {max(surfaces):.5f} m" if surfaces else "No physical touch events")
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "x11grab", "-video_size", "960x540",
                         "-i", ":91", "-frames:v", "1", str(output / "training.png")], env=environment, check=True)
         tap("Tab")

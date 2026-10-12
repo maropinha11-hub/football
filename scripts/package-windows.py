@@ -104,17 +104,17 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
-        "RT mantém a direção atual, sem virar sozinho para o gol.\n"
+        "RT reservado; velocidade controlada pelo analogico esquerdo e RB.\n"
         "A condução mantém a assistência e os passos originais nas viradas.\n"
         "Viradas para tras mantem o impulso de puxar a bola no contato do pe.\n"
         "L3 (clicar o esquerdo) ou G alterna pe dominante/normal; inicia no direito.\n"
         "No dominante, o pe completa o gesto e a bola rola antes do proximo toque.\n"
         "Pernas de apoio bloqueiam/desviam a bola sem aplicar um segundo chute.\n"
-        "RB+RT adianta a bola e mantém o acompanhamento, inclusive nas curvas.\n"
+        "A bola rola a frente entre os toques; as curvas mantem os contatos fisicos.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
         "X: carga máxima 0,52 s; cerca de 0,25 s já levanta a bola.\n"
-        "LB+X cobertura; RB correr; RT domínio; View reiniciar; Menu pausa;\n"
+        "LB+X cobertura; RB correr; RT reservado; View reiniciar; Menu pausa;\n"
         "D-pad exercício; LB+D-pad baixo falta; R3 alterna as três câmeras.\n"
         "D-pad esquerda: bola aérea. Prepare A (passe) ou X (gol) para cabecear.\n"
         "LB+D-pad direita (tecla 6): passe recebido; prepare A/Y/X para jogar de primeira.\n"
@@ -150,14 +150,14 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
-    update = artifacts / "football-windows-virada-e-intervalos.zip"
+    update = artifacts / "football-windows-contatos-e-conducao.zip"
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            "Atualizacao Windows x64 — viradas, perna de apoio e intervalos\r\n\r\n"
+            "Atualizacao Windows x64 — viradas, contatos visiveis e conducao\r\n\r\n"
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
@@ -167,9 +167,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "dominante (direito) e normal. No teclado: G. Comeca no dominante.\r\n"
             "O esquerdo continua disponivel se for necessario para alcancar a bola.\r\n"
             "A correcao da virada para tras funciona nos DOIS modos.\r\n"
-            "No dominante, ha um intervalo real entre as conduzidas; RT mantem\r\n"
-            "o dominio mais curto. Viradas podem puxar antes para manter o controle.\r\n"
-            "A puxada contorna a perna de apoio e o contato dela nao da um segundo chute.\r\n"
+            "No dominante, a bola rola a frente entre as conduzidas. RT esta\r\n"
+            "reservado; mova o analogico levemente para andar devagar.\r\n"
+            "A colisao usa a malha animada visivel; os toques exigem contato fisico.\r\n"
             "Esta versao utiliza a gameplay e as animacoes nativas da base enviada.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

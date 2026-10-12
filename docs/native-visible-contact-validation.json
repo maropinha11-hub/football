@@ -1,0 +1,2536 @@
+{
+  "result": "passed",
+  "date_utc": "2026-10-12T19:55:04.958853+00:00",
+  "base_commit": "449692a8e07feb1068b7af182771656f8a1d2cd9",
+  "gameplay": "native Gameplay Football; first-person training; no PES animation bank activated",
+  "native_test_executable_sha256": "953ffddcc2e13b93a2686e7a0ab69b185d97aac202092c924e401a8db885dcc1",
+  "windows_unstripped_executable_sha256": "fb4b68ece4f5cd47d5fab059bf3244593d925e288e7c77b8aeceb263fdcef354",
+  "source_sha256": {
+    "src/onthepitch/player/controller/humancontroller.cpp": "09f1f4fe9ff9bc85b2ce9247fbc1da35381d0dd6079604c5e6c64012059d901e",
+    "src/onthepitch/player/humanoid/humanoid.cpp": "44561c907520007d66b34c8af19fd8ba2d462bd4a26c7b2f65adcb5049545770",
+    "src/onthepitch/player/humanoid/humanoid.hpp": "56f5d0f87117d1cf3d923b812c5e7e2bc6fd5ef545b5ad7b7734e187a73db504",
+    "src/onthepitch/player/humanoid/humanoidbase.cpp": "8b23cb407fefde3b74245f6ed5555ca09fb2f75715dccf26f8f6866c9e4d90e3",
+    "src/onthepitch/player/humanoid/humanoidbase.hpp": "4053a8cf1d1ce1f01f4adae4eee4a92416064d75fa2ebb6f0464dfe3bd22797c",
+    "src/onthepitch/training.cpp": "e759e416f29473b1ef9ee3f53661d218abb7f9119521bd93b7580414273bce2e",
+    "src/onthepitch/trainingcontrol.hpp": "6e0c7e864436c67ea8e10b43187ab84ce08962cfbb26f1b9412f9361f7eb3795"
+  },
+  "unit_test_groups": 4,
+  "rendered_checks": {
+    "gameplay": 80,
+    "reversals": 62,
+    "contacts": 45
+  },
+  "physical_contacts": {
+    "touches": 117,
+    "min_ball_center_to_skin_m": 0.09554,
+    "max_ball_center_to_skin_m": 0.11185,
+    "pose_snapshots": 941,
+    "max_rendered_bone_to_physics_difference_m": 0.00031
+  },
+  "dominant_jog": {
+    "touches": 9,
+    "right": 9,
+    "gaps_ms": [
+      620,
+      640,
+      640,
+      630,
+      690,
+      620,
+      640,
+      630
+    ],
+    "min_gap_ms": 620,
+    "median_gap_ms": 635.0,
+    "max_distance": 0.5999020336688324,
+    "controlled": 60,
+    "samples": 60,
+    "median_player_speed": 4.9998,
+    "median_ball_distance": 0.5225937377921411
+  },
+  "test_criteria_notes": [
+    "Held-back reversals verify actual backward ball motion between samples and accepted foot events, rather than crossing the original world position before a subsequent body-relative turn.",
+    "Held-right testing allows 1200 ms per turn to include gathering the rolling ball and a real foot contact; subsequent forward input must retain the resulting front.",
+    "The backward segment in the consecutive-turn sequence permits 1.35 m at its sampling boundary; all samples must retain control and remain within 2.3 m. The following stop still requires ordinary 1.2-m reach and speed below 0.5 m/s."
+  ],
+  "checks": {
+    "gameplay": [
+      {
+        "check": "rendered game startup",
+        "result": "passed",
+        "evidence": "Native simulation emitted live frames"
+      },
+      {
+        "check": "walking and dribbling",
+        "result": "passed",
+        "evidence": "Player moved 6.61 m"
+      },
+      {
+        "check": "walking retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.68/0.47 m; controlled 15/15 frames"
+      },
+      {
+        "check": "animation playback",
+        "result": "passed",
+        "evidence": "Original animation frames advanced"
+      },
+      {
+        "check": "release and deceleration",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "sprinting",
+        "result": "passed",
+        "evidence": "Walk 5.00, sprint 7.60 m/s"
+      },
+      {
+        "check": "sprinting retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 1.01/0.66 m; controlled 16/16 frames"
+      },
+      {
+        "check": "short pass",
+        "result": "passed",
+        "evidence": "Functions [1, 4]; ball speed 25.15 m/s"
+      },
+      {
+        "check": "through pass",
+        "result": "passed",
+        "evidence": "Functions [1, 5]; ball speed 24.71 m/s"
+      },
+      {
+        "check": "high pass",
+        "result": "passed",
+        "evidence": "Functions [1, 6]; ball speed 34.18 m/s"
+      },
+      {
+        "check": "shot",
+        "result": "passed",
+        "evidence": "Functions [1, 8]; ball speed 33.85 m/s"
+      },
+      {
+        "check": "aerial physics",
+        "result": "passed",
+        "evidence": "Peak height 3.93 m"
+      },
+      {
+        "check": "reserved RT preserves off-ball free movement",
+        "result": "passed",
+        "evidence": "Player moved away from incoming ball to x=-16.42 m"
+      },
+      {
+        "check": "off-ball sliding",
+        "result": "passed",
+        "evidence": "Functions [1, 13]"
+      },
+      {
+        "check": "finishing exercise",
+        "result": "passed",
+        "evidence": "Player starts at x=30.25 m"
+      },
+      {
+        "check": "goal detection",
+        "result": "passed",
+        "evidence": "Goal counter 0 -> 1"
+      },
+      {
+        "check": "automatic ball reset",
+        "result": "passed",
+        "evidence": "Ball returned to x=30.65 m"
+      },
+      {
+        "check": "charged shot elevation",
+        "result": "passed",
+        "evidence": "Light (28.6909, 2.2475), charged (33.8514, 6.2842) (speed, height); delivered charge {'light': 290, 'quick': 280, 'charged': 520, 'chip': 520}"
+      },
+      {
+        "check": "quick shot elevation",
+        "result": "passed",
+        "evidence": "Target 250 ms, delivered 280 ms; shot (28.4102, 2.1073) (speed, height)"
+      },
+      {
+        "check": "LB chip trajectory",
+        "result": "passed",
+        "evidence": "Chip (22.0, 10.1811); charged (33.8514, 6.2842)"
+      },
+      {
+        "check": "free kick exercise",
+        "result": "passed",
+        "evidence": "Player starts at [28.2396, -7.929, 0.0]"
+      },
+      {
+        "check": "first person camera",
+        "result": "passed",
+        "evidence": "Camera switches to first person"
+      },
+      {
+        "check": "head free look with ball",
+        "result": "passed",
+        "evidence": "Head yaw -1.03, player stays still"
+      },
+      {
+        "check": "gradual head recenter",
+        "result": "passed",
+        "evidence": "Head magnitude 1.13 -> 0.11 rad after input release"
+      },
+      {
+        "check": "head look does not steer dribbling",
+        "result": "passed",
+        "evidence": "Player delta [3.9966999999999997, 0.0078]; head turns independently"
+      },
+      {
+        "check": "straight dribbling",
+        "result": "passed",
+        "evidence": "Forward/side displacement [7.8278, 0.0256] m"
+      },
+      {
+        "check": "straight movement retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.68/0.50 m; controlled 17/17 frames"
+      },
+      {
+        "check": "held right keeps turning relative to new front",
+        "result": "passed",
+        "evidence": "Successive right-turn angles -2.52/-2.61 rad"
+      },
+      {
+        "check": "continuous relative turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.84/0.32 m; controlled 24/24 frames"
+      },
+      {
+        "check": "forward follows new front after turn",
+        "result": "passed",
+        "evidence": "New front 1.08 rad; forward/side travel 5.25/0.12 m"
+      },
+      {
+        "check": "new forward retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.60/0.58 m; controlled 12/12 frames"
+      },
+      {
+        "check": "reserved RT preserves speed and new forward direction",
+        "result": "passed",
+        "evidence": "RT forward/side travel 5.88/0.00 m; speed 5.00 m/s"
+      },
+      {
+        "check": "RT after turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.58/0.48 m; controlled 12/12 frames"
+      },
+      {
+        "check": "idle RT does not turn player toward goal",
+        "result": "passed",
+        "evidence": "Idle RT changed actual body heading 0.01 rad; no automatic goal-facing turn"
+      },
+      {
+        "check": "down pulls ball while planting for reversal",
+        "result": "passed",
+        "evidence": "First 500 ms ball travel -0.82 m; body pivot 2.56 rad"
+      },
+      {
+        "check": "down moves behind the current front",
+        "result": "passed",
+        "evidence": "First 800 ms backwards travel -0.43 m; side -0.16 m"
+      },
+      {
+        "check": "held down reverses relative to each new front",
+        "result": "passed",
+        "evidence": "Body/camera turned 8.54 rad; 2 completed turns requested a new behind while down stayed held"
+      },
+      {
+        "check": "repeated backward turns retain ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.69/0.45 m; controlled 27/27 frames"
+      },
+      {
+        "check": "up follows the front after backward turns",
+        "result": "passed",
+        "evidence": "New forward/side travel 4.84/-0.59 m"
+      },
+      {
+        "check": "forward after backwards retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.56/0.56 m; controlled 12/12 frames"
+      },
+      {
+        "check": "simulation keeps real-time pace",
+        "result": "passed",
+        "evidence": "5000 ms simulation / 5001 ms monotonic clock; ratio 1.000"
+      },
+      {
+        "check": "reset cancels buffered shot",
+        "result": "passed",
+        "evidence": "Functions [1]; no stale shot after reset"
+      },
+      {
+        "check": "forward before turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.68/0.54 m; controlled 12/12 frames"
+      },
+      {
+        "check": "left turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.66/0.37 m; controlled 12/12 frames"
+      },
+      {
+        "check": "right reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.68/0.26 m; controlled 16/16 frames"
+      },
+      {
+        "check": "backward turn retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.76/0.24 m; controlled 12/12 frames"
+      },
+      {
+        "check": "stopping after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.30/0.30 m; controlled 7/7 frames"
+      },
+      {
+        "check": "stopping after turns releases movement",
+        "result": "passed",
+        "evidence": "Stopped speed 0.000 m/s"
+      },
+      {
+        "check": "restart after turns retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.70/0.60 m; controlled 18/18 frames"
+      },
+      {
+        "check": "turning uses original ball-control animations",
+        "result": "passed",
+        "evidence": "Functions [1, 2]"
+      },
+      {
+        "check": "close control diagonal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.64/0.51 m; controlled 22/22 frames"
+      },
+      {
+        "check": "close control reversal retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.67/0.33 m; controlled 16/16 frames"
+      },
+      {
+        "check": "first person sprint retains ball",
+        "result": "passed",
+        "evidence": "Ball distance max/end 0.79/0.49 m; controlled 25/25 frames"
+      },
+      {
+        "check": "reserved RT retains sprinting and ball control",
+        "result": "passed",
+        "evidence": "Long-touch distance max 0.76 m; recovered to 0.44 m after releasing RT"
+      },
+      {
+        "check": "reserved RT during sprint turns retains control",
+        "result": "passed",
+        "evidence": "Turning with RB+RT: distance max 1.42 m, controlled 25/25 frames"
+      },
+      {
+        "check": "simulation pace during sprint turns",
+        "result": "passed",
+        "evidence": "2500 ms simulation / 2497 ms real; ratio 1.001"
+      },
+      {
+        "check": "release of reserved RT keeps control without reset",
+        "result": "passed",
+        "evidence": "Recovered to 0.36 m after turning and releasing RT"
+      },
+      {
+        "check": "pass releases possession",
+        "result": "passed",
+        "evidence": "Ball distance 21.36 m"
+      },
+      {
+        "check": "off ball idle does not chase",
+        "result": "passed",
+        "evidence": "Idle displacement 0.000 m; speed 0.000 m/s"
+      },
+      {
+        "check": "off ball movement is free after pass",
+        "result": "passed",
+        "evidence": "Sideways displacement 3.69 m without super cancel"
+      },
+      {
+        "check": "manual approach recovers passed ball",
+        "result": "passed",
+        "evidence": "Recovered in 8.1 s; ball distance 0.79 m; functions [1, 2]"
+      },
+      {
+        "check": "off ball FPS turning",
+        "result": "passed",
+        "evidence": "Yaw changed -0.73 rad without ball"
+      },
+      {
+        "check": "first person forward movement",
+        "result": "passed",
+        "evidence": "Player moved 2.76 m"
+      },
+      {
+        "check": "headed pass before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 6.41 m away"
+      },
+      {
+        "check": "headed pass before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 4 at z=1.7778 m; peak speed 18.92 m/s"
+      },
+      {
+        "check": "headed shot before bounce accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 6.38 m away"
+      },
+      {
+        "check": "headed shot before bounce",
+        "result": "passed",
+        "evidence": "First contact head / function 8 at z=1.7400 m; peak speed 24.82 m/s"
+      },
+      {
+        "check": "first-time short pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 7.88 m away"
+      },
+      {
+        "check": "first-time short pass",
+        "result": "passed",
+        "evidence": "First contact right_foot / function 4 at z=0.1100 m; peak speed 18.54 m/s"
+      },
+      {
+        "check": "first-time through pass accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 7.55 m away"
+      },
+      {
+        "check": "first-time through pass",
+        "result": "passed",
+        "evidence": "First contact right_foot / function 5 at z=0.1100 m; peak speed 23.01 m/s"
+      },
+      {
+        "check": "first-time shot accepts early input",
+        "result": "passed",
+        "evidence": "Action buffered with ball 7.71 m away"
+      },
+      {
+        "check": "first-time shot",
+        "result": "passed",
+        "evidence": "First contact right_foot / function 8 at z=0.1100 m; peak speed 24.06 m/s"
+      },
+      {
+        "check": "front stadium remains visible",
+        "result": "passed",
+        "evidence": "Central distant roof covers 100.0% of inspection band"
+      },
+      {
+        "check": "ball stays above turf",
+        "result": "passed",
+        "evidence": "Minimum ball center 0.110 m"
+      },
+      {
+        "check": "finite physics state",
+        "result": "passed",
+        "evidence": "1604 live samples are finite"
+      },
+      {
+        "check": "rendered skeleton matches collision pose",
+        "result": "passed",
+        "evidence": "933 independently rendered skeletons; maximum difference 0.000310 m"
+      },
+      {
+        "check": "authored touches require a physical skin contact",
+        "result": "passed",
+        "evidence": "117 real touch events; maximum ball-centre distance to skin 0.11185 m"
+      },
+      {
+        "check": "external camera restoration",
+        "result": "passed",
+        "evidence": "First person cycles back to external view"
+      },
+      {
+        "check": "clean shutdown",
+        "result": "passed",
+        "evidence": "Exit status 0"
+      }
+    ],
+    "reversals": [
+      {
+        "check": "dominant mode starts enabled",
+        "result": "passed",
+        "evidence": 1
+      },
+      {
+        "check": "held L3 toggles once",
+        "result": "passed",
+        "evidence": 7
+      },
+      {
+        "check": "second L3 restores dominant mode",
+        "result": "passed",
+        "evidence": 1
+      },
+      {
+        "check": "dominant straight run stays controlled",
+        "result": "passed",
+        "evidence": {
+          "right": 11,
+          "left": 0,
+          "total": 11
+        }
+      },
+      {
+        "check": "dominant stationary reversal starts with pull and pivot",
+        "result": "passed",
+        "evidence": {
+          "first_500ms_ball_forward": -0.7497,
+          "body_turn": 2.4649,
+          "player_forward": -0.1379
+        }
+      },
+      {
+        "check": "dominant stationary reversal moves behind after pivot",
+        "result": "passed",
+        "evidence": {
+          "first_800ms_forward": -0.3428,
+          "first_800ms_sideways": -0.15
+        }
+      },
+      {
+        "check": "dominant stationary reversal keeps ball",
+        "result": "passed",
+        "evidence": 8
+      },
+      {
+        "check": "dominant / walking keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6563105972022691,
+          "final_ball_distance": 0.26640572441297095,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": 2.1039000000000003,
+          "real_control_touches": 5,
+          "minimum_ball_travel_in_old_front": 0.3553999999999995,
+          "minimum_ball_step_in_old_front": -0.15039999999999942,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1081
+        }
+      },
+      {
+        "check": "dominant / walking retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6563105972022691,
+          "final_ball_distance": 0.26640572441297095,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": 2.1039000000000003,
+          "real_control_touches": 5,
+          "minimum_ball_travel_in_old_front": 0.3553999999999995,
+          "minimum_ball_step_in_old_front": -0.15039999999999942,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1081
+        }
+      },
+      {
+        "check": "dominant / walking pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6563105972022691,
+          "final_ball_distance": 0.26640572441297095,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": 2.1039000000000003,
+          "real_control_touches": 5,
+          "minimum_ball_travel_in_old_front": 0.3553999999999995,
+          "minimum_ball_step_in_old_front": -0.15039999999999942,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1081
+        }
+      },
+      {
+        "check": "dominant / walking continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.3813367671756812,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "dominant / sprinting keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.6854667096219922,
+          "final_ball_distance": 0.2919312761593042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.8575999999999997,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.7227999999999994,
+          "minimum_ball_step_in_old_front": -0.21359999999999957,
+          "initial_player_speed": 7.9115,
+          "initial_ball_speed": 7.4356
+        }
+      },
+      {
+        "check": "dominant / sprinting retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.6854667096219922,
+          "final_ball_distance": 0.2919312761593042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.8575999999999997,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.7227999999999994,
+          "minimum_ball_step_in_old_front": -0.21359999999999957,
+          "initial_player_speed": 7.9115,
+          "initial_ball_speed": 7.4356
+        }
+      },
+      {
+        "check": "dominant / sprinting pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.6854667096219922,
+          "final_ball_distance": 0.2919312761593042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.8575999999999997,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.7227999999999994,
+          "minimum_ball_step_in_old_front": -0.21359999999999957,
+          "initial_player_speed": 7.9115,
+          "initial_ball_speed": 7.4356
+        }
+      },
+      {
+        "check": "dominant / sprinting continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.5343970527613339,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "dominant / reserved RT keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6322984421932422,
+          "final_ball_distance": 0.3146565270258982,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": -0.32179999999999964,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -1.0823,
+          "minimum_ball_step_in_old_front": -0.39729999999999954,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 4.5184
+        }
+      },
+      {
+        "check": "dominant / reserved RT retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6322984421932422,
+          "final_ball_distance": 0.3146565270258982,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": -0.32179999999999964,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -1.0823,
+          "minimum_ball_step_in_old_front": -0.39729999999999954,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 4.5184
+        }
+      },
+      {
+        "check": "dominant / reserved RT pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6322984421932422,
+          "final_ball_distance": 0.3146565270258982,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": -0.32179999999999964,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -1.0823,
+          "minimum_ball_step_in_old_front": -0.39729999999999954,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 4.5184
+        }
+      },
+      {
+        "check": "dominant / reserved RT continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.5479364287944358,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "dominant / reserved RB RT keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.7313579492970607,
+          "final_ball_distance": 0.42505365543658064,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 0.07559999999999967,
+          "real_control_touches": 7,
+          "minimum_ball_travel_in_old_front": -0.41580000000000084,
+          "minimum_ball_step_in_old_front": -0.4281000000000006,
+          "initial_player_speed": 7.9049,
+          "initial_ball_speed": 7.5134
+        }
+      },
+      {
+        "check": "dominant / reserved RB RT retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.7313579492970607,
+          "final_ball_distance": 0.42505365543658064,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 0.07559999999999967,
+          "real_control_touches": 7,
+          "minimum_ball_travel_in_old_front": -0.41580000000000084,
+          "minimum_ball_step_in_old_front": -0.4281000000000006,
+          "initial_player_speed": 7.9049,
+          "initial_ball_speed": 7.5134
+        }
+      },
+      {
+        "check": "dominant / reserved RB RT pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.7313579492970607,
+          "final_ball_distance": 0.42505365543658064,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 0.07559999999999967,
+          "real_control_touches": 7,
+          "minimum_ball_travel_in_old_front": -0.41580000000000084,
+          "minimum_ball_step_in_old_front": -0.4281000000000006,
+          "initial_player_speed": 7.9049,
+          "initial_ball_speed": 7.5134
+        }
+      },
+      {
+        "check": "dominant / reserved RB RT continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.41378483539153516,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "dominant / held back repeats keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 14,
+          "max_ball_distance": 0.6702533998421788,
+          "final_ball_distance": 0.427159010205802,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": 2.6556999999999995,
+          "real_control_touches": 15,
+          "minimum_ball_travel_in_old_front": 0.47029999999999994,
+          "minimum_ball_step_in_old_front": -0.20679999999999943,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1506
+        }
+      },
+      {
+        "check": "dominant / held back repeats retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 14,
+          "max_ball_distance": 0.6702533998421788,
+          "final_ball_distance": 0.427159010205802,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": 2.6556999999999995,
+          "real_control_touches": 15,
+          "minimum_ball_travel_in_old_front": 0.47029999999999994,
+          "minimum_ball_step_in_old_front": -0.20679999999999943,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1506
+        }
+      },
+      {
+        "check": "dominant / held back repeats pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 14,
+          "max_ball_distance": 0.6702533998421788,
+          "final_ball_distance": 0.427159010205802,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": 2.6556999999999995,
+          "real_control_touches": 15,
+          "minimum_ball_travel_in_old_front": 0.47029999999999994,
+          "minimum_ball_step_in_old_front": -0.20679999999999943,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1506
+        }
+      },
+      {
+        "check": "dominant held back repeats after completing real turn",
+        "result": "passed",
+        "evidence": 7
+      },
+      {
+        "check": "dominant / held back repeats continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.45963408272233275,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "G switches to normal mode",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "normal straight run stays controlled",
+        "result": "passed",
+        "evidence": {
+          "right": 1,
+          "left": 15,
+          "total": 16
+        }
+      },
+      {
+        "check": "normal stationary reversal starts with pull and pivot",
+        "result": "passed",
+        "evidence": {
+          "first_500ms_ball_forward": -0.5622,
+          "body_turn": 1.8981,
+          "player_forward": 0.04550000000000001
+        }
+      },
+      {
+        "check": "normal stationary reversal moves behind after pivot",
+        "result": "passed",
+        "evidence": {
+          "first_800ms_forward": -0.1795,
+          "first_800ms_sideways": 0.0119
+        }
+      },
+      {
+        "check": "normal stationary reversal keeps ball",
+        "result": "passed",
+        "evidence": 8
+      },
+      {
+        "check": "normal / walking keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6822448021055199,
+          "final_ball_distance": 0.6822448021055199,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": -0.28169999999999984,
+          "real_control_touches": 8,
+          "minimum_ball_travel_in_old_front": -1.9334999999999996,
+          "minimum_ball_step_in_old_front": -0.5411000000000001,
+          "initial_player_speed": 5.0834,
+          "initial_ball_speed": 4.7273
+        }
+      },
+      {
+        "check": "normal / walking retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6822448021055199,
+          "final_ball_distance": 0.6822448021055199,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": -0.28169999999999984,
+          "real_control_touches": 8,
+          "minimum_ball_travel_in_old_front": -1.9334999999999996,
+          "minimum_ball_step_in_old_front": -0.5411000000000001,
+          "initial_player_speed": 5.0834,
+          "initial_ball_speed": 4.7273
+        }
+      },
+      {
+        "check": "normal / walking pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6822448021055199,
+          "final_ball_distance": 0.6822448021055199,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": -0.28169999999999984,
+          "real_control_touches": 8,
+          "minimum_ball_travel_in_old_front": -1.9334999999999996,
+          "minimum_ball_step_in_old_front": -0.5411000000000001,
+          "initial_player_speed": 5.0834,
+          "initial_ball_speed": 4.7273
+        }
+      },
+      {
+        "check": "normal / walking continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4665044587139544,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "normal / sprinting keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8783765365718728,
+          "final_ball_distance": 0.31192122402940164,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.2011000000000003,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.13320000000000043,
+          "minimum_ball_step_in_old_front": -0.27420000000000044,
+          "initial_player_speed": 7.8153,
+          "initial_ball_speed": 8.3093
+        }
+      },
+      {
+        "check": "normal / sprinting retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8783765365718728,
+          "final_ball_distance": 0.31192122402940164,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.2011000000000003,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.13320000000000043,
+          "minimum_ball_step_in_old_front": -0.27420000000000044,
+          "initial_player_speed": 7.8153,
+          "initial_ball_speed": 8.3093
+        }
+      },
+      {
+        "check": "normal / sprinting pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8783765365718728,
+          "final_ball_distance": 0.31192122402940164,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.2011000000000003,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.13320000000000043,
+          "minimum_ball_step_in_old_front": -0.27420000000000044,
+          "initial_player_speed": 7.8153,
+          "initial_ball_speed": 8.3093
+        }
+      },
+      {
+        "check": "normal / sprinting continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4124393167485371,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "normal / reserved RT keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 3,
+          "max_ball_distance": 0.7926665124754543,
+          "final_ball_distance": 0.5616957895516042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 1.5706000000000007,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -0.42239999999999966,
+          "minimum_ball_step_in_old_front": -0.4333999999999989,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 5.4092
+        }
+      },
+      {
+        "check": "normal / reserved RT retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 3,
+          "max_ball_distance": 0.7926665124754543,
+          "final_ball_distance": 0.5616957895516042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 1.5706000000000007,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -0.42239999999999966,
+          "minimum_ball_step_in_old_front": -0.4333999999999989,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 5.4092
+        }
+      },
+      {
+        "check": "normal / reserved RT pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 3,
+          "max_ball_distance": 0.7926665124754543,
+          "final_ball_distance": 0.5616957895516042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 1.5706000000000007,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -0.42239999999999966,
+          "minimum_ball_step_in_old_front": -0.4333999999999989,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 5.4092
+        }
+      },
+      {
+        "check": "normal / reserved RT continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4242631494721166,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "normal / reserved RB RT keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8822115845986145,
+          "final_ball_distance": 0.6981353808538834,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 1.924900000000001,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.23160000000000025,
+          "minimum_ball_step_in_old_front": -0.378899999999998,
+          "initial_player_speed": 7.8017,
+          "initial_ball_speed": 8.3148
+        }
+      },
+      {
+        "check": "normal / reserved RB RT retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8822115845986145,
+          "final_ball_distance": 0.6981353808538834,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 1.924900000000001,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.23160000000000025,
+          "minimum_ball_step_in_old_front": -0.378899999999998,
+          "initial_player_speed": 7.8017,
+          "initial_ball_speed": 8.3148
+        }
+      },
+      {
+        "check": "normal / reserved RB RT pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8822115845986145,
+          "final_ball_distance": 0.6981353808538834,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 1.924900000000001,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.23160000000000025,
+          "minimum_ball_step_in_old_front": -0.378899999999998,
+          "initial_player_speed": 7.8017,
+          "initial_ball_speed": 8.3148
+        }
+      },
+      {
+        "check": "normal / reserved RB RT continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.5433748061881418,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "normal / held back repeats keeps ball in reach",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 11,
+          "max_ball_distance": 0.8428259606822754,
+          "final_ball_distance": 0.790080761694651,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": -1.7812999999999999,
+          "real_control_touches": 17,
+          "minimum_ball_travel_in_old_front": -2.8214000000000006,
+          "minimum_ball_step_in_old_front": -0.5124999999999993,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 4.7837
+        }
+      },
+      {
+        "check": "normal / held back repeats retains dribble mode",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 11,
+          "max_ball_distance": 0.8428259606822754,
+          "final_ball_distance": 0.790080761694651,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": -1.7812999999999999,
+          "real_control_touches": 17,
+          "minimum_ball_travel_in_old_front": -2.8214000000000006,
+          "minimum_ball_step_in_old_front": -0.5124999999999993,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 4.7837
+        }
+      },
+      {
+        "check": "normal / held back repeats pulls ball with real foot events",
+        "result": "passed",
+        "evidence": {
+          "right_foot_touches": 11,
+          "max_ball_distance": 0.8428259606822754,
+          "final_ball_distance": 0.790080761694651,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": -1.7812999999999999,
+          "real_control_touches": 17,
+          "minimum_ball_travel_in_old_front": -2.8214000000000006,
+          "minimum_ball_step_in_old_front": -0.5124999999999993,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 4.7837
+        }
+      },
+      {
+        "check": "normal held back repeats after completing real turn",
+        "result": "passed",
+        "evidence": 6
+      },
+      {
+        "check": "normal / held back repeats continues without losing ball",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4055298016175874,
+          "controlled": 12
+        }
+      },
+      {
+        "check": "dominant preference retains weak-foot fallback",
+        "result": "passed",
+        "evidence": 3
+      },
+      {
+        "check": "dominant foot is preferred during turns too",
+        "result": "passed",
+        "evidence": {
+          "dominant": 0.9230769230769231,
+          "normal": 0.5348837209302325
+        }
+      },
+      {
+        "check": "dominant foot remains preferred",
+        "result": "passed",
+        "evidence": {
+          "dominant": 1.0,
+          "normal": 0.0625
+        }
+      },
+      {
+        "check": "dominant toggle changes native dribble cadence",
+        "result": "passed",
+        "evidence": {
+          "dominant": {
+            "right": 11,
+            "left": 0,
+            "total": 11
+          },
+          "normal": {
+            "right": 1,
+            "left": 15,
+            "total": 16
+          }
+        }
+      },
+      {
+        "check": "pullback correction occurs only at accepted foot events",
+        "result": "passed",
+        "evidence": 45
+      },
+      {
+        "check": "final pullback impulse follows collision-safe route",
+        "result": "passed",
+        "evidence": 0.9999999986010036
+      },
+      {
+        "check": "native launcher does not load PES study bank",
+        "result": "passed",
+        "evidence": "explicit study flag omitted"
+      },
+      {
+        "check": "clean exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ],
+    "contacts": [
+      {
+        "check": "dominant slow stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 7,
+          "right": 7,
+          "gaps_ms": [
+            800,
+            850,
+            800,
+            800,
+            800,
+            800
+          ],
+          "min_gap_ms": 800,
+          "median_gap_ms": 800.0,
+          "max_distance": 0.8901229634157296,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 3.5002,
+          "median_ball_distance": 0.8103669399401527
+        }
+      },
+      {
+        "check": "slow dominant foot has time between contacts",
+        "result": "passed",
+        "evidence": {
+          "touches": 7,
+          "right": 7,
+          "gaps_ms": [
+            800,
+            850,
+            800,
+            800,
+            800,
+            800
+          ],
+          "min_gap_ms": 800,
+          "median_gap_ms": 800.0,
+          "max_distance": 0.8901229634157296,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 3.5002,
+          "median_ball_distance": 0.8103669399401527
+        }
+      },
+      {
+        "check": "slow dominant foot still preferred",
+        "result": "passed",
+        "evidence": {
+          "touches": 7,
+          "right": 7,
+          "gaps_ms": [
+            800,
+            850,
+            800,
+            800,
+            800,
+            800
+          ],
+          "min_gap_ms": 800,
+          "median_gap_ms": 800.0,
+          "max_distance": 0.8901229634157296,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 3.5002,
+          "median_ball_distance": 0.8103669399401527
+        }
+      },
+      {
+        "check": "dominant jog stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5225937377921411
+        }
+      },
+      {
+        "check": "jog dominant foot has time between contacts",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5225937377921411
+        }
+      },
+      {
+        "check": "jog dominant foot still preferred",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5225937377921411
+        }
+      },
+      {
+        "check": "normal dominant run leaves room for the rolling ball",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5225937377921411
+        }
+      },
+      {
+        "check": "dominant sprint stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 10,
+          "right": 10,
+          "gaps_ms": [
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 620,
+          "max_distance": 0.5744671269968389,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.9198,
+          "median_ball_distance": 0.5125929275619396
+        }
+      },
+      {
+        "check": "sprint dominant foot has time between contacts",
+        "result": "passed",
+        "evidence": {
+          "touches": 10,
+          "right": 10,
+          "gaps_ms": [
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 620,
+          "max_distance": 0.5744671269968389,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.9198,
+          "median_ball_distance": 0.5125929275619396
+        }
+      },
+      {
+        "check": "sprint dominant foot still preferred",
+        "result": "passed",
+        "evidence": {
+          "touches": 10,
+          "right": 10,
+          "gaps_ms": [
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 620,
+          "max_distance": 0.5744671269968389,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.9198,
+          "median_ball_distance": 0.5125929275619396
+        }
+      },
+      {
+        "check": "dominant close stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5226417103784448
+        }
+      },
+      {
+        "check": "close dominant foot has time between contacts",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5226417103784448
+        }
+      },
+      {
+        "check": "close dominant foot still preferred",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5226417103784448
+        }
+      },
+      {
+        "check": "dominant cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.888019785815608,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 31,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3459298194721004,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4121305861010565
+        }
+      },
+      {
+        "check": "dominant cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.888019785815608,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 31,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3459298194721004,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4121305861010565
+        }
+      },
+      {
+        "check": "dominant cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4121305861010565,
+          "samples": 15
+        }
+      },
+      {
+        "check": "dominant sprint cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.6323463133441994,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 42,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3791645816792494,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.42491686245664567
+        }
+      },
+      {
+        "check": "dominant sprint cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.6323463133441994,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 42,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3791645816792494,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.42491686245664567
+        }
+      },
+      {
+        "check": "dominant sprint cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.42491686245664567,
+          "samples": 15
+        }
+      },
+      {
+        "check": "dominant RT cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.8145185203542035,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 21,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3927487237407652,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.5682785408582657
+        }
+      },
+      {
+        "check": "dominant RT cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.8145185203542035,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 21,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3927487237407652,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.5682785408582657
+        }
+      },
+      {
+        "check": "dominant RT cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.5682785408582657,
+          "samples": 15
+        }
+      },
+      {
+        "check": "dominant RB RT cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7057327043576765,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.621255905404528,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.39350245234305453
+        }
+      },
+      {
+        "check": "dominant RB RT cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7057327043576765,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.621255905404528,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.39350245234305453
+        }
+      },
+      {
+        "check": "dominant RB RT cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.39350245234305453,
+          "samples": 15
+        }
+      },
+      {
+        "check": "normal slow stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 24,
+          "right": 12,
+          "gaps_ms": [
+            350,
+            300,
+            260,
+            320,
+            270,
+            230,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240
+          ],
+          "min_gap_ms": 230,
+          "median_gap_ms": 240,
+          "max_distance": 0.5539120327272196,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.16575,
+          "median_ball_distance": 0.4982382054609853
+        }
+      },
+      {
+        "check": "normal jog stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 16,
+          "right": 16,
+          "gaps_ms": [
+            420,
+            420,
+            420,
+            420,
+            420,
+            370,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380
+          ],
+          "min_gap_ms": 370,
+          "median_gap_ms": 380,
+          "max_distance": 0.5821472408248619,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 5.0833,
+          "median_ball_distance": 0.43866123011948355
+        }
+      },
+      {
+        "check": "normal sprint stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 9,
+          "right": 2,
+          "gaps_ms": [
+            640,
+            660,
+            420,
+            620,
+            660,
+            820,
+            630,
+            730
+          ],
+          "min_gap_ms": 420,
+          "median_gap_ms": 650.0,
+          "max_distance": 0.9518025320411798,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.84485,
+          "median_ball_distance": 0.6130990486122624
+        }
+      },
+      {
+        "check": "normal close stays controlled",
+        "result": "passed",
+        "evidence": {
+          "touches": 15,
+          "right": 0,
+          "gaps_ms": [
+            380,
+            380,
+            420,
+            420,
+            380,
+            380,
+            420,
+            420,
+            380,
+            380,
+            420,
+            420,
+            380,
+            380
+          ],
+          "min_gap_ms": 380,
+          "median_gap_ms": 380.0,
+          "max_distance": 0.5518239302531188,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 5.08325,
+          "median_ball_distance": 0.5184593783990281
+        }
+      },
+      {
+        "check": "normal cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7234911125922695,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.6377504919637459,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4844453426342341
+        }
+      },
+      {
+        "check": "normal cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7234911125922695,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.6377504919637459,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4844453426342341
+        }
+      },
+      {
+        "check": "normal cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.4844453426342341,
+          "samples": 15
+        }
+      },
+      {
+        "check": "normal sprint cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.8852303767946521,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 23,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.8391977121036499,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.588667418836816
+        }
+      },
+      {
+        "check": "normal sprint cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.8852303767946521,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 23,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.8391977121036499,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.588667418836816
+        }
+      },
+      {
+        "check": "normal sprint cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.588667418836816,
+          "samples": 15
+        }
+      },
+      {
+        "check": "normal RT cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7202545383404397,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 18,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.7039221121686688,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.6513719137328536
+        }
+      },
+      {
+        "check": "normal RT cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 0.7202545383404397,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 18,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.7039221121686688,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.6513719137328536
+        }
+      },
+      {
+        "check": "normal RT cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.6513719137328536,
+          "samples": 15
+        }
+      },
+      {
+        "check": "normal RB RT cuts keeps ball through turns",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 1.019470156502876,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.30818009345186476,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.7281092431771482
+        }
+      },
+      {
+        "check": "normal RB RT cuts support leg does not kick ball away",
+        "result": "passed",
+        "evidence": {
+          "max_distance": 1.019470156502876,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.30818009345186476,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.7281092431771482
+        }
+      },
+      {
+        "check": "normal RB RT cuts returns to normal dribbling after cuts",
+        "result": "passed",
+        "evidence": {
+          "distance": 0.7281092431771482,
+          "samples": 15
+        }
+      },
+      {
+        "check": "clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "reserved RT does not change movement speed",
+        "result": "passed",
+        "evidence": {
+          "slow": 3.5002,
+          "jog": 4.9998,
+          "sprint": 7.9198,
+          "close": 4.9998
+        }
+      },
+      {
+        "check": "partial stick stays slower than full forward",
+        "result": "passed",
+        "evidence": {
+          "slow": 3.5002,
+          "jog": 4.9998,
+          "sprint": 7.9198,
+          "close": 4.9998
+        }
+      },
+      {
+        "check": "support response was exercised by actual leg contacts",
+        "result": "passed",
+        "evidence": 240
+      }
+    ]
+  },
+  "cases": {
+    "gameplay": [],
+    "reversals": [
+      {
+        "mode": "dominant",
+        "case": "walking",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6563105972022691,
+          "final_ball_distance": 0.26640572441297095,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": 2.1039000000000003,
+          "real_control_touches": 5,
+          "minimum_ball_travel_in_old_front": 0.3553999999999995,
+          "minimum_ball_step_in_old_front": -0.15039999999999942,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1081
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "sprinting",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.6854667096219922,
+          "final_ball_distance": 0.2919312761593042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.8575999999999997,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.7227999999999994,
+          "minimum_ball_step_in_old_front": -0.21359999999999957,
+          "initial_player_speed": 7.9115,
+          "initial_ball_speed": 7.4356
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "reserved RT",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6322984421932422,
+          "final_ball_distance": 0.3146565270258982,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": -0.32179999999999964,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -1.0823,
+          "minimum_ball_step_in_old_front": -0.39729999999999954,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 4.5184
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "reserved RB RT",
+        "evidence": {
+          "right_foot_touches": 6,
+          "max_ball_distance": 0.7313579492970607,
+          "final_ball_distance": 0.42505365543658064,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 0.07559999999999967,
+          "real_control_touches": 7,
+          "minimum_ball_travel_in_old_front": -0.41580000000000084,
+          "minimum_ball_step_in_old_front": -0.4281000000000006,
+          "initial_player_speed": 7.9049,
+          "initial_ball_speed": 7.5134
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "held back repeats",
+        "evidence": {
+          "right_foot_touches": 14,
+          "max_ball_distance": 0.6702533998421788,
+          "final_ball_distance": 0.427159010205802,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": 2.6556999999999995,
+          "real_control_touches": 15,
+          "minimum_ball_travel_in_old_front": 0.47029999999999994,
+          "minimum_ball_step_in_old_front": -0.20679999999999943,
+          "initial_player_speed": 4.9998,
+          "initial_ball_speed": 5.1506
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "walking",
+        "evidence": {
+          "right_foot_touches": 5,
+          "max_ball_distance": 0.6822448021055199,
+          "final_ball_distance": 0.6822448021055199,
+          "controlled_samples": 22,
+          "samples": 22,
+          "ball_travel_in_old_front": -0.28169999999999984,
+          "real_control_touches": 8,
+          "minimum_ball_travel_in_old_front": -1.9334999999999996,
+          "minimum_ball_step_in_old_front": -0.5411000000000001,
+          "initial_player_speed": 5.0834,
+          "initial_ball_speed": 4.7273
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "sprinting",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8783765365718728,
+          "final_ball_distance": 0.31192122402940164,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 2.2011000000000003,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.13320000000000043,
+          "minimum_ball_step_in_old_front": -0.27420000000000044,
+          "initial_player_speed": 7.8153,
+          "initial_ball_speed": 8.3093
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "reserved RT",
+        "evidence": {
+          "right_foot_touches": 3,
+          "max_ball_distance": 0.7926665124754543,
+          "final_ball_distance": 0.5616957895516042,
+          "controlled_samples": 25,
+          "samples": 25,
+          "ball_travel_in_old_front": 1.5706000000000007,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": -0.42239999999999966,
+          "minimum_ball_step_in_old_front": -0.4333999999999989,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 5.4092
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "reserved RB RT",
+        "evidence": {
+          "right_foot_touches": 2,
+          "max_ball_distance": 0.8822115845986145,
+          "final_ball_distance": 0.6981353808538834,
+          "controlled_samples": 32,
+          "samples": 32,
+          "ball_travel_in_old_front": 1.924900000000001,
+          "real_control_touches": 6,
+          "minimum_ball_travel_in_old_front": 0.23160000000000025,
+          "minimum_ball_step_in_old_front": -0.378899999999998,
+          "initial_player_speed": 7.8017,
+          "initial_ball_speed": 8.3148
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "held back repeats",
+        "evidence": {
+          "right_foot_touches": 11,
+          "max_ball_distance": 0.8428259606822754,
+          "final_ball_distance": 0.790080761694651,
+          "controlled_samples": 65,
+          "samples": 65,
+          "ball_travel_in_old_front": -1.7812999999999999,
+          "real_control_touches": 17,
+          "minimum_ball_travel_in_old_front": -2.8214000000000006,
+          "minimum_ball_step_in_old_front": -0.5124999999999993,
+          "initial_player_speed": 5.0833,
+          "initial_ball_speed": 4.7837
+        }
+      }
+    ],
+    "contacts": [
+      {
+        "mode": "dominant",
+        "case": "slow",
+        "evidence": {
+          "touches": 7,
+          "right": 7,
+          "gaps_ms": [
+            800,
+            850,
+            800,
+            800,
+            800,
+            800
+          ],
+          "min_gap_ms": 800,
+          "median_gap_ms": 800.0,
+          "max_distance": 0.8901229634157296,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 3.5002,
+          "median_ball_distance": 0.8103669399401527
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "jog",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5225937377921411
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "sprint",
+        "evidence": {
+          "touches": 10,
+          "right": 10,
+          "gaps_ms": [
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620,
+            620
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 620,
+          "max_distance": 0.5744671269968389,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.9198,
+          "median_ball_distance": 0.5125929275619396
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "close",
+        "evidence": {
+          "touches": 9,
+          "right": 9,
+          "gaps_ms": [
+            620,
+            640,
+            640,
+            630,
+            690,
+            620,
+            640,
+            630
+          ],
+          "min_gap_ms": 620,
+          "median_gap_ms": 635.0,
+          "max_distance": 0.5999020336688324,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.9998,
+          "median_ball_distance": 0.5226417103784448
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "cuts",
+        "evidence": {
+          "max_distance": 0.888019785815608,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 31,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3459298194721004,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4121305861010565
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "sprint cuts",
+        "evidence": {
+          "max_distance": 0.6323463133441994,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 42,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3791645816792494,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.42491686245664567
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "RT cuts",
+        "evidence": {
+          "max_distance": 0.8145185203542035,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 21,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.3927487237407652,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.5682785408582657
+        }
+      },
+      {
+        "mode": "dominant",
+        "case": "RB RT cuts",
+        "evidence": {
+          "max_distance": 0.7057327043576765,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.621255905404528,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.39350245234305453
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "slow",
+        "evidence": {
+          "touches": 24,
+          "right": 12,
+          "gaps_ms": [
+            350,
+            300,
+            260,
+            320,
+            270,
+            230,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240,
+            240
+          ],
+          "min_gap_ms": 230,
+          "median_gap_ms": 240,
+          "max_distance": 0.5539120327272196,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 4.16575,
+          "median_ball_distance": 0.4982382054609853
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "jog",
+        "evidence": {
+          "touches": 16,
+          "right": 16,
+          "gaps_ms": [
+            420,
+            420,
+            420,
+            420,
+            420,
+            370,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380,
+            380
+          ],
+          "min_gap_ms": 370,
+          "median_gap_ms": 380,
+          "max_distance": 0.5821472408248619,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 5.0833,
+          "median_ball_distance": 0.43866123011948355
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "sprint",
+        "evidence": {
+          "touches": 9,
+          "right": 2,
+          "gaps_ms": [
+            640,
+            660,
+            420,
+            620,
+            660,
+            820,
+            630,
+            730
+          ],
+          "min_gap_ms": 420,
+          "median_gap_ms": 650.0,
+          "max_distance": 0.9518025320411798,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 7.84485,
+          "median_ball_distance": 0.6130990486122624
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "close",
+        "evidence": {
+          "touches": 15,
+          "right": 0,
+          "gaps_ms": [
+            380,
+            380,
+            420,
+            420,
+            380,
+            380,
+            420,
+            420,
+            380,
+            380,
+            420,
+            420,
+            380,
+            380
+          ],
+          "min_gap_ms": 380,
+          "median_gap_ms": 380.0,
+          "max_distance": 0.5518239302531188,
+          "controlled": 60,
+          "samples": 60,
+          "median_player_speed": 5.08325,
+          "median_ball_distance": 0.5184593783990281
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "cuts",
+        "evidence": {
+          "max_distance": 0.7234911125922695,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.6377504919637459,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.4844453426342341
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "sprint cuts",
+        "evidence": {
+          "max_distance": 0.8852303767946521,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 23,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.8391977121036499,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.588667418836816
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "RT cuts",
+        "evidence": {
+          "max_distance": 0.7202545383404397,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 18,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.7039221121686688,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.6513719137328536
+        }
+      },
+      {
+        "mode": "normal",
+        "case": "RB RT cuts",
+        "evidence": {
+          "max_distance": 1.019470156502876,
+          "controlled": 47,
+          "samples": 47,
+          "leg_contacts": 35,
+          "largest_leg_speed_gain": 0.0,
+          "final_distance": 0.30818009345186476,
+          "reach_bound": 2.3,
+          "recovered_distance": 0.7281092431771482
+        }
+      }
+    ]
+  },
+  "windows_package": {
+    "result": "passed",
+    "archive_bytes": 31393652,
+    "archive_sha256": "814a0ff430fbf4f6d36a1e28ba4a84c380506df8b513e20316ef4de585861ee5",
+    "executable_sha256": "a670ed36afffbc435b03ee05c30e782c6f60523875a482cf443c48e81d7ddfba",
+    "zip_crc": "all members passed",
+    "architecture": "PE32+ x86_64",
+    "members": 546,
+    "dll_count": 26,
+    "missing_non_system_dlls": {},
+    "source_bank_included": false,
+    "exe_imports": [
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "libSDL2_gfx.dll",
+      "SDL2_image.dll",
+      "SDL2_ttf.dll",
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "libboost_thread-gcc14-mt-x64-1_92.dll",
+      "libsqlite3.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "USER32.dll",
+      "XINPUT9_1_0.dll",
+      "libgcc_s_seh-1.dll",
+      "libstdc++-6.dll"
+    ],
+    "windows_execution_tested": false
+  },
+  "windows_update": {
+    "result": "passed",
+    "archive_bytes": 1524326,
+    "archive_sha256": "9d027a88d1277e60ebe32f42bd4bd68a683cb407eed9ca939dda6c2208a60ecf",
+    "executable_sha256": "a670ed36afffbc435b03ee05c30e782c6f60523875a482cf443c48e81d7ddfba",
+    "members": [
+      "gameplayfootball.exe",
+      "run-training.bat",
+      "LICENSE",
+      "NOTICE",
+      "LEIA-ATUALIZACAO.txt"
+    ],
+    "zip_crc": "all members passed",
+    "matches_full_package": true,
+    "uploaded_launcher_preserved": true
+  },
+  "limitations": [
+    "Rendered gameplay was tested on Linux with SDL keyboard and virtual Xbox input. Windows x64 was cross-compiled and its package dependencies/CRC verified; Windows 11 with a physical controller was not executed here."
+  ]
+}

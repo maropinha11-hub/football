@@ -26,12 +26,14 @@ try:
               'gaps_ms':gaps,'min_gap_ms':min(gaps)if gaps else None,'median_gap_ms':statistics.median(gaps)if gaps else None,
               'max_distance':max(math.dist(f['player'],f['ball'])for f in samples),'controlled':sum(f['with_ball']for f in samples),
               'samples':len(samples),'median_player_speed':statistics.median(f['speed']for f in samples)}
+    evidence['median_ball_distance']=statistics.median(math.dist(f['player'],f['ball'])for f in samples)
     cases.append({'mode':mode,'case':name,'evidence':evidence})
     check(mode+' '+name+' stays controlled',all(f['with_ball']for f in samples)and evidence['max_distance']<2.3,evidence)
     if mode=='dominant':
      minimum=400 if close else 450
      check(name+' dominant foot has time between contacts',bool(gaps)and min(gaps)>=minimum,evidence)
      check(name+' dominant foot still preferred',evidence['right']/max(1,len(touches))>.6,evidence)
+     if name=='jog':check('normal dominant run leaves room for the rolling ball',evidence['median_ball_distance']>.5,evidence)
    for name,sprint,close in [('cuts',False,False),('sprint cuts',True,False),('RT cuts',False,True),('RB RT cuts',True,True)]:
     game.reset();game.pad(0,-1,sprint=sprint,close=close);game.advance(1700);start=game.frames()[-1]['t']
     for x,y,hold in [(0,1,750),(1,0,550),(0,-1,500),(-1,0,600),(0,1,900),(.75,.65,550),(0,-1,650)]:
@@ -44,11 +46,9 @@ try:
               'samples':len(samples),'leg_contacts':len(self_hits),'largest_leg_speed_gain':max((after-before for _,_,_,before,after in self_hits),default=0),
               'final_distance':math.dist(samples[-1]['player'],samples[-1]['ball'])}
     cases.append({'mode':mode,'case':name,'evidence':evidence})
-    # RB+RT is an authored knock-on: allow its longer forward roll using
-    # the same reach bound as training_reversal_smoke. Then release the
-    # RT while retaining sprint, as in the native knock-on exercise, and
-    # verify an actual return to normal dribbling distance.
-    bound=3.5 if sprint and close else 2.3
+    # RT is reserved, including with RB. Every variant must retain ordinary
+    # dribble reach while changing direction and when releasing RT.
+    bound=2.3
     evidence['reach_bound']=bound
     check(mode+' '+name+' keeps ball through turns',all(f['with_ball']for f in samples)and
           evidence['max_distance']<bound,evidence)
@@ -60,7 +60,7 @@ try:
           all(f['with_ball']for f in recovery)and recovered<1.2,{'distance':recovered,'samples':len(recovery)})
   game.keys(['Escape'],True);game.game.wait(timeout=15);check('clean exit',game.game.returncode==0,game.game.returncode)
   speeds={c['case']:c['evidence']['median_player_speed']for c in cases if c['mode']=='dominant'and 'median_player_speed'in c['evidence']}
-  check('RT retains slower close-control movement',speeds['close']<speeds['jog']-.5,speeds)
+  check('reserved RT does not change movement speed',abs(speeds['close']-speeds['jog'])<.2,speeds)
   check('partial stick stays slower than full forward',speeds['slow']<speeds['jog']-.5,speeds)
   hits=sum(c['evidence'].get('leg_contacts',0)for c in cases)
   check('support response was exercised by actual leg contacts',hits>0,hits)

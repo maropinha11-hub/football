@@ -2,6 +2,7 @@
 #ifndef FOOTBALL_TRAINING_CONTROL_HPP
 #define FOOTBALL_TRAINING_CONTROL_HPP
 #include "base/math/vector3.hpp"
+#include "base/math/quaternion.hpp"
 #include <cmath>
 #include <algorithm>
 #include <string>
@@ -73,6 +74,9 @@ struct DribbleCadence {
 };
 
 struct LegCollision { Vector3 hip, knee, ankle, heel, toe; };
+struct BodyPose { Vector3 points[13]; blunted::Quaternion rotations[13]; LegCollision legs[2]; };
+struct SkinVertex { Vector3 local[3]; float weights[3] = {}; int bones[3] = {}; };
+struct SkinTriangle { unsigned vertices[3]; int bone = 0; };
 
 struct View {
   float yaw = 0, headYaw = 0, pitch = -0.12f, movementYaw = 0, bodyYaw = 0;
@@ -109,7 +113,7 @@ inline LegPose legPose(const Vector3 &hip, const Vector3 &knee, const Vector3 &a
   return {hip + axis * along + bend * across, hip + axis * distance};
 }
 
-struct Contact { bool hit = false; float time = 1; Vector3 point, normal; };
+struct Contact { bool hit = false; float time = 1; Vector3 point, normal, surfaceVelocity; int bone = -1; };
 inline Vector3 closest(const Vector3 &p, const Vector3 &a, const Vector3 &b) {
   const Vector3 ab = b - a;
   return a + ab * limit((p - a).GetDotProduct(ab) / std::max(ab.GetDotProduct(ab), 0.000001f), 0, 1);
@@ -192,6 +196,63 @@ inline Vector3 supportContact(const Vector3 &velocity, const Vector3 &normal) {
   // An unintended contact during ground control blocks/slides the ball.
   // It is not a second kick powered by the runner's root velocity.
   return velocity - normal * std::min(0.0f, velocity.GetDotProduct(normal));
+}
+// Closest point on the actual skin triangle, including edges and vertices.
+inline Vector3 closestTriangle(const Vector3 &p, const Vector3 &a, const Vector3 &b, const Vector3 &c) {
+  const Vector3 ab=b-a, ac=c-a, ap=p-a;
+  const float d1=ab.GetDotProduct(ap), d2=ac.GetDotProduct(ap);
+  if(d1<=0 && d2<=0)return a;
+  const Vector3 bp=p-b;
+  const float d3=ab.GetDotProduct(bp), d4=ac.GetDotProduct(bp);
+  if(d3>=0 && d4<=d3)return b;
+  const float vc=d1*d4-d3*d2;
+  if(vc<=0 && d1>=0 && d3<=0)return a+ab*(d1/std::max(d1-d3,0.0000001f));
+  const Vector3 cp=p-c;
+  const float d5=ab.GetDotProduct(cp), d6=ac.GetDotProduct(cp);
+  if(d6>=0 && d5<=d6)return c;
+  const float vb=d5*d2-d1*d6;
+  if(vb<=0 && d2>=0 && d6<=0)return a+ac*(d2/std::max(d2-d6,0.0000001f));
+  const float va=d3*d6-d5*d4;
+  if(va<=0 && d4-d3>=0 && d5-d6>=0)return b+(c-b)*((d4-d3)/std::max(d4-d3+d5-d6,0.0000001f));
+  const float sum=va+vb+vc;
+  if(std::fabs(sum)<0.0000001f) {
+    Vector3 result=closest(p,a,b);
+    for(const auto &candidate:{closest(p,b,c),closest(p,c,a)})
+      if((p-candidate).GetLength()<(p-result).GetLength())result=candidate;
+    return result;
+  }
+  return a+ab*(vb/sum)+ac*(vc/sum);
+}
+inline Contact surfaceSweep(const Vector3 &from,const Vector3 &to,
+                            const Vector3 *now,const Vector3 *next,float radius=0.11f) {
+  Contact hit;
+  const Vector3 delta=to-from;
+  float bound=0;
+  for(int i=0;i<3;++i)bound=std::max(bound,(delta-(next[i]-now[i])).GetLength());
+  float t=0;
+  for(int step=0;step<64 && t<=1;++step) {
+    Vector3 triangle[3];
+    for(int i=0;i<3;++i)triangle[i]=now[i]+(next[i]-now[i])*t;
+    const Vector3 p=from+delta*t, closestPoint=closestTriangle(p,triangle[0],triangle[1],triangle[2]);
+    const float distance=(p-closestPoint).GetLength();
+    if(distance<=radius+0.00005f) {
+      hit.hit=true;hit.time=t;
+      hit.normal=(p-closestPoint).GetNormalized((-delta).GetNormalized(Vector3(1,0,0)));
+      hit.point=closestPoint+hit.normal*radius;
+      const Vector3 ab=triangle[1]-triangle[0],ac=triangle[2]-triangle[0],ap=closestPoint-triangle[0];
+      const float aa=ab.GetDotProduct(ab),cc=ac.GetDotProduct(ac),cross=ab.GetDotProduct(ac),den=aa*cc-cross*cross;
+      float b=0,c=0;
+      if(std::fabs(den)>0.000000001f) {
+        b=(cc*ap.GetDotProduct(ab)-cross*ap.GetDotProduct(ac))/den;
+        c=(aa*ap.GetDotProduct(ac)-cross*ap.GetDotProduct(ab))/den;
+      }
+      hit.surfaceVelocity=((next[0]-now[0])*(1-b-c)+(next[1]-now[1])*b+(next[2]-now[2])*c)*100;
+      return hit;
+    }
+    if(bound<0.000001f)break;
+    t+=(distance-radius)/bound;
+  }
+  return hit;
 }
 }
 #endif

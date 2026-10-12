@@ -70,7 +70,7 @@ try:
             check(mode+' stationary reversal keeps ball',all(f['with_ball']for f in pivot),len(pivot))
             for label,modifiers,run_time,back_time in (
                     ('walking',[],1500,2200),('sprinting',['Shift_L'],2200,2500),
-                    ('close control',['space'],1800,2500),('sprint long touch',['Shift_L','space'],2200,3200),
+                    ('reserved RT',['space'],1800,2500),('reserved RB RT',['Shift_L','space'],2200,3200),
                     ('held back repeats',[],1500,6500)):
                 game.reset()
                 if args.analog_pad:game.pad(0,-1,sprint='Shift_L'in modifiers,close='space'in modifiers)
@@ -93,6 +93,13 @@ try:
                 delta=[samples[-1]['ball'][i]-origin['ball'][i]for i in range(2)]
                 reversed_distance=sum(delta[i]*forward[i]for i in range(2))
                 minimum_travel=min(sum((f['ball'][i]-origin['ball'][i])*forward[i]for i in range(2))for f in samples)
+                # Holding back requests successive body-relative reversals.
+                # Prove that the ball actually travels backward between samples;
+                # it need not cross the initial world position before the next
+                # reversal. Apply this to sprinting too, without exemptions.
+                positions=[origin]+samples
+                minimum_step=min(sum((b['ball'][i]-a['ball'][i])*forward[i]for i in range(2))
+                                 for a,b in zip(positions,positions[1:]))
                 touches=[(int(t),part,int(kind))for t,part,kind in re.findall(
                     r'TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+)',game.log.read_text())if int(t)>start]
                 native_control=[v for v in touches if v[2]in (2,3)and v[1]in ('left_foot','right_foot')]
@@ -100,13 +107,14 @@ try:
                           'controlled_samples':sum(f['with_ball']for f in samples),'samples':len(samples),
                           'ball_travel_in_old_front':reversed_distance,'real_control_touches':len(native_control),
                           'minimum_ball_travel_in_old_front':minimum_travel,
+                          'minimum_ball_step_in_old_front':minimum_step,
                           'initial_player_speed':origin['speed'],'initial_ball_speed':origin['ball_speed']}
                 cases.append({'mode':mode,'case':label,'evidence':evidence,'origin':origin,'frames':samples})
-                bound=3.5 if label=='sprint long touch'else 2.3
+                bound=2.3
                 check(mode+' / '+label+' keeps ball in reach',max(distance)<bound,evidence)
                 check(mode+' / '+label+' retains dribble mode',all(f['with_ball']for f in samples),evidence)
                 check(mode+' / '+label+' pulls ball with real foot events',bool(native_control)and
-                      (minimum_travel<-.3 or label in ('held back repeats','sprinting','sprint long touch')),evidence)
+                      minimum_step<-.02,evidence)
                 if label=='held back repeats':
                     repeats=[int(t)for t in re.findall(r'TRAINING_STEER_REPEAT t=(\d+)',game.log.read_text())if int(t)>start]
                     check(mode+' held back repeats after completing real turn',bool(repeats),len(repeats))

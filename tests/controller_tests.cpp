@@ -209,6 +209,14 @@ int RunControllerTests() {
     require(!training::sweep(Vector3(-2, 0.5f, 1), Vector3(2, 0.5f, 1), a, b, 0.3f).hit,
             "Ball outside body silhouette must pass freely");
     const auto planted = training::movingSweep(Vector3(-2, 0, 1), Vector3(2, 0, 1), a, b, a, b, 0.3f);
+    const Vector3 triangle[3]={Vector3(0,-1,0),Vector3(0,1,0),Vector3(0,0,2)};
+    const auto skinHit=training::surfaceSweep(Vector3(-1,0,1),Vector3(1,0,1),triangle,triangle);
+    require(skinHit.hit && std::fabs(skinHit.point.coords[0]+0.11f)<0.001f,
+            "Fast ball must collide at the visible skin surface plus its own radius");
+    const auto clearSkin=training::surfaceSweep(Vector3(-0.2f,0,1),Vector3(-0.12f,0,1),triangle,triangle);
+    require(!clearSkin.hit,"Space outside the visible skin must not create an invisible wall");
+    require((training::closestTriangle(Vector3(0,0,1),triangle[0],triangle[1],triangle[2])-Vector3(0,0,1)).GetLength()<0.0001f,
+            "Skin contact must project to the actual triangle rather than a body-centred capsule");
     require(planted.hit && planted.time < 0.5f, "Animated stationary limb must still block a fast ball");
     const auto swing = training::movingSweep(Vector3(0, 0, 0.2f), Vector3(0, 0, 0.2f),
         Vector3(-1, 0, 0.1f), Vector3(-1, 0, 0.4f), Vector3(1, 0, 0.1f), Vector3(1, 0, 0.4f), 0.15f);

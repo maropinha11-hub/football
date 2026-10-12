@@ -1,5 +1,8 @@
 # Contatos e intervalos da condução nativa
 
+Este documento registra a atualização `449692a`. A versão posterior usa
+[contatos da malha visível e RT reservado](CONTATOS-VISIVEIS.md).
+
 A condução com preferência pelo pé direito usa um intervalo entre os
 contatos planejados. O sistema escolhe uma animação cujo contato possa
 ocorrer depois desse intervalo; a bola continua rolando e o jogador mantém

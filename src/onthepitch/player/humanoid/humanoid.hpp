@@ -26,7 +26,7 @@ class Humanoid : public HumanoidBase {
 
     virtual void CalculateGeomOffsets();
 
-    bool TouchPending() { return (currentAnim->frameNum < currentAnim->touchFrame) ? true : false; }
+    bool TouchPending() { return !currentAnim->trainingTouchTaken && currentAnim->frameNum < currentAnim->touchFrame; }
     bool TouchAnim() { return (currentAnim->touchFrame != -1) ? true : false; }
     Vector3 GetTouchPos() { return currentAnim->touchPos; }
     int GetTouchFrame() { return currentAnim->touchFrame; }

@@ -68,7 +68,7 @@ void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn, const std
       designatedPossessionPlayer->GetExternalController()) {
     auto *human = static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController());
     trainingDribbleCadence.record(actualTime_ms, human->GetDirection(), human->GetFloatVelocity(),
-        controllers[trainingController]->GetButton(e_ButtonFunction_Dribble), knockOn);
+        false, knockOn);
     const Vector3 front = IsFirstPerson() ? GetTrainingFacing() : designatedPossessionPlayer->GetBodyDirectionVec();
     if (human->GetFloatVelocity() > 0.1f &&
         human->GetDirection().Get2D().GetNormalized(0).GetDotProduct(front) < 0.5f)
@@ -124,7 +124,10 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   const float ballSpeed = ballVelocity.GetLength();
   // A reversal must finish its real touch, not just reverse the player's
   // velocity while the ball is still departing in the old direction.
-  const bool canRepeat = delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
+  const Vector3 target=training::forward(trainingView.travelYaw);
+  const bool canRepeat = trainingDribbleCadence.touched &&
+      trainingDribbleCadence.direction.GetDotProduct(target)>0.8f && delta.Get2D().GetDotProduct(target)>0.05f &&
+      delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
       (ballSpeed > 0.5f ? ballVelocity.GetNormalized(0).GetDotProduct(
           training::forward(trainingView.travelYaw)) > 0.8f :
           designatedPossessionPlayer->GetMovement().GetLength() < 0.5f);
@@ -141,86 +144,34 @@ void Match::UpdateTrainingView(IHIDevice *input) {
 }
 
 void Match::ResolveTrainingBallContacts(const Vector3 &from) {
-  Player *player = designatedPossessionPlayer;
-  const Vector3 root = player->GetPosition(), movement = player->GetMovement();
-  const Vector3 displacement = movement * 0.01f;
-  const float height = player->GetPlayerData()->GetHeight();
-  training::LegCollision legs[2], nextLegs[2];
-  player->CastHumanoid()->GetTrainingLegPose(legs);
-  player->CastHumanoid()->GetTrainingLegPose(nextLegs, 1);
-  Vector3 a[8], b[8], nextA[8], nextB[8];
-  const float radii[8] = {0.20f, 0.155f, 0.15f, 0.20f, 0.155f, 0.15f, 0.31f, 0.23f};
-  for (int side = 0; side < 2; ++side) {
-    const int i = side * 3;
-    a[i] = legs[side].hip; b[i] = legs[side].knee;
-    a[i+1] = legs[side].knee; b[i+1] = legs[side].ankle;
-    a[i+2] = legs[side].heel; b[i+2] = legs[side].toe;
-    nextA[i] = nextLegs[side].hip; nextB[i] = nextLegs[side].knee;
-    nextA[i+1] = nextLegs[side].knee; nextB[i+1] = nextLegs[side].ankle;
-    nextA[i+2] = nextLegs[side].heel; nextB[i+2] = nextLegs[side].toe;
+  Player *player=designatedPossessionPlayer;
+  const Vector3 to=ball->Predict(0),ballVelocity=ball->GetMovement();
+  const auto hit=player->CastHumanoid()->SweepTrainingSurface(from,to);
+  if(!hit.hit)return;
+  const std::string part=player->GetCurrentAnim()->anim->GetVariable("touch_bodypart");
+  const auto *animation=player->GetCurrentAnim();
+  const bool planned=!animation->trainingTouchTaken && player->GetTouchFrame()>=0 &&
+      player->GetCurrentFrame()+1<=player->GetTouchFrame()+4;
+  // Yield only a real contact on the named striking surface to its authored
+  // event. Never disable the entire leg or create a 0.7-m collision hole.
+  if(planned && ((part=="left_foot" && hit.bone==9) ||
+      (part=="right_foot" && hit.bone==12) || (part=="head" && hit.bone==2))) {
+    // Resolve the real surface at the end of this step, before the native
+    // event supplies its intentional impulse. Preserve incoming momentum.
+    ball->ResolveContact(hit.point+hit.surfaceVelocity*(0.01f*(1-hit.time)),ballVelocity);
+    return;
   }
-  a[6] = root + Vector3(0, 0, height * 0.49f);
-  b[6] = root + Vector3(0, 0, height * 0.78f);
-  a[7] = root + Vector3(0, 0, height * 0.88f);
-  b[7] = root + Vector3(0, 0, height * 0.95f);
-  if (player->GetCurrentFunctionType() == e_FunctionType_Sliding) {
-    const Vector3 facing = player->GetBodyDirectionVec();
-    for (int i = 6; i < 8; ++i) {
-      a[i] = root + facing * ((i - 6) * 0.28f - 0.3f) + Vector3(0, 0, 0.23f);
-      b[i] = a[i] + facing * 0.3f;
-    }
-  }
-  for (int i = 6; i < 8; ++i) { nextA[i] = a[i] + displacement; nextB[i] = b[i] + displacement; }
-
-  const Vector3 to = ball->Predict(0), ballVelocity = ball->GetMovement();
-  const auto *animation = player->GetCurrentAnim();
-  const std::string touchingPart = animation->anim->GetVariable("touch_bodypart");
-  const bool scheduledContact = player->TouchPending() && player->GetTouchFrame() == player->GetCurrentFrame() + 1 &&
-      (to - (player->GetTouchPos() + animation->positionOffset)).GetLength() < 0.4f;
-  const bool nativeFootContact = player->GetTouchFrame() >= 0 &&
-      player->GetCurrentFrame() <= player->GetTouchFrame() + 5 && to.coords[2] < 0.6f &&
-      (to - (player->GetTouchPos() + animation->positionOffset)).GetLength() < 0.7f;
-  training::Contact earliest;
-  int collider = -1;
-  for (int i = 0; i < 8; ++i) {
-    // The native foot event and its contact/follow-through IK own this
-    // effector. Other limbs remain solid and are still checked.
-    if ((nativeFootContact && ((touchingPart == "left_foot" && i < 3) ||
-        (touchingPart == "right_foot" && i >= 3 && i < 6))) ||
-        (scheduledContact && touchingPart == "head" && i == 7)) continue;
-    const auto hit = training::movingSweep(from, to, a[i], b[i], nextA[i], nextB[i], radii[i]);
-    if (hit.hit && hit.time == 0) {
-      const Vector3 axis = b[i] - a[i];
-      const float fraction = training::limit((hit.point - a[i]).GetDotProduct(axis) /
-          std::max(axis.GetDotProduct(axis), 0.000001f), 0, 1);
-      const Vector3 surface = ((nextA[i] - a[i]) * (1 - fraction) + (nextB[i] - b[i]) * fraction) * 100;
-      if ((ballVelocity - surface).GetDotProduct(hit.normal) >= 0) continue;
-    }
-    if (hit.hit && (!earliest.hit || hit.time < earliest.time)) { earliest = hit; collider = i; }
-  }
-  if (!earliest.hit) return;
-  const Vector3 ca = a[collider] + (nextA[collider] - a[collider]) * earliest.time;
-  const Vector3 cb = b[collider] + (nextB[collider] - b[collider]) * earliest.time;
-  const Vector3 axis = cb - ca;
-  const float along = training::limit((earliest.point - ca).GetDotProduct(axis) /
-                                     std::max(axis.GetDotProduct(axis), 0.000001f), 0, 1);
-  const Vector3 surfaceVelocity = ((nextA[collider] - a[collider]) * (1 - along) +
-                                  (nextB[collider] - b[collider]) * along) * 100;
-  const Vector3 incoming = ballVelocity - surfaceVelocity;
-
-  // A queued shot/pass still owns its ball during the wind-up. Supporting
-  // limbs must not kick it away before that authored animation event.
-  const bool controlledGround = trainingView.withBall && to.coords[2] < 0.6f;
-  const bool support = controlledGround && collider < 6;
-  const Vector3 velocity = support ? training::supportContact(ballVelocity, earliest.normal) :
-      training::rebound(incoming, earliest.normal, 0.42f) + surfaceVelocity;
-  Vector3 corrected = earliest.point + earliest.normal * 0.003f;
-  corrected += velocity * (0.01f * (1 - earliest.time));
-  if (GetConfiguration()->GetBool("training_telemetry", false))
-    printf("TRAINING_COLLISION t=%lu leg=%d controlled=%d before=%.4f after=%.4f point=[%.4f,%.4f,%.4f] normal=[%.4f,%.4f,%.4f] collider=%d\n",
-        actualTime_ms, collider < 6 ? 1 : 0, support ? 1 : 0, ballVelocity.GetLength(), velocity.GetLength(),
-        corrected.coords[0], corrected.coords[1], corrected.coords[2], earliest.normal.coords[0], earliest.normal.coords[1], earliest.normal.coords[2], collider);
-  ball->ResolveContact(corrected, velocity);
+  const bool leg=hit.bone>=7;
+  const bool support=leg && trainingView.withBall && to.coords[2]<0.6f;
+  const Vector3 velocity=support?training::supportContact(ballVelocity,hit.normal):
+      training::rebound(ballVelocity-hit.surfaceVelocity,hit.normal,0.42f)+hit.surfaceVelocity;
+  Vector3 corrected=hit.point+hit.normal*0.0005f;
+  corrected+=velocity*(0.01f*(1-hit.time));
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_COLLISION t=%lu leg=%d controlled=%d before=%.4f after=%.4f point=[%.4f,%.4f,%.4f] normal=[%.4f,%.4f,%.4f] collider=%d surface=skin\n",
+        actualTime_ms,leg?1:0,support?1:0,ballVelocity.GetLength(),velocity.GetLength(),
+        corrected.coords[0],corrected.coords[1],corrected.coords[2],hit.normal.coords[0],hit.normal.coords[1],hit.normal.coords[2],hit.bone);
+  ball->ResolveContact(corrected,velocity);
   ++trainingContacts;
 }
 

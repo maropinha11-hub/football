@@ -418,6 +418,44 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
       pes3NativeReference.footMax[f][a]=std::max(pes3NativeReference.footMax[f][a],value);
     }
   }
+  // Keep an immutable copy of the same skin weights and triangle topology
+  // used by rendering. Collision must never read mutable graphics geometry.
+  fullbodyGeometryData->resourceMutex.lock();
+  const auto &skinMeshes=fullbodyGeometryData->GetResource()->GetTriangleMeshesRef();
+  for(unsigned m=0;m<weightedVerticesVec.size();++m) {
+    const unsigned base=trainingSkin.size();
+    for(const auto &vertex:weightedVerticesVec[m]) {
+      training::SkinVertex skin;
+      const float *v=&uniqueFullbodyMesh[m].data[vertex.vertexID*3];
+      const Vector3 point(v[0]/zMultiplier,v[1]/zMultiplier,v[2]/zMultiplier);
+      for(unsigned w=0;w<vertex.bones.size();++w) {
+        const auto &joint=joints[vertex.bones[w].jointID];
+        int bone=0;
+        while(bone<13 && joint.node->GetName()!=pes3::nativeBoneNames[bone])++bone;
+        assert(bone<13 && w<3);
+        const auto &q=pes3NativeReference.rotations[bone];
+        const Quaternion bind(q[0],q[1],q[2],q[3]);
+        skin.bones[w]=bone;skin.weights[w]=vertex.bones[w].weight;
+        skin.local[w]=bind.GetInverse()*(point-joint.origPos);
+      }
+      trainingSkin.push_back(skin);
+    }
+    const auto &indices=skinMeshes[m].indices;
+    for(unsigned t=0;t+2<indices.size();t+=3) {
+      training::SkinTriangle triangle;
+      float influence[13]={};
+      for(int v=0;v<3;++v) {
+        triangle.vertices[v]=base+indices[t+v];
+        const auto &skin=trainingSkin[triangle.vertices[v]];
+        for(int w=0;w<3;++w)influence[skin.bones[w]]+=skin.weights[w];
+      }
+      for(int bone=1;bone<13;++bone)if(influence[bone]>influence[triangle.bone])triangle.bone=bone;
+      trainingTriangles.push_back(triangle);
+    }
+  }
+  fullbodyGeometryData->resourceMutex.unlock();
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_SKIN vertices=%zu triangles=%zu\n",trainingSkin.size(),trainingTriangles.size());
   if(GetConfiguration()->GetBool("training_telemetry",false)) {
     for(unsigned i=0;i<13;++i) {
       const auto& p=pes3NativeReference.offsets[i];const auto& q=pes3NativeReference.rotations[i];
@@ -636,7 +674,39 @@ void HumanoidBase::UploadFullbodyModel() {
 }
 */
 
-void HumanoidBase::GetTrainingLegPose(training::LegCollision *legs, int frameOffset) const {
+namespace {
+void skinPose(const std::vector<training::SkinVertex> &skin,const training::BodyPose &pose,
+              float scale,std::vector<Vector3> &points) {
+  points.resize(skin.size());
+  for(unsigned i=0;i<skin.size();++i) {
+    points[i]=Vector3(0);
+    for(int w=0;w<3;++w)if(skin[i].weights[w]>0) {
+      const int bone=skin[i].bones[w];
+      points[i]+=(pose.points[bone]+pose.rotations[bone]*skin[i].local[w]*scale)*skin[i].weights[w];
+    }
+  }
+}
+bool touchBone(const std::string &part,int bone) {
+  if(part=="head")return bone==2;
+  if(part=="left_foot")return bone==9;
+  if(part=="right_foot")return bone==12;
+  if(part.find("left_lowerleg")!=std::string::npos)return bone==8 || bone==9;
+  if(part.find("right_lowerleg")!=std::string::npos)return bone==11 || bone==12;
+  if(part.find("left_upperleg")!=std::string::npos)return bone==7;
+  if(part.find("right_upperleg")!=std::string::npos)return bone==10;
+  return bone==0 || bone==1;
+}
+Quaternion aimRotation(const Quaternion &rotation,Vector3 from,Vector3 to) {
+  from=from.GetNormalized(Vector3(0,0,-1));to=to.GetNormalized(from);
+  Vector3 axis=from.GetCrossProduct(to);
+  if(axis.GetLength()<0.00001f)axis=from.GetCrossProduct(Vector3(1,0,0));
+  Quaternion delta;
+  delta.SetAngleAxis(std::acos(clamp(from.GetDotProduct(to),-1.0f,1.0f)),axis.GetNormalized(Vector3(0,1,0)));
+  return (delta*rotation).GetNormalized();
+}
+}
+
+void HumanoidBase::GetTrainingPose(training::BodyPose &pose, int frameOffset) const {
   // Immutable native bind offsets + native animation channels. Graphics
   // bones are interpolated on another thread and must not drive physics.
   const int frame = std::max(0, std::min(currentAnim->frameNum + frameOffset,
@@ -666,21 +736,132 @@ void HumanoidBase::GetTrainingLegPose(training::LegCollision *legs, int frameOff
   };
   Quaternion base;
   base.SetAngleAxis(startAngle + currentAnim->rotationSmuggleOffset, Vector3(0, 0, 1));
-  const Quaternion bodyRotation = geometryOffset(base * rotation(0), 0);
   Vector3 rootTrack(0);
   Quaternion ignored;
   currentAnim->anim->GetKeyFrame("player", frame, ignored, rootTrack, false, true);
-  const Vector3 body = spatialState.position + spatialState.movement * (frameOffset * 0.01f) +
+  pose.points[0] = spatialState.position + spatialState.movement * (frameOffset * 0.01f) +
                       offset(0) + Vector3(0, 0, rootTrack.coords[2] * scale);
+  pose.rotations[0]=geometryOffset(base*rotation(0),0);
+  for(int bone=1;bone<13;++bone) {
+    const int parent=pes3::nativeParents[bone];
+    pose.points[bone]=pose.points[parent]+pose.rotations[parent]*offset(bone);
+    pose.rotations[bone]=pose.rotations[parent]*geometryOffset(rotation(bone),bone);
+  }
+  const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
+  const int delta=frame-currentAnim->touchFrame;
+  if(currentAnim->touchFrame>=0 && (part=="left_foot" || part=="right_foot") && delta>=-8 && delta<=5) {
+    const int active=part=="left_foot"?7:10,other=active==7?10:7;
+    float blend=clamp(1.0f-std::fabs(float(delta))/(delta<=0?8.0f:5.0f),0.0f,1.0f);
+    blend=blend*blend*(3-2*blend);
+    const bool accepted=currentAnim->trainingTouchTaken;
+    const Vector3 ballTarget=!accepted?match->GetBall()->Predict(std::max(0,(currentAnim->touchFrame-frame)*10)):
+        currentAnim->touchPos+currentAnim->positionOffset;
+    // A missed nominal frame must still reach the moving ball during the
+    // short contact window, rather than following the old planned point.
+    if(!accepted && delta>=0)blend=1;
+    std::vector<Vector3> skin;
+    skinPose(trainingSkin,pose,scale,skin);
+    Vector3 direction=currentAnim->functionType==e_FunctionType_BallControl || currentAnim->functionType==e_FunctionType_Trap?
+        currentAnim->originatingCommand.desiredDirection:currentAnim->originatingCommand.touchInfo.desiredDirection;
+    if(accepted)direction=currentAnim->trainingTouchDirection;
+    if(!accepted && (currentAnim->functionType==e_FunctionType_BallControl || currentAnim->functionType==e_FunctionType_Trap) && player->GetExternalController())
+      direction=player->GetExternalController()->GetDirection();
+    direction=direction.Get2D().GetNormalized(spatialState.directionVec);
+    Vector3 nearest=pose.points[active+2];float projection=-100,clearance=100;
+    // Put the leading shoe surface behind the ball along the impulse.
+    // A nearest-point target can choose the sole above the ball instead.
+    for(const auto &triangle:trainingTriangles)if(triangle.bone==active+2)for(int v=0;v<3;++v) {
+      const Vector3 candidate=skin[triangle.vertices[v]];
+      const float ahead=(candidate-pose.points[active+2]).GetDotProduct(direction);
+      if(ahead>projection){projection=ahead;nearest=candidate;}
+    }
+    for(const auto &triangle:trainingTriangles)if(triangle.bone==active+2) {
+      const Vector3 point=training::closestTriangle(ballTarget,skin[triangle.vertices[0]],skin[triangle.vertices[1]],skin[triangle.vertices[2]]);
+      clearance=std::min(clearance,(ballTarget-point).GetLength());
+    }
+    if(!accepted && clearance<0.105f)blend=1; // resolve shoe penetration at a pose transition
+    Vector3 adjustment=ballTarget-direction*0.11f-nearest;
+    if(adjustment.GetLength()>0.45f)adjustment=adjustment.GetNormalized(0)*0.45f;
+    const Vector3 wanted=pose.points[active+2]+adjustment*blend;
+    const Vector3 oldSupport=pose.points[other+2];
+    const float reach=(pose.points[active+1]-pose.points[active]).GetLength()+
+        (pose.points[active+2]-pose.points[active+1]).GetLength()-0.002f;
+    const float horizontal=(wanted-pose.points[active]).Get2D().GetLength();
+    const float drop=horizontal<reach?clamp(pose.points[active].coords[2]-wanted.coords[2]-
+        std::sqrt(std::max(0.0f,reach*reach-horizontal*horizontal)),0.0f,0.10f)*blend:0;
+    for(int bone=0;bone<13;++bone)pose.points[bone].coords[2]-=drop;
+    for(int thigh:{active,other}) {
+      const Vector3 target=thigh==active?wanted:oldSupport;
+      const Vector3 hip=pose.points[thigh],knee=pose.points[thigh+1],ankle=pose.points[thigh+2];
+      const auto leg=training::legPose(hip,knee,ankle,target);
+      const Quaternion upper=aimRotation(pose.rotations[thigh],knee-hip,leg.knee-hip);
+      const Quaternion upperDelta=upper*pose.rotations[thigh].GetInverse();
+      pose.rotations[thigh]=upper;
+      pose.rotations[thigh+1]=aimRotation(upperDelta*pose.rotations[thigh+1],upperDelta*(ankle-knee),leg.ankle-leg.knee);
+      pose.points[thigh+1]=leg.knee;pose.points[thigh+2]=leg.ankle;
+    }
+    if(!accepted && delta>=-2 && delta<=4)for(int attempt=0;attempt<3;++attempt) {
+      // The two-bone solve changes the skin surface as well as the ankle.
+      // Finish against that actual surface, with the leg length constraint
+      // still applied; a proxy ankle/vertex target can miss by a few cm.
+      skinPose(trainingSkin,pose,scale,skin);
+      Vector3 surface=pose.points[active+2];float distance=100;
+      for(const auto &triangle:trainingTriangles)if(triangle.bone==active+2) {
+        const Vector3 point=training::closestTriangle(ballTarget,skin[triangle.vertices[0]],skin[triangle.vertices[1]],skin[triangle.vertices[2]]);
+        const float d=(ballTarget-point).GetLength();
+        if(d<distance){distance=d;surface=point;}
+      }
+      if(std::fabs(distance-0.1105f)<0.0005f)break;
+      Vector3 correction=(ballTarget-surface).GetNormalized(direction)*(distance-0.1105f);
+      if(correction.GetLength()>0.08f)correction=correction.GetNormalized(0)*0.08f;
+      const Vector3 hip=pose.points[active],knee=pose.points[active+1],ankle=pose.points[active+2];
+      const auto leg=training::legPose(hip,knee,ankle,ankle+correction);
+      const Quaternion upper=aimRotation(pose.rotations[active],knee-hip,leg.knee-hip);
+      const Quaternion upperDelta=upper*pose.rotations[active].GetInverse();
+      pose.rotations[active]=upper;
+      pose.rotations[active+1]=aimRotation(upperDelta*pose.rotations[active+1],upperDelta*(ankle-knee),leg.ankle-leg.knee);
+      pose.points[active+1]=leg.knee;pose.points[active+2]=leg.ankle;
+    }
+  }
+  if(match->TrainingHasBall() && match->GetBall()->Predict(0).coords[2]<0.4f) {
+    // A support step goes around the rolling ball. Move the actual leg,
+    // rather than pushing the ball repeatedly or making the collider vanish.
+    const Vector3 ball=match->GetBall()->Predict(0);
+    for(int thigh:{7,10}) {
+      const bool striking=!currentAnim->trainingTouchTaken && currentAnim->touchFrame>=0 && delta>=-8 && delta<=5 &&
+          ((part=="left_foot" && thigh==7) || (part=="right_foot" && thigh==10));
+      if(striking)continue;
+      std::vector<Vector3> skin;skinPose(trainingSkin,pose,scale,skin);
+      float clearance=100;
+      for(const auto &triangle:trainingTriangles)if(triangle.bone==thigh+2) {
+        const Vector3 p=training::closestTriangle(ball,skin[triangle.vertices[0]],skin[triangle.vertices[1]],skin[triangle.vertices[2]]);
+        clearance=std::min(clearance,(ball-p).GetLength());
+      }
+      if(clearance>=0.115f)continue;
+      const Vector3 sideways(spatialState.directionVec.coords[1],-spatialState.directionVec.coords[0],0);
+      const Vector3 outward=(pose.points[thigh+2]-ball).Get2D().GetNormalized(sideways*(thigh==10?1.0f:-1.0f));
+      Vector3 nearest=pose.points[thigh+2];float furthest=-100;
+      for(const auto &triangle:trainingTriangles)if(triangle.bone==thigh+2)for(int v=0;v<3;++v) {
+        const Vector3 p=skin[triangle.vertices[v]];
+        const float projection=(p-pose.points[thigh+2]).GetDotProduct(-outward);
+        if(projection>furthest){furthest=projection;nearest=p;}
+      }
+      Vector3 adjustment=ball+outward*0.115f-nearest;
+      if(adjustment.GetLength()>0.18f)adjustment=adjustment.GetNormalized(0)*0.18f;
+      const Vector3 hip=pose.points[thigh],knee=pose.points[thigh+1],ankle=pose.points[thigh+2];
+      const auto leg=training::legPose(hip,knee,ankle,ankle+adjustment);
+      const Quaternion upper=aimRotation(pose.rotations[thigh],knee-hip,leg.knee-hip);
+      const Quaternion upperDelta=upper*pose.rotations[thigh].GetInverse();
+      pose.rotations[thigh]=upper;
+      pose.rotations[thigh+1]=aimRotation(upperDelta*pose.rotations[thigh+1],upperDelta*(ankle-knee),leg.ankle-leg.knee);
+      pose.points[thigh+1]=leg.knee;pose.points[thigh+2]=leg.ankle;
+    }
+  }
   for (int side = 0; side < 2; ++side) {
     const int thigh = side == 0 ? 7 : 10;
-    const Quaternion thighRotation = bodyRotation * geometryOffset(rotation(thigh), thigh);
-    const Quaternion kneeRotation = thighRotation * geometryOffset(rotation(thigh + 1), thigh + 1);
-    const Quaternion ankleRotation = kneeRotation * geometryOffset(rotation(thigh + 2), thigh + 2);
-    auto &leg = legs[side];
-    leg.hip = body + bodyRotation * offset(thigh);
-    leg.knee = leg.hip + thighRotation * offset(thigh + 1);
-    leg.ankle = leg.knee + kneeRotation * offset(thigh + 2);
+    const Quaternion ankleRotation=pose.rotations[thigh+2];
+    auto &leg = pose.legs[side];
+    leg.hip=pose.points[thigh];leg.knee=pose.points[thigh+1];leg.ankle=pose.points[thigh+2];
     const auto &minimum = pes3NativeReference.footMin[side];
     const auto &maximum = pes3NativeReference.footMax[side];
     const float x = (minimum[0] + maximum[0]) * 0.5f, z = (minimum[2] + maximum[2]) * 0.5f;
@@ -691,6 +872,45 @@ void HumanoidBase::GetTrainingLegPose(training::LegCollision *legs, int frameOff
     leg.heel.coords[2] = std::max(0.035f, leg.heel.coords[2]);
     leg.toe.coords[2] = std::max(0.035f, leg.toe.coords[2]);
   }
+}
+
+void HumanoidBase::GetTrainingLegPose(training::LegCollision *legs,int frameOffset) const {
+  training::BodyPose pose;GetTrainingPose(pose,frameOffset);
+  legs[0]=pose.legs[0];legs[1]=pose.legs[1];
+}
+
+training::Contact HumanoidBase::SweepTrainingSurface(const Vector3 &from,const Vector3 &to) const {
+  training::Contact earliest;
+  if((from-spatialState.position-Vector3(0,0,0.8f)).GetLength()>2.8f &&
+     (to-spatialState.position-Vector3(0,0,0.8f)).GetLength()>2.8f)return earliest;
+  training::BodyPose nowPose,nextPose;GetTrainingPose(nowPose);GetTrainingPose(nextPose,1);
+  std::vector<Vector3> now,next;skinPose(trainingSkin,nowPose,zMultiplier,now);skinPose(trainingSkin,nextPose,zMultiplier,next);
+  const Vector3 velocity=match->GetBall()->GetMovement();
+  for(const auto &triangle:trainingTriangles) {
+    Vector3 a[3],b[3];bool outside=false;
+    for(int v=0;v<3;++v){a[v]=now[triangle.vertices[v]];b[v]=next[triangle.vertices[v]];}
+    for(int axis=0;axis<3;++axis) {
+      float minimum=std::min(a[0].coords[axis],b[0].coords[axis]),maximum=std::max(a[0].coords[axis],b[0].coords[axis]);
+      for(int v=1;v<3;++v){minimum=std::min(minimum,std::min(a[v].coords[axis],b[v].coords[axis]));maximum=std::max(maximum,std::max(a[v].coords[axis],b[v].coords[axis]));}
+      if(std::max(from.coords[axis],to.coords[axis])<minimum-0.11f ||std::min(from.coords[axis],to.coords[axis])>maximum+0.11f){outside=true;break;}
+    }
+    if(outside)continue;
+    auto hit=training::surfaceSweep(from,to,a,b);
+    if(hit.hit && hit.time==0 && (velocity-hit.surfaceVelocity).GetDotProduct(hit.normal)>=0)continue;
+    if(hit.hit && (!earliest.hit || hit.time<earliest.time)){earliest=hit;earliest.bone=triangle.bone;}
+  }
+  return earliest;
+}
+
+float HumanoidBase::TrainingTouchDistance(const std::string &part,const Vector3 &ball) const {
+  training::BodyPose pose;GetTrainingPose(pose);
+  std::vector<Vector3> skin;skinPose(trainingSkin,pose,zMultiplier,skin);
+  float distance=100;
+  for(const auto &triangle:trainingTriangles)if(touchBone(part,triangle.bone)) {
+    const Vector3 closest=training::closestTriangle(ball,skin[triangle.vertices[0]],skin[triangle.vertices[1]],skin[triangle.vertices[2]]);
+    distance=std::min(distance,(ball-closest).GetLength());
+  }
+  return distance;
 }
 
 void HumanoidBase::Process() {
@@ -848,6 +1068,8 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_animApplyBuffer = animApplyBuffer;
   buf_animApplyBuffer.snapshotTime_ms = snapshotTime_ms;
   buf_animApplyBuffer.trainingTouchBlend = 0;
+  buf_animApplyBuffer.trainingPoseValid=TrainingEnabled() && match->GetDesignatedPossessionPlayer()==player;
+  if(buf_animApplyBuffer.trainingPoseValid)GetTrainingPose(buf_animApplyBuffer.trainingPose);
   if (TrainingEnabled() && match->GetDesignatedPossessionPlayer() == player && currentAnim->touchFrame >= 0) {
     const std::string part = currentAnim->anim->GetVariable("touch_bodypart");
     if (part == "left_foot" || part == "right_foot") {
@@ -919,6 +1141,7 @@ void HumanoidBase::Put() {
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
+
   //printf("anim ptr: %i\n", fetchedbuf_animApplyBuffer.anim);
   //printf("nodemap size: %i\n", nodeMap.size());
   // Explicit study override only. Actor movement, joint offsets, proportions,
@@ -955,6 +1178,26 @@ void HumanoidBase::Put() {
   }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  if(!studyApplied && fetchedbuf_animApplyBuffer.trainingPoseValid) {
+    const auto &pose=fetchedbuf_animApplyBuffer.trainingPose;
+    const Vector3 root=humanoidNode->GetDerivedPosition().Get2D();
+    const Vector3 rawBody=root+(pose.points[0]-root)/zMultiplier;
+    nodeMap.at("body")->SetPosition(humanoidNode->GetDerivedRotation().GetInverse()*(rawBody-humanoidNode->GetDerivedPosition()),false);
+    for(int bone=0;bone<13;++bone) {
+      const int parent=pes3::nativeParents[bone];
+      const Quaternion parentRotation=parent<0?humanoidNode->GetDerivedRotation():pose.rotations[parent];
+      nodeMap.at(pes3::nativeBoneNames[bone])->SetRotation((parentRotation.GetInverse()*pose.rotations[bone]).GetNormalized(),false);
+    }
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    if(GetConfiguration()->GetBool("training_telemetry",false)) {
+      float error=0;
+      for(int bone=0;bone<13;++bone) {
+        const Vector3 actual=root+(nodeMap.at(pes3::nativeBoneNames[bone])->GetDerivedPosition()-root)*zMultiplier;
+        error=std::max(error,(actual-pose.points[bone]).GetLength());
+      }
+      printf("TRAINING_POSE_SYNC t=%lu error=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,error);
+    }
+  }
   if (studyApplied && GetConfiguration()->GetBool("training_telemetry",false)) {
     const auto& q=studyPose.local[8];
     const auto left=nodeMap.at("left_ankle")->GetDerivedPosition();
@@ -987,7 +1230,7 @@ void HumanoidBase::Put() {
   }
 
   // we've just set the humanoid positions for time fetchedbuf_animApplyBuffer.snapshotTime_ms. however, it's eventually going to be displayed in a historic position, for temporal smoothing.
-  if (!studyApplied && fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {
+  if (!studyApplied && !fetchedbuf_animApplyBuffer.trainingPoseValid && fetchedbuf_animApplyBuffer.trainingTouchBlend > 0) {
     // Adjust only the contacting leg, before temporal interpolation. Physics and
     // rendering share the animation's touch target without reading live render
     // bones from the simulation thread.
@@ -1205,6 +1448,7 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos)
   currentAnim->frameNum = random(0, currentAnim->anim->GetEffectiveFrameCount() - 1);
   currentAnim->radiusOffset = 0.0;
   currentAnim->touchFrame = -1;
+  currentAnim->trainingTouchTaken = false;
   currentAnim->originatingInterrupt = e_InterruptAnim_None;
   currentAnim->fullActionSmuggle = Vector3(0);
   currentAnim->actionSmuggle = Vector3(0);
@@ -1824,6 +2068,7 @@ bool HumanoidBase::SelectAnim(const PlayerCommand &command, e_InterruptAnim loca
     currentAnim->id = selectedAnimID;
     currentAnim->functionType = command.desiredFunctionType;
     currentAnim->frameNum = 0;
+    currentAnim->trainingTouchTaken = false;
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->originatingInterrupt = localInterruptAnim;
     currentAnim->radiusOffset = radiusOffset_tmp;
