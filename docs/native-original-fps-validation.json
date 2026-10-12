@@ -1,0 +1,721 @@
+{
+  "result": "passed",
+  "date": "2026-10-12",
+  "starting_revision": "2eb30f3f828b06d1240f8f8e6417e65e4b39ca5e",
+  "upstream_revision": "68159a2f0f96eec8ebba26ab7820130f36b922a7",
+  "upstream_sources": [
+    {
+      "file": "src/onthepitch/ball.cpp",
+      "sha256": "66b69b41c67eeaa586f1f7716e024c4e736b4dda052062dcebf1b62257396aa8",
+      "identical_to_upstream": true
+    },
+    {
+      "file": "src/onthepitch/ball.hpp",
+      "sha256": "cd0797c33ea501b1a70b1f0845184de986524b849f084807f532ef5a8e679f65",
+      "identical_to_upstream": true
+    },
+    {
+      "file": "src/onthepitch/player/humanoid/humanoid_utils.cpp",
+      "sha256": "1479f450240b8abaa8bc4f6efadad4e938850fbb4941c3b44373daac6ce4b48d",
+      "identical_to_upstream": true
+    }
+  ],
+  "first_person_view_direction_implementation_unchanged": true,
+  "rendered_gameplay_executable_sha256": "5bb912e4da9bd003ce220f50eb85d2342a8e036bf945bd74f6ca844985fbf620",
+  "final_native_executable_sha256": "f2c786c04dacfb41800813ecd0f70f24001c707ec1efc77472a835d21b6d7ad9",
+  "final_rebuild_note": "After rendered tests, only controller test assertions changed, to verify reserved RT in training and native RT outside training. Production source did not change.",
+  "gameplay": {
+    "result": "passed",
+    "checks": [
+      {
+        "check": "ball.cpp matches original source",
+        "result": "passed",
+        "evidence": "Original Gameplay Football source, upstream revision 68159a2"
+      },
+      {
+        "check": "ball.hpp matches original source",
+        "result": "passed",
+        "evidence": "Original Gameplay Football source, upstream revision 68159a2"
+      },
+      {
+        "check": "player/humanoid/humanoid_utils.cpp matches original source",
+        "result": "passed",
+        "evidence": "Original Gameplay Football source, upstream revision 68159a2"
+      },
+      {
+        "check": "RB release after 300 ms retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7574999999999998,
+          "end_distance_m": 0.4095999999999993,
+          "controlled": 27,
+          "samples": 27
+        }
+      },
+      {
+        "check": "RB release after 300 ms returns to native walking",
+        "result": "passed",
+        "evidence": {
+          "walking_speed_mps": 4.9998
+        }
+      },
+      {
+        "check": "RB release after 900 ms retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9879164438352059,
+          "end_distance_m": 0.45457782612001607,
+          "controlled": 33,
+          "samples": 33
+        }
+      },
+      {
+        "check": "RB release after 900 ms returns to native walking",
+        "result": "passed",
+        "evidence": {
+          "walking_speed_mps": 4.9998
+        }
+      },
+      {
+        "check": "RB release after 1800 ms retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9879164438352059,
+          "end_distance_m": 0.47019776690239795,
+          "controlled": 42,
+          "samples": 42
+        }
+      },
+      {
+        "check": "RB release after 1800 ms returns to native walking",
+        "result": "passed",
+        "evidence": {
+          "walking_speed_mps": 5.0762
+        }
+      },
+      {
+        "check": "RB release after 3500 ms retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9866170483019236,
+          "end_distance_m": 0.49302277837844666,
+          "controlled": 59,
+          "samples": 59
+        }
+      },
+      {
+        "check": "RB release after 3500 ms returns to native walking",
+        "result": "passed",
+        "evidence": {
+          "walking_speed_mps": 5.083
+        }
+      },
+      {
+        "check": "repeated RB presses and releases retain ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 1.0009793054803895,
+          "end_distance_m": 0.45300039735082204,
+          "controlled": 56,
+          "samples": 56
+        }
+      },
+      {
+        "check": "release RB and stick keeps ball within reach",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.571900314740252,
+          "end_distance_m": 0.3999001125281115,
+          "controlled": 20,
+          "samples": 20
+        }
+      },
+      {
+        "check": "native stop settles without forced touches",
+        "result": "passed",
+        "evidence": {
+          "player_speed": 0.0,
+          "ball_speed": 0.0831
+        }
+      },
+      {
+        "check": "RT False RB False retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.45919999999999916,
+          "end_distance_m": 0.4505000110987789,
+          "controlled": 16,
+          "samples": 16
+        }
+      },
+      {
+        "check": "RT False RB True retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.945861564923746,
+          "end_distance_m": 0.6937404846194293,
+          "controlled": 16,
+          "samples": 16
+        }
+      },
+      {
+        "check": "RT True RB False retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.45919999999999916,
+          "end_distance_m": 0.4505000110987789,
+          "controlled": 16,
+          "samples": 16
+        }
+      },
+      {
+        "check": "RT True RB True retains ball",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9460490156434797,
+          "end_distance_m": 0.6939472386284132,
+          "controlled": 16,
+          "samples": 16
+        }
+      },
+      {
+        "check": "RT has no speed effect with RB False",
+        "result": "passed",
+        "evidence": {
+          "without_RT": 4.9998,
+          "with_RT": 4.9998
+        }
+      },
+      {
+        "check": "RT has no speed effect with RB True",
+        "result": "passed",
+        "evidence": {
+          "without_RT": 7.7185,
+          "with_RT": 7.7185
+        }
+      },
+      {
+        "check": "head look stays independent with ball",
+        "result": "passed",
+        "evidence": {
+          "t": 47100,
+          "exercise": 0,
+          "player": [
+            1.8204,
+            -0.0,
+            0.0
+          ],
+          "speed": 4.9998,
+          "ball": [
+            2.2993,
+            0.0,
+            0.1294
+          ],
+          "ball_speed": 5.1429,
+          "function": 2,
+          "frame": 20,
+          "controller": 1,
+          "goals": 0,
+          "camera": 2,
+          "with_ball": 1,
+          "yaw": -0.945,
+          "head_yaw": -0.945,
+          "pitch": -0.12,
+          "contacts": 0,
+          "look_active": 1,
+          "move_active": 1,
+          "shot_active": 0,
+          "charge_ms": 0,
+          "action_mode": 0,
+          "move": [
+            0.0,
+            1.0
+          ],
+          "keys": 4096,
+          "player_yaw": 0.0,
+          "wall_ms": 56264
+        }
+      },
+      {
+        "check": "head recenters gradually",
+        "result": "passed",
+        "evidence": "Native body direction retained"
+      },
+      {
+        "check": "simulation runs in real time",
+        "result": "passed",
+        "evidence": {
+          "simulation_to_real_time": 0.999000999000999
+        }
+      },
+      {
+        "check": "original short pass acts at native contact",
+        "result": "passed",
+        "evidence": {
+          "touches": [
+            [
+              57170,
+              4
+            ]
+          ],
+          "peak_speed_mps": 25.1828
+        }
+      },
+      {
+        "check": "original through pass acts at native contact",
+        "result": "passed",
+        "evidence": {
+          "touches": [
+            [
+              60770,
+              5
+            ]
+          ],
+          "peak_speed_mps": 25.4552
+        }
+      },
+      {
+        "check": "original high pass acts at native contact",
+        "result": "passed",
+        "evidence": {
+          "touches": [
+            [
+              64170,
+              6
+            ]
+          ],
+          "peak_speed_mps": 24.5563
+        }
+      },
+      {
+        "check": "original shot acts at native contact",
+        "result": "passed",
+        "evidence": {
+          "touches": [
+            [
+              67570,
+              8
+            ]
+          ],
+          "peak_speed_mps": 29.6216
+        }
+      },
+      {
+        "check": "native pose and impulses remain active",
+        "result": "passed",
+        "evidence": "No custom pose or dribble impulse overrides"
+      },
+      {
+        "check": "clean exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ],
+    "cases": [
+      {
+        "case": "sprint release 300",
+        "evidence": {
+          "max_distance_m": 0.7574999999999998,
+          "end_distance_m": 0.4095999999999993,
+          "controlled": 27,
+          "samples": 27
+        }
+      },
+      {
+        "case": "sprint release 900",
+        "evidence": {
+          "max_distance_m": 0.9879164438352059,
+          "end_distance_m": 0.45457782612001607,
+          "controlled": 33,
+          "samples": 33
+        }
+      },
+      {
+        "case": "sprint release 1800",
+        "evidence": {
+          "max_distance_m": 0.9879164438352059,
+          "end_distance_m": 0.47019776690239795,
+          "controlled": 42,
+          "samples": 42
+        }
+      },
+      {
+        "case": "sprint release 3500",
+        "evidence": {
+          "max_distance_m": 0.9866170483019236,
+          "end_distance_m": 0.49302277837844666,
+          "controlled": 59,
+          "samples": 59
+        }
+      }
+    ]
+  },
+  "turns": {
+    "result": "passed",
+    "checks": [
+      {
+        "check": "camera 0 opposite cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9037278351362206,
+          "end_distance_m": 0.35348066425195024,
+          "path_m": 18.37640988238712,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 opposite cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9037278351362206,
+          "end_distance_m": 0.35348066425195024,
+          "path_m": 18.37640988238712,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 opposite cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.9037278351362206,
+          "end_distance_m": 0.35348066425195024,
+          "path_m": 18.37640988238712,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8598553948193847,
+          "end_distance_m": 0.3344502952607453,
+          "path_m": 18.553890556469113,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8598553948193847,
+          "end_distance_m": 0.3344502952607453,
+          "path_m": 18.553890556469113,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 side cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8598553948193847,
+          "end_distance_m": 0.3344502952607453,
+          "path_m": 18.553890556469113,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7478032361523989,
+          "end_distance_m": 0.35396186235242916,
+          "path_m": 44.811497704710796,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7478032361523989,
+          "end_distance_m": 0.35396186235242916,
+          "path_m": 44.811497704710796,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 circling has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7478032361523989,
+          "end_distance_m": 0.35396186235242916,
+          "path_m": 44.811497704710796,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 0 keeps native animations",
+        "result": "passed",
+        "evidence": "No study animation applied"
+      },
+      {
+        "check": "camera 0 clean exit",
+        "result": "passed",
+        "evidence": 0
+      },
+      {
+        "check": "camera 2 opposite cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8755849473352089,
+          "end_distance_m": 0.7935874557980366,
+          "path_m": 14.770097150036392,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 opposite cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8755849473352089,
+          "end_distance_m": 0.7935874557980366,
+          "path_m": 14.770097150036392,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 opposite cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8755849473352089,
+          "end_distance_m": 0.7935874557980366,
+          "path_m": 14.770097150036392,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8951159757260501,
+          "end_distance_m": 0.4437786948468802,
+          "path_m": 17.59487338757104,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8951159757260501,
+          "end_distance_m": 0.4437786948468802,
+          "path_m": 17.59487338757104,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 side cuts has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.8951159757260501,
+          "end_distance_m": 0.4437786948468802,
+          "path_m": 17.59487338757104,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling retains native control",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7631941103022226,
+          "end_distance_m": 0.35262697004058013,
+          "path_m": 32.57786407444082,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling remains responsive",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7631941103022226,
+          "end_distance_m": 0.35262697004058013,
+          "path_m": 32.57786407444082,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 circling has no extra leg rebounds",
+        "result": "passed",
+        "evidence": {
+          "max_distance_m": 0.7631941103022226,
+          "end_distance_m": 0.35262697004058013,
+          "path_m": 32.57786407444082,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "check": "camera 2 keeps native animations",
+        "result": "passed",
+        "evidence": "No study animation applied"
+      },
+      {
+        "check": "camera 2 clean exit",
+        "result": "passed",
+        "evidence": 0
+      }
+    ],
+    "cases": [
+      {
+        "camera": 0,
+        "case": "opposite cuts",
+        "evidence": {
+          "max_distance_m": 0.9037278351362206,
+          "end_distance_m": 0.35348066425195024,
+          "path_m": 18.37640988238712,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 0,
+        "case": "side cuts",
+        "evidence": {
+          "max_distance_m": 0.8598553948193847,
+          "end_distance_m": 0.3344502952607453,
+          "path_m": 18.553890556469113,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 0,
+        "case": "circling",
+        "evidence": {
+          "max_distance_m": 0.7478032361523989,
+          "end_distance_m": 0.35396186235242916,
+          "path_m": 44.811497704710796,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "opposite cuts",
+        "evidence": {
+          "max_distance_m": 0.8755849473352089,
+          "end_distance_m": 0.7935874557980366,
+          "path_m": 14.770097150036392,
+          "controlled": 55,
+          "samples": 55,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "side cuts",
+        "evidence": {
+          "max_distance_m": 0.8951159757260501,
+          "end_distance_m": 0.4437786948468802,
+          "path_m": 17.59487338757104,
+          "controlled": 61,
+          "samples": 61,
+          "extra_body_contacts": 0
+        }
+      },
+      {
+        "camera": 2,
+        "case": "circling",
+        "evidence": {
+          "max_distance_m": 0.7631941103022226,
+          "end_distance_m": 0.35262697004058013,
+          "path_m": 32.57786407444082,
+          "controlled": 101,
+          "samples": 101,
+          "extra_body_contacts": 0
+        }
+      }
+    ]
+  },
+  "unit_tests": {
+    "result": "passed",
+    "executed": 4,
+    "failed": 0,
+    "initial_failure": "Old controller assertion expected RT to activate close control; updated to the requested reserved RT behavior, including value and previous state."
+  },
+  "full_windows_package": {
+    "result": "passed",
+    "archive_bytes": 31354806,
+    "archive_sha256": "4f9ce235a9e673d1c486d8171c8ca1997960ad9c71c0f1f608a736c0c88da904",
+    "executable_sha256": "6605da496a85709606af2793f14a9f12dde96881488ac7ba0f74d82f0da07ac6",
+    "zip_crc": "all members passed",
+    "architecture": "PE32+ x86_64",
+    "members": 546,
+    "dll_count": 26,
+    "missing_non_system_dlls": {},
+    "source_bank_included": false,
+    "exe_imports": [
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "libSDL2_gfx.dll",
+      "SDL2_image.dll",
+      "SDL2_ttf.dll",
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "libboost_thread-gcc14-mt-x64-1_92.dll",
+      "libsqlite3.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "USER32.dll",
+      "XINPUT9_1_0.dll",
+      "libgcc_s_seh-1.dll",
+      "libstdc++-6.dll"
+    ],
+    "windows_execution_tested": false
+  },
+  "windows_update": {
+    "result": "passed",
+    "archive_sha256": "5c33f2ffa04f23dfeeaf04cec3534a84a37f18ceaa1c3fcf3aa0bfcf58bcfb45",
+    "archive_bytes": 1486136,
+    "executable_sha256": "6605da496a85709606af2793f14a9f12dde96881488ac7ba0f74d82f0da07ac6",
+    "original_uploaded_bat_preserved": true,
+    "config_matches_shipped": true,
+    "matches_full_executable": true,
+    "zip_crc": "all members passed",
+    "custom_touch_pose_and_pace_overrides_absent": true
+  },
+  "passed_rendered_checks": 51,
+  "limits": {
+    "rendered_game_tested_on": "Linux with real SDL virtual Xbox input",
+    "windows_gui_execution_tested": false,
+    "physical_xbox_series_controller_tested": false
+  }
+}

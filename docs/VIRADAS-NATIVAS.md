@@ -1,3 +1,5 @@
+> Registro histórico, substituído pela [restauração do Football original em primeira pessoa](GAMEPLAY-NATIVA-FPS.md).
+
 # Viradas com a bola na gameplay nativa
 
 O vídeo recebido em 12/10/2026 mostra o jogador na câmera externa. A correção

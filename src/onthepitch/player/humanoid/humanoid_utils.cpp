@@ -243,20 +243,6 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   // don't want to go below physics velo, else we will run over ball and stuff like that
   // don't want to go over physics velo too much either, else ball will be so far away!
   float velocity = clamp(desiredMovement.GetLength(), outgoingMovement.GetLength(), outgoingMovement.GetLength() + maximumOverdrive_mps);
-  if (TrainingEnabled() && player->HasPossession() && player->GetExternalController() &&
-      currentAnim->functionType == e_FunctionType_BallControl && ball->Predict(0).coords[2] < 0.45f) {
-    auto *human = static_cast<HumanController*>(player->GetExternalController());
-    const float pace = human->GetFloatVelocity();
-    if (!human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
-        !human->GetHIDevice()->GetButton(e_ButtonFunction_Dribble) && human->GetActionMode() != 2 &&
-        pace > 0.1f && outgoingMovement.Get2D().GetNormalized(0).GetDotProduct(
-            human->GetDirection().Get2D().GetNormalized(0)) > 0.8f) {
-      // A discrete 3.5/5 m/s animation must not plan a full-speed kick when
-      // the analog stick requests a slower step. Match the existing planner
-      // to that pace, so light-stick walking can still reach its next touch.
-      velocity = std::min(velocity, pace);
-    }
-  }
   desiredMovement = desiredMovement.GetNormalized(Vector3(0, -1, 0).GetRotated2D(nextStartAngle)) * velocity;
   Vector3 physicsMovement = Vector3(0, -1, 0).GetRotated2D(nextStartAngle) * velocity;
 
@@ -270,21 +256,6 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   float heightFFOOffset = NormalizedClamp(ball->Predict(0).coords[2], 0.5f, 1.0f) * 0.5f; // bounce high balls off body - else they keep colliding inside body and stuff like that
   FFO += FFOsrc * heightFFOOffset * 0.5f +
          player->GetBodyDirectionVec() * heightFFOOffset * 0.5f;
-  if (TrainingEnabled() && currentAnim->functionType == e_FunctionType_BallControl &&
-      player->HasPossession() && player->GetExternalController() && ball->Predict(0).coords[2] < 0.45f) {
-    auto *human = static_cast<HumanController*>(player->GetExternalController());
-    const Vector3 travel = outgoingMovement.Get2D().GetNormalized(0);
-    const Vector3 intent = human->GetDirection().Get2D().GetNormalized(0);
-    if (!human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
-        !human->GetHIDevice()->GetButton(e_ButtonFunction_Dribble) && human->GetActionMode() != 2 &&
-        human->GetFloatVelocity() > 0.1f && outgoingMovement.GetLength() > 0.5f &&
-        travel.GetDotProduct(intent) > 0.8f) {
-      // A small lead in the existing planner gives the ball room between
-      // real touches. Do not lengthen a reversing touch or move the ball
-      // outside an animation event, and leave close control/sprints native.
-      FFO += travel * clamp(GetConfiguration()->GetReal("training_dribble_spacing_m", 0.12f), 0.0f, 0.25f);
-    }
-  }
 
   Vector3 desiredPlannedBallPos = nextStartPos;
   Vector3 physicsPlannedBallPos = nextStartPos;
@@ -340,44 +311,6 @@ Vector3 GetBallControlVector(Ball *ball, Player *player, const Vector3 &nextStar
   powerMultiplier = 1.0f * (1.0f - veloBias) + powerMultiplier * veloBias;
 
   Vector3 touchVec = direction * power * powerMultiplier + Vector3(0, 0, height);
-  Match *practice = player->GetTeam()->GetMatch();
-  Vector3 cutDirection = currentAnim->originatingCommand.desiredDirection.Get2D().GetNormalized(0);
-  float cutIntentSpeed = currentAnim->originatingCommand.desiredVelocityFloat;
-  if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() && player->GetExternalController()) {
-    cutDirection = player->GetExternalController()->GetDirection().Get2D().GetNormalized(0);
-    cutIntentSpeed = player->GetExternalController()->GetFloatVelocity();
-  }
-  const std::string contactPart = currentAnim->anim->GetVariable("touch_bodypart");
-  if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() &&
-      player->GetExternalController() && cutIntentSpeed < 0.05f &&
-      (contactPart == "left_foot" || contactPart == "right_foot")) {
-    // A neutral stick asks the next actual foot contact to stop the ball.
-    // Do not keep renewing the outgoing momentum from the old turning step.
-    touchVec.coords[0] = 0;
-    touchVec.coords[1] = 0;
-  } else if (TrainingEnabled() && practice->IsFirstPerson() && practice->TrainingHasBall() &&
-      cutIntentSpeed > 0.1f &&
-      (ball->GetMovement().Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f ||
-       touchVec.Get2D().GetNormalized(0).GetDotProduct(cutDirection) < -0.25f)) {
-    // Apply the cut at the accepted foot contact. The old planned end
-    // position can still be behind this touch while the next step turns
-    // around; sending the ball there makes the player leave it behind.
-    // This changes its impulse, never its position or its free flight.
-    const float cutSpeed = std::min(2.5f, cutIntentSpeed);
-    const Vector3 cut = cutDirection * cutSpeed;
-    touchVec.coords[0] = cut.coords[0];
-    touchVec.coords[1] = cut.coords[1];
-    if (GetConfiguration()->GetBool("training_telemetry", false))
-      printf("TRAINING_TURN_TOUCH speed=%.4f\n", cutSpeed);
-  }
-  if (TrainingEnabled()) {
-    const float weakness = 1 - training::controlQuality(currentAnim->anim->GetVariable("touch_bodypart"));
-    // Keep the original gait, reach and touch power. A small retained momentum
-    // difference is enough for the weaker foot without pushing the ball away
-    // during reversals or rejecting the next compatible step.
-    const float retainedMomentum = weakness * 0.10f;
-    touchVec = touchVec * (1 - retainedMomentum) + ball->GetMovement() * retainedMomentum;
-  }
 /*
   if (player->GetDebug()) {
     SetRedDebugPilon(ball->Predict(0).Get2D());
@@ -421,20 +354,6 @@ Vector3 GetTrapVector(Match *match, Player *player, const Vector3 &nextStartPos,
 Vector3 GetShotVector(Match *match, Player *player, const Vector3 &nextStartPos, radian nextStartAngle, radian nextBodyAngle, const Vector3 &outgoingMovement, const Anim *currentAnim, int frameNum, const SpatialState &spatialState, const Vector3 &positionOffset, radian &xRot, radian &yRot, radian &zRot, float autoDirectionBias) {
 
   Ball *ball = match->GetBall();
-
-  if (TrainingEnabled() && currentAnim->anim->GetVariable("touch_bodypart") != "head") {
-    const bool chip = (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_Chip) != 0;
-    const auto launch = training::shot(currentAnim->originatingCommand.touchInfo.desiredPower,
-                                      player->GetStat("physical_shotpower"), chip, match->IsTrainingFreeKick());
-    const Vector3 direction = currentAnim->originatingCommand.touchInfo.desiredDirection.Get2D().GetNormalized(player->GetDirectionVec());
-    // Slightly reduce power on an imperfect contact while preserving the charge response.
-    const float contact = clamp(1 - positionOffset.GetLength() * 0.4f, 0.85f, 1.0f);
-    const float speed = launch.speed * contact;
-    xRot = -direction.coords[1] * (chip ? -12.0f : 15.0f);
-    yRot = -direction.coords[0] * (chip ? -12.0f : 15.0f);
-    zRot = clamp(spatialState.bodyDirectionVec.GetAngle2D(direction), -0.5f, 0.5f) * -35.0f;
-    return direction * (speed * std::cos(launch.elevation)) + Vector3(0, 0, speed * std::sin(launch.elevation));
-  }
 
   const std::vector<Vector3> &origPositionCache = match->GetAnimPositionCache(currentAnim->anim);
   Vector3 touchMovement = CalculateMovementAtFrame(origPositionCache, currentAnim->frameNum).GetRotated2D(spatialState.angle); // spatialState.movement isn't reliable because of smuggles and such

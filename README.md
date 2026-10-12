@@ -5,31 +5,30 @@ Centro de treinamento nativo em C++/SDL2/OpenGL, derivado do
 revisão `68159a2f0f96eec8ebba26ab7820130f36b922a7`.
 
 Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
-da base original, com controles em primeira pessoa e ajustes de chutes e
-colisões no treino. Carreira e partidas online ficam para etapas posteriores.
+da base original, com controles em primeira pessoa e exercícios de treino.
+Carreira e partidas online ficam para etapas posteriores.
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o
 direito olha ao redor sem alterar a direção do movimento. Após virar, empurre
 o esquerdo para frente para seguir a nova frente; mantê-lo à direita continua
 a curva para a nova direita. Baixo pede uma virada para trás; mantê-lo
-repete a virada quando o corpo completa a anterior. RT mantém essa direção e ajusta o domínio,
-sem virar automaticamente para o gol. A cabeça retorna
+repete a virada quando o corpo completa a anterior. RB permite correr; RT
+está reservado e sem função no treino. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
 
-A [atualização Windows das viradas](artifacts/football-windows-viradas-nativas.zip)
-parte da base nativa restaurada (`37a5543`) e corrige a virada com a bola.
-Os colisores simplificados das pernas respeitam a posse e os toques recentes,
-sem acrescentar rebotes durante a condução, em todas as câmeras. Os impulsos
-dos toques voltam à lógica nativa, sem a força artificial da atualização anterior.
-A velocidade normal foi reduzida em 10%, e a condução sem corrida planeja a
-bola um pouco mais à frente entre os toques. A câmera, as direções dos controles,
-a seleção de animações e a renderização permanecem da base aprovada.
+A [atualização Windows do Football original em primeira pessoa](artifacts/football-windows-original-primeira-pessoa.zip)
+restaura os arquivos originais da física da bola e dos impulsos de condução,
+domínio, passe e chute, da origem `vi3itor/GameplayFootball` (`68159a2`).
+Os passos voltam ao ritmo e às regras originais de animação; foram retirados
+os ajustes de velocidade, distância da bola, toques e colisores extras do treino.
+A câmera e as direções de movimento em primeira pessoa permanecem da base
+aprovada. A simulação corre em tempo real e RT fica reservado.
 Feche o jogo, extraia na pasta onde estão `run-training.bat` e
 `media`, aceite substituir e execute `run-training.bat`.
-Consulte [a correção e as verificações](docs/VIRADAS-NATIVAS.md). O
-[executável original sem esta correção](artifacts/football-windows-gameplay-original.zip)
+Consulte [a restauração e as verificações](docs/GAMEPLAY-NATIVA-FPS.md). O
+[pacote histórico da base aprovada 37a5543](artifacts/football-windows-gameplay-original.zip)
 continua arquivado.
 
 Não é uma decompilação completa do PES. Os links iniciais contêm Gameplay Football;

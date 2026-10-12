@@ -1,4 +1,4 @@
-> Registro da restauração sem correções. A versão atual acrescenta a [correção das viradas nativas](VIRADAS-NATIVAS.md).
+> Registro histórico da base aprovada. A versão atual restaura o [núcleo original do Football em primeira pessoa](GAMEPLAY-NATIVA-FPS.md).
 
 # Gameplay original restaurada
 

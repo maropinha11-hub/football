@@ -149,11 +149,13 @@ void HIDGamepad::Process() {
 }
 
 bool HIDGamepad::GetButton(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return false;
   boost::mutex::scoped_lock blah(mutex);
   return controllerButtonState[functionMapping[buttonFunction]] > 0.0f;
 }
 
 float HIDGamepad::GetButtonValue(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return 0.0f;
   boost::mutex::scoped_lock blah(mutex);
   return controllerButtonState[functionMapping[buttonFunction]];
 }
@@ -164,6 +166,7 @@ void HIDGamepad::SetButton(e_ButtonFunction buttonFunction, bool state) {
 }
 
 bool HIDGamepad::GetPreviousButtonState(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return false;
   boost::mutex::scoped_lock blah(mutex);
   return previousControllerButtonState[functionMapping[buttonFunction]];
 }

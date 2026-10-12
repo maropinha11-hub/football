@@ -211,7 +211,14 @@ int RunControllerTests() {
     require(pad.GetDirection().GetLength() == 0, "Deadzone does not remove analog drift");
     SDL_JoystickSetVirtualAxis(virtualPad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 24000);
     pump(); pad.Process();
-    require(pad.GetButton(e_ButtonFunction_Dribble), "RT not mapped to close control");
+    require(!pad.GetButton(e_ButtonFunction_Dribble), "Reserved RT must not activate close control in training");
+    require(pad.GetButtonValue(e_ButtonFunction_Dribble) == 0.0f, "Reserved RT must not leak an analog value");
+    pad.Process();
+    require(!pad.GetPreviousButtonState(e_ButtonFunction_Dribble), "Reserved RT must not leak its previous state");
+    GetConfiguration()->SetBool("training_mode", false);
+    require(pad.GetButton(e_ButtonFunction_Dribble) && pad.GetButtonValue(e_ButtonFunction_Dribble) > 0,
+            "Original match mode must retain its native RT mapping");
+    GetConfiguration()->SetBool("training_mode", true);
     SDL_JoystickSetVirtualButton(virtualPad, SDL_CONTROLLER_BUTTON_X, 1);
     pump(); pad.Process();
     require(pad.GetButton(e_ButtonFunction_Shot), "X not mapped to shot");

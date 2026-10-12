@@ -28,9 +28,8 @@ com SDL como alternativa. O mapeamento usado no treino é:
 | Y | Passe em profundidade |
 | B | Bola alta / carrinho |
 | X | Chute |
-| LB + X | Cobertura |
 | RB | Corrida |
-| RT | Domínio |
+| RT | Reservado, sem função no treino |
 | View | Reiniciar exercício |
 | Menu | Pausar |
 | D-pad | Trocar exercício |
@@ -44,11 +43,9 @@ gradualmente ao centro ao soltá-lo. O esquerdo acompanha a frente atual do
 jogador: depois de virar, frente segue a nova frente e direita continua
 virando para a nova direita. Baixo pede a direção atrás do corpo; se for
 mantido, pede novamente a nova direção para trás após completar a virada.
-RT mantém esse referencial, com domínio mais
-lento e próximo, sem virar automaticamente para o gol. Segurar X aumenta a força e a altura,
-com carga máxima de 0,52 segundo; cerca de 0,25 segundo já produz elevação.
-Os passes mantêm a carga de um segundo. As setas do teclado substituem o direito;
-Q+K faz cobertura e 5/F3 inicia a cobrança de falta.
+RT está reservado. Segurar X carrega o chute com as regras originais do Football.
+As setas do teclado substituem o direito; Shift permite correr e 5/F3 inicia
+a cobrança de falta. Espaço, o equivalente de RT no teclado, também fica reservado.
 
 A condução usa a assistência e os passos originais para acompanhar a bola
 durante curvas e inversões. Após um passe ou chute, o movimento fica livre;
@@ -58,8 +55,9 @@ o novo ZIP em uma pasta nova e inicie por `run-training.bat`.
 Na bola aérea (D-pad esquerda), prepare A para cabecear um passe ou X para
 cabecear uma finalização antes da chegada. O exercício de passe recebido
 (LB + D-pad direita; tecla 6) permite preparar A/Y/X para jogar de primeira.
-RB + RT mantém o acompanhamento do toque adiantado durante a curva e ao
-soltar RT; a bola segue a física normal entre contatos.
+RB permite correr e, ao soltá-lo, o jogador volta à condução normal. A bola
+segue a física original entre contatos. A restauração do núcleo e os testes
+estão descritos em [GAMEPLAY-NATIVA-FPS.md](GAMEPLAY-NATIVA-FPS.md).
 
 O treino reduz as trocas entre tarefas do motor, mantendo o passo de 10 ms.
 Se ainda perceber lentidão, o `log.txt` contém linhas `Training::Timing`:

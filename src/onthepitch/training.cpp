@@ -111,62 +111,6 @@ void Match::UpdateTrainingView(IHIDevice *input) {
     printf("TRAINING_STEER_REPEAT t=%lu target=%.4f\n", actualTime_ms, trainingView.travelYaw);
 }
 
-void Match::ResolveTrainingBallContacts(const Vector3 &from) {
-  Player *player = designatedPossessionPlayer;
-  const Vector3 root = player->GetPosition();
-  const Vector3 forward = player->GetBodyDirectionVec();
-  const Vector3 right(forward.coords[1], -forward.coords[0], 0);
-  const float height = player->GetPlayerData()->GetHeight();
-  Vector3 a[4], b[4];
-  float radii[4] = {0.19f, 0.19f, 0.31f, 0.23f};
-  for (int leg = 0; leg < 2; ++leg) {
-    const Vector3 side = right * (leg == 0 ? -0.10f : 0.10f);
-    a[leg] = root + side + Vector3(0, 0, 0.15f);
-    b[leg] = root + side + Vector3(0, 0, height * 0.46f);
-  }
-  a[2] = root + Vector3(0, 0, height * 0.49f);
-  b[2] = root + Vector3(0, 0, height * 0.78f);
-  a[3] = root + Vector3(0, 0, height * 0.88f);
-  b[3] = root + Vector3(0, 0, height * 0.95f);
-  if (player->GetCurrentFunctionType() == e_FunctionType_Sliding) {
-    for (int i = 0; i < 4; ++i) {
-      a[i] = root + forward * (i * 0.28f - 0.3f) + Vector3(0, 0, 0.23f);
-      b[i] = a[i] + forward * 0.3f;
-    }
-  }
-  const Vector3 movement = player->GetMovement();
-  const Vector3 displacement = movement * 0.01f;
-  const Vector3 to = ball->Predict(0);
-  const e_FunctionType function = player->GetCurrentFunctionType();
-  const bool controlAnimation = function == e_FunctionType_Movement ||
-      function == e_FunctionType_BallControl || function == e_FunctionType_Trap;
-  // The original match excludes the possessor and recent toucher from
-  // accidental body rebounds. The training-only rigid leg capsules must
-  // respect that same ownership, for every cut and every camera. They do
-  // not track the animated support leg and were hitting the ball a second
-  // time before the native turning touch could complete.
-  const bool nativeControl = controlAnimation &&
-      (player->HasUniquePossession() || TrainingHasBall());
-  const bool protectNativeLegTouch = to.coords[2] < 0.45f &&
-      (nativeControl || player->GetLastTouchBias(200) > 0.01f);
-  training::Contact earliest;
-  for (int i = 0; i < 4; ++i) {
-    if (i < 2 && protectNativeLegTouch) continue;
-    const auto hit = training::sweep(from + displacement, to, a[i], b[i], radii[i]);
-    if (hit.hit && (!earliest.hit || hit.time < earliest.time)) earliest = hit;
-  }
-  if (!earliest.hit) return;
-  const Vector3 incoming = ball->GetMovement() - movement;
-  // A just-kicked ball may start touching a foot: allow it to depart without a second impulse.
-  if (incoming.GetDotProduct(earliest.normal) >= 0 && earliest.time == 0 &&
-      (to - root).GetLength() > (from - root).GetLength()) return;
-  Vector3 corrected = earliest.point + earliest.normal * 0.003f;
-  Vector3 velocity = training::rebound(incoming, earliest.normal, 0.42f) + movement;
-  corrected += velocity * (0.01f * (1 - earliest.time));
-  ball->ResolveContact(corrected, velocity);
-  ++trainingContacts;
-}
-
 void Match::ProcessTraining() {
   auto &events = UserEventManager::GetInstance();
   auto keyOnce = [&events](SDL_Keycode key) {
@@ -242,8 +186,8 @@ void Match::ProcessTraining() {
     if (trainingResetAt_ms && actualTime_ms >= trainingResetAt_ms) ResetTraining(trainingExercise);
     UpdateTrainingView(input);
     previousBallPos = ball->Predict(0);
+    CheckBallCollisions();
     ball->Process();
-    ResolveTrainingBallContacts(previousBallPos);
 
     auto *image = new MentalImage(this);
     image->TakeSnapshot();

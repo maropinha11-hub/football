@@ -190,12 +190,7 @@ void Humanoid::Process() {
   if (mayReQueue) {
 
     float ballDistance = (currentMentalImage->GetBallPrediction(500).Get2D() - spatialState.position).GetLength();
-    const bool trainingMovement = TrainingEnabled() && CastPlayer()->GetExternalController() &&
-                                  (currentAnim->functionType == e_FunctionType_Movement ||
-                                   (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl &&
-                                    currentAnim->frameNum > currentAnim->touchFrame + 1));
-    if (( trainingMovement ||
-          (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
+    if (( (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
           (currentAnim->functionType == e_FunctionType_Trap && TouchPending()) ||
           (currentAnim->functionType == e_FunctionType_BallControl && TouchPending()) ) &&
@@ -323,8 +318,7 @@ void Humanoid::Process() {
       // if we just requeued, for example, from movement to ballcontrol, there's no reason we can not immediately requeue to another ballcontrol again (next time). only apply the initial requeue delay on subsequent anims of the same type
       // (so we can have a fast ballcontrol -> ballcontrol requeue, but after that, use the initial delay)
       if (interruptAnim == e_InterruptAnim_ReQueue && previousAnim->functionType == currentAnim->functionType) {
-        reQueueDelayFrames = TrainingEnabled() && (currentAnim->functionType == e_FunctionType_Movement ||
-            (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl)) ? 8 : initialReQueueDelayFrames;
+        reQueueDelayFrames = initialReQueueDelayFrames; // don't try requeueing (some types of anims, see selectanim()) too often
       }
 
     }
@@ -386,8 +380,6 @@ void Humanoid::Process() {
     if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (controlledcollision): %f\n", bumpyRideBias);
 
     match->GetBall()->Touch(touchVec);
-    match->NotifyTrainingTouch(e_FunctionType_Trap,
-        (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0);
     match->GetBall()->SetRotation(xRot, yRot, 0, 0.2f * (1.0f - bumpyRideBias)); // 0.9
     match->GetBall()->TriggerBallTouchSound(pow(NormalizedClamp(touchVec.GetLength(), 4.0f, 40.0f), 0.7f));
 
@@ -402,11 +394,6 @@ void Humanoid::Process() {
     boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
     float desiredBallHeight = desiredBallPosition.coords[2];
 
-    const std::string touchingPart = currentAnim->anim->GetVariable("touch_bodypart");
-    const float footQuality = TrainingEnabled() ? training::controlQuality(touchingPart) : 1.0f;
-    const bool trainingFoot = TrainingEnabled() && (touchingPart == "left_foot" || touchingPart == "right_foot");
-    // Preserve the original animation-event tolerance. Narrowing it makes
-    // valid turning/sprinting touches fail after the animation has committed.
     float touchableDistance = 0.4f;
 
     float fullBallDistance = (match->GetBall()->Predict(0) - (currentAnim->touchPos + currentAnim->positionOffset)).GetLength();
@@ -435,18 +422,9 @@ void Humanoid::Process() {
 
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
 
-      match->NotifyTrainingTouch(currentAnim->functionType,
-          (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0);
       if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_ACTION_TOUCH t=%lu part=%s function=%d z=%.4f\n", match->GetActualTime_ms(),
-            touchingPart.c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2]);
-
-      if (trainingFoot) {
-        // The contacting leg targets the actual ball at the animation event.
-        currentAnim->touchPos = match->GetBall()->Predict(0) - currentAnim->positionOffset;
-        if (GetConfiguration()->GetBool("training_telemetry", false))
-          printf("TRAINING_TOUCH foot=%s error=%.4f quality=%.2f function=%d\n", touchingPart.c_str(), fullBallDistance, footQuality, int(currentAnim->functionType));
-      }
+            currentAnim->anim->GetVariable("touch_bodypart").c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2]);
 
       radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
 
@@ -1124,6 +1102,7 @@ void Humanoid::SelectRetainAnim() {
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
+
   assert(dataSet.size() != 0);
 
   #ifdef dataSetSortable
@@ -1216,36 +1195,27 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
 
   if (localInterruptAnim == e_InterruptAnim_ReQueue) {
-    // The contact has already happened: a changed input can replan the
-    // remaining locomotion without cancelling or duplicating that touch.
-    const bool trainingPostTouch = TrainingEnabled() && match->IsFirstPerson() &&
-        currentAnim->functionType == e_FunctionType_BallControl &&
-        currentAnim->frameNum > currentAnim->touchFrame + 1;
-    if (trainingPostTouch && currentAnim->frameNum + minRemainingMovementReQueueFrames >
-        currentAnim->anim->GetEffectiveFrameCount()) return false;
 
     float focusDistance = (match->GetDesignatedPossessionPlayer()->GetPosition() - spatialState.position).GetLength();
 
-    if (!trainingPostTouch && currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
-    if (!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
+    if (currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
+    if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && currentAnim->frameNum + minRemainingMovementReQueueFrames > currentAnim->anim->GetEffectiveFrameCount()) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (!allowMovementReQueue || reQueueDelayFrames > 0)) return false;
-    if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || (!trainingPostTouch && (currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)))) return false;
+    if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)) return false;
     if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_Trap) return false;
     if (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap && (!allowTrapReQueue || currentAnim->frameNum + minRemainingTrapReQueueFrames > currentAnim->touchFrame || reQueueDelayFrames > 0)) return false;
     if (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl && (!allowTrapReQueue || currentAnim->frameNum + minRemainingTrapReQueueFrames > currentAnim->touchFrame || reQueueDelayFrames > 0)) return false;
 
     // too similar to what we are already trying to accomplish
     if (currentAnim->originatingCommand.desiredFunctionType == command.desiredFunctionType &&
-        ((currentAnim->originatingCommand.desiredDirection * currentAnim->originatingCommand.desiredVelocityFloat) - (command.desiredDirection * command.desiredVelocityFloat)).GetLength() < (TrainingEnabled() ? 0.35f : 1.5f)) {
+        ((currentAnim->originatingCommand.desiredDirection * currentAnim->originatingCommand.desiredVelocityFloat) - (command.desiredDirection * command.desiredVelocityFloat)).GetLength() < 1.5f) {
       return false;
     }
 
     // requeue not needed?
-    // Direct training input can revise locomotion while keeping the existing blend
-    // and acceleration limits. Touch actions retain their original contact timing.
-    if ((!TrainingEnabled() && currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
-        (!trainingPostTouch && currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
+    if ((currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
+        (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap)) {
 
@@ -2061,6 +2031,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
   Vector3 desiredMovement = desiredDirection * desiredVelocityFloat;
 
   float playerHeight = player->GetPlayerData()->GetHeight();
+
   e_FunctionType functionType = e_FunctionType_Movement;
 
   radian rotationSmuggle_ret_tmp = 0;
@@ -2219,6 +2190,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         float decayPow = 1.0f;
         float radiusCheatOffset = 0.0f;
         float radiusFactor = 0.3f * (1.0f - touchFrameAwkwardness);
+
         if (functionType == e_FunctionType_Deflect) { radiusFactor *= 1.8f; radiusCheatOffset += 0.4f; }
 
         if (functionType == e_FunctionType_Sliding) { radiusFactor *= 0.2f; radiusCheatOffset = 0.0f; } // prefer sliding without ball touch

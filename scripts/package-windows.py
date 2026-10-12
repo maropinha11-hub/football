@@ -125,21 +125,18 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
-        "RT mantem a direcao atual, sem virar sozinho para o gol.\n"
-        "A condução mantém a assistência e os passos originais nas viradas.\n"
-        "Movimento normal 10% mais lento; a bola fica um pouco mais a frente\n"
-        "entre os toques sem corrida. RB conserva a velocidade de corrida.\n"
-        + ("Base nativa aprovada (37a5543), com viradas nativas nas tres cameras.\n" if approved_binary is None else
+        + ("Gameplay original do Football: fisica, impulsos e passos nativos.\n"
+           "RT reservado, sem alterar movimento, dominio ou corrida.\n"
+           "Simulacao em tempo real, com passo fisico de 10 ms.\n" if approved_binary is None else "") +
+        ("Nucleo nativo restaurado da origem vi3itor (68159a2).\n" if approved_binary is None else
            "Gameplay nativa original aprovada (37a5543), sem a correcao da puxada.\n") +
-        "RB+RT adianta a bola e mantem o acompanhamento, inclusive nas curvas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
-        "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
-        "X: carga máxima 0,52 s; cerca de 0,25 s já levanta a bola.\n"
-        "LB+X cobertura; RB correr; RT dominio; View reiniciar; Menu pausa;\n"
+        "A passe; Y enfiada; B alto/carrinho; X chute (segure para carregar);\n"
+        "RB correr; View reiniciar; Menu pausa;\n"
         "D-pad exercício; LB+D-pad baixo falta; R3 alterna as três câmeras.\n"
         "D-pad esquerda: bola aérea. Prepare A (passe) ou X (gol) para cabecear.\n"
         "LB+D-pad direita (tecla 6): passe recebido; prepare A/Y/X para jogar de primeira.\n"
-        "Teclado: WASD, setas para olhar, J/I/L/K, Q+K cobertura, Shift/Espaço,\n"
+        "Teclado: WASD, setas para olhar, J/I/L/K, Shift para correr,\n"
         "R, P, 1–6, Tab, Esc. run-controller-test.bat executa testes virtuais.\n"
         "log.txt registra Training::Timing; relação 1.0 = tempo real.\n\n"
         "O pacote contém o executável x64, SDL2, OpenAL, Boost, SQLite e os\n"
@@ -172,31 +169,28 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
     update = artifacts / ("football-windows-gameplay-original.zip" if approved_binary is not None else
-                          "football-windows-viradas-nativas.zip")
+                          "football-windows-original-primeira-pessoa.zip")
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            ("Windows x64 — viradas nativas e primeira pessoa\r\n\r\n" if approved_binary is None else
+            ("Windows x64 — Football original, primeira pessoa e tempo normal\r\n\r\n" if approved_binary is None else
              "Windows x64 — gameplay original com primeira pessoa\r\n\r\n") +
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
             "3. Aceite substituir os arquivos.\r\n"
             "4. Abra run-training.bat.\r\n\r\n"
-            "Restaurada a base 37a5543: camera e controles em primeira pessoa\r\n"
-            "com a gameplay e as animacoes nativas que voce ja havia aprovado.\r\n"
-            "Retirados os ajustes recentes de pe dominante, cadencia e colisao\r\n"
-            "da malha animada. RT volta ao dominio nativo; RB permite correr.\r\n"
-            + ("" if approved_binary is not None else
-               "Corrigida a interferencia das pernas simplificadas do treino\r\n"
-               "na conducao: viradas laterais e para tras usam os toques\r\n"
-               "originais, nas cameras externa e em primeira pessoa.\r\n") +
-            ("" if approved_binary is not None else
-               "Movimento sem corrida 10% mais lento; a bola fica um pouco\r\n"
-               "mais a frente entre conduzidas. Corrida com RB preservada.\r\n") +
+            + ("Restaurada a base aprovada 37a5543.\r\n" if approved_binary is not None else
+             "Restaurados os arquivos originais da fisica da bola e dos\r\n"
+             "impulsos de conducao, dominio, passe e chute (vi3itor 68159a2).\r\n"
+             "Mantidos a camera e os comandos em primeira pessoa aprovados.\r\n"
+             "Retirados os ajustes de velocidade, distancia, perna dominante,\r\n"
+             "toques, colisores extras e interrupcao antecipada dos passos.\r\n"
+             "RB permite correr. RT fica reservado e sem funcao no treino.\r\n"
+             "O tempo do jogo e normal; a simulacao mantem passos de 10 ms.\r\n") +
             "O ZIP inclui training.config para restaurar o modo nativo e a\r\n"
             "primeira pessoa como padrao. Sem novas animacoes nesta restauracao.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")

@@ -123,7 +123,6 @@ class Match {
                           pes3::NativePose& out) const;
     bool IsTrainingFreeKick() const { return trainingExercise == 4; }
     void UpdateTrainingView(IHIDevice *input);
-    void ResolveTrainingBallContacts(const Vector3 &from);
 
     void SetRandomSunParams();
     void RandomizeAdboards(boost::intrusive_ptr<Node> stadiumNode);

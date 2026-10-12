@@ -46,11 +46,13 @@ void HIDKeyboard::Process() {
 }
 
 bool HIDKeyboard::GetButton(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return false;
   boost::mutex::scoped_lock blah(mutex);
   return functionButtonState[buttonFunction];
 }
 
 float HIDKeyboard::GetButtonValue(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return 0.0f;
   boost::mutex::scoped_lock blah(mutex);
   if (functionButtonState[buttonFunction]) return 1.0; else return 0.0;
 }
@@ -61,6 +63,7 @@ void HIDKeyboard::SetButton(e_ButtonFunction buttonFunction, bool state) {
 }
 
 bool HIDKeyboard::GetPreviousButtonState(e_ButtonFunction buttonFunction) {
+  if (TrainingEnabled() && buttonFunction == e_ButtonFunction_Dribble) return false;
   boost::mutex::scoped_lock blah(mutex);
   return previousFunctionButtonState[buttonFunction];
 }

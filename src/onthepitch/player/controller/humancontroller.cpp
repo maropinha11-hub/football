@@ -97,16 +97,13 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
   if (actionMode == 2) {
 
-    const bool trainingShot = TrainingEnabled() && actionButton == e_ButtonFunction_Shot;
-
     if (!hid->GetButton(actionButton) ||
-        (hid->GetButton(actionButton) && gauge_ms >= (trainingShot ? 520 : (TrainingEnabled() ? 1000 : 500))) ||
+        (hid->GetButton(actionButton) && gauge_ms > 500) ||
         (!CastPlayer()->HasPossession() && !match->IsInSetPiece() && actionBufferTime_ms > 0)) {
 
       int baseTime_ms = 60; // substract a little because we can't really press a button shorter than this
       float gaugeFactor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
       gaugeFactor = clamp(gaugeFactor, 0.0f, 1.0f);
-      if (trainingShot) gaugeFactor = training::shotCharge(gauge_ms);
 
       // action button released!
 
@@ -192,8 +189,6 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         if (GetHIDevice()->GetDeviceType() == e_HIDeviceType_Keyboard) command.touchInfo.autoDirectionBias = 1.0f;
         command.touchInfo.desiredDirection = AI_GetShotDirection(CastPlayer(), command.touchInfo.inputDirection, command.touchInfo.autoDirectionBias);
         command.touchInfo.desiredPower = clamp(pow(gaugeFactor, 0.6f), 0.01f, 1.0f);
-        if (TrainingEnabled() && hid->GetButton(e_ButtonFunction_Switch))
-          command.modifier |= e_PlayerCommandModifier_Chip;
 
         commandQueue.push_back(command);
 
@@ -330,12 +325,6 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.desiredVelocityFloat = idleVelocity;
       if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
-      // Keep native interception direction, but do not let its assistance
-      // undo the requested, slightly slower non-sprint pace.
-      if (actionMode != 2 && !hid->GetButton(e_ButtonFunction_Sprint) && inputVelocityFloat > 0.05f)
-        command.desiredVelocityFloat = std::min(command.desiredVelocityFloat,
-            walkVelocity * clamp(GetConfiguration()->GetReal("training_walk_speed_scale", 0.9f), 0.75f, 1.0f) *
-            clamp(hid->GetDirection().GetLength(), 0.0f, 1.0f));
     }
 
 /*
@@ -554,18 +543,9 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     else if (hid->GetButton(e_ButtonFunction_Dribble)) rawInputVelocityFloat = dribbleVelocity;
     else if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Switch) && match->GetDesignatedPossessionPlayer() == CastPlayer()) rawInputVelocityFloat = idleVelocity;
     else rawInputVelocityFloat = walkVelocity;
-    if (TrainingEnabled()) {
-      if (!hid->GetButton(e_ButtonFunction_Sprint) && !hid->GetButton(e_ButtonFunction_Dribble))
-        rawInputVelocityFloat *= clamp(GetConfiguration()->GetReal("training_walk_speed_scale", 0.9f), 0.75f, 1.0f);
-      rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
-    }
+    if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still
-    if (TrainingEnabled() && match->IsFirstPerson() && match->TrainingHasBall()) {
-      const Vector3 ballMovement = match->GetBall()->GetMovement().Get2D();
-      rawInputVelocityFloat = training::turnSpeed(rawInputVelocityFloat,
-          ballMovement.GetNormalized(0).GetDotProduct(rawInputDirection), ballMovement.GetLength());
-    }
   }
 
   if (GetLastSwitchBias() > 0.0f) {
