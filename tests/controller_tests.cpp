@@ -171,6 +171,24 @@ int RunControllerTests() {
     require(training::shotCharge(520) == 1 && training::shotCharge(0) == 0, "Shot charge must saturate at 520 ms and reject negative charge");
     require(training::controlQuality("left_foot") < training::controlQuality("right_foot"), "Weak-foot control must be lower than dominant-foot control");
     require(training::controlQuality("head") == 1, "Foot penalties must not affect headers");
+    training::DribbleCadence cadence;
+    require(cadence.ready(0, Vector3(1, 0, 0)), "First reception must not wait for a dribble interval");
+    cadence.record(1000, Vector3(1, 0, 0), 5, false, false);
+    require(!cadence.ready(1200, Vector3(1, 0, 0)) && !cadence.ready(1549, Vector3(1, 0, 0)) &&
+            cadence.ready(1550, Vector3(1, 0, 0)), "A jogging control touch must leave a real rolling interval");
+    require(!cadence.ready(1279, Vector3(-1, 0, 0)) && cadence.ready(1280, Vector3(-1, 0, 0)),
+            "A deliberate reversal may pull earlier after completing the previous contact");
+    cadence.record(1280, Vector3(-1, 0, 0), 5, false, false);
+    require(!cadence.ready(1500, Vector3(-1, 0, 0)), "A reversed direction must not repeatedly bypass the interval");
+    cadence.reset();
+    require(cadence.ready(1281, Vector3(1, 0, 0)), "Reset and toggle must release a previous dribble interval");
+    const Vector3 supportNormal = Vector3(1, 1, 0).GetNormalized(0);
+    const Vector3 trappedBySupport = training::supportContact(Vector3(-2, 0, 0), supportNormal);
+    require(trappedBySupport.GetLength() <= 2 && std::fabs(trappedBySupport.GetDotProduct(supportNormal)) < 0.0001f,
+            "Support-leg contact must slide/block without adding a second kick");
+    const Vector3 departing(2, 1, 0);
+    require((training::supportContact(departing, supportNormal) - departing).GetLength() < 0.0001f,
+            "A ball departing from the support foot must retain its impulse");
     const Vector3 hip(0, 0, 0.96f), knee(0, -0.12f, 0.54f), ankle(0, 0, 0.1f), target(0.15f, -0.25f, 0.16f);
     const auto pose = training::legPose(hip, knee, ankle, target);
     require((pose.ankle - target).GetLength() < 0.001f, "Reachable foot target must be met");
@@ -190,6 +208,14 @@ int RunControllerTests() {
             "Fast ball must hit capsule before crossing body");
     require(!training::sweep(Vector3(-2, 0.5f, 1), Vector3(2, 0.5f, 1), a, b, 0.3f).hit,
             "Ball outside body silhouette must pass freely");
+    const auto planted = training::movingSweep(Vector3(-2, 0, 1), Vector3(2, 0, 1), a, b, a, b, 0.3f);
+    require(planted.hit && planted.time < 0.5f, "Animated stationary limb must still block a fast ball");
+    const auto swing = training::movingSweep(Vector3(0, 0, 0.2f), Vector3(0, 0, 0.2f),
+        Vector3(-1, 0, 0.1f), Vector3(-1, 0, 0.4f), Vector3(1, 0, 0.1f), Vector3(1, 0, 0.4f), 0.15f);
+    require(swing.hit && swing.time > 0 && swing.time < 0.5f, "A moving foot must not sweep through a still ball");
+    require(!training::movingSweep(Vector3(-1, 0, 0.11f), Vector3(1, 0, 0.11f),
+        Vector3(0, 0, 0.6f), Vector3(0, 0, 0.9f), Vector3(0.1f, 0, 0.6f), Vector3(0.1f, 0, 0.9f), 0.175f).hit,
+        "A lifted swing leg must leave room for a rolling ball underneath");
     const auto overlap = training::sweep(Vector3(0.05f, 0, 1), Vector3(0), a, b, 0.3f);
     require(overlap.hit && overlap.point.coords[0] > 0.29f, "Contact must depenetrate initial overlap");
     const auto cap = training::sweep(Vector3(0, 0, 2), Vector3(0, 0, 1), a, b, 0.3f);

@@ -52,6 +52,28 @@ inline float controlQuality(const std::string &bodypart) {
   return bodypart == "left_foot" || bodypart == "left_lowerleg" ? 0.72f : 1.0f;
 }
 
+// A control contact is followed by a rolling/locomotion phase. Schedule the
+// next real contact, instead of skipping a kick after its animation starts.
+struct DribbleCadence {
+  bool touched = false;
+  unsigned long lastTouch_ms = 0, interval_ms = 550;
+  Vector3 direction;
+  void reset() { touched = false; direction = Vector3(0); }
+  void record(unsigned long now, Vector3 intent, float speed, bool close, bool knockOn) {
+    touched = true; lastTouch_ms = now; direction = intent.Get2D().GetNormalized(0);
+    interval_ms = knockOn ? 580 : (close ? 450 : (speed < 2.0f ? 650 : (speed < 6.0f ? 550 : 480)));
+  }
+  bool ready(unsigned long contact_ms, Vector3 intent) const {
+    if (!touched || contact_ms >= lastTouch_ms + interval_ms) return true;
+    // An actual change of direction can pull the ball earlier, once the
+    // previous contact has completed. Repeated identical taps cannot.
+    return contact_ms >= lastTouch_ms + 280 &&
+           direction.GetDotProduct(intent.Get2D().GetNormalized(0)) < 0.5f;
+  }
+};
+
+struct LegCollision { Vector3 hip, knee, ankle, heel, toe; };
+
 struct View {
   float yaw = 0, headYaw = 0, pitch = -0.12f, movementYaw = 0, bodyYaw = 0;
   float idleLook = 0;
@@ -141,6 +163,35 @@ inline Vector3 rebound(const Vector3 &velocity, const Vector3 &normal, float res
   if (inward >= 0) return velocity;
   const Vector3 tangent = velocity - normal * inward;
   return tangent * 0.82f - normal * inward * restitution;
+}
+// Sample the native animation on the physics thread. Sweep against both
+// moving endpoints; never use render-thread bones or two rigid vertical legs.
+inline Contact movingSweep(const Vector3 &from, const Vector3 &to,
+                           const Vector3 &a0, const Vector3 &b0,
+                           const Vector3 &a1, const Vector3 &b1, float radius) {
+  Contact hit;
+  const Vector3 delta = to - from, da = a1 - a0, db = b1 - b0;
+  const float speedBound = std::max((delta - da).GetLength(), (delta - db).GetLength());
+  float t = 0;
+  for (int step = 0; step < 64 && t <= 1; ++step) {
+    const Vector3 a = a0 + da * t, b = b0 + db * t, p = from + delta * t;
+    const Vector3 nearest = closest(p, a, b), offset = p - nearest;
+    const float distance = offset.GetLength();
+    if (distance <= radius + 0.00005f) {
+      hit.hit = true; hit.time = t;
+      hit.normal = offset.GetNormalized((-(delta - (da + db) * 0.5f)).GetNormalized(Vector3(1, 0, 0)));
+      hit.point = nearest + hit.normal * radius;
+      return hit;
+    }
+    if (speedBound < 0.000001f) break;
+    t += (distance - radius) / speedBound;
+  }
+  return hit;
+}
+inline Vector3 supportContact(const Vector3 &velocity, const Vector3 &normal) {
+  // An unintended contact during ground control blocks/slides the ball.
+  // It is not a second kick powered by the runner's root velocity.
+  return velocity - normal * std::min(0.0f, velocity.GetDotProduct(normal));
 }
 }
 #endif

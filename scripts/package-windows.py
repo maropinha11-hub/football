@@ -108,6 +108,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "A condução mantém a assistência e os passos originais nas viradas.\n"
         "Viradas para tras mantem o impulso de puxar a bola no contato do pe.\n"
         "L3 (clicar o esquerdo) ou G alterna pe dominante/normal; inicia no direito.\n"
+        "No dominante, o pe completa o gesto e a bola rola antes do proximo toque.\n"
+        "Pernas de apoio bloqueiam/desviam a bola sem aplicar um segundo chute.\n"
         "RB+RT adianta a bola e mantém o acompanhamento, inclusive nas curvas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
@@ -148,14 +150,14 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
-    update = artifacts / "football-windows-corrigir-virada.zip"
+    update = artifacts / "football-windows-virada-e-intervalos.zip"
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            "Atualizacao Windows x64 — gameplay nativa, viradas e pe dominante\r\n\r\n"
+            "Atualizacao Windows x64 — viradas, perna de apoio e intervalos\r\n\r\n"
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
@@ -165,6 +167,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "dominante (direito) e normal. No teclado: G. Comeca no dominante.\r\n"
             "O esquerdo continua disponivel se for necessario para alcancar a bola.\r\n"
             "A correcao da virada para tras funciona nos DOIS modos.\r\n"
+            "No dominante, ha um intervalo real entre as conduzidas; RT mantem\r\n"
+            "o dominio mais curto. Viradas podem puxar antes para manter o controle.\r\n"
+            "A puxada contorna a perna de apoio e o contato dela nao da um segundo chute.\r\n"
             "Esta versao utiliza a gameplay e as animacoes nativas da base enviada.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

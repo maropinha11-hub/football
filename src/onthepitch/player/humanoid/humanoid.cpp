@@ -193,7 +193,7 @@ void Humanoid::Process() {
     const bool trainingMovement = TrainingEnabled() && CastPlayer()->GetExternalController() &&
                                   (currentAnim->functionType == e_FunctionType_Movement ||
                                    (match->IsFirstPerson() && currentAnim->functionType == e_FunctionType_BallControl &&
-                                    currentAnim->frameNum > currentAnim->touchFrame + 1));
+                                    currentAnim->frameNum > currentAnim->touchFrame + 5));
     if (( trainingMovement ||
           (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
@@ -438,20 +438,51 @@ void Humanoid::Process() {
           !CastPlayer()->GetExternalController()) return touch;
       auto *human = static_cast<HumanController*>(CastPlayer()->GetExternalController());
       if (human->GetActionMode() == 2) return touch; // preserve a queued pass/shot
-      const Vector3 corrected = training::finishControlTouch(touch, currentBallVec,
-          human->GetDirection(), human->GetFloatVelocity());
+      const Vector3 intent = human->GetDirection().Get2D().GetNormalized(0);
+      Vector3 cutDirection = intent;
+      bool aroundSupport = false;
+      if (human->GetFloatVelocity() > 0.1f && match->GetBall()->Predict(0).coords[2] < 0.45f &&
+          (currentBallVec.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f ||
+           touch.Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f ||
+           (match->GetBall()->Predict(0) - spatialState.position).Get2D().GetNormalized(0).GetDotProduct(intent) < -0.25f)) {
+        // Pull around the planted support foot, rather than launching a
+        // straight reversal through it. This is still a real foot impulse.
+        training::LegCollision legs[2];
+        GetTrainingLegPose(legs);
+        const int active = touchingPart == "right_foot" ? 1 : 0, other = 1 - active;
+        const Vector3 ballPoint = match->GetBall()->Predict(0);
+        const Vector3 end = ballPoint + intent * 0.8f;
+        if (training::sweep(ballPoint, end, legs[other].ankle, legs[other].knee, 0.20f).hit ||
+            training::sweep(ballPoint, end, legs[other].heel, legs[other].toe, 0.19f).hit) {
+          const Vector3 lateral(intent.coords[1], -intent.coords[0], 0);
+          const Vector3 support = (legs[other].heel + legs[other].toe) * 0.5f;
+          const float side = (legs[active].ankle - legs[other].ankle).GetDotProduct(lateral) >= 0 ? 1.0f : -1.0f;
+          const Vector3 waypoint = support + lateral * (side * 0.28f) + intent * 0.20f;
+          const Vector3 delta = (waypoint - ballPoint).Get2D();
+          const float along = std::max(0.2f, delta.GetDotProduct(intent));
+          const float across = training::limit(delta.GetDotProduct(lateral), -along * 0.7f, along * 0.7f);
+          cutDirection = (intent * along + lateral * across).GetNormalized(intent);
+          aroundSupport = true;
+        }
+      }
+      Vector3 corrected = training::finishControlTouch(touch, currentBallVec,
+          cutDirection, human->GetFloatVelocity());
+      if (aroundSupport) {
+        const Vector3 cut = cutDirection * std::min(2.5f, human->GetFloatVelocity());
+        corrected.coords[0] = cut.coords[0]; corrected.coords[1] = cut.coords[1];
+      }
       if ((corrected - touch).GetLength() > 0.001f &&
           GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_PULLBACK t=%lu part=%s before=[%.4f,%.4f] after=[%.4f,%.4f] direction=[%.4f,%.4f]\n",
             match->GetActualTime_ms(), touchingPart.c_str(), touch.coords[0], touch.coords[1],
-            corrected.coords[0], corrected.coords[1], human->GetDirection().coords[0], human->GetDirection().coords[1]);
+            corrected.coords[0], corrected.coords[1], cutDirection.coords[0], cutDirection.coords[1]);
       return corrected;
     };
 
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
 
       match->NotifyTrainingTouch(currentAnim->functionType,
-          (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0);
+          (currentAnim->originatingCommand.modifier & e_PlayerCommandModifier_KnockOn) != 0, touchingPart);
       if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_ACTION_TOUCH t=%lu part=%s function=%d z=%.4f\n", match->GetActualTime_ms(),
             touchingPart.c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2]);
@@ -1237,7 +1268,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     // remaining locomotion without cancelling or duplicating that touch.
     const bool trainingPostTouch = TrainingEnabled() && match->IsFirstPerson() &&
         currentAnim->functionType == e_FunctionType_BallControl &&
-        currentAnim->frameNum > currentAnim->touchFrame + 1;
+        currentAnim->frameNum > currentAnim->touchFrame + 5;
     if (trainingPostTouch && currentAnim->frameNum + minRemainingMovementReQueueFrames >
         currentAnim->anim->GetEffectiveFrameCount()) return false;
 
@@ -2168,6 +2199,15 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
       bool exists = footballExtension->GetTouch(touchIDs[touchNum], animBallPos, animTouchFrame);
       assert(exists);
+
+      const std::string contactPart = anim->GetVariable("touch_bodypart");
+      if (TrainingEnabled() && (functionType == e_FunctionType_BallControl || functionType == e_FunctionType_Trap) &&
+          (contactPart == "left_foot" || contactPart == "right_foot") &&
+          match->GetBall()->Predict(0).coords[2] < 0.6f &&
+          !match->TrainingControlTouchReady(match->GetActualTime_ms() + animTouchFrame * 10, desiredDirection)) {
+        ++touchNum;
+        continue;
+      }
 
       //if (player->GetDebug()) printf("anim: %s, animTouchFrame: %i, touchIDs[touchNum]: %i, touchNum: %i, totalTouches: %i, defaultTouchFrame: %i\n", anim->GetName().c_str(), animTouchFrame, touchIDs[touchNum], touchNum, totalTouches, defaultTouchFrame);
 

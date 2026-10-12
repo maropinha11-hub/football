@@ -114,7 +114,8 @@ class Match {
     void Exit();
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void ProcessTraining();
-    void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
+    void NotifyTrainingTouch(e_FunctionType function, bool knockOn, const std::string &bodypart = "");
+    bool TrainingControlTouchReady(unsigned long contact_ms, const Vector3 &direction) const;
     void ToggleTrainingDominantControl();
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
@@ -275,6 +276,7 @@ class Match {
     unsigned long trainingResetAt_ms = 0;
     unsigned long trainingKnockOnUntil_ms = 0;
     bool trainingDominantControl = true;
+    training::DribbleCadence trainingDribbleCadence;
     unsigned long trainingPaceWall_ms = 0, trainingPaceSim_ms = 0;
     std::atomic<int> trainingCameraMode{2};
     std::unique_ptr<PES3Preview> pes3Preview;

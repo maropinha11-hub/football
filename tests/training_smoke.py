@@ -22,6 +22,11 @@ config = output / "smoke.config"
 # Exercise the shipped defaults, rather than a developer's preserved local preferences.
 config.write_text((Path(__file__).resolve().parents[1] / "config/training.config").read_text() + '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "0"\n')
 environment = os.environ.copy()
+environment["SDL_VIDEODRIVER"] = "x11"
+runtime = output / "xdg-runtime"
+runtime.mkdir(mode=0o700, exist_ok=True)
+environment["XDG_RUNTIME_DIR"] = str(runtime)
+environment["XDG_CACHE_HOME"] = str(output / "cache")
 environment["ALSOFT_DRIVERS"] = "null"
 environment["LIBGL_ALWAYS_SOFTWARE"] = "1"
 # Limit llvmpipe workers to the cloud CPU budget so rendering cannot starve
@@ -203,7 +208,8 @@ try:
     server = subprocess.Popen(["Xvfb", ":91", "-screen", "0", "960x540x24", "-nolisten", "tcp"],
                               env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     deadline = time.monotonic() + 10
-    while not Path("/tmp/.X11-unix/X91").exists():
+    while subprocess.run(["xdpyinfo"], env=environment, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL).returncode:
         if server.poll() is not None:
             raise RuntimeError(server.stderr.read().decode(errors="replace"))
         if time.monotonic() > deadline:
@@ -422,13 +428,18 @@ try:
         back_origin = frames()[-1]
         key("s", True)
         backwards = advance(500)
+        ball_delta = [backwards[-1]["ball"][i] - back_origin["ball"][i] for i in range(2)]
+        pulled = ball_delta[0] * math.cos(body_yaw(back_origin)) + ball_delta[1] * math.sin(body_yaw(back_origin))
+        pivot_angle = abs(angle(backwards[-1]["player_yaw"] - back_origin["player_yaw"]))
+        check("down pulls ball while planting for reversal", pulled < -0.15 and pivot_angle > 0.5,
+              f"First 500 ms ball travel {pulled:.2f} m; body pivot {pivot_angle:.2f} rad")
+        backwards += advance(300)
         ahead, sideways = travel(back_origin, backwards)
-        # A dominant-foot pivot can plant laterally before its pullback. It
-        # still needs useful backwards travel, greater than lateral travel,
-        # within the first half-second; don't require the weaker-foot gait.
+        # Preserve the planted-foot pivot, then verify actual backwards
+        # locomotion; an immediate pelvis slide would hide foot obstruction.
         check("down moves behind the current front", ahead < -0.15 and abs(sideways) < abs(ahead),
-              f"First 500 ms backwards travel {ahead:.2f} m; side {sideways:.2f} m")
-        back_turns = backwards + advance(2200)
+              f"First 800 ms backwards travel {ahead:.2f} m; side {sideways:.2f} m")
+        back_turns = backwards + advance(1900)
         headings = [body_yaw(back_origin)] + [body_yaw(f) for f in back_turns]
         turned = sum(abs(angle(b - a)) for a, b in zip(headings, headings[1:]))
         repeats = [int(t) for t in re.findall(r"TRAINING_STEER_REPEAT t=(\d+)", log_path.read_text())
@@ -436,7 +447,14 @@ try:
         check("held down reverses relative to each new front", turned > 4.7 and len(repeats) >= 1,
               f"Body/camera turned {turned:.2f} rad; {len(repeats)} completed turns requested a new behind while down stayed held")
         check_possession("repeated backward turns retain ball", back_turns)
-        key("w", True); key("s", False)
+        # Switch direction in one event batch, like one analog-stick update.
+        # Two separately acknowledged key calls insert a neutral-input pause
+        # during the pivot and test a different front than the intended one.
+        subprocess.run(["xdotool", "keyup", "--window", windows[-1], "s",
+                        "keydown", "--window", windows[-1], "w"],
+                       env=environment, check=True)
+        held.discard("s"); held.add("w")
+        wait_for(lambda: frames()[-1]["keys"] & (key_bits["w"] | key_bits["s"]) == key_bits["w"])
         wait_for(lambda: frames()[-1]["move"] == [0.0, 1.0])
         back_forward_origin = frames()[-1]
         after_back = advance(1200)

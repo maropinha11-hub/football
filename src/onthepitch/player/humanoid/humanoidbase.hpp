@@ -20,6 +20,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
+namespace training { struct LegCollision; }
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -252,6 +253,7 @@ class HumanoidBase {
     const Anim *GetPreviousAnim() { return previousAnim; }
 
     const NodeMap &GetNodeMap() { return nodeMap; }
+    void GetTrainingLegPose(training::LegCollision *legs, int frameOffset = 0) const;
 
     void Hide() { fullbodyNode->SetPosition(Vector3(1000, 1000, -1000)); hairStyle->SetPosition(Vector3(1000, 1000, -1000)); } // hax ;)
 

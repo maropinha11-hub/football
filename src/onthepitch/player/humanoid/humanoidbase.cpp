@@ -636,6 +636,63 @@ void HumanoidBase::UploadFullbodyModel() {
 }
 */
 
+void HumanoidBase::GetTrainingLegPose(training::LegCollision *legs, int frameOffset) const {
+  // Immutable native bind offsets + native animation channels. Graphics
+  // bones are interpolated on another thread and must not drive physics.
+  const int frame = std::max(0, std::min(currentAnim->frameNum + frameOffset,
+                                       currentAnim->anim->GetFrameCount() - 1));
+  const float scale = player->GetPlayerData()->GetHeight() / defaultPlayerHeight;
+  auto bindRotation = [&](int bone) {
+    const auto &q = pes3NativeReference.rotations[bone];
+    return Quaternion(q[0], q[1], q[2], q[3]);
+  };
+  auto rotation = [&](int bone) {
+    const int parent = pes3::nativeParents[bone];
+    Quaternion q = parent < 0 ? bindRotation(bone) : bindRotation(parent).GetInverse() * bindRotation(bone);
+    Vector3 ignored;
+    currentAnim->anim->GetKeyFrame(pes3::nativeBoneNames[bone], frame, q, ignored, true, false);
+    return q.GetNormalized();
+  };
+  auto offset = [&](int bone) {
+    const auto &p = pes3NativeReference.offsets[bone];
+    return Vector3(p[0], p[1], p[2]) * scale;
+  };
+  auto geometryOffset = [&](Quaternion q, int bone) {
+    auto found = animApplyBuffer.offsets.find(pes3::nativeBoneNames[bone]);
+    if (found == animApplyBuffer.offsets.end()) return q;
+    Quaternion adjustment = found->second.orientation;
+    adjustment.MakeSameNeighborhood(q);
+    return q.GetLerped(found->second.bias, found->second.isRelative ? adjustment * q : adjustment).GetNormalized();
+  };
+  Quaternion base;
+  base.SetAngleAxis(startAngle + currentAnim->rotationSmuggleOffset, Vector3(0, 0, 1));
+  const Quaternion bodyRotation = geometryOffset(base * rotation(0), 0);
+  Vector3 rootTrack(0);
+  Quaternion ignored;
+  currentAnim->anim->GetKeyFrame("player", frame, ignored, rootTrack, false, true);
+  const Vector3 body = spatialState.position + spatialState.movement * (frameOffset * 0.01f) +
+                      offset(0) + Vector3(0, 0, rootTrack.coords[2] * scale);
+  for (int side = 0; side < 2; ++side) {
+    const int thigh = side == 0 ? 7 : 10;
+    const Quaternion thighRotation = bodyRotation * geometryOffset(rotation(thigh), thigh);
+    const Quaternion kneeRotation = thighRotation * geometryOffset(rotation(thigh + 1), thigh + 1);
+    const Quaternion ankleRotation = kneeRotation * geometryOffset(rotation(thigh + 2), thigh + 2);
+    auto &leg = legs[side];
+    leg.hip = body + bodyRotation * offset(thigh);
+    leg.knee = leg.hip + thighRotation * offset(thigh + 1);
+    leg.ankle = leg.knee + kneeRotation * offset(thigh + 2);
+    const auto &minimum = pes3NativeReference.footMin[side];
+    const auto &maximum = pes3NativeReference.footMax[side];
+    const float x = (minimum[0] + maximum[0]) * 0.5f, z = (minimum[2] + maximum[2]) * 0.5f;
+    const Quaternion skinRotation = ankleRotation * bindRotation(thigh + 2).GetInverse();
+    leg.heel = leg.ankle + skinRotation * Vector3(x, maximum[1] - 0.04f, z) * scale;
+    leg.toe = leg.ankle + skinRotation * Vector3(x, minimum[1] + 0.04f, z) * scale;
+    // Authored planting poses may put the sole a few cm below the turf.
+    leg.heel.coords[2] = std::max(0.035f, leg.heel.coords[2]);
+    leg.toe.coords[2] = std::max(0.035f, leg.toe.coords[2]);
+  }
+}
+
 void HumanoidBase::Process() {
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);

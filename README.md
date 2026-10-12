@@ -8,7 +8,7 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e ajustes de chutes e
 colisões no treino. Carreira e partidas online ficam para etapas posteriores.
 
-A [atualização Windows de condução](artifacts/football-windows-corrigir-virada.zip)
+A [atualização Windows de condução](artifacts/football-windows-virada-e-intervalos.zip)
 restaura a base nativa do executável enviado pelo usuário (`37a5543`), corrige
 o impulso da bola no contato do pé ao virar para trás e estabiliza pequenas
 variações do analógico durante essa virada. **L3** (clicar o analógico esquerdo)
@@ -16,6 +16,10 @@ ou **G** alterna a preferência pelo pé dominante direito e a condução normal
 O pé esquerdo continua disponível quando necessário para alcançar a bola;
 a correção da virada funciona nos dois modos. Feche o jogo, extraia a atualização
 dentro da pasta atual, aceite substituir e abra `run-training.bat`.
+O [ajuste dos contatos e intervalos](docs/CONDUCAO-INTERVALOS.md) espaça os
+toques do pé dominante, mantém o domínio curto com RT e faz a puxada
+contornar a perna de apoio. Os colisores das pernas acompanham as poses nativas e os
+contatos de apoio bloqueiam ou desviam a bola sem acrescentar outro chute.
 Esse lançamento usa as animações nativas. O estudo PES só abre por
 `estudar-pes3.bat`/`--pes3-preview`.
 

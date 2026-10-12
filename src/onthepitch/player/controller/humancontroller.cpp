@@ -328,6 +328,19 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
           (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
           match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)
         command.desiredVelocityFloat = idleVelocity;
+      if (match->TrainingHasBall() && match->TrainingDominantControl() && actionMode != 2 && inputVelocityFloat > 0.1f &&
+          (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
+          !match->TrainingControlTouchReady(match->GetActualTime_ms(), inputDirection)) {
+        // During the rolling phase the interception assist must not turn a
+        // close-control/partial-stick request into a faster chase animation.
+        // Once a knock-on rolls beyond close reach, retain the native chase
+        // assistance so a pending cut can reach its next real foot contact.
+        const Vector3 ballMovement = match->GetBall()->GetMovement().Get2D();
+        const bool cutting = ballMovement.GetLength() > 1.0f &&
+            ballMovement.GetNormalized(0).GetDotProduct(inputDirection) < -0.25f;
+        const float ceiling = cutting ? inputVelocityFloat : std::max(dribbleVelocity, inputVelocityFloat);
+        command.desiredVelocityFloat = std::min(command.desiredVelocityFloat, ceiling);
+      }
       if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
     }
