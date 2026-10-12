@@ -50,7 +50,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingView.reset(std::atan2(direction.coords[1], direction.coords[0]));
   trainingEyeInitialized = false;
   const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta", "Passe recebido"};
-  SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | F2: trazer bola", 4000);
+  SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | L3/G: pe dominante", 4000);
   printf("TRAINING_RESET exercise=%d\n", exercise);
   fflush(stdout);
 }
@@ -61,6 +61,14 @@ void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
   // ordinary control touch, and resets release it immediately.
   trainingKnockOnUntil_ms = knockOn &&
       (function == e_FunctionType_BallControl || function == e_FunctionType_Trap) ? actualTime_ms + 1600 : 0;
+}
+
+void Match::ToggleTrainingDominantControl() {
+  trainingDominantControl = !trainingDominantControl;
+  SpamMessage(trainingDominantControl ? "Conducao: pe dominante (direito) | L3/G: alternar" :
+      "Conducao: normal | L3/G: alternar", 4000);
+  if (GetConfiguration()->GetBool("training_telemetry", false))
+    printf("TRAINING_CONTROL_MODE dominant=%d\n", trainingDominantControl ? 1 : 0);
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
@@ -163,6 +171,7 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
+  if (keyOnce(SDLK_g)) ToggleTrainingDominantControl();
   if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
@@ -204,12 +213,14 @@ void Match::ProcessTraining() {
     int slot = static_cast<HIDGamepad*>(input)->GetGamepadID();
     const SDL_GameControllerButton shortcuts[] = {SDL_CONTROLLER_BUTTON_DPAD_UP,
         SDL_CONTROLLER_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK};
-    for (int i = 0; i < 5; ++i) {
+        SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK,
+        SDL_CONTROLLER_BUTTON_LEFTSTICK};
+    for (int i = 0; i < 6; ++i) {
       unsigned int mask = 1u << (i + 2);
       if (events.GetControllerButton(slot, shortcuts[i])) buttons |= mask;
       if ((buttons & mask) && !(trainingPreviousButtons & mask)) {
         if (i == 4) trainingCameraMode = (trainingCameraMode + 1) % 3;
+        else if (i == 5) ToggleTrainingDominantControl();
         else ResetTraining(input->GetButton(e_ButtonFunction_Switch) ?
                            (i == 2 ? 4 : (i == 1 ? 5 : i)) : i);
       }
@@ -302,13 +313,13 @@ void Match::ProcessTraining() {
       printf("TRAINING_FRAME {\"t\":%lu,\"exercise\":%d,\"player\":[%.4f,%.4f,%.4f],"
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
-             "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
+             "\"camera\":%d,\"with_ball\":%d,\"dominant_control\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
              "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f,\"wall_ms\":%lu}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
              designatedPossessionPlayer->GetFrameNum(), trainingController, trainingGoals,
-             trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingView.yaw,
+             trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingDominantControl ? 1 : 0, trainingView.yaw,
              trainingView.headYaw, trainingView.pitch, trainingContacts, lookActive ? 1 : 0,
              input->GetDirection().GetLength() > 0.001f ? 1 : 0,
              input->GetButton(e_ButtonFunction_Shot) ? 1 : 0,

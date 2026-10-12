@@ -377,10 +377,13 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   possessionSideHistory = new ValueHistory<float>(6000);
   if (TrainingEnabled()) {
     trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
+    trainingDominantControl = GetConfiguration()->GetBool("training_dominant_control", true);
     SetMatchPhase(e_MatchPhase_1stHalf);
     ResetTraining(0);
-    pes3Preview.reset(new PES3Preview(dynamicNode));
-    if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);
+    if (GetConfiguration()->GetBool("pes3_preview",false)) {
+      pes3Preview.reset(new PES3Preview(dynamicNode));
+      SpamMessage(pes3Preview->toggle(),12000);
+    }
   }
 
   Log(e_Notice, "Match", "Match", "Done creating match!");
@@ -1156,11 +1159,6 @@ void Match::Process() {
 bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                             pes3::NativePose& out) const {
   return pes3Preview && actor==designatedPossessionPlayer && pes3Preview->bodyPose(reference,out);
-}
-bool Match::PES3LiveBodyPose(const PlayerBase* actor,Animation* animation,int frame,int touchFrame,int function,
-                           const pes3::NativeBind& reference,pes3::NativePose& out) {
-  return pes3Preview && actor==designatedPossessionPlayer &&
-    pes3Preview->livePose(animation,frame,touchFrame,function,reference,out);
 }
 
 void Match::PreparePutBuffers() {

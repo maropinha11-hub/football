@@ -154,8 +154,6 @@ struct AnimApplyBuffer {
     trainingTouchBlend = src.trainingTouchBlend;
     trainingTouchTarget = src.trainingTouchTarget;
     trainingTouchLeft = src.trainingTouchLeft;
-    pes3Live = src.pes3Live;
-    pes3LivePose = src.pes3LivePose;
   }
   Animation *anim;
   int frameNum;
@@ -169,8 +167,6 @@ struct AnimApplyBuffer {
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
-  bool pes3Live = false;
-  pes3::NativePose pes3LivePose{};
 };
 
 struct TemporalHumanoidNode {
@@ -331,7 +327,6 @@ class HumanoidBase {
     NodeMap nodeMap;
     pes3::NativeBind pes3NativeReference{};
     bool pes3StudyWasApplied = false;
-    bool pes3LiveWasApplied = false;
     float pes3RootCorrection = 0;
 
     AnimApplyBuffer animApplyBuffer;

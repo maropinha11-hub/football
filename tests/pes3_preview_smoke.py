@@ -49,15 +49,6 @@ def key(name,down):
     subprocess.run(['xdotool','keydown' if down else 'keyup','--window',window,name],env=environment,check=True)
     if down:held.add(name)
     else:held.discard(name)
-    # Match the real HID acknowledgement. Otherwise a short down/up pair
-    # between slow software-rendered frames can vanish before simulation.
-    bits={'w':0,'j':4,'i':5,'l':6,'k':7,'Shift_L':8,'space':9}
-    if name in bits and game and game.poll() is None:
-        mask=1<<bits[name]
-        def acknowledged():
-            entries=re.findall(r'^TRAINING_FRAME (.*)$',log.read_text(errors='replace'),re.M)
-            return entries and (json.loads(entries[-1])['keys']&mask)==(mask if down else 0)
-        wait(acknowledged)
 def tap(name):
     key(name,True);time.sleep(.12);key(name,False);time.sleep(.12)
 def check(name,condition,evidence):
@@ -150,10 +141,7 @@ try:
     check('actual foot vertices stay above the pitch',all(math.isfinite(float(z))and float(z)>=.007 for _,_,_,z,_ in skin),
           min(float(z)for _,_,_,z,_ in skin))
     # Holding a paused pose must not accumulate the pelvis height correction.
-    count=len(skin)
-    # Verify several rendered snapshots rather than assuming software OpenGL
-    # delivers at least three frames during a fixed half-second on cloud CPUs.
-    wait(lambda:log.read_text().count('PES3_BODY_SKIN ')>=count+4,seconds=5)
+    count=len(skin);time.sleep(.5)
     paused=re.findall(r'PES3_BODY_SKIN vertices=(\d+) invalid=(\d+) rigid_error=([-\d.]+) foot_min_z=([-\d.]+) radius=([-\d.]+)',log.read_text())[count:]
     check('paused body retains stable ground support',len(paused)>2 and
           max(float(s[3])for s in paused)-min(float(s[3])for s in paused)<.00001,len(paused))

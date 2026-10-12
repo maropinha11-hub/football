@@ -33,6 +33,20 @@ inline float shotCharge(int held_ms) { return limit((held_ms - 40) / 480.0f, 0, 
 inline float turnSpeed(float requested, float ballAlignment, float ballSpeed) {
   return ballSpeed > 1.0f && ballAlignment < -0.25f ? std::min(requested, 1.8f) : requested;
 }
+// Apply the cut at the accepted foot contact, after reception/error blends.
+// Otherwise old momentum can send the ball forward after a backwards touch.
+inline Vector3 finishControlTouch(Vector3 touch, const Vector3 &oldBall,
+                                 Vector3 direction, float speed) {
+  direction = direction.Get2D().GetNormalized(0);
+  if (speed > 0.1f && direction.GetLength() > 0.5f &&
+      (oldBall.Get2D().GetNormalized(0).GetDotProduct(direction) < -0.25f ||
+       touch.Get2D().GetNormalized(0).GetDotProduct(direction) < -0.25f)) {
+    const Vector3 cut = direction * std::min(2.5f, speed);
+    touch.coords[0] = cut.coords[0];
+    touch.coords[1] = cut.coords[1];
+  }
+  return touch;
+}
 // Baseline training player: right-footed, with a useful but less precise left foot.
 inline float controlQuality(const std::string &bodypart) {
   return bodypart == "left_foot" || bodypart == "left_lowerleg" ? 0.72f : 1.0f;

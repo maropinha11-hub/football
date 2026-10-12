@@ -8,6 +8,17 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e ajustes de chutes e
 colisões no treino. Carreira e partidas online ficam para etapas posteriores.
 
+A [atualização Windows de condução](artifacts/football-windows-corrigir-virada.zip)
+restaura a base nativa do executável enviado pelo usuário (`37a5543`), corrige
+o impulso da bola no contato do pé ao virar para trás e estabiliza pequenas
+variações do analógico durante essa virada. **L3** (clicar o analógico esquerdo)
+ou **G** alterna a preferência pelo pé dominante direito e a condução normal.
+O pé esquerdo continua disponível quando necessário para alcançar a bola;
+a correção da virada funciona nos dois modos. Feche o jogo, extraia a atualização
+dentro da pasta atual, aceite substituir e abra `run-training.bat`.
+Esse lançamento usa as animações nativas. O estudo PES só abre por
+`estudar-pes3.bat`/`--pes3-preview`.
+
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o
 direito olha ao redor sem alterar a direção do movimento. Após virar, empurre
@@ -27,7 +38,7 @@ O [estudo PES3 dentro do treino](docs/PES3-ANIMACOES-NO-TREINO.md) reproduz os
 1.105 clips recebidos em um esqueleto de 19 ossos ao lado do jogador. Na versão
 Windows, use `importar-pes3.bat` com seu `fpsoccer-pes-nucleo-v14.zip`, depois
 `estudar-pes3.bat`. Há pausa, avanço de fase e troca de clip. A ligação definitiva
-ao seletor original e aos contatos PES ainda precisa ser recuperada;
+à malha, a seleção completa de ações e os contatos PES ainda precisam ser integrados;
 `run-training.bat` mantém a gameplay nativa aprovada.
 
 O [teste de poses na malha nativa](docs/PES3-CORPO-NATIVO.md), ativado com V
@@ -35,15 +46,7 @@ no estudo, alinha os membros usando a pose reta da malha e as direções dos
 segmentos PES, conserva os comprimentos e corrige o apoio visual dos pés.
 Retomar os comandos restaura as animações nativas. A câmera externa aproxima
 o corpo durante a inspeção. A seleção automática das jogadas PES e seus
-contatos originais continuam pendentes.
-
-A [gameplay híbrida intermediária](docs/PES3-GAMEPLAY-HIBRIDA.md) usa as poses
-PES automaticamente nas jogadas nativas, com seleção por trajetória, pé e
-instante do contato, transições e preservação do alcance no toque. Para jogar,
-extraia a [atualização Windows](artifacts/football-windows-gameplay-pes3-update.zip)
-**dentro da pasta instalada**, substitua os arquivos e abra **treinar-pes3.bat**.
-Essa integração mantém os controles e a física aprovados; a recuperação do
-seletor original do PES segue como pesquisa independente.
+contatos continuam pendentes.
 
 A [atualização Windows de orientação](artifacts/football-windows-corrigir-orientacao.zip)
 permite substituir apenas `gameplayfootball.exe` na instalação existente.
@@ -54,7 +57,7 @@ O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)
 permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia
 o ZIP e abra `abrir-laboratorio.html` com Edge ou Chrome. É uma ferramenta de
-pesquisa; a seleção original das jogadas e a física PES continuam pendentes.
+pesquisa; a substituição das animações do jogador e da física continua pendente.
 
 O [processo de recuperação do código PES 3](docs/PES3-ACTIONS.md) acrescenta
 um mapa automático de referências para 506 clips e reescritas verificadas

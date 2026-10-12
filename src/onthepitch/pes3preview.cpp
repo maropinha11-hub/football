@@ -4,11 +4,9 @@
 #include "managers/resourcemanagerpool.hpp"
 #include "base/geometry/trianglemeshutils.hpp"
 #include "../pes3/pes_skeleton_bind_bits.h"
-#include "utils/animation.hpp"
 #include <cstdio>
 #include <memory>
 #include <sstream>
-#include <chrono>
 
 using namespace blunted;
 namespace {
@@ -92,8 +90,7 @@ PES3Preview::PES3Preview(boost::intrusive_ptr<Node> target) {
   std::array<Vector3,19> points;
   for (unsigned i=0;i<19;++i) {
     const auto& p=pose.rig.bones[i].composed_translation;
-    const auto converted=pes3::sourcePointToNative({{p[0],p[1],p[2]}});
-    points[i]=Vector3(converted[0],converted[1],converted[2])*displayScale;
+    points[i]=Vector3(p[0],p[2],-p[1])*displayScale;
   }
   // Initialize a complete indexed mesh before attaching its renderer. The
   // legacy geometry interpreter expects the initial index/material topology.
@@ -130,104 +127,6 @@ bool PES3Preview::bodyPose(const pes3::NativeBind& reference,pes3::NativePose& o
   pes3::SourcePoints points;
   for(unsigned i=0;i<19;++i)for(unsigned a=0;a<3;++a)points[i][a]=fetched.points[i].coords[a];
   return pes3::retargetSkeleton(fetched.rotations,referenceRotations,points,referencePoints,reference,out);
-}
-bool PES3Preview::livePose(Animation* animation,int frame,int touchFrame,int function,
-                         const pes3::NativeBind& reference,pes3::NativePose& out) {
-  if(!GetConfiguration()->GetBool("pes3_live",false)||!animation||studyingBody())return false;
-  if(!liveInitialized) {
-    const auto start=std::chrono::steady_clock::now();
-    liveInitialized=true;liveAvailable=matcher.initialize(bank,reference);
-    const double elapsed=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count();
-    printf("PES3_LIVE ready=%d candidates=%u policy=hybrid_native_actions init_ms=%.3f\n",liveAvailable?1:0,matcher.candidates(),elapsed);
-  }
-  if(!liveAvailable)return false;
-  const int last=std::max(1,animation->GetFrameCount()-1);
-  const std::string part=animation->GetVariable("touch_bodypart");
-  const int bone=touchFrame<0 ? -1 : part=="left_foot"?9:part=="right_foot"?12:part=="head"?2:-1;
-  const float contact=bone<0 ? -1.f : clamp(float(touchFrame)/last,0.f,1.f);
-  auto nativePose=[&](int sample,pes3::NativePose& pose) {
-    Quaternion q;Vector3 p;
-    // GetKeyFrame's bool reports an exact stored key, not interpolation
-    // success. Read existing tracks directly so every native frame is used.
-    const auto& tracks=animation->GetNodeAnimations();
-    auto track=[&](const std::string& name) -> const NodeAnimation* {
-      for(const auto* value:tracks)if(value->nodeName==name&&!value->animation.empty())return value;
-      return nullptr;
-    };
-    const auto* rootTrack=track("player");if(!rootTrack)return false;
-    animation->GetInterpolatedValues(rootTrack->animation,sample,q,p,false,true);
-    pose.rootHeight=reference.offsets[0][2]+p.coords[2];
-    for(unsigned i=0;i<13;++i) {
-      if(const auto* nodeTrack=track(pes3::nativeBoneNames[i])) {
-        animation->GetInterpolatedValues(nodeTrack->animation,sample,q,p,true,false);
-        pose.local[i]={{q.elements[0],q.elements[1],q.elements[2],q.elements[3]}};
-      } else {
-        const int parent=pes3::nativeParents[i];
-        pose.local[i]=parent<0?reference.rotations[i]:pes3::productRotation(
-          pes3::inverseRotation(reference.rotations[parent]),reference.rotations[i]);
-      }
-    }
-    return pes3::rebuildPose(reference,pose,false);
-  };
-  const LiveKey key(animation,touchFrame,bone);
-  auto found=liveChoices.find(key);
-  if(found==liveChoices.end()) {
-    pes3::MotionRequest request;request.contact=contact;request.contactBone=bone;
-    for(unsigned i=0;i<pes3::trajectorySamples;++i)
-      if(!nativePose(std::lround(float(last)*i/(pes3::trajectorySamples-1)),request.poses[i]))return false;
-    const auto start=std::chrono::steady_clock::now();
-    found=liveChoices.emplace(key,matcher.choose(request)).first;
-    if(GetConfiguration()->GetBool("training_telemetry",false))
-      printf("PES3_LIVE_CACHE entries=%u matching_ms=%.3f\n",unsigned(liveChoices.size()),
-        std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count());
-  }
-  const auto& choice=found->second;
-  const bool changed=key!=lastLiveKey||frame<lastLiveFrame;
-  if(changed) {
-    transitionStart=frame;transitionPose=previousLivePose;transitionActive=haveLivePose;
-    if(GetConfiguration()->GetBool("training_telemetry",false))
-      printf("PES3_LIVE_SELECT function=%d clip=%u accepted=%d error=%.6f foot=%d touch=%d source_contact=%.6f mirrored=%d\n",
-        function,choice.clip,choice.accepted?1:0,choice.error,bone,touchFrame,choice.sourceContact,choice.mirrored?1:0);
-  }
-  lastLiveKey=key;lastLiveFrame=frame;
-  pes3::NativePose native,source,result;
-  if(!nativePose(frame,native)||!matcher.sample(choice,float(frame)/last,contact,source)) {
-    haveLivePose=false;return false;
-  }
-  // Layer source movement over the native gesture. Around an actual native
-  // contact, preserve its contacting chain and vertical jump. This retains
-  // the working foot/head reach without inventing PES contact metadata.
-  float nearContact=0;
-  if(bone>=0)nearContact=clamp(1.f-std::fabs(float(frame-touchFrame))/8.f,0.f,1.f);
-  const float sourceWeight=.85f;
-  if(!pes3::blendPose(reference,native,source,sourceWeight,result))return false;
-  if(nearContact>0) {
-    const float weight=nearContact*nearContact*(3-2*nearContact);
-    if(bone==2) {
-      if(!pes3::blendPose(reference,result,native,weight,result))return false;
-    } else {
-      const unsigned hip=bone==9?7:10;
-      pes3::NativePose corrected;
-      if(!pes3::blendPose(reference,result,native,weight,corrected))return false;
-      for(unsigned i=hip;i<=hip+2;++i)result.local[i]=corrected.local[i];
-      result.rootHeight=corrected.rootHeight;
-      if(!pes3::rebuildPose(reference,result,true))return false;
-    }
-  }
-  if(transitionActive && frame-transitionStart<12 && nearContact<.5f) {
-    const float t=clamp(float(frame-transitionStart)/12.f,0.f,1.f);
-    if(!pes3::blendPose(reference,transitionPose,result,t*t*(3-2*t),result))return false;
-  }
-  if(GetConfiguration()->GetBool("training_telemetry",false)&&(frame%5==0||frame==touchFrame))
-    printf("PES3_LIVE_FRAME function=%d clip=%u native_frame=%d touch=%d phase=%.6f contact_blend=%.6f root_z=%.6f\n",
-      function,choice.clip,frame,touchFrame,
-      pes3::warpPhase(float(frame)/last,contact,choice.sourceContact)*bank.duration(choice.clip),nearContact,result.rootHeight);
-  if(frame==touchFrame&&GetConfiguration()->GetBool("training_telemetry",false))
-    printf("PES3_LIVE_CONTACT function=%d clip=%u native_frame=%d touch=%d phase=%.6f expected=%.6f bone=%d\n",
-      function,choice.clip,frame,touchFrame,
-      pes3::warpPhase(float(frame)/last,contact,choice.sourceContact)*bank.duration(choice.clip),
-      choice.sourceContact*bank.duration(choice.clip),bone);
-  previousLivePose=result;haveLivePose=true;out=result;return true;
 }
 std::string PES3Preview::select(int offset) {
   if (visible && geometry) {

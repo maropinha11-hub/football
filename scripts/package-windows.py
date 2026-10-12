@@ -60,15 +60,6 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             encoding="ascii", newline="",
         )
 
-    (stage / "treinar-pes3.bat").write_text(
-        '@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
-        'if not exist "pes3\\pes_animation_tracks.fpsa" (\r\n'
-        '  echo Animacoes PES3 ausentes nesta pasta. Execute importar-pes3.bat primeiro.\r\n'
-        '  pause\r\n  exit /b 1\r\n)\r\n'
-        'gameplayfootball.exe --config training.config --training --pes3-live %*\r\n'
-        'if errorlevel 1 pause\r\n',encoding="ascii",newline="",
-    )
-
     # vcpkg's applocal deployment already identifies the direct DLLs.  Copying
     # every release DLL from the triplet also covers optional image/font/audio
     # codecs and Boost's transitive runtime libraries.
@@ -115,6 +106,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
         "RT mantém a direção atual, sem virar sozinho para o gol.\n"
         "A condução mantém a assistência e os passos originais nas viradas.\n"
+        "Viradas para tras mantem o impulso de puxar a bola no contato do pe.\n"
+        "L3 (clicar o esquerdo) ou G alterna pe dominante/normal; inicia no direito.\n"
         "RB+RT adianta a bola e mantém o acompanhamento, inclusive nas curvas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
@@ -138,12 +131,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Analogico esquerdo, corrida, dominio, passe ou chute restauram a animacao\n"
         "nativa automaticamente. V tambem remove a pose; R3/Tab muda a camera.\n"
         "A camera externa aproxima o corpo durante V para conferir a animacao.\n"
-        "Para jogar com a integracao hibrida, execute treinar-pes3.bat.\n"
-        "O seletor compara poses de todo o banco e escolhe o movimento compativel\n"
-        "com a jogada, pe e contato definidos pelo Football. As fases acompanham\n"
-        "o tempo da jogada nativa, com transicoes entre movimentos e preservacao\n"
-        "do alcance do pe/cabeca no toque. As animacoes nativas cobrem movimentos\n"
-        "sem candidato compativel. Isso nao e o seletor original do PES.\n"
+        "Essa adaptacao nao escolhe as animacoes PES das jogadas nem seus contatos.\n"
         "O ritmo de estudo e 60 unidades de fase por segundo, ajustavel na config\n"
         "com pes3_preview_units_per_second. Nao e uma medicao da cadencia do PES.\n"
         "Nesse teste, comandos, jogadas, contatos e fisica continuam nativos.\n\n"
@@ -159,25 +147,24 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             if path.is_file():
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
-    # Existing players already have the DLLs, media and their local PES bank.
-    # A small executable update avoids asking them to move imported folders.
-    update = artifacts / "football-windows-gameplay-pes3-update.zip"
+    # The approved native installation already has its DLLs and game media.
+    update = artifacts / "football-windows-corrigir-virada.zip"
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
-        output.write(stage / "treinar-pes3.bat","treinar-pes3.bat")
+        output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            "Atualizacao Windows x64 — gameplay hibrida PES3\r\n\r\n"
-            "Feche o jogo. Extraia TODO este ZIP DENTRO da pasta do jogo que voce\r\n"
-            "ja usa, onde ficam estudar-pes3.bat e gameplayfootball.exe. Aceite\r\n"
-            "Substituir os arquivos. Abra treinar-pes3.bat para jogar.\r\n"
-            "R3/Tab muda a camera. Os controles de treino continuam iguais.\r\n\r\n"
-            "Esta atualizacao usa as DLLs, midia e animacoes ja instaladas na sua\r\n"
-            "pasta atual. A versao completa continua disponivel no repositorio:\r\n"
-            "https://github.com/maropinha11-hub/football\r\n"
-            "Agora as poses PES sao escolhidas automaticamente por compatibilidade\r\n"
-            "com as jogadas nativas. Acoes, contatos, controles e fisica da bola\r\n"
-            "continuam conduzidos pelo Football. E a integracao hibrida intermediaria,\r\n"
-            "nao uma decompilacao completa da gameplay ou do seletor do PES.\r\n")
+            "Atualizacao Windows x64 — gameplay nativa, viradas e pe dominante\r\n\r\n"
+            "1. Feche o jogo.\r\n"
+            "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
+            "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
+            "3. Aceite substituir os arquivos.\r\n"
+            "4. Abra run-training.bat.\r\n\r\n"
+            "L3: clique o analogico esquerdo para alternar conducao com o pe\r\n"
+            "dominante (direito) e normal. No teclado: G. Comeca no dominante.\r\n"
+            "O esquerdo continua disponivel se for necessario para alcancar a bola.\r\n"
+            "A correcao da virada para tras funciona nos DOIS modos.\r\n"
+            "Esta versao utiliza a gameplay e as animacoes nativas da base enviada.\r\n"
+            "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

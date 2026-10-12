@@ -474,7 +474,7 @@ bool HumanoidBase::NeedsModelUpdate() {
 }
 
 void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
-  const bool studyTelemetry=!updateSrc && (pes3StudyWasApplied||pes3LiveWasApplied) && GetConfiguration()->GetBool("training_telemetry",false);
+  const bool studyTelemetry=!updateSrc && pes3StudyWasApplied && GetConfiguration()->GetBool("training_telemetry",false);
   float studyRigidError=0,studyFootMinimum=100,studyRadius=0;
   unsigned studyVertexCount=0,studyInvalidCount=0;
 
@@ -790,10 +790,6 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
 
   buf_animApplyBuffer = animApplyBuffer;
   buf_animApplyBuffer.snapshotTime_ms = snapshotTime_ms;
-  // Source sampling and matching run on the simulation thread. Rendering
-  // receives an immutable pose with the same native action/contact snapshot.
-  buf_animApplyBuffer.pes3Live=match->PES3LiveBodyPose(player,currentAnim->anim,currentAnim->frameNum,
-    currentAnim->touchFrame,int(currentAnim->functionType),pes3NativeReference,buf_animApplyBuffer.pes3LivePose);
   buf_animApplyBuffer.trainingTouchBlend = 0;
   if (TrainingEnabled() && match->GetDesignatedPossessionPlayer() == player && currentAnim->touchFrame >= 0) {
     const std::string part = currentAnim->anim->GetVariable("touch_bodypart");
@@ -868,14 +864,11 @@ void HumanoidBase::Put() {
 
   //printf("anim ptr: %i\n", fetchedbuf_animApplyBuffer.anim);
   //printf("nodemap size: %i\n", nodeMap.size());
-  // Study and live visual layers share the tested anatomical adapter. Actor
-  // movement, skin proportions, gameplay events and physics remain native.
+  // Explicit study override only. Actor movement, joint offsets, proportions,
+  // skin weights, gameplay events and physics remain native.
   pes3::NativePose studyPose;
   const bool studyApplied=match->PES3StudyBodyPose(player,pes3NativeReference,studyPose);
-  const bool liveApplied=!studyApplied && fetchedbuf_animApplyBuffer.pes3Live;
-  const bool sourceApplied=studyApplied||liveApplied;
-  if(liveApplied)studyPose=fetchedbuf_animApplyBuffer.pes3LivePose;
-  const bool restoreNative=(pes3StudyWasApplied||pes3LiveWasApplied) && !sourceApplied;
+  const bool restoreNative=pes3StudyWasApplied && !studyApplied;
   if (restoreNative) {
     movementHistory.clear();
     for (auto& node:buf_TemporalHumanoidNodes) { node.position.Clear(); node.orientation.Clear(); }
@@ -886,23 +879,13 @@ void HumanoidBase::Put() {
     fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets,
     &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false);
   pes3StudyWasApplied=studyApplied;
-  pes3LiveWasApplied=liveApplied;
-  if (sourceApplied) {
+  if (studyApplied) {
     Quaternion facing;
     facing.SetAngleAxis(fetchedbuf_animApplyBuffer.orientation,Vector3(0,0,1));
     for (unsigned i=0;i<13;++i) {
       const auto& q=studyPose.local[i];
-      Quaternion local(q[0],q[1],q[2],q[3]);
-      if(i==0)local=facing*local;
-      // Keep native look/aim offsets in live gameplay, including right-stick
-      // head movement. Manual study remains a faithful fetched pose.
-      const auto offset=fetchedbuf_animApplyBuffer.offsets.find(pes3::nativeBoneNames[i]);
-      if(liveApplied&&offset!=fetchedbuf_animApplyBuffer.offsets.end()) {
-        Quaternion target=offset->second.isRelative?offset->second.orientation*local:offset->second.orientation;
-        target.MakeSameNeighborhood(local);
-        local=local.GetLerped(offset->second.bias,target).GetNormalized();
-      }
-      nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(local,false);
+      const Quaternion local(q[0],q[1],q[2],q[3]);
+      nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(i==0 ? facing*local : local,false);
     }
     auto body=nodeMap.at("body");
     // The native player node itself carries the animation's vertical offset
@@ -915,9 +898,6 @@ void HumanoidBase::Put() {
   }
 
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
-  if(liveApplied&&GetConfiguration()->GetBool("training_telemetry",false))
-    printf("PES3_LIVE_APPLY frame=%d root_z=%.6f head_z=%.6f\n",fetchedbuf_animApplyBuffer.frameNum,
-      nodeMap.at("body")->GetDerivedPosition().coords[2],nodeMap.at("neck")->GetDerivedPosition().coords[2]);
   if (studyApplied && GetConfiguration()->GetBool("training_telemetry",false)) {
     const auto& q=studyPose.local[8];
     const auto left=nodeMap.at("left_ankle")->GetDerivedPosition();
@@ -990,26 +970,6 @@ void HumanoidBase::Put() {
     }
   }
 
-  if(liveApplied) {
-    // Native aim offsets and contact IK can change support after retargeting.
-    // Solve the final foot volumes, not just the pre-contact source pose.
-    float minimum=1000;
-    for(unsigned foot=0;foot<2;++foot) {
-      const auto ankle=nodeMap.at(foot?"right_ankle":"left_ankle");
-      for(unsigned corner=0;corner<8;++corner) {
-        Vector3 point;
-        for(unsigned axis=0;axis<3;++axis)point.coords[axis]=(corner&(1u<<axis))?
-          pes3NativeReference.footMax[foot][axis]:pes3NativeReference.footMin[foot][axis];
-        minimum=std::min(minimum,(ankle->GetDerivedPosition()+ankle->GetDerivedRotation()*point).coords[2]);
-      }
-    }
-    const float lift=std::max(0.f,.008f-minimum);
-    if(lift>0) {
-      auto body=nodeMap.at("body");body->SetPosition(body->GetPosition()+Vector3(0,0,lift),false);
-      pes3RootCorrection+=lift;humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
-    }
-  }
-
   // thus; read out the current values we've just set, insert them in the temporal smoother, and get the historic spatial data instead (GetValue).
   for (unsigned int i = 0; i < buf_TemporalHumanoidNodes.size(); i++) {
     // save the non-historic version in cachedNode
@@ -1023,7 +983,7 @@ void HumanoidBase::Put() {
     // The source graph and the body must use the same fetched pose. Native
     // smoothing can blend a new limb rotation with an old pelvis height,
     // making correctly supported feet penetrate the pitch or drift apart.
-    if(!sourceApplied) {
+    if(!studyApplied) {
       buf_TemporalHumanoidNodes.at(i).actualNode->SetPosition(buf_TemporalHumanoidNodes.at(i).position.GetValue(match->GetPreviousPutTime_ms()), false);
       buf_TemporalHumanoidNodes.at(i).actualNode->SetRotation(buf_TemporalHumanoidNodes.at(i).orientation.GetValue(match->GetPreviousPutTime_ms()), false);
     }

@@ -433,6 +433,21 @@ void Humanoid::Process() {
     bumpyRideBias = curve(bumpyRideBias, 0.5f);
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
+    auto finishTrainingControl = [&](const Vector3 &touch) {
+      if (!trainingFoot || !match->IsFirstPerson() || !match->TrainingHasBall() ||
+          !CastPlayer()->GetExternalController()) return touch;
+      auto *human = static_cast<HumanController*>(CastPlayer()->GetExternalController());
+      if (human->GetActionMode() == 2) return touch; // preserve a queued pass/shot
+      const Vector3 corrected = training::finishControlTouch(touch, currentBallVec,
+          human->GetDirection(), human->GetFloatVelocity());
+      if ((corrected - touch).GetLength() > 0.001f &&
+          GetConfiguration()->GetBool("training_telemetry", false))
+        printf("TRAINING_PULLBACK t=%lu part=%s before=[%.4f,%.4f] after=[%.4f,%.4f] direction=[%.4f,%.4f]\n",
+            match->GetActualTime_ms(), touchingPart.c_str(), touch.coords[0], touch.coords[1],
+            corrected.coords[0], corrected.coords[1], human->GetDirection().coords[0], human->GetDirection().coords[1]);
+      return corrected;
+    };
+
     if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
 
       match->NotifyTrainingTouch(currentAnim->functionType,
@@ -462,6 +477,7 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (trap): %f\n", bumpyRideBias);
 
+        touchVec = finishTrainingControl(touchVec);
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.5f * (1.0f - bumpyRideBias));
 
@@ -480,6 +496,7 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (ballcontrol): %f\n", bumpyRideBias);
 
+        touchVec = finishTrainingControl(touchVec);
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.6f * (1.0f - bumpyRideBias)); // 1.0
 
@@ -1510,8 +1527,25 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       }
       float allowedBaseAngle = 0.0f * pi;
       int allowedVelocitySteps = 0; // last ditch anims are always allowed > 0 velocity steps, as long as strict is false
+      DataSet dominantSteps;
+      if (TrainingEnabled() && match->TrainingDominantControl() && match->TrainingHasBall() &&
+          CastPlayer()->GetExternalController() && match->GetBall()->Predict(0).coords[2] < 0.5f &&
+          static_cast<HumanController*>(CastPlayer()->GetExternalController())->GetActionMode() != 2) {
+        // Choose the best direction within the dominant foot's native steps
+        // too. A global best-quadrant filter can otherwise remove all of them
+        // simply because the other foot has an easier turn. Keep the normal
+        // candidates as fallback, and retain the original physical reach test.
+        for (int id : dataSet)
+          if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "right_foot") dominantSteps.push_back(id);
+        if (!dominantSteps.empty()) {
+          if (command.useDesiredLookAt) _KeepBestBodyDirectionAnims(dominantSteps, command, strict, allowedBaseAngle);
+          _KeepBestDirectionAnims(dominantSteps, command, strict, allowedBaseAngle, allowedVelocitySteps);
+        }
+      }
       if (command.useDesiredLookAt) _KeepBestBodyDirectionAnims(dataSet, command, strict, allowedBaseAngle); // needed for idle outgoing velo, probably
       _KeepBestDirectionAnims(dataSet, command, strict, allowedBaseAngle, allowedVelocitySteps);
+      for (int id : dominantSteps)
+        if (std::find(dataSet.begin(), dataSet.end(), id) == dataSet.end()) dataSet.push_back(id);
 
       /*
       if (player->GetDebug()) {
@@ -1695,6 +1729,15 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   */
 
   int selectedAnimID = -1;
+  if (TrainingEnabled() && match->TrainingDominantControl() && CastPlayer()->GetExternalController() &&
+      command.desiredFunctionType == e_FunctionType_BallControl && match->GetBall()->Predict(0).coords[2] < 0.5f) {
+    // Prefer the right-footed player's dominant foot among compatible native
+    // steps. The existing physical reach test still rejects an impossible
+    // touch and can fall back to the left foot, including during sharp cuts.
+    std::stable_partition(dataSet.begin(), dataSet.end(), [&](int id) {
+      return anims->GetAnim(id)->GetVariable("touch_bodypart") == "right_foot";
+    });
+  }
   std::vector<Vector3> positions_tmp;
   int touchFrame_tmp = -1;
   float radiusOffset_tmp = 0.0f;

@@ -140,6 +140,28 @@ int RunControllerTests() {
       view.update(true, -training::pi, Vector3(0, -1, 0), Vector3(0), 0.01f, 2.1f, 1.3f, false);
     require(view.movement(Vector3(0, -1, 0)).coords[0] < -0.99f,
             "A held reversal must finish its ball touch before asking for another reversal");
+    view.reset(0);
+    view.update(true, 0, Vector3(0, -1, 0), Vector3(0), 0.01f);
+    for (int i = 1; i <= 100; ++i)
+      view.update(true, -training::pi * i / 100, Vector3(i % 2 ? 0.08f : -0.08f, -1, 0),
+                  Vector3(0), 0.01f, 2.1f, 1.3f, false);
+    require(view.movement(Vector3(0, -1, 0)).coords[0] < -0.99f,
+            "Backward stick seam jitter must not chase the turning body before the ball touch");
+    view.update(true, view.bodyYaw, Vector3(1, 0, 0), Vector3(0), 0.01f, 2.1f, 1.3f, false);
+    require(view.movement(Vector3(1, 0, 0)).GetDotProduct(training::forward(view.bodyYaw - training::pi / 2)) > 0.999f,
+            "Intentional right input after backwards jitter must respond immediately");
+    const Vector3 oldBall(8, 0, 0), requestedCut(-1.8f, 0, 0.2f);
+    const Vector3 wronglyBlended = requestedCut * 0.4f + oldBall * 0.6f;
+    const Vector3 pulled = training::finishControlTouch(wronglyBlended, oldBall, Vector3(-1, 0, 0), 1.8f);
+    require(pulled.coords[0] < -1.79f && pulled.coords[2] == wronglyBlended.coords[2],
+            "Final foot impulse must pull backwards after retained momentum without changing height");
+    const Vector3 straightTouch(4, 0, 0.15f);
+    require((training::finishControlTouch(straightTouch, oldBall, Vector3(1, 0, 0), 5) - straightTouch).GetLength() == 0,
+            "Ordinary forward foot impulse must remain unchanged");
+    require(training::finishControlTouch(wronglyBlended, oldBall, Vector3(-1, 0, 0), 0.4f).Get2D().GetLength() < 0.401f,
+            "Final reversal touch must preserve partial-stick strength");
+    require((training::finishControlTouch(straightTouch, oldBall, Vector3(0), 0) - straightTouch).GetLength() == 0,
+            "Neutral input must not add a backwards impulse");
     const auto quick = training::shot(std::pow(training::shotCharge(250), 0.6f), 0.7f, false, false);
     require(training::turnSpeed(5, -1, 5) == 1.8f, "A reversal must brake while the ball is travelling away");
     require(training::turnSpeed(5, 1, 5) == 5 && training::turnSpeed(5, -1, 0) == 5,
