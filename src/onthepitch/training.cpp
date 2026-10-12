@@ -21,7 +21,6 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   lastGoalScorer = 0;
   trainingResetAt_ms = 0;
   trainingKnockOnUntil_ms = 0;
-  trainingDribbleCadence.reset();
   lastTouchTeamID = -1;
   for (unsigned int i = 0; i < e_TouchType_SIZE; ++i) lastTouchTeamIDs[i] = -1;
   teams[0]->ResetSituation(ballPosition);
@@ -51,45 +50,17 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingView.reset(std::atan2(direction.coords[1], direction.coords[0]));
   trainingEyeInitialized = false;
   const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta", "Passe recebido"};
-  SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | L3/G: pe dominante", 4000);
+  SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | F2: trazer bola", 4000);
   printf("TRAINING_RESET exercise=%d\n", exercise);
   fflush(stdout);
 }
 
-void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn, const std::string &bodypart) {
+void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
   if (!TrainingEnabled()) return;
   // Only a real knock-on contact starts recovery. Passing/shooting, an
   // ordinary control touch, and resets release it immediately.
   trainingKnockOnUntil_ms = knockOn &&
       (function == e_FunctionType_BallControl || function == e_FunctionType_Trap) ? actualTime_ms + 1600 : 0;
-  const bool control = function == e_FunctionType_BallControl || function == e_FunctionType_Trap;
-  if (!control) trainingDribbleCadence.reset();
-  if (control && (bodypart == "left_foot" || bodypart == "right_foot") &&
-      designatedPossessionPlayer->GetExternalController()) {
-    auto *human = static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController());
-    trainingDribbleCadence.record(actualTime_ms, human->GetDirection(), human->GetFloatVelocity(),
-        false, knockOn);
-    const Vector3 front = IsFirstPerson() ? GetTrainingFacing() : designatedPossessionPlayer->GetBodyDirectionVec();
-    if (human->GetFloatVelocity() > 0.1f &&
-        human->GetDirection().Get2D().GetNormalized(0).GetDotProduct(front) < 0.5f)
-      trainingDribbleCadence.interval_ms = std::min(trainingDribbleCadence.interval_ms, 320ul);
-  }
-}
-
-bool Match::TrainingControlTouchReady(unsigned long contact_ms, const Vector3 &direction) const {
-  if (!trainingDominantControl || !trainingView.withBall ||
-      !designatedPossessionPlayer->GetExternalController() ||
-      static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetActionMode() == 2) return true;
-  return trainingDribbleCadence.ready(contact_ms, direction);
-}
-
-void Match::ToggleTrainingDominantControl() {
-  trainingDominantControl = !trainingDominantControl;
-  trainingDribbleCadence.reset();
-  SpamMessage(trainingDominantControl ? "Conducao: pe dominante (direito) | L3/G: alternar" :
-      "Conducao: normal | L3/G: alternar", 4000);
-  if (GetConfiguration()->GetBool("training_telemetry", false))
-    printf("TRAINING_CONTROL_MODE dominant=%d\n", trainingDominantControl ? 1 : 0);
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
@@ -124,10 +95,7 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   const float ballSpeed = ballVelocity.GetLength();
   // A reversal must finish its real touch, not just reverse the player's
   // velocity while the ball is still departing in the old direction.
-  const Vector3 target=training::forward(trainingView.travelYaw);
-  const bool canRepeat = trainingDribbleCadence.touched &&
-      trainingDribbleCadence.direction.GetDotProduct(target)>0.8f && delta.Get2D().GetDotProduct(target)>0.05f &&
-      delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
+  const bool canRepeat = delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
       (ballSpeed > 0.5f ? ballVelocity.GetNormalized(0).GetDotProduct(
           training::forward(trainingView.travelYaw)) > 0.8f :
           designatedPossessionPlayer->GetMovement().GetLength() < 0.5f);
@@ -144,34 +112,45 @@ void Match::UpdateTrainingView(IHIDevice *input) {
 }
 
 void Match::ResolveTrainingBallContacts(const Vector3 &from) {
-  Player *player=designatedPossessionPlayer;
-  const Vector3 to=ball->Predict(0),ballVelocity=ball->GetMovement();
-  const auto hit=player->CastHumanoid()->SweepTrainingSurface(from,to);
-  if(!hit.hit)return;
-  const std::string part=player->GetCurrentAnim()->anim->GetVariable("touch_bodypart");
-  const auto *animation=player->GetCurrentAnim();
-  const bool planned=!animation->trainingTouchTaken && player->GetTouchFrame()>=0 &&
-      player->GetCurrentFrame()+1<=player->GetTouchFrame()+4;
-  // Yield only a real contact on the named striking surface to its authored
-  // event. Never disable the entire leg or create a 0.7-m collision hole.
-  if(planned && ((part=="left_foot" && hit.bone==9) ||
-      (part=="right_foot" && hit.bone==12) || (part=="head" && hit.bone==2))) {
-    // Resolve the real surface at the end of this step, before the native
-    // event supplies its intentional impulse. Preserve incoming momentum.
-    ball->ResolveContact(hit.point+hit.surfaceVelocity*(0.01f*(1-hit.time)),ballVelocity);
-    return;
+  Player *player = designatedPossessionPlayer;
+  const Vector3 root = player->GetPosition();
+  const Vector3 forward = player->GetBodyDirectionVec();
+  const Vector3 right(forward.coords[1], -forward.coords[0], 0);
+  const float height = player->GetPlayerData()->GetHeight();
+  Vector3 a[4], b[4];
+  float radii[4] = {0.19f, 0.19f, 0.31f, 0.23f};
+  for (int leg = 0; leg < 2; ++leg) {
+    const Vector3 side = right * (leg == 0 ? -0.10f : 0.10f);
+    a[leg] = root + side + Vector3(0, 0, 0.15f);
+    b[leg] = root + side + Vector3(0, 0, height * 0.46f);
   }
-  const bool leg=hit.bone>=7;
-  const bool support=leg && trainingView.withBall && to.coords[2]<0.6f;
-  const Vector3 velocity=support?training::supportContact(ballVelocity,hit.normal):
-      training::rebound(ballVelocity-hit.surfaceVelocity,hit.normal,0.42f)+hit.surfaceVelocity;
-  Vector3 corrected=hit.point+hit.normal*0.0005f;
-  corrected+=velocity*(0.01f*(1-hit.time));
-  if(GetConfiguration()->GetBool("training_telemetry",false))
-    printf("TRAINING_COLLISION t=%lu leg=%d controlled=%d before=%.4f after=%.4f point=[%.4f,%.4f,%.4f] normal=[%.4f,%.4f,%.4f] collider=%d surface=skin\n",
-        actualTime_ms,leg?1:0,support?1:0,ballVelocity.GetLength(),velocity.GetLength(),
-        corrected.coords[0],corrected.coords[1],corrected.coords[2],hit.normal.coords[0],hit.normal.coords[1],hit.normal.coords[2],hit.bone);
-  ball->ResolveContact(corrected,velocity);
+  a[2] = root + Vector3(0, 0, height * 0.49f);
+  b[2] = root + Vector3(0, 0, height * 0.78f);
+  a[3] = root + Vector3(0, 0, height * 0.88f);
+  b[3] = root + Vector3(0, 0, height * 0.95f);
+  if (player->GetCurrentFunctionType() == e_FunctionType_Sliding) {
+    for (int i = 0; i < 4; ++i) {
+      a[i] = root + forward * (i * 0.28f - 0.3f) + Vector3(0, 0, 0.23f);
+      b[i] = a[i] + forward * 0.3f;
+    }
+  }
+  const Vector3 movement = player->GetMovement();
+  const Vector3 displacement = movement * 0.01f;
+  const Vector3 to = ball->Predict(0);
+  training::Contact earliest;
+  for (int i = 0; i < 4; ++i) {
+    const auto hit = training::sweep(from + displacement, to, a[i], b[i], radii[i]);
+    if (hit.hit && (!earliest.hit || hit.time < earliest.time)) earliest = hit;
+  }
+  if (!earliest.hit) return;
+  const Vector3 incoming = ball->GetMovement() - movement;
+  // A just-kicked ball may start touching a foot: allow it to depart without a second impulse.
+  if (incoming.GetDotProduct(earliest.normal) >= 0 && earliest.time == 0 &&
+      (to - root).GetLength() > (from - root).GetLength()) return;
+  Vector3 corrected = earliest.point + earliest.normal * 0.003f;
+  const Vector3 velocity = training::rebound(incoming, earliest.normal, 0.42f) + movement;
+  corrected += velocity * (0.01f * (1 - earliest.time));
+  ball->ResolveContact(corrected, velocity);
   ++trainingContacts;
 }
 
@@ -184,7 +163,6 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
-  if (keyOnce(SDLK_g)) ToggleTrainingDominantControl();
   if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
@@ -226,14 +204,12 @@ void Match::ProcessTraining() {
     int slot = static_cast<HIDGamepad*>(input)->GetGamepadID();
     const SDL_GameControllerButton shortcuts[] = {SDL_CONTROLLER_BUTTON_DPAD_UP,
         SDL_CONTROLLER_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-        SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-        SDL_CONTROLLER_BUTTON_LEFTSTICK};
-    for (int i = 0; i < 6; ++i) {
+        SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK};
+    for (int i = 0; i < 5; ++i) {
       unsigned int mask = 1u << (i + 2);
       if (events.GetControllerButton(slot, shortcuts[i])) buttons |= mask;
       if ((buttons & mask) && !(trainingPreviousButtons & mask)) {
         if (i == 4) trainingCameraMode = (trainingCameraMode + 1) % 3;
-        else if (i == 5) ToggleTrainingDominantControl();
         else ResetTraining(input->GetButton(e_ButtonFunction_Switch) ?
                            (i == 2 ? 4 : (i == 1 ? 5 : i)) : i);
       }
@@ -326,13 +302,13 @@ void Match::ProcessTraining() {
       printf("TRAINING_FRAME {\"t\":%lu,\"exercise\":%d,\"player\":[%.4f,%.4f,%.4f],"
              "\"speed\":%.4f,\"ball\":[%.4f,%.4f,%.4f],\"ball_speed\":%.4f,"
              "\"function\":%d,\"frame\":%d,\"controller\":%d,\"goals\":%u,"
-             "\"camera\":%d,\"with_ball\":%d,\"dominant_control\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
+             "\"camera\":%d,\"with_ball\":%d,\"yaw\":%.4f,\"head_yaw\":%.4f,\"pitch\":%.4f,\"contacts\":%u,"
              "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f,\"wall_ms\":%lu}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
              ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
              designatedPossessionPlayer->GetFrameNum(), trainingController, trainingGoals,
-             trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingDominantControl ? 1 : 0, trainingView.yaw,
+             trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingView.yaw,
              trainingView.headYaw, trainingView.pitch, trainingContacts, lookActive ? 1 : 0,
              input->GetDirection().GetLength() > 0.001f ? 1 : 0,
              input->GetButton(e_ButtonFunction_Shot) ? 1 : 0,

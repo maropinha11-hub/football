@@ -114,13 +114,10 @@ class Match {
     void Exit();
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void ProcessTraining();
-    void NotifyTrainingTouch(e_FunctionType function, bool knockOn, const std::string &bodypart = "");
-    bool TrainingControlTouchReady(unsigned long contact_ms, const Vector3 &direction) const;
-    void ToggleTrainingDominantControl();
+    void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
     bool TrainingHasBall() const { return trainingView.withBall; }
-    bool TrainingDominantControl() const { return trainingDominantControl; }
     bool IsFirstPerson() const { return trainingCameraMode.load() == 2; }
     bool PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                           pes3::NativePose& out) const;
@@ -275,8 +272,6 @@ class Match {
     unsigned int trainingGoals = 0;
     unsigned long trainingResetAt_ms = 0;
     unsigned long trainingKnockOnUntil_ms = 0;
-    bool trainingDominantControl = true;
-    training::DribbleCadence trainingDribbleCadence;
     unsigned long trainingPaceWall_ms = 0, trainingPaceSim_ms = 0;
     std::atomic<int> trainingCameraMode{2};
     std::unique_ptr<PES3Preview> pes3Preview;

@@ -1,0 +1,57 @@
+{
+  "result": "passed",
+  "date_utc": "2026-10-12T20:09:50.633428+00:00",
+  "restored_baseline": "37a5543fb30efb09e9b084733ee836478fff2b61",
+  "rejected_version": "e5863b527a4d75e6aa8208847480e44d0674c6c9",
+  "source_configuration_and_tests_identical_to_baseline": true,
+  "windows_original_uploaded_executable_sha256": "ece4200cd1591edb60007ff71f4154cfaf7bcf232ec05ccfff001067f5418bfb",
+  "binary_identical_to_original_uploaded_file": true,
+  "approved_binary_reused_without_recompilation": true,
+  "first_person_default": true,
+  "original_uploaded_launcher_preserved": true,
+  "new_animations_added": false,
+  "update_package": {
+    "bytes": 1493255,
+    "sha256": "c029e279d861968c9aeb9ff2640a22398e216560d203c1b35c0fd2102e057053",
+    "members": [
+      "gameplayfootball.exe",
+      "run-training.bat",
+      "LICENSE",
+      "NOTICE",
+      "LEIA-ATUALIZACAO.txt",
+      "training.config"
+    ],
+    "crc": "passed"
+  },
+  "full_package": {
+    "result": "passed",
+    "archive_bytes": 31362112,
+    "archive_sha256": "0e143b015df9c681452ee675f8fbc7479017a490dc234b8a39121ee79a6ed317",
+    "executable_sha256": "ece4200cd1591edb60007ff71f4154cfaf7bcf232ec05ccfff001067f5418bfb",
+    "zip_crc": "all members passed",
+    "architecture": "PE32+ x86_64",
+    "members": 546,
+    "dll_count": 26,
+    "missing_non_system_dlls": {},
+    "source_bank_included": false,
+    "exe_imports": [
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "libSDL2_gfx.dll",
+      "SDL2_image.dll",
+      "SDL2_ttf.dll",
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "libboost_thread-gcc14-mt-x64-1_92.dll",
+      "libsqlite3.dll",
+      "KERNEL32.dll",
+      "msvcrt.dll",
+      "api-ms-win-core-synch-l1-2-0.dll",
+      "USER32.dll",
+      "XINPUT9_1_0.dll",
+      "libgcc_s_seh-1.dll",
+      "libstdc++-6.dll"
+    ],
+    "windows_execution_tested": false
+  },
+  "validation_scope": "Exact source and executable restoration, ZIP CRCs, x64 PE architecture and Windows dependency closure. No fresh gameplay execution or compilation was performed for this binary reuse."
+}

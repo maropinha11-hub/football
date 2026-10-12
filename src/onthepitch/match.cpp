@@ -377,13 +377,10 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   possessionSideHistory = new ValueHistory<float>(6000);
   if (TrainingEnabled()) {
     trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
-    trainingDominantControl = GetConfiguration()->GetBool("training_dominant_control", true);
     SetMatchPhase(e_MatchPhase_1stHalf);
     ResetTraining(0);
-    if (GetConfiguration()->GetBool("pes3_preview",false)) {
-      pes3Preview.reset(new PES3Preview(dynamicNode));
-      SpamMessage(pes3Preview->toggle(),12000);
-    }
+    pes3Preview.reset(new PES3Preview(dynamicNode));
+    if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);
   }
 
   Log(e_Notice, "Match", "Match", "Done creating match!");

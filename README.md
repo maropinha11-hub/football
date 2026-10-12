@@ -8,30 +8,24 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e ajustes de chutes e
 colisões no treino. Carreira e partidas online ficam para etapas posteriores.
 
-A [atualização Windows de condução](artifacts/football-windows-contatos-e-conducao.zip)
-restaura a base nativa do executável enviado pelo usuário (`37a5543`), corrige
-o impulso da bola no contato do pé ao virar para trás e estabiliza pequenas
-variações do analógico durante essa virada. **L3** (clicar o analógico esquerdo)
-ou **G** alterna a preferência pelo pé dominante direito e a condução normal.
-O pé esquerdo continua disponível quando necessário para alcançar a bola;
-a correção da virada funciona nos dois modos. Feche o jogo, extraia a atualização
-dentro da pasta atual, aceite substituir e abra `run-training.bat`.
-O [ajuste dos contatos visíveis](docs/CONTATOS-VISIVEIS.md) espaça os
-toques do pé dominante, controla a velocidade pela intensidade do analógico e faz a puxada
-contornar a perna de apoio. A colisão usa os triângulos da malha animada,
-e as jogadas são aplicadas no contato real. RT está reservado.
-Esse lançamento usa as animações nativas. O estudo PES só abre por
-`estudar-pes3.bat`/`--pes3-preview`.
-
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o
 direito olha ao redor sem alterar a direção do movimento. Após virar, empurre
 o esquerdo para frente para seguir a nova frente; mantê-lo à direita continua
 a curva para a nova direita. Baixo pede uma virada para trás; mantê-lo
-repete a virada quando o corpo completa a anterior. A intensidade do analógico
-controla a velocidade; RB permite correr e RT está reservado. A cabeça retorna
+repete a virada quando o corpo completa a anterior. RT mantém essa direção e ajusta o domínio,
+sem virar automaticamente para o gol. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
+
+A [atualização Windows da gameplay original](artifacts/football-windows-gameplay-original.zip)
+restaura o executável exato da base aprovada `37a5543`, preservando a câmera e
+os controles em primeira pessoa. Os ajustes posteriores de pé dominante,
+intervalos de condução e colisão da malha foram retirados. Feche o jogo,
+extraia a atualização na pasta onde estão `run-training.bat` e `media`, aceite
+substituir e execute `run-training.bat`. O ZIP também restaura `training.config`.
+Consulte [a restauração](docs/GAMEPLAY-ORIGINAL.md) e
+[a verificação do pacote](docs/native-original-restoration-validation.json).
 
 Não é uma decompilação completa do PES. Os links iniciais contêm Gameplay Football;
 não contêm o motor nem as animações do PES. Fidelidade à base aberta e
@@ -158,7 +152,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Mover / conduzir | Analógico esquerdo | WASD |
 | Virar sem bola / olhar com bola | Analógico direito | Setas |
 | Correr | RB + analógico | Shift + WASD |
-| Andar devagar | Inclinar levemente o analógico | — |
+| Domínio próximo / frear | RT | Espaço |
 | Passe curto | A | J |
 | Passe em profundidade | Y | I |
 | Passe alto / carrinho sem bola | B | L |
@@ -166,7 +160,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Cobertura | LB + X | Q + K |
 | Cancelar chute ou passe alto | A durante a preparação | J durante a preparação |
 | Modificador especial original | LT | Ctrl esquerdo |
-| Reservado para função futura | RT | Espaço |
+| Super cancel / toque à frente | RB + RT | Shift + Espaço |
 | Recomeçar exercício | View | R |
 | Trazer bola à posição atual | — | F2 |
 | Pausar / retomar | Menu | P |
@@ -193,10 +187,9 @@ O jogador destro conserva ligeiramente mais impulso em contatos com o pé
 esquerdo, sem reduzir o alcance dos toques. O contato recebe um ajuste suave
 da perna no instante do toque, com limite de alcance e sem esticar os ossos.
 Reiniciar o exercício também limpa os comandos de chute e passe pendentes.
-A condução dominante deixa a bola rolar à frente entre os contatos. RT não
-altera a velocidade, o toque ou a recuperação; use a intensidade do analógico
-e RB para controlar a corrida. A bola conserva sua trajetória física entre
-os contatos. Passes e chutes liberam a movimentação sem bola.
+RB + RT adianta a bola no instante de um toque original e mantém a assistência
+para alcançá-la, inclusive ao virar e ao soltar RT. Passes e chutes liberam
+essa recuperação. A bola conserva sua trajetória física entre os contatos.
 
 No exercício de bola aérea, a trajetória permite cabecear antes do primeiro
 quique. Prepare A para passar ou X para finalizar antes da chegada da bola;

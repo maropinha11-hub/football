@@ -1,3 +1,5 @@
+> Registro histórico: esta versão foi retirada a pedido do usuário. A versão atual restaura a [gameplay original](GAMEPLAY-ORIGINAL.md).
+
 # Contatos e intervalos da condução nativa
 
 Este documento registra a atualização `449692a`. A versão posterior usa

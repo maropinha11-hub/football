@@ -25,11 +25,7 @@ namespace training {
       // every stick direction with positive forward motion.
       if (nextMoving) {
         const float requested = std::atan2(-move.coords[0], move.coords[1]);
-        // Near the +/-pi seam, small stick variations must not restart a
-        // pending reversal relative to the already rotating body.
-        const bool backwardZone = std::fabs(requested) > 2.6f && std::fabs(steeringAngle) > 2.6f;
-        const float steeringThreshold = backwardZone ? 0.18f : 0.02f;
-        if (!moving || std::fabs(angle(requested - steeringAngle)) > steeringThreshold) {
+        if (!moving || std::fabs(angle(requested - steeringAngle)) > 0.02f) {
           travelYaw = angle(bodyYaw + requested);
           steeringAngle = requested;
           turnTime = 0;

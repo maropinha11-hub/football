@@ -261,8 +261,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     bool knockOn = false;
     // RT changes touch/speed, not the first-person player's heading. The
     // original idle goal-facing shortcut would otherwise fight a recent turn.
-    if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Dribble)) idleTurnToOpponentGoal = true;
-    if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) knockOn = true;
+    if (hid->GetButton(e_ButtonFunction_Dribble) && !(TrainingEnabled() && match->IsFirstPerson())) idleTurnToOpponentGoal = true;
+    if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) knockOn = true;
 
     // special adapted input for ballcontrol and trap, when we have shoot/pass buffers
     Vector3 inputDirectionSave2 = inputDirection;
@@ -328,40 +328,6 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
           (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
           match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)
         command.desiredVelocityFloat = idleVelocity;
-      if (match->TrainingHasBall() && match->TrainingDominantControl() && actionMode != 2 && inputVelocityFloat > 0.1f &&
-          (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
-          !match->TrainingControlTouchReady(match->GetActualTime_ms(), inputDirection)) {
-        // During the rolling phase the interception assist must not turn a
-        // close-control/partial-stick request into a faster chase animation.
-        // Once a knock-on rolls beyond close reach, retain the native chase
-        // assistance so a pending cut can reach its next real foot contact.
-        const Vector3 ballMovement = match->GetBall()->GetMovement().Get2D();
-        const bool cutting = ballMovement.GetLength() > 1.0f &&
-            ballMovement.GetNormalized(0).GetDotProduct(inputDirection) < -0.25f;
-        const float ceiling = cutting ? inputVelocityFloat : std::max(dribbleVelocity, inputVelocityFloat);
-        command.desiredVelocityFloat = std::min(command.desiredVelocityFloat, ceiling);
-      }
-      if(match->IsFirstPerson() && match->TrainingHasBall() && actionMode!=2 && hid->GetDirection().GetLength()>0.001f) {
-        const Vector3 intent=inputDirectionSaveNonsteady.GetNormalized(inputDirection);
-        const Vector3 relative=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D();
-        const Vector3 velocity=match->GetBall()->GetMovement().Get2D();
-        if(relative.GetDotProduct(intent)<-0.08f && match->GetBall()->Predict(0).coords[2]<0.45f &&
-            (velocity.GetLength()<1.0f || velocity.GetNormalized(0).GetDotProduct(intent)>0.5f)) {
-          // Plant/turn and let the pulled ball pass to the new front. The
-          // interception assist must not reverse the requested movement.
-          command.desiredDirection=intent;command.desiredVelocityFloat=inputVelocityFloat;
-          command.desiredLookAt=player->GetPosition()+intent*10;
-        }
-      }
-      const Vector3 ballVelocity=match->GetBall()->GetMovement().Get2D();
-      if(match->IsFirstPerson() && match->TrainingHasBall() && actionMode!=2 && inputVelocityFloat>0.05f &&
-          ballVelocity.GetLength()>1.0f && ballVelocity.GetNormalized(0).GetDotProduct(inputDirectionSaveNonsteady)<0.6f) {
-        command.desiredDirection=(match->GetBall()->Predict(180)-player->GetPosition()).Get2D().GetNormalized(ballVelocity.GetNormalized(inputDirection));
-        // Close the rolling gap to the next actual foot strike. Matching a
-        // slower speed indefinitely leaves a sprint touch just out of reach.
-        command.desiredVelocityFloat=clamp(ballVelocity.GetLength()+0.8f,0.8f,sprintVelocity);
-        command.desiredLookAt=player->GetPosition()+command.desiredDirection*10;
-      }
       if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
     }
@@ -376,7 +342,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 */
 
     // super cancel
-    if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) {
+    if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) {
       if (!hasBestPossession && !(TrainingEnabled() && match->TrainingHasBall())) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
@@ -543,10 +509,6 @@ Vector3 HumanController::GetDirection() {
 }
 
 float HumanController::GetFloatVelocity() {
-  if(TrainingEnabled()) {
-    const float amount=hid->GetDirection().GetLength();
-    return amount>0.001f?(hid->GetButton(e_ButtonFunction_Sprint)?sprintVelocity:walkVelocity)*clamp(amount,0.0f,1.0f):idleVelocity;
-  }
   Vector3 rawInputDirection;
   float rawInputVelocityFloat = 0;
   _GetHidInput(rawInputDirection, rawInputVelocityFloat);
@@ -583,7 +545,7 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     rawInputVelocityFloat = idleVelocity;
   } else {
     if (hid->GetButton(e_ButtonFunction_Sprint)) rawInputVelocityFloat = sprintVelocity;
-    else if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Dribble)) rawInputVelocityFloat = dribbleVelocity;
+    else if (hid->GetButton(e_ButtonFunction_Dribble)) rawInputVelocityFloat = dribbleVelocity;
     else if (!TrainingEnabled() && hid->GetButton(e_ButtonFunction_Switch) && match->GetDesignatedPossessionPlayer() == CastPlayer()) rawInputVelocityFloat = idleVelocity;
     else rawInputVelocityFloat = walkVelocity;
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
@@ -593,14 +555,6 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
       const Vector3 ballMovement = match->GetBall()->GetMovement().Get2D();
       rawInputVelocityFloat = training::turnSpeed(rawInputVelocityFloat,
           ballMovement.GetNormalized(0).GetDotProduct(rawInputDirection), ballMovement.GetLength());
-      const float alignment=ballMovement.GetNormalized(0).GetDotProduct(rawInputDirection);
-      if(ballMovement.GetLength()>1.0f && alignment<0.5f)rawInputVelocityFloat=std::min(rawInputVelocityFloat,1.8f);
-      const Vector3 relative=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D();
-      if(relative.GetDotProduct(rawInputDirection)<-0.08f && match->GetBall()->Predict(0).coords[2]<0.45f) {
-        if(alignment>0.5f && ballMovement.GetLength()>0.1f)
-          rawInputVelocityFloat=std::min(rawInputVelocityFloat,std::max(0.0f,ballMovement.GetDotProduct(rawInputDirection)-0.7f));
-        else if(ballMovement.GetLength()<1.0f)rawInputVelocityFloat=std::min(rawInputVelocityFloat,0.8f);
-      }
     }
   }
 

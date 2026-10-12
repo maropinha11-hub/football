@@ -1,3 +1,5 @@
+> Registro histórico: esta versão foi retirada a pedido do usuário. A versão atual restaura a [gameplay original](GAMEPLAY-ORIGINAL.md).
+
 # Condução e contatos da malha nativa
 
 O treino inicia com a preferência pelo pé direito. L3/G conserva a opção de

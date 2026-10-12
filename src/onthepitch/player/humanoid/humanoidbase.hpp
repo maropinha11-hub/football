@@ -15,13 +15,11 @@
 
 #include "../../AIsupport/mentalimage.hpp"
 #include "../../../pes3/native_pose.hpp"
-#include "../../trainingcontrol.hpp"
 
 using namespace blunted;
 
 class PlayerBase;
 class Match;
-namespace training { struct LegCollision; }
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -102,8 +100,6 @@ struct Anim {
   RotationSmuggle rotationSmuggle;
   radian rotationSmuggleOffset;
   signed int touchFrame;
-  bool trainingTouchTaken = false;
-  Vector3 trainingTouchDirection;
   float radiusOffset;
   Vector3 touchPos;
 
@@ -158,8 +154,6 @@ struct AnimApplyBuffer {
     trainingTouchBlend = src.trainingTouchBlend;
     trainingTouchTarget = src.trainingTouchTarget;
     trainingTouchLeft = src.trainingTouchLeft;
-    trainingPoseValid = src.trainingPoseValid;
-    trainingPose = src.trainingPose;
   }
   Animation *anim;
   int frameNum;
@@ -173,8 +167,6 @@ struct AnimApplyBuffer {
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
-  bool trainingPoseValid = false;
-  training::BodyPose trainingPose;
 };
 
 struct TemporalHumanoidNode {
@@ -260,10 +252,6 @@ class HumanoidBase {
     const Anim *GetPreviousAnim() { return previousAnim; }
 
     const NodeMap &GetNodeMap() { return nodeMap; }
-    void GetTrainingLegPose(training::LegCollision *legs, int frameOffset = 0) const;
-    void GetTrainingPose(training::BodyPose &pose, int frameOffset = 0) const;
-    training::Contact SweepTrainingSurface(const Vector3 &from, const Vector3 &to) const;
-    float TrainingTouchDistance(const std::string &part, const Vector3 &ball) const;
 
     void Hide() { fullbodyNode->SetPosition(Vector3(1000, 1000, -1000)); hairStyle->SetPosition(Vector3(1000, 1000, -1000)); } // hax ;)
 
@@ -338,8 +326,6 @@ class HumanoidBase {
     boost::shared_ptr<AnimCollection> anims;
     NodeMap nodeMap;
     pes3::NativeBind pes3NativeReference{};
-    std::vector<training::SkinVertex> trainingSkin;
-    std::vector<training::SkinTriangle> trainingTriangles;
     bool pes3StudyWasApplied = false;
     float pes3RootCorrection = 0;
 

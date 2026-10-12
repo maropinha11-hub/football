@@ -332,7 +332,6 @@ int main(int argc, const char** argv) {
   }
   config->LoadFile(configFile.c_str());
   if (trainingOverride >= 0) config->SetBool("training_mode", trainingOverride == 1);
-  if (trainingOverride == 1) config->SetBool("pes3_preview", false);
   if (telemetry) config->SetBool("training_telemetry", true);
   if (pes3Preview) { config->SetBool("pes3_preview",true); config->SetBool("training_mode",true); }
 

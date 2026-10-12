@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Package the tested MinGW Windows build with its runtime DLLs and data."""
 from pathlib import Path
+import argparse
+import hashlib
+import io
 import os
 import shutil
 import subprocess
@@ -13,8 +16,23 @@ build = project / "build-windows-mingw2"
 artifacts = project / "artifacts"
 artifacts.mkdir(exist_ok=True)
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--restore-original-binary", action="store_true",
+                    help="Reuse the exact approved Windows binary archived at 37a5543")
+args = parser.parse_args()
+approved_binary = None
+if args.restore_original_binary:
+    archived = subprocess.check_output([
+        "git", "show", "37a5543:artifacts/football-windows-corrigir-orientacao.zip",
+    ], cwd=project)
+    with zipfile.ZipFile(io.BytesIO(archived)) as source:
+        if source.testzip() is not None:
+            raise SystemExit("Approved archive failed CRC verification")
+        approved_binary = source.read("gameplayfootball.exe")
+    if hashlib.sha256(approved_binary).hexdigest() != "ece4200cd1591edb60007ff71f4154cfaf7bcf232ec05ccfff001067f5418bfb":
+        raise SystemExit("Approved executable differs from the original uploaded binary")
 executable = build / "gameplayfootball.exe"
-if not executable.exists():
+if approved_binary is None and not executable.exists():
     raise SystemExit(f"Windows executable not found: {executable}")
 
 # The build machine keeps the toolchain outside the repository.  Allow an
@@ -38,7 +56,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     # Strip only the distributable copy.  The unstripped executable remains in
     # build-windows-mingw2 for crash analysis and future debugging.
     stripped = stage / "gameplayfootball.exe"
-    subprocess.run([stripper, "--strip-debug", "-o", str(stripped), str(executable)], check=True)
+    if approved_binary is not None:
+        stripped.write_bytes(approved_binary)
+    else:
+        subprocess.run([stripper, "--strip-debug", "-o", str(stripped), str(executable)], check=True)
 
     for entry in (project / "data").iterdir():
         if entry.name == "pes3":
@@ -104,17 +125,14 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
-        "RT reservado; velocidade controlada pelo analogico esquerdo e RB.\n"
+        "RT mantem a direcao atual, sem virar sozinho para o gol.\n"
         "A condução mantém a assistência e os passos originais nas viradas.\n"
-        "Viradas para tras mantem o impulso de puxar a bola no contato do pe.\n"
-        "L3 (clicar o esquerdo) ou G alterna pe dominante/normal; inicia no direito.\n"
-        "No dominante, o pe completa o gesto e a bola rola antes do proximo toque.\n"
-        "Pernas de apoio bloqueiam/desviam a bola sem aplicar um segundo chute.\n"
-        "A bola rola a frente entre os toques; as curvas mantem os contatos fisicos.\n"
+        "Gameplay nativa restaurada a base original aprovada (37a5543).\n"
+        "RB+RT adianta a bola e mantem o acompanhamento, inclusive nas curvas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
         "X: carga máxima 0,52 s; cerca de 0,25 s já levanta a bola.\n"
-        "LB+X cobertura; RB correr; RT reservado; View reiniciar; Menu pausa;\n"
+        "LB+X cobertura; RB correr; RT dominio; View reiniciar; Menu pausa;\n"
         "D-pad exercício; LB+D-pad baixo falta; R3 alterna as três câmeras.\n"
         "D-pad esquerda: bola aérea. Prepare A (passe) ou X (gol) para cabecear.\n"
         "LB+D-pad direita (tecla 6): passe recebido; prepare A/Y/X para jogar de primeira.\n"
@@ -150,26 +168,25 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
-    update = artifacts / "football-windows-contatos-e-conducao.zip"
+    update = artifacts / "football-windows-gameplay-original.zip"
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            "Atualizacao Windows x64 — viradas, contatos visiveis e conducao\r\n\r\n"
+            "Windows x64 — gameplay original com primeira pessoa\r\n\r\n"
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
             "3. Aceite substituir os arquivos.\r\n"
             "4. Abra run-training.bat.\r\n\r\n"
-            "L3: clique o analogico esquerdo para alternar conducao com o pe\r\n"
-            "dominante (direito) e normal. No teclado: G. Comeca no dominante.\r\n"
-            "O esquerdo continua disponivel se for necessario para alcancar a bola.\r\n"
-            "A correcao da virada para tras funciona nos DOIS modos.\r\n"
-            "No dominante, a bola rola a frente entre as conduzidas. RT esta\r\n"
-            "reservado; mova o analogico levemente para andar devagar.\r\n"
-            "A colisao usa a malha animada visivel; os toques exigem contato fisico.\r\n"
-            "Esta versao utiliza a gameplay e as animacoes nativas da base enviada.\r\n"
+            "Restaurada a base 37a5543: camera e controles em primeira pessoa\r\n"
+            "com a gameplay e as animacoes nativas que voce ja havia aprovado.\r\n"
+            "Retirados os ajustes recentes de pe dominante, cadencia e colisao\r\n"
+            "da malha animada. RT volta ao dominio nativo; RB permite correr.\r\n"
+            "O ZIP inclui training.config para restaurar o modo nativo e a\r\n"
+            "primeira pessoa como padrao. Sem novas animacoes nesta restauracao.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
+        output.write(stage / "training.config", "training.config")
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")
