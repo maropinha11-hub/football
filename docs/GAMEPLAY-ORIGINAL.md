@@ -1,3 +1,5 @@
+> Registro da restauração sem correções. A versão atual acrescenta apenas o [ajuste da puxada](PUXADA-NATIVA.md).
+
 # Gameplay original restaurada
 
 A versão atual retorna à base `37a5543fb30efb09e9b084733ee836478fff2b61`,

@@ -127,7 +127,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
         "RT mantem a direcao atual, sem virar sozinho para o gol.\n"
         "A condução mantém a assistência e os passos originais nas viradas.\n"
-        "Gameplay nativa restaurada a base original aprovada (37a5543).\n"
+        + ("Base nativa aprovada (37a5543), com correcao pontual da puxada.\n" if approved_binary is None else
+           "Gameplay nativa original aprovada (37a5543), sem a correcao da puxada.\n") +
         "RB+RT adianta a bola e mantem o acompanhamento, inclusive nas curvas.\n"
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (carga = força/altura);\n"
@@ -168,14 +169,16 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                 output.write(path, path.relative_to(stage.parent))
     print(f"Created {archive} ({archive.stat().st_size // 1024 // 1024} MiB)")
     # The approved native installation already has its DLLs and game media.
-    update = artifacts / "football-windows-gameplay-original.zip"
+    update = artifacts / ("football-windows-gameplay-original.zip" if approved_binary is not None else
+                          "football-windows-puxada-corrigida.zip")
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            "Windows x64 — gameplay original com primeira pessoa\r\n\r\n"
+            ("Windows x64 — primeira pessoa e puxada corrigida\r\n\r\n" if approved_binary is None else
+             "Windows x64 — gameplay original com primeira pessoa\r\n\r\n") +
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
@@ -185,6 +188,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "com a gameplay e as animacoes nativas que voce ja havia aprovado.\r\n"
             "Retirados os ajustes recentes de pe dominante, cadencia e colisao\r\n"
             "da malha animada. RT volta ao dominio nativo; RB permite correr.\r\n"
+            + ("" if approved_binary is not None else
+               "Corrigida a puxada na virada: o impulso segue a nova direcao\r\n"
+               "e as pernas simplificadas do treino nao aplicam outro rebote.\r\n") +
             "O ZIP inclui training.config para restaurar o modo nativo e a\r\n"
             "primeira pessoa como padrao. Sem novas animacoes nesta restauracao.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")

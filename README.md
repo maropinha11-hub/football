@@ -18,14 +18,16 @@ sem virar automaticamente para o gol. A cabeça retorna
 ao centro após uma breve pausa; a câmera acompanha o corpo interpolado e
 oculta a cabeça e o cabelo do jogador local para evitar obstrução.
 
-A [atualização Windows da gameplay original](artifacts/football-windows-gameplay-original.zip)
-restaura o executável exato da base aprovada `37a5543`, preservando a câmera e
-os controles em primeira pessoa. Os ajustes posteriores de pé dominante,
-intervalos de condução e colisão da malha foram retirados. Feche o jogo,
-extraia a atualização na pasta onde estão `run-training.bat` e `media`, aceite
-substituir e execute `run-training.bat`. O ZIP também restaura `training.config`.
-Consulte [a restauração](docs/GAMEPLAY-ORIGINAL.md) e
-[a verificação do pacote](docs/native-original-restoration-validation.json).
+A [atualização Windows da puxada](artifacts/football-windows-puxada-corrigida.zip)
+parte da base nativa restaurada (`37a5543`) e corrige apenas a virada com a bola.
+O impulso final segue a direção pedida no contato da animação; os colisores
+simplificados das pernas não acrescentam um segundo rebote durante a puxada.
+A câmera, os controles, a seleção de animações e a renderização permanecem da
+base aprovada. Feche o jogo, extraia na pasta onde estão `run-training.bat` e
+`media`, aceite substituir e execute `run-training.bat`.
+Consulte [a correção](docs/PUXADA-NATIVA.md). O
+[executável original sem esta correção](artifacts/football-windows-gameplay-original.zip)
+continua arquivado.
 
 Não é uma decompilação completa do PES. Os links iniciais contêm Gameplay Football;
 não contêm o motor nem as animações do PES. Fidelidade à base aberta e

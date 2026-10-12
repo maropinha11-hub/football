@@ -106,6 +106,10 @@ def key(name, down):
             if not down and time.monotonic() - sent > 1:
                 subprocess.run(["xdotool", "keyup", "--window", windows[-1], name],
                                env=environment, check=True)
+                # Also release the X server's key state after a synthetic
+                # event/repeat mismatch. Still require the real SDL ack.
+                subprocess.run(["xdotool", "windowfocus", windows[-1]], env=environment, check=True)
+                subprocess.run(["xdotool", "keyup", name], env=environment, check=True)
                 sent = time.monotonic()
             return False
         wait_for(acknowledged)
@@ -117,6 +121,15 @@ def tap(name):
     key(name, False)
     time.sleep(0.1)
     advance(100)
+
+def direction_change(previous, following):
+    # Deliver a stick-direction change together. Waiting for separate key
+    # acknowledgements would hold an unintended diagonal during the turn.
+    subprocess.run(["xdotool", "keyup", "--window", windows[-1], previous,
+                    "keydown", "--window", windows[-1], following], env=environment, check=True)
+    held.discard(previous); held.add(following)
+    previous_bit, following_bit = key_bits[previous], key_bits[following]
+    wait_for(lambda: not frames()[-1]["keys"] & previous_bit and frames()[-1]["keys"] & following_bit)
 
 def check(name, condition, evidence):
     if not condition:
@@ -383,7 +396,7 @@ try:
         check("held right keeps turning relative to new front", first_turn < -0.3 and next_turn < -0.3,
               f"Successive right-turn angles {first_turn:.2f}/{next_turn:.2f} rad")
         check_possession("continuous relative turn retains ball", right_first + right_second)
-        key("w", True); key("d", False)
+        direction_change("d", "w")
         wait_for(lambda: frames()[-1]["move"] == [0.0, 1.0])
         forward_origin = frames()[-1]
         new_forward = advance(1200)
