@@ -27,7 +27,7 @@ O [estudo PES3 dentro do treino](docs/PES3-ANIMACOES-NO-TREINO.md) reproduz os
 1.105 clips recebidos em um esqueleto de 19 ossos ao lado do jogador. Na versão
 Windows, use `importar-pes3.bat` com seu `fpsoccer-pes-nucleo-v14.zip`, depois
 `estudar-pes3.bat`. Há pausa, avanço de fase e troca de clip. A ligação definitiva
-à malha, a seleção completa de ações e os contatos PES ainda precisam ser integrados;
+ao seletor original e aos contatos PES ainda precisa ser recuperada;
 `run-training.bat` mantém a gameplay nativa aprovada.
 
 O [teste de poses na malha nativa](docs/PES3-CORPO-NATIVO.md), ativado com V
@@ -35,7 +35,15 @@ no estudo, alinha os membros usando a pose reta da malha e as direções dos
 segmentos PES, conserva os comprimentos e corrige o apoio visual dos pés.
 Retomar os comandos restaura as animações nativas. A câmera externa aproxima
 o corpo durante a inspeção. A seleção automática das jogadas PES e seus
-contatos continuam pendentes.
+contatos originais continuam pendentes.
+
+A [gameplay híbrida intermediária](docs/PES3-GAMEPLAY-HIBRIDA.md) usa as poses
+PES automaticamente nas jogadas nativas, com seleção por trajetória, pé e
+instante do contato, transições e preservação do alcance no toque. Para jogar,
+extraia a [atualização Windows](artifacts/football-windows-gameplay-pes3-update.zip)
+**dentro da pasta instalada**, substitua os arquivos e abra **treinar-pes3.bat**.
+Essa integração mantém os controles e a física aprovados; a recuperação do
+seletor original do PES segue como pesquisa independente.
 
 A [atualização Windows de orientação](artifacts/football-windows-corrigir-orientacao.zip)
 permite substituir apenas `gameplayfootball.exe` na instalação existente.
@@ -46,7 +54,7 @@ O estudo do PES 3 e a conferência dos arquivos recebidos estão em
 [docs/PES3.md](docs/PES3.md). O [laboratório offline de animações](artifacts/pes3-animation-lab.zip)
 permite explorar 1.105 clips e exportar candidatos para o catálogo: extraia
 o ZIP e abra `abrir-laboratorio.html` com Edge ou Chrome. É uma ferramenta de
-pesquisa; a substituição das animações do jogador e da física continua pendente.
+pesquisa; a seleção original das jogadas e a física PES continuam pendentes.
 
 O [processo de recuperação do código PES 3](docs/PES3-ACTIONS.md) acrescenta
 um mapa automático de referências para 506 clips e reescritas verificadas

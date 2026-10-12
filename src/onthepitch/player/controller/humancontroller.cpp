@@ -326,7 +326,11 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       }
       if (match->TrainingHasBall() && actionMode != 2 && inputVelocityFloat < 0.05f &&
           (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
-          match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)
+          (match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f ||
+           (CastPlayer()->GetCurrentFunctionType()==e_FunctionType_BallControl && !CastPlayer()->TouchPending())))
+        // Brake a close rolling ball after its real control touch. Braking
+        // before contact can cancel the approach and abandon the ball.
+        // Distant knock-on recovery and queued passes/shots remain assisted.
         command.desiredVelocityFloat = idleVelocity;
       if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;

@@ -14,13 +14,17 @@ import uuid
 parser = argparse.ArgumentParser()
 parser.add_argument("--build", type=Path, default=Path(__file__).resolve().parents[1] / "build")
 parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "artifacts")
+parser.add_argument("--pes3-bank", type=Path, help="Exercise the hybrid visual layer with a private local bank")
 args = parser.parse_args()
 build = args.build.resolve()
 output = args.output.resolve()
 output.mkdir(parents=True, exist_ok=True)
 config = output / "smoke.config"
 # Exercise the shipped defaults, rather than a developer's preserved local preferences.
-config.write_text((Path(__file__).resolve().parents[1] / "config/training.config").read_text() + '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "0"\n')
+config.write_text((Path(__file__).resolve().parents[1] / "config/training.config").read_text() + '\n"context_x" "960"\n"context_y" "540"\n"training_camera" "0"\n"random_seed" "12345"\n')
+if args.pes3_bank:
+    with config.open('a') as stream:
+        stream.write('"pes3_live" "true"\n"pes3_animation_file" '+json.dumps(str(args.pes3_bank.resolve()))+'\n')
 environment = os.environ.copy()
 environment["ALSOFT_DRIVERS"] = "null"
 environment["LIBGL_ALWAYS_SOFTWARE"] = "1"
@@ -168,14 +172,18 @@ def travel(frame, samples):
 
 def receive(name, exercise, button, function, head=False):
     previous = log_path.read_text().count("TRAINING_RESET")
-    # Prepare before arrival, without the walking test's settling delay.
-    key(exercise, True)
-    key(exercise, False)
-    wait_for(lambda: log_path.read_text().count("TRAINING_RESET") > previous)
     start = frames()[-1]["t"]
-    key(button, True)
+    # Serve and prepare the action in the same real SDL input batch. Waiting
+    # for reset down/up before sending the action can consume most of the
+    # aerial ball's flight on a slow software renderer, making it a late shot.
+    pair=[exercise,button];mask=sum(key_bits[k]for k in pair)
+    subprocess.run(["xdotool","keydown","--window",windows[-1],*pair],env=environment,check=True)
+    held.update(pair)
+    wait_for(lambda:log_path.read_text().count("TRAINING_RESET")>previous and frames()[-1]['keys']&mask==mask)
     advance(100)
-    key(button, False)
+    subprocess.run(["xdotool","keyup","--window",windows[-1],*pair],env=environment,check=True)
+    held.difference_update(pair)
+    wait_for(lambda:frames()[-1]['keys']&mask==0)
     samples = advance(2200)
     observed = [f for f in frames() if f["t"] > start]
     queued = [f for f in observed if f["action_mode"] == 2]
@@ -410,7 +418,7 @@ try:
         idle_turn = angle(rt_idle[-1]["player_yaw"] - rt_idle_origin["player_yaw"])
         check("idle RT does not turn player toward goal", abs(idle_turn) < 0.4 and
               math.dist(rt_idle_origin["player"], rt_idle[-1]["player"]) < 0.3,
-              f"Idle RT changed actual body heading {idle_turn:.2f} rad; no automatic goal-facing turn")
+              f"Idle RT heading {idle_turn:.2f} rad; displacement {math.dist(rt_idle_origin['player'],rt_idle[-1]['player']):.3f} m; origin speed {rt_idle_origin['speed']:.3f}, end {rt_idle[-1]['speed']:.3f}")
         reset()
         back_origin = frames()[-1]
         key("s", True)
@@ -630,6 +638,34 @@ try:
         check("rendered foot contact correction", len(poses) > 3 and
               statistics.median(p[1] for p in poses) < statistics.median(p[0] for p in poses),
               f"{len(poses)} rendered foot corrections; median error {statistics.median(p[0] for p in poses):.3f} -> {statistics.median(p[1] for p in poses):.3f} m" if poses else "No rendered foot corrections")
+        if args.pes3_bank:
+            text=log_path.read_text()
+            check("hybrid source library ready",'PES3_LIVE ready=1 candidates=1105' in text,
+                  'All 1105 source clips retargeted to the native bind')
+            choices=[tuple(map(float,m))for m in re.findall(
+                r'PES3_LIVE_SELECT function=(\d+) clip=(\d+) accepted=(\d+) error=([-\d.]+) foot=(-?\d+) touch=(-?\d+)',text)]
+            accepted={int(m[0])for m in choices if m[2]==1}
+            for function,label in ((1,'movement'),(2,'ball control'),(4,'short pass'),(5,'through pass'),(6,'high pass'),(8,'shot')):
+                check('automatic source motion for '+label,function in accepted,
+                      [{'clip':int(m[1]),'error':m[3]}for m in choices if m[0]==function and m[2]==1][:6])
+            check('automatic source motion for headed actions',
+                  any(m[0]in (4,8) and m[2]==1 and m[4]==2 for m in choices),
+                  [{'function':int(m[0]),'clip':int(m[1]),'error':m[3]}for m in choices if m[2]==1 and m[4]==2][:8])
+            check('hybrid selection stays in measured compatibility domain',
+                  all(0<=m[1]<1105 and math.isfinite(m[3]) and m[3]<.12 for m in choices if m[2]==1),len(choices))
+            applications=re.findall(r'PES3_LIVE_APPLY frame=(\d+) root_z=([-\d.]+) head_z=([-\d.]+)',text)
+            check('live pose reaches rendered native player',len(applications)>200 and
+                  all(math.isfinite(float(z)) and math.isfinite(float(head))for _,z,head in applications),len(applications))
+            skin=re.findall(r'PES3_BODY_SKIN vertices=(\d+) invalid=(\d+) rigid_error=([-\d.]+) foot_min_z=([-\d.]+) radius=([-\d.]+)',text)
+            check('hybrid rendered skin preserves finite geometry and lengths',len(skin)>100 and
+                  all(int(bad)==0 and float(error)<.00002 and float(radius)<4 for _,bad,error,_,radius in skin),len(skin))
+            check('live feet remain above the pitch after contact correction',
+                  all(math.isfinite(float(z)) and float(z)>=.007 for _,_,_,z,_ in skin),
+                  min(float(z)for _,_,_,z,_ in skin))
+            contacts=[tuple(map(float,m))for m in re.findall(
+                r'PES3_LIVE_CONTACT function=(\d+) clip=(\d+) native_frame=(\d+) touch=(\d+) phase=([-\d.]+) expected=([-\d.]+) bone=(\d+)',text)]
+            check('source contact clock agrees with native action event',len(contacts)>10 and
+                  all(m[2]==m[3] and abs(m[4]-m[5])<.00005 for m in contacts),len(contacts))
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "x11grab", "-video_size", "960x540",
                         "-i", ":91", "-frames:v", "1", str(output / "training.png")], env=environment, check=True)
         tap("Tab")

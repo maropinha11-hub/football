@@ -1157,6 +1157,11 @@ bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& re
                             pes3::NativePose& out) const {
   return pes3Preview && actor==designatedPossessionPlayer && pes3Preview->bodyPose(reference,out);
 }
+bool Match::PES3LiveBodyPose(const PlayerBase* actor,Animation* animation,int frame,int touchFrame,int function,
+                           const pes3::NativeBind& reference,pes3::NativePose& out) {
+  return pes3Preview && actor==designatedPossessionPlayer &&
+    pes3Preview->livePose(animation,frame,touchFrame,function,reference,out);
+}
 
 void Match::PreparePutBuffers() {
 

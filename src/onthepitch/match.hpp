@@ -121,6 +121,8 @@ class Match {
     bool IsFirstPerson() const { return trainingCameraMode.load() == 2; }
     bool PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                           pes3::NativePose& out) const;
+    bool PES3LiveBodyPose(const PlayerBase* actor,Animation* animation,int frame,int touchFrame,int function,
+                         const pes3::NativeBind& reference,pes3::NativePose& out);
     bool IsTrainingFreeKick() const { return trainingExercise == 4; }
     void UpdateTrainingView(IHIDevice *input);
     void ResolveTrainingBallContacts(const Vector3 &from);
