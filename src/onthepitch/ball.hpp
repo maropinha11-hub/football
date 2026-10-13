@@ -64,6 +64,8 @@ class Ball {
     void ResolveBodyContact(const Vector3 &surfacePosition, const Vector3 &outgoingMomentum);
     void SetRotation(radian x, radian y, radian z, float bias = 1.0); // radians per second for each axis
     void SetRotation(const Vector3 &rot, float bias = 1.0); // radians per second for each axis
+    void SetAngularVelocity(const Vector3 &spin) { SetRotation(-spin.coords[0],spin.coords[1],spin.coords[2],1.0f); }
+    void SetLowSpinFlight(bool active) { lowSpinFlight=active;flightAge=0;CalculatePrediction(); }
     BallSpatialInfo CalculatePrediction(); // returns momentum in 10ms
     Vector3 GetPositionBuffer() { return buf_positionBuffer.GetValue(EnvironmentManager::GetInstance().GetTime_ms()); }
 
@@ -89,6 +91,8 @@ class Ball {
 
     Vector3 momentum;
     Quaternion rotation_ms;
+    bool lowSpinFlight=false;
+    float flightAge=0;
 
     Vector3 predictions[ballPredictionSize_ms / 10];
     Quaternion orientPrediction;

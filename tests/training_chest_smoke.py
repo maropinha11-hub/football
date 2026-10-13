@@ -46,8 +46,10 @@ try:
               {'native_touches':segment.count('TRAINING_ACTION_TOUCH'),'chest':segment.count('TRAINING_CHEST_START')})
         game.reset();start=len(game.log.read_text());game.keys(['F6'],True);game.keys(['F6'],False);high=game.advance(1300)
         segment=game.log.read_text()[start:]
-        check('high crossing travels above chest and preserves other receptions',max(f['ball'][2]for f in high)>3 and
-              'TRAINING_CHEST_TOUCH'not in segment,{'maximum_height':max(f['ball'][2]for f in high)})
+        actual=rows(segment,'TRAINING_CHEST_TOUCH')
+        check('high crossing travels above chest and any assisted chest reception meets real skin',
+              max(f['ball'][2]for f in high)>3 and all(abs(t['gap'])<=.0011 for t in actual),
+              {'maximum_height':max(f['ball'][2]for f in high),'actual_chest_contacts':actual})
         for key,part in [('F4','foot'),('F6','head')]:
             game.reset();start=len(game.log.read_text());game.keys([key],True);game.keys([key],False)
             game.pad(0,0,buttons=1);game.advance(300);game.pad(0,0);game.advance(1500)
@@ -61,8 +63,8 @@ try:
         move_started=game.frames()[-1]['t'];game.pad(0,1)
         game.keys(['F5'],False);moving=game.advance(700);game.pad(0,0)
         segment=game.log.read_text()[start:]
-        check('moving cancels standing chest control without locking the player',
-              'TRAINING_CHEST_START'in segment and 'TRAINING_CHEST_TOUCH'not in segment and moving[-1]['speed']>2 and
+        check('advancing during reception keeps the real chest contact and then releases movement',
+              'TRAINING_CHEST_START'in segment and 'TRAINING_CHEST_TOUCH'in segment and moving[-1]['speed']>2 and
               move_started-delivery<800,
               {'speed':moving[-1]['speed'],'chest_touches':segment.count('TRAINING_CHEST_TOUCH'),'movement_after_delivery_ms':move_started-delivery})
         native=rows(game.log.read_text(),'TRAINING_NATIVE_SURFACE');accepted=[n for n in native if n['accepted']]

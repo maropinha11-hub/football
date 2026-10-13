@@ -19,10 +19,15 @@ jogador, na posição atual do campo. R3/Tab alterna a câmera para ver o corpo.
 O domínio novo é automático quando o jogador está parado, sem solicitar
 passe/chute, diante de uma bola que chega ao peito. O clip toca uma vez e
 volta à gameplay; as outras recepções permanecem disponíveis.
-A condução sem RB tem velocidade normal de 4,5 m/s (10% abaixo da base),
-com o tronco e a cabeça um pouco inclinados para olhar a bola. O relógio
+A condução sem RB tem velocidade normal de 3,6 m/s, com toques espaçados
+pelo pé direito. A corrida fica 10% mais lenta. A cabeça acompanha a câmera
+e o tronco mantém uma pequena inclinação para frente. O relógio
 físico continua em tempo real. O quique no treino passa de 0,62 a 0,70,
 ajustável em `training_ground_bounce` para ensaios de gramado.
+Ao esperar um passe, a assistência nativa de recepção permite ajustar para
+frente ou para trás; o domínio de peito inclui o deslocamento da recuperação.
+X atinge a carga máxima em 0,52 s e LB+X faz cobertura. A rotação da bola é
+calculada pelo ponto de contato real, com curva e efeito vertical.
 Consulte [a integração de animações e contatos](docs/ANIMACAO-FBX-TESTE.md).
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e

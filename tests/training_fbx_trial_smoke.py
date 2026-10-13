@@ -44,7 +44,7 @@ try:
         check('L3 no longer changes dribbling',game.log.read_text().count('TRAINING_FBX_TOGGLE')==old,'Held 500 ms; approved default remains active')
         game.wait(lambda:'TRAINING_FBX_TOUCH' in game.log.read_text(),seconds=10)
         game.advance(200)
-        start=len(game.log.read_text());new=game.advance(3500);active=poses(game.log.read_text()[start:])
+        start=len(game.log.read_text());new=game.advance(4200);active=poses(game.log.read_text()[start:])
         skin=[{key:float(value) for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
               for line in game.log.read_text()[start:].splitlines() if line.startswith('TRAINING_FBX_SKIN ')]
         retain('new forward dribble retains the ball',new)
@@ -97,10 +97,10 @@ try:
         check('contact correction is small, without pulling a remote ball',bool(touches)and
               max(t['foot_fit']for t in touches)<.08,
               max((t['foot_fit']for t in touches),default=0))
-        check('forward gait is modestly slower',4.35<sum(f['speed']for f in new)/len(new)<4.9,
+        check('forward gait has a measured cadence at 3.6 m/s',3.4<sum(f['speed']for f in new)/len(new)<3.8,
               {'mean_speed_mps':sum(f['speed']for f in new)/len(new),'previous_speed_mps':5})
-        check('successive foot contacts alternate without double hits',len(touches)>=6 and
-              all(a['side']!=b['side'] and b['t']-a['t']>=150 for a,b in zip(touches,touches[1:])),
+        check('dominant right foot carries the ball with spaced touches',len(touches)>=6 and
+              all(t['side']==1 for t in touches) and all(b['t']-a['t']>=450 for a,b in zip(touches,touches[1:])),
               [(t['t'],t['side']) for t in touches])
         check('ball is predicted to reach the next animated foot',bool(touches)and
               max(t['prediction_error']for t in touches)<.008,

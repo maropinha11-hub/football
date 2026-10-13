@@ -27,7 +27,7 @@
     "right_knee",
     "right_ankle"
   ],
-  "root_xy_imported": false,
+  "root_xy_imported": true,
   "ball_events_in_source": false,
   "loop": false,
   "contact_source_frame": 11.0,
@@ -40,5 +40,5 @@
     0.7961538271903992,
     1.04370294380188
   ],
-  "output_sha256": "7ef0bc74fb11a9be4c845730d4dde5aa077a32a8f595d1d49405604619058c0a"
+  "output_sha256": "f9b5c03337dab5121c66004a4bbc1d0888f23b19596ad80f542decb76684572d"
 }

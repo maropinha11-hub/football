@@ -98,12 +98,15 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (actionMode == 2) {
 
     if (!hid->GetButton(actionButton) ||
-        (hid->GetButton(actionButton) && gauge_ms > 500) ||
+        (hid->GetButton(actionButton) && gauge_ms >= (TrainingEnabled()?
+          (actionButton==e_ButtonFunction_Shot?520:1000):500)) ||
         (!CastPlayer()->HasPossession() && !match->IsInSetPiece() && actionBufferTime_ms > 0)) {
 
       int baseTime_ms = 60; // substract a little because we can't really press a button shorter than this
       float gaugeFactor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
       gaugeFactor = clamp(gaugeFactor, 0.0f, 1.0f);
+      if(TrainingEnabled() && actionButton==e_ButtonFunction_Shot)
+        gaugeFactor=training::shotCharge(gauge_ms);
 
       // action button released!
 
@@ -189,6 +192,10 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         if (GetHIDevice()->GetDeviceType() == e_HIDeviceType_Keyboard) command.touchInfo.autoDirectionBias = 1.0f;
         command.touchInfo.desiredDirection = AI_GetShotDirection(CastPlayer(), command.touchInfo.inputDirection, command.touchInfo.autoDirectionBias);
         command.touchInfo.desiredPower = clamp(pow(gaugeFactor, 0.6f), 0.01f, 1.0f);
+        if(TrainingEnabled()) {
+          command.touchInfo.inputPower=gaugeFactor;
+          if(shotChip || hid->GetButton(e_ButtonFunction_Switch))command.modifier|=e_PlayerCommandModifier_Chip;
+        }
 
         commandQueue.push_back(command);
 
@@ -315,15 +322,19 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // especially when a turn cannot immediately use a ball-control animation.
       // Solo training always designates this player, so disable the match AI's
       // interception magnet once the ball is actually out of control.
-      if (!match->TrainingHasBall() && actionMode != 2) {
+      if (!match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode != 2) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }
+      if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 && inputVelocityFloat>.05f &&
+          (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<.95f &&
+          (match->GetBall()->GetMovement()-player->GetMovement()).GetLength()<2)
+        command.desiredVelocityFloat=inputVelocityFloat;
       if (match->TrainingHasBall() && actionMode != 2 && inputVelocityFloat < 0.05f &&
           (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
           match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)
         command.desiredVelocityFloat = idleVelocity;
-      if (match->IsFirstPerson() && !match->TrainingHasBall() && actionMode != 2)
+      if (match->IsFirstPerson() && !match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode != 2)
         command.desiredLookAt = player->GetPosition() + match->GetTrainingFacing() * 10;
     }
 
@@ -400,7 +411,8 @@ void HumanController::Process() {
     }
 
     if (TrainingEnabled()) {
-      possessionContext = (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) < 2.5f) ? 1.0f : -1.0f;
+      possessionContext = (match->TrainingHasBall() || match->TrainingReceivingBall() ||
+          match->GetBall()->Predict(200).GetDistance(player->GetPosition()) < 2.5f) ? 1.0f : -1.0f;
       // A/X/Y have no useful defensive action in solo practice. Accept the
       // original two-second action buffer before an incoming ball is close,
       // so its first contact can be a pass, volley or header. B retains the
@@ -476,6 +488,7 @@ void HumanController::Process() {
       if (hid->GetButton(e_ButtonFunction_Shot) && !hid->GetPreviousButtonState(e_ButtonFunction_Shot) && allowShot) {
         actionMode = 2;
         actionButton = e_ButtonFunction_Shot;
+        shotChip=hid->GetButton(e_ButtonFunction_Switch);
       }
 
     }
@@ -484,6 +497,7 @@ void HumanController::Process() {
 
   if (actionMode == 2) {
     if (hid->GetButton(actionButton)) {
+      if(actionButton==e_ButtonFunction_Shot && hid->GetButton(e_ButtonFunction_Switch))shotChip=true;
       gauge_ms += 10;
       gauge_ms = clamp(gauge_ms, 10, 1000);
       actionBufferTime_ms = 0;
@@ -516,6 +530,7 @@ int HumanController::GetReactionTime_ms() {
 
 void HumanController::Reset() {
   actionMode = 0;
+  shotChip=false;
   gauge_ms = 0;
   actionButton = e_ButtonFunction_ShortPass;
   actionBufferTime_ms = 0;
@@ -545,8 +560,9 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     else rawInputVelocityFloat = walkVelocity;
     // Keep the imported gait linked to actual travel, rather than slowing
     // its pose clock independently and making planted shoes slide.
-    if(TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",true) &&
-        !hid->GetButton(e_ButtonFunction_Sprint))rawInputVelocityFloat*=.90f;
+    if(TrainingEnabled())rawInputVelocityFloat*=clamp(GetConfiguration()->GetReal(
+        hid->GetButton(e_ButtonFunction_Sprint)?"training_sprint_speed_scale":"training_walk_speed_scale",
+        hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still

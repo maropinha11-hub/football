@@ -100,10 +100,12 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
     if(i==0){Quaternion turn;turn.SetAngleAxis(facing,Vector3(0,0,1));local[i]=turn*local[i];}
   }
   ContactForwardKinematics(local,global,positions);
+  if(TrainingEnabled() && player->GetExternalController())
+    AimTrainingHead(local,global,positions,match->GetTrainingLookDirection());
 }
 
 float HumanoidBase::ContactSurface(const Vector3 &point,const std::string &requested,const Quaternion *global,
-    const Vector3 *positions,Vector3 *closest) const {
+    const Vector3 *positions,Vector3 *closest,std::string *hitPart) const {
   const std::string part=skinPart(requested);
   float best=100;
   for(const auto &triangle:contactTriangles) {
@@ -126,7 +128,7 @@ float HumanoidBase::ContactSurface(const Vector3 &point,const std::string &reque
     }
     const Vector3 surface=triangleClosest(point,points);
     const float d=(point-surface).GetLength();
-    if(d<best){best=d;if(closest)*closest=surface;}
+    if(d<best){best=d;if(closest)*closest=surface;if(hitPart)*hitPart=triangle.part;}
   }
   return best-.11f;
 }
@@ -166,7 +168,7 @@ void HumanoidBase::UpdateChestReception() {
   auto *human=static_cast<HumanController*>(player->GetExternalController());
   if(!human)return;
   if(chestActive) {
-    if(human->GetFloatVelocity()>.8f || human->GetActionMode()!=0 || chestPhase>=chestAnimation->GetEffectiveFrameCount()) {
+    if((chestTouched && human->GetFloatVelocity()>.8f) || human->GetActionMode()!=0 || chestPhase>=chestAnimation->GetEffectiveFrameCount()) {
       chestActive=false;chestCooldown_ms=match->GetActualTime_ms()+500;
       float lo=0,hi=1;
       for(unsigned i=0;i<20;++i){const float u=(lo+hi)*.5f;if(ease(u)<contactPoseBlend)lo=u;else hi=u;}
@@ -192,6 +194,7 @@ void HumanoidBase::UpdateChestReception() {
   chestActive=true;chestTouched=false;chestPhase=chestContactFrame-bestTime*.1f;
   chestRoot=spatialState.position;chestAngle=spatialState.angle;chestFacing=facing;
   chestPreviousBall=match->GetBall()->Predict(0);chestStarted_ms=match->GetActualTime_ms();
+  chestRecoveryBase=Vector3(0);chestAppliedMotion=Vector3(0);
   dribbleLoopRequested=false;dribbleLoopOwnsBall=false;
   printf("TRAINING_CHEST_START t=%lu arrival_ms=%u phase=%.3f target=[%.4f,%.4f,%.4f]\n",
       match->GetActualTime_ms(),bestTime,chestPhase,target.coords[0],target.coords[1],target.coords[2]);
@@ -199,8 +202,26 @@ void HumanoidBase::UpdateChestReception() {
 
 void HumanoidBase::ProcessChestReception() {
   if(!chestActive)return;
-  chestPhase+=1;
+  chestPhase+=chestTouched?.85f:1.0f;
   const float phase=clamp(chestPhase,0.0f,float(chestAnimation->GetEffectiveFrameCount()));
+  Vector3 displacement;
+  if(chestTouched) {
+    const Vector3 recovery=chestFacing*(ChestRootMotion(phase)-chestRecoveryBase)*zMultiplier;
+    displacement=recovery-chestAppliedMotion;chestAppliedMotion=recovery;
+  } else {
+    auto *human=static_cast<HumanController*>(player->GetExternalController());
+    const Vector3 input=human->GetHIDevice()->GetDirection();
+    const float request=match->IsFirstPerson()?input.coords[1]:input.GetDotProduct(chestFacing*Vector3(0,-1,0));
+    const Vector3 next=chestAppliedMotion+chestFacing*Vector3(0,-1,0)*(request*.45f*.01f);
+    if(next.GetLength()<.18f) {displacement=next-chestAppliedMotion;chestAppliedMotion=next;}
+  }
+  const Vector3 desiredRoot=chestRoot+displacement;
+  // The idle native graph can requeue while the presentation owns movement.
+  // Anchor that graph to the actual authored root, so a requeue cannot undo
+  // the recovery's displacement or leave the visible body walking in place.
+  const Vector3 correction=desiredRoot-animApplyBuffer.position.Get2D();
+  if(correction.GetLength()>.000001f)OffsetPosition(correction);
+  animApplyBuffer.position+=correction;spatialState.position=desiredRoot;chestRoot=desiredRoot;
   const float enter=ease(phase/18),exit=ease((chestAnimation->GetEffectiveFrameCount()-phase)/22);
   contactPoseBlend=enter*exit;
   SampleContactAnimation(chestAnimation.get(),phase,chestRoot,chestAngle,true,contactLocal,contactGlobal,contactPositions);
@@ -209,7 +230,7 @@ void HumanoidBase::ProcessChestReception() {
   float gap=ContactSurface(current,"chest",contactGlobal,contactPositions,&surface);
   // A real sphere/skin crossing, not an authored marker's 40 cm acceptance radius.
   if(!chestTouched && contactPoseBlend>.999f && gap<=.001f && gap>-.11f &&
-      current.coords[2]>1.0f && current.coords[2]<1.85f && std::fabs(phase-chestContactFrame)<18) {
+      current.coords[2]>1.0f && current.coords[2]<GetStandingChestTarget().coords[2]+.11f && std::fabs(phase-chestContactFrame)<18) {
     const float penetration=gap;
     Vector3 collisionPoint=current;float sweep=1;
     if(ContactSurface(chestPreviousBall,"chest",contactGlobal,contactPositions)>.0005f) {
@@ -236,13 +257,103 @@ void HumanoidBase::ProcessChestReception() {
       p->GetTeam()->SetLastTouchPlayer(p,e_TouchType_Intentional_Nonkicked);
       p->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.18f);
       chestTouched=true;
+      chestRecoveryBase=ChestRootMotion(phase);chestAppliedMotion=Vector3(0);
       printf("TRAINING_CHEST_TOUCH t=%lu phase=%.4f gap=%.5f correction=%.5f step_penetration=%.5f sweep=%.5f speed_before=%.4f speed_after=%.4f ball=[%.4f,%.4f,%.4f]\n",
         match->GetActualTime_ms(),phase,gap,(resolved-current).GetLength(),penetration,sweep,incoming.GetLength(),outgoing.GetLength(),resolved.coords[0],resolved.coords[1],resolved.coords[2]);
     }
   }
   chestPreviousBall=current;
   if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%20==0)
-    printf("TRAINING_CHEST_STATE t=%lu phase=%.3f blend=%.4f gap=%.5f touched=%d\n",match->GetActualTime_ms(),phase,contactPoseBlend,gap,chestTouched?1:0);
+    printf("TRAINING_CHEST_STATE t=%lu phase=%.3f blend=%.4f gap=%.5f touched=%d root_motion=%.5f\n",match->GetActualTime_ms(),phase,contactPoseBlend,gap,chestTouched?1:0,chestAppliedMotion.GetLength());
+}
+
+Vector3 HumanoidBase::ChestRootMotion(float phase) const {
+  if(!chestAnimation || chestAnimation->GetVariable("root_motion")!="true")return Vector3(0);
+  phase=clamp(phase,0.0f,float(chestAnimation->GetEffectiveFrameCount()));
+  const int frame=int(phase);Quaternion unused;Vector3 a,b;
+  chestAnimation->GetKeyFrame("player",frame,unused,a);
+  chestAnimation->GetKeyFrame("player",std::min(frame+1,chestAnimation->GetEffectiveFrameCount()),unused,b);
+  return (a*(1-(phase-frame))+b*(phase-frame)).Get2D();
+}
+
+void HumanoidBase::AimTrainingHead(Quaternion *local,Quaternion *global,Vector3 *positions,const Vector3 &look) const {
+  // Keep the neck within its own anatomical range; the torso is not steered
+  // by head look. Skin contacts and rendering use the same orientation.
+  const Vector3 bodyLook=global[0].GetInverse()*look.GetNormalized(Vector3(0,-1,0));
+  const float yaw=clamp(std::atan2(bodyLook.coords[0],-bodyLook.coords[1]),-1.48f,1.48f);
+  const float pitch=clamp(std::atan2(bodyLook.coords[2],bodyLook.Get2D().GetLength()),-1.0f,.85f);
+  const Vector3 target=global[0]*Vector3(std::sin(yaw)*std::cos(pitch),-std::cos(yaw)*std::cos(pitch),std::sin(pitch));
+  const Quaternion head=rotationBetween(global[2]*Vector3(0,-1,0),target)*global[2];
+  local[2]=(global[1].GetInverse()*head).GetNormalized();
+  ContactForwardKinematics(local,global,positions);
+}
+
+void HumanoidBase::PutTrainingHeadLook() {
+  if(!TrainingEnabled() || !player->GetExternalController())return;
+  Quaternion local[13],global[13];Vector3 positions[13];
+  for(unsigned i=0;i<13;++i) {
+    auto node=nodeMap.at(pes3::nativeBoneNames[i]);local[i]=node->GetRotation();global[i]=node->GetDerivedRotation();
+    positions[i]=node->GetDerivedPosition();
+  }
+  AimTrainingHead(local,global,positions,fetchedTrainingLook);
+  nodeMap.at("neck")->SetRotation(local[2],false);
+  humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  if(GetConfiguration()->GetBool("training_telemetry",false)) {
+    const Vector3 forward=nodeMap.at("neck")->GetDerivedRotation()*Vector3(0,-1,0);
+    const float alignment=forward.GetDotProduct(fetchedTrainingLook.GetNormalized(0));
+    printf("TRAINING_HEAD_POSE t=%lu alignment=%.6f yaw=%.5f pitch=%.5f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,
+      alignment,std::atan2(forward.coords[1],forward.coords[0]),std::atan2(forward.coords[2],forward.Get2D().GetLength()));
+  }
+}
+
+void HumanoidBase::ProcessTrainingBodyContact() {
+  if(!TrainingEnabled())return;
+  Ball *ball=match->GetBall();ball->CalculatePrediction();
+  const Vector3 current=ball->Predict(0),incoming=ball->GetMovement();
+  const Vector3 previous=contactPreviousBallValid?contactPreviousBall:current;
+  contactPreviousBall=current;contactPreviousBallValid=true;
+  if(match->GetActualTime_ms()<bodyContactUntil_ms || current.coords[2]<.45f || incoming.GetLength()<2 ||
+      (current-spatialState.position-Vector3(0,0,1)).GetLength()>1.25f ||
+      static_cast<Player*>(player)->GetLastTouchBias(350)>.01f)return;
+  if(!match->TrainingReceivingBall() && !chestActive && chestCooldown_ms<=match->GetActualTime_ms())return;
+  if(currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
+      std::abs(currentAnim->touchFrame-currentAnim->frameNum)<=5)return;
+  Quaternion local[13],global[13];Vector3 positions[13];
+  std::copy(contactLocal,contactLocal+13,local);std::copy(contactPositions,contactPositions+13,positions);
+  if(chestActive && contactPoseBlend<.999f) {
+    Quaternion nativeLocal[13],nativeGlobal[13];Vector3 nativePositions[13];
+    SampleContactAnimation(currentAnim->anim,currentAnim->frameNum+.5f,animApplyBuffer.position,
+        startAngle+currentAnim->rotationSmuggleOffset,false,nativeLocal,nativeGlobal,nativePositions);
+    for(unsigned i=0;i<13;++i)local[i]=nativeLocal[i].GetSlerped(contactPoseBlend,local[i]).GetNormalized();
+    positions[0]=nativePositions[0]*(1-contactPoseBlend)+positions[0]*contactPoseBlend;
+  }
+  ContactForwardKinematics(local,global,positions);
+  Vector3 point,surface;std::string part;float fraction=-1;
+  for(unsigned sample=0;sample<=8;++sample) {
+    const float u=sample/8.0f;point=previous*(1-u)+current*u;
+    if(ContactSurface(point,"",global,positions,&surface,&part)<=.0005f) {fraction=u;break;}
+  }
+  if(fraction<0)return;
+  float low=std::max(0.0f,fraction-.125f),high=fraction;
+  for(unsigned iteration=0;iteration<16;++iteration) {
+    const float u=(low+high)*.5f;
+    if(ContactSurface(previous*(1-u)+current*u,"",global,positions)>.0005f)low=u;else high=u;
+  }
+  point=previous*(1-high)+current*high;
+  ContactSurface(point,"",global,positions,&surface,&part);
+  const Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
+  const float inward=incoming.GetDotProduct(normal);
+  if(inward>=-.2f)return;
+  const Vector3 outgoing=(incoming-normal*inward)*.8f-normal*inward*.3f;
+  const Vector3 resolved=surface+normal*.1105f+outgoing*(1-high)*.01f;
+  if((resolved-current).GetLength()>.12f)return;
+  ball->ResolveBodyContact(resolved,outgoing);bodyContactUntil_ms=match->GetActualTime_ms()+60;
+  contactPreviousBall=resolved;
+  auto *actor=static_cast<Player*>(player);actor->GetTeam()->SetLastTouchPlayer(actor,e_TouchType_Accidental);
+  actor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f\n",
+      match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength());
 }
 
 void HumanoidBase::UpdateTrainingContactPose() {
@@ -263,7 +374,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
   if(chestActive || dribbleLoopRequested || currentAnim->touchFrame<0)return;
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   if(remaining>20 || remaining< -14)return;
-  contactPoseBlend=ease((20-remaining)/10.0f)*ease((remaining+14)/14.0f);
+  contactPoseBlend=ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f);
   const std::string part=skinPart(currentAnim->anim->GetVariable("touch_bodypart"));
   const int side=part=="left_ankle"?0:part=="right_ankle"?1:-1;
   if(side<0)return;

@@ -80,6 +80,7 @@ struct Anim {
     rotationSmuggle.end = 0;
     rotationSmuggleOffset = 0;
     touchFrame = -1;
+    touchMade = false;
     radiusOffset = 0.0;
   }
 
@@ -101,6 +102,7 @@ struct Anim {
   RotationSmuggle rotationSmuggle;
   radian rotationSmuggleOffset;
   signed int touchFrame;
+  bool touchMade;
   float radiusOffset;
   Vector3 touchPos;
 
@@ -250,9 +252,13 @@ class HumanoidBase {
                                radian facing, bool source, Quaternion *local, Quaternion *global, Vector3 *positions) const;
     void ContactForwardKinematics(Quaternion *local, Quaternion *global, Vector3 *positions) const;
     float ContactSurface(const Vector3 &ballPosition, const std::string &part, const Quaternion *global,
-                         const Vector3 *positions, Vector3 *closest = nullptr) const;
+                         const Vector3 *positions, Vector3 *closest = nullptr, std::string *hitPart = nullptr) const;
     void FitContactLeg(unsigned side, const Vector3 &offset, Quaternion *local, Quaternion *global, Vector3 *positions) const;
     void PutTrainingContactPose();
+    void PutTrainingHeadLook();
+    void AimTrainingHead(Quaternion *local, Quaternion *global, Vector3 *positions, const Vector3 &look) const;
+    void ProcessTrainingBodyContact();
+    Vector3 ChestRootMotion(float phase) const;
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -386,6 +392,12 @@ class HumanoidBase {
     Quaternion chestFacing = QUATERNION_IDENTITY;
     radian chestAngle = 0;
     Vector3 chestRoot, chestPreviousBall;
+    Vector3 chestRecoveryBase, chestAppliedMotion;
+    Vector3 contactPreviousBall;
+    bool contactPreviousBallValid=false;
+    unsigned long bodyContactUntil_ms=0;
+    TemporalSmoother<Vector3> buf_trainingLook;
+    Vector3 fetchedTrainingLook;
     Quaternion contactLocal[13], contactGlobal[13];
     Vector3 contactPositions[13];
     float contactPoseBlend = 0, fetchedContactBlend = 0;

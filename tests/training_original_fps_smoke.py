@@ -45,7 +45,7 @@ try:
                                     'frames': running + walking})
             speed = statistics.median(f['speed'] for f in walking[-5:])
             check('RB release after ' + str(duration) + ' ms returns to native walking',
-                  4.0 < speed < 5.5, {'walking_speed_mps': speed})
+                  3.3 < speed < 4.2, {'walking_speed_mps': speed})
         game.reset()
         repeated = []
         for _ in range(4):

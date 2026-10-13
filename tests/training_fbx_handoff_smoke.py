@@ -29,7 +29,7 @@ try:
             # Stay in midfield: field resets/net collisions cannot mask a miss.
             game.reset();game.pad(0,-1);game.advance(1500)
             game.pad(*stick,sprint=name=='release RB');game.advance(duration)
-            start=len(game.log.read_text());game.pad(0,-1);forward=game.advance(2800)
+            start=len(game.log.read_text());game.pad(0,-1);forward=game.advance(3600)
             distances=[math.dist(f['player'][:2],f['ball'][:2]) for f in forward]
             segment=game.log.read_text()[start:]
             contacts=[{key:float(value) for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
@@ -39,8 +39,9 @@ try:
                   {'maximum_distance_m':max(distances),'ending_distance_m':distances[-1],
                    'lost_possession_frames':sum(not f['with_ball'] for f in forward)})
             check(name+' resumes visible-foot loop contacts',len(contacts)>=2 and
-                  max(t['gap'] for t in contacts)<=.00051,
+                  all(-.0015<=t['gap']<=.00051 for t in contacts),
                   {'contacts':len(contacts),'maximum_surface_gap_m':max((t['gap'] for t in contacts),default=None),
+                   'minimum_surface_gap_m':min((t['gap']for t in contacts),default=None),
                    'native_recovery_touches':segment.count('TRAINING_ACTION_TOUCH')})
         game.keys(['Escape'],True);game.game.wait(timeout=15)
         check('clean exit',game.game.returncode==0,game.game.returncode)

@@ -119,6 +119,11 @@ class Match {
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
     bool TrainingHasBall() const { return trainingView.withBall; }
+    bool TrainingReceivingBall() const { return trainingReceiving; }
+    Vector3 GetTrainingLookDirection() const {
+      return Vector3(std::cos(trainingView.yaw)*std::cos(trainingView.pitch),
+          std::sin(trainingView.yaw)*std::cos(trainingView.pitch),std::sin(trainingView.pitch));
+    }
     bool IsFirstPerson() const { return trainingCameraMode.load() == 2; }
     bool PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                           pes3::NativePose& out) const;
@@ -276,6 +281,8 @@ class Match {
     std::atomic<int> trainingCameraMode{2};
     std::unique_ptr<PES3Preview> pes3Preview;
     training::View trainingView;
+    bool trainingReceiving = false;
+    Vector3 trainingReceptionFacing;
     Vector3 trainingEyePosition;
     std::atomic<bool> trainingEyeInitialized{false};
     unsigned int trainingContacts = 0;

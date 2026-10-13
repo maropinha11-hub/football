@@ -934,9 +934,8 @@ Vector3 HumanoidBase::FitDribbleFoot(float phase,unsigned side,const Vector3 &ro
   const Vector3 sphere=facing.GetInverse()*(match->GetBall()->Predict(0)-root)/zMultiplier;
   const Vector3 point=g[ankle].GetInverse()*(sphere-positions[ankle]);
   Vector3 surface;const float gap=DribbleShoeDistance(point,side,&surface)*zMultiplier-.11f;
-  if(gap>=shoeContactSkin && (!reachBall || gap>.012f))return Vector3(0);
-  const Vector3 direction=gap<shoeContactSkin?Vector3(0,-1,0):
-    (sphere-positions[ankle]-g[ankle]*surface).Get2D().GetNormalized(Vector3(0,-1,0));
+  if(gap>=shoeContactSkin && (!reachBall || gap>.06f))return Vector3(0);
+  const Vector3 direction=(sphere-positions[ankle]-g[ankle]*surface).Get2D().GetNormalized(Vector3(0,-1,0));
   const float sign=gap>shoeContactSkin?1:-1;
   float lo=0,hi=.08f/zMultiplier;
   for(unsigned iteration=0;iteration<20;++iteration) {
@@ -991,8 +990,8 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
     // A turn's native interception offsets can keep moving the root sideways
     // after its logical direction is already forward. Finish that recovery
     // before predicting alternating contacts along the new straight path.
-    const bool settled=movement.GetNormalized(0).GetDotProduct(intent.GetNormalized(0))>(dribbleLoopOwnsBall?.99f:.998f) &&
-      (dribbleLoopOwnsBall || std::fabs(movement.GetLength()-human->GetFloatVelocity())<.35f);
+    const bool settled=movement.GetNormalized(0).GetDotProduct(intent.GetNormalized(0))>.99f &&
+      (dribbleLoopOwnsBall || std::fabs(movement.GetLength()-human->GetFloatVelocity())<.7f);
     dribbleLoopRequested=!dribbleLoopRecovering && (wasRequested || dribbleTrialBlend==0) &&
       forward && human->GetActionMode()==0 &&
       !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) && human->GetFloatVelocity()>.8f && human->GetFloatVelocity()<6.0f &&
@@ -1003,9 +1002,13 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
     // Match the first fully blended pose to the freely rolling ball 160 ms
     // ahead. Until such a contact is reachable, keep native recovery active.
     match->GetBall()->CalculatePrediction();
-    const Vector3 movement=spatialState.actualMovement.Get2D();
-    Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
-    const Vector3 sphere=facing.GetInverse()*(match->GetBall()->Predict(int(dribbleTransitionSeconds*1000))-
+    auto *human=static_cast<HumanController*>(player->GetExternalController());
+    const Vector3 movement=human->GetDirection()*human->GetFloatVelocity();
+    Quaternion facing;facing.SetAngleAxis(FixAngle(human->GetDirection().GetAngle2D()),Vector3(0,0,1));
+    // The loop takes over movement immediately. Predict that requested path,
+    // not a native recovery's transient smuggle velocity. The ball already
+    // advanced this tick; the player advances after this intent query.
+    const Vector3 sphere=facing.GetInverse()*(match->GetBall()->Predict(int(dribbleTransitionSeconds*1000)-10)-
       spatialState.position.Get2D()-movement*dribbleTransitionSeconds)/zMultiplier;
     float best=100;
     for(int frame=0;frame<dribbleTrialAnimation->GetEffectiveFrameCount();++frame) {
@@ -1013,6 +1016,7 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
       SampleDribbleLoop(float(frame),local,global,positions);
       for(unsigned side=0;side<2;++side) {
         const unsigned ankle=side?12:9;
+        if(std::fabs(float(frame)-dribbleContactFrames[side])>4)continue;
         // A low, advancing toe behind the sphere, never a heel or backswing.
         if(positions[ankle].coords[2]>.25f || sphere.coords[1]>positions[ankle].coords[1]-.08f ||
             positions[ankle].coords[1]>-.02f)continue;
@@ -1024,7 +1028,10 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
         if(error<best){best=error;dribbleEntryPhase=float(frame)-movement.GetLength()*100/dribbleTrialSourceSpeed*dribbleTransitionSeconds;}
       }
     }
-    if(best>.008f)dribbleLoopRequested=false;
+    if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%200==0)
+      printf("TRAINING_FBX_ENTRY t=%lu best=%.5f actual_speed=%.5f input_speed=%.5f\n",match->GetActualTime_ms(),best,
+        movement.GetLength(),static_cast<HumanController*>(player->GetExternalController())->GetFloatVelocity());
+    if(best>.025f)dribbleLoopRequested=false;
   }
   if(!dribbleLoopRequested)dribbleLoopOwnsBall=false;
 }
@@ -1032,6 +1039,12 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
 void HumanoidBase::ProcessDribbleLoop() {
   if(!dribbleTrialAnimation)return;
   const Vector3 rootMovement=spatialState.actualMovement.Get2D();
+  Vector3 plannedMovement=rootMovement;
+  if(currentAnim->functionType==e_FunctionType_Movement) {
+    const Vector3 outgoing=CalculateOutgoingMovement(currentAnim->positions).Get2D();
+    if(outgoing.GetLength()>.8f && outgoing.GetNormalized(0).GetDotProduct(rootMovement.GetNormalized(0))>.99f)
+      plannedMovement=outgoing;
+  }
   const float rate=rootMovement.GetLength()*100/dribbleTrialSourceSpeed;
   const float period=float(dribbleTrialAnimation->GetEffectiveFrameCount());
   Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
@@ -1049,11 +1062,13 @@ void HumanoidBase::ProcessDribbleLoop() {
   const float before=dribbleTrialPhase;
   if(dribbleTrialBlend>0)dribbleTrialPhase+=rate*.01f;
   if(dribbleLoopRequested && dribbleTrialBlend>.999f && rate>0)for(unsigned side=0;side<2;++side) {
+    const bool preferRight=GetConfiguration()->GetBool("training_prefer_right_foot",true);
+    if(preferRight && dribbleLoopOwnsBall && side==0)continue;
     const float marker=dribbleContactFrames[side];
     const float windowStart=(std::floor((dribbleTrialPhase-marker+4)/period))*period+marker-4;
     auto *actor=static_cast<Player*>(player);
     const unsigned long elapsed=match->GetActualTime_ms()-actor->GetLastTouchTime_ms();
-    const float cooldown_ms=8000/rate+20;
+    const float cooldown_ms=preferRight?period/rate*450:8000/rate+20;
     if(dribbleLoopOwnsBall && dribbleTrialPhase>windowStart+8) {
       if(before<=windowStart+8 && dribbleLoopOwnsBall && elapsed>period/rate*400) {
         if(GetConfiguration()->GetBool("training_telemetry",false))
@@ -1067,8 +1082,10 @@ void HumanoidBase::ProcessDribbleLoop() {
     }
     if(dribbleLoopOwnsBall && elapsed<=cooldown_ms)continue;
     if(!dribbleLoopOwnsBall) {
-      // Acquire a freely rolling ball on any advancing, forward swing.
-      // Do not keep kicking it away with the unrelated native touch cycle.
+      const float offset=std::fmod(dribbleTrialPhase-marker+period*1.5f,period)-period*.5f;
+      if(std::fabs(offset)>4)continue;
+      // Acquire on the low advancing toe near its actual step marker, not
+      // on a heel that happens to pass through the ball earlier in the cycle.
       const Vector3 here=DribbleBallTarget(dribbleTrialPhase,side);
       if(-here.coords[1]<.12f ||
           DribbleBallTarget(dribbleTrialPhase+1,side).coords[1]>=
@@ -1079,17 +1096,21 @@ void HumanoidBase::ProcessDribbleLoop() {
     // current sphere position, not a sphere one step behind the player.
     match->GetBall()->CalculatePrediction();
     const float rawGap=DribbleFootGap(dribbleTrialPhase,side,root,facing);
-    if(rawGap>.012f)continue;
-    dribbleFootOffsets[side]=FitDribbleFoot(dribbleTrialPhase,side,root,facing,true);
+    if(rawGap>.06f)continue;
+    const Vector3 fitted=FitDribbleFoot(dribbleTrialPhase,side,root,facing,true);
+    const Vector3 change=fitted-dribbleFootOffsets[side];
+    dribbleFootOffsets[side]+=change.GetNormalized(0)*std::min(change.GetLength(),.003f/zMultiplier);
+    if(DribbleFootGap(dribbleTrialPhase,side,root,facing)<-.0005f)dribbleFootOffsets[side]=fitted;
     const float gap=DribbleFootGap(dribbleTrialPhase,side,root,facing);
-    if(gap>shoeContactSkin+.00001f)continue;
+    if(gap>shoeContactSkin+.00001f || gap<-.0015f)continue;
     if(!dribbleLoopOwnsBall && actor->GetLastTouchTime_ms()==match->GetActualTime_ms())continue;
-    const unsigned nextSide=1-side;
+    const unsigned nextSide=preferRight?1:1-side;
     float nextPhase=dribbleContactFrames[nextSide];
-    while(nextPhase<=dribbleTrialPhase)nextPhase+=period;
+    const float minimumPhase=dribbleTrialPhase+(nextSide==side?period*.5f:0);
+    while(nextPhase<=minimumPhase)nextPhase+=period;
     const float horizon=(nextPhase-dribbleTrialPhase)/rate;
     const int horizon_ms=std::max(10,int(std::ceil(horizon*1000/10))*10);
-    const Vector3 target=root+rootMovement*(horizon_ms*.001f)+
+    const Vector3 target=root+plannedMovement*(horizon_ms*.001f)+
       facing*DribbleBallTarget(nextPhase,nextSide);
     Ball *ball=match->GetBall();const Vector3 start=ball->Predict(0);
     Vector3 impulse=(target-start).Get2D()/(horizon_ms*.001f);
@@ -1107,6 +1128,7 @@ void HumanoidBase::ProcessDribbleLoop() {
       ball->SetMomentum(previous);dribbleLoopOwnsBall=false;continue;
     }
     ball->Touch(impulse);
+    match->NotifyTrainingTouch(e_FunctionType_BallControl,false);
     ball->TriggerBallTouchSound(pow(NormalizedClamp(impulse.GetLength(),4.0f,40.0f),.7f));
     match->GetTeam(actor->GetTeam()->GetID())->SetLastTouchPlayer(actor,
       GetTouchTypeForBodyPart(side?"right_foot":"left_foot"));
@@ -1124,7 +1146,14 @@ void HumanoidBase::ProcessDribbleLoop() {
     match->GetBall()->CalculatePrediction();
     for(unsigned side=0;side<2;++side) {
       const bool touching=static_cast<Player*>(player)->GetLastTouchTime_ms()==match->GetActualTime_ms();
-      dribbleFootOffsets[side]=FitDribbleFoot(dribbleTrialPhase,side,root,facing,touching);
+      const float markerOffset=std::fmod(dribbleTrialPhase-dribbleContactFrames[side]+period*1.5f,period)-period*.5f;
+      const bool preparing=dribbleLoopRequested && markerOffset>=-14 && markerOffset<=4 &&
+          (!dribbleLoopOwnsBall || !GetConfiguration()->GetBool("training_prefer_right_foot",true) || side==1);
+      const Vector3 fitted=FitDribbleFoot(dribbleTrialPhase,side,root,facing,touching || preparing);
+      const Vector3 change=fitted-dribbleFootOffsets[side];
+      dribbleFootOffsets[side]+=change.GetNormalized(0)*std::min(change.GetLength(),.003f/zMultiplier);
+      // Only an immediate overlap may bypass the gradual reach/return.
+      if(DribbleFootGap(dribbleTrialPhase,side,root,facing)<-.0005f)dribbleFootOffsets[side]=fitted;
     }
     if(GetConfiguration()->GetBool("training_telemetry",false) && dribbleLoopRequested && dribbleTrialBlend>.999f)
       printf("TRAINING_FBX_GEOMETRY t=%lu gap_left=%.6f gap_right=%.6f fit_left=%.6f fit_right=%.6f\n",
@@ -1161,6 +1190,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   const bool chestTail=chestAnimation && chestPhase>0 && chestPhase<chestAnimation->GetEffectiveFrameCount() &&
       match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms();
   buf_chestPhase.SetValue(chestActive || chestTail ? chestPhase : -1.0f,snapshotTime_ms);
+  buf_trainingLook.SetValue(match->GetTrainingLookDirection(),snapshotTime_ms);
   buf_dribblePhase.SetValue(dribbleTrialPhase,snapshotTime_ms);
   buf_dribbleBlend.SetValue(dribbleTrialBlend,snapshotTime_ms);
   Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
@@ -1202,6 +1232,7 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
   fetchedChestPhase=buf_chestPhase.GetValue(putTime_ms);
+  fetchedTrainingLook=buf_trainingLook.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialPhase=buf_dribblePhase.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialBlend=smoothBlend(buf_dribbleBlend.GetValue(putTime_ms));
   for(unsigned side=0;side<2;++side)fetchedDribbleFootOffsets[side]=buf_dribbleFootOffsets[side].GetValue(putTime_ms);
@@ -1382,12 +1413,14 @@ void HumanoidBase::Put() {
       const Vector3 point=ankle->GetDerivedRotation().GetInverse()*(sphere-ankle->GetDerivedPosition());
       if(DribbleShoeDistance(point,side)*zMultiplier<.11f+shoeContactSkin) {
         float lo=0,hi=.08f/zMultiplier;
-        const Vector3 backwards=ankle->GetDerivedRotation().GetInverse()*(facing*Vector3(0,1,0));
+        Vector3 surface;DribbleShoeDistance(point,side,&surface);
+        const Vector3 normal=(ankle->GetDerivedRotation()*(point-surface)).Get2D().GetNormalized(facing*Vector3(0,-1,0));
+        const Vector3 backwards=ankle->GetDerivedRotation().GetInverse()*-normal;
         for(unsigned iteration=0;iteration<20;++iteration) {
           const float amount=(lo+hi)*.5f;
           if(DribbleShoeDistance(point-backwards*amount,side)*zMultiplier-.11f<shoeContactSkin)lo=amount;else hi=amount;
         }
-        fetchedDribbleFootOffsets[side].coords[1]+=hi;
+        fetchedDribbleFootOffsets[side]+=facing.GetInverse()*-normal*hi;
         SampleDribbleLoop(phase,local,global,positions,fetchedDribbleFootOffsets);
         for(unsigned bone=side?10:7;bone<(side?13:10);++bone)
           nodeMap.at(pes3::nativeBoneNames[bone])->SetRotation(local[bone],false);
@@ -1425,6 +1458,7 @@ void HumanoidBase::Put() {
   }
 
   if(!studyApplied)PutTrainingContactPose();
+  if(!studyApplied)PutTrainingHeadLook();
   UpdateFullbodyNodes();
 }
 
@@ -1556,6 +1590,8 @@ int HumanoidBase::GetIdleMovementAnimID() {
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
   chestActive=false;chestTouched=false;chestPhase=0;chestCooldown_ms=0;contactPoseBlend=0;fetchedContactBlend=0;
+  chestRecoveryBase=Vector3(0);chestAppliedMotion=Vector3(0);contactPreviousBallValid=false;bodyContactUntil_ms=0;
+  buf_trainingLook.Clear();
   buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();
   for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;buf_contactLocal[i].Clear();}
   dribbleTrialPhase=0;dribbleTrialBlend=0;dribbleLoopRequested=false;dribbleLoopOwnsBall=false;

@@ -89,6 +89,7 @@ Vector3 Ball::GetMovement() {
 }
 
 void Ball::Touch(const Vector3 &target) {
+  lowSpinFlight=false;flightAge=0;
 
   if (positionBuffer.coords[2] < 0.11f) positionBuffer.coords[2] = 0.11f;
 
@@ -103,6 +104,7 @@ void Ball::Touch(const Vector3 &target) {
 }
 
 void Ball::SetPosition(const Vector3 &target) {
+  lowSpinFlight=false;flightAge=0;
   positionBuffer.Set(target);
   momentum.Set(0);
   SetRotation(0, 0, 0, 1.0);
@@ -168,6 +170,7 @@ BallSpatialInfo Ball::CalculatePrediction() {
 
   //printf("timestep: %i\n", int(timeStep * 1000.0f));
   bool firstTime = true;
+  bool airborneLowSpin=lowSpinFlight;
 
   ballTouchesNet = false;
 
@@ -202,6 +205,7 @@ BallSpatialInfo Ball::CalculatePrediction() {
     // bounce
 
     if (nextPos.coords[2] < 0.11f) {
+      airborneLowSpin=false;
       if (momentumPredict.coords[2] < 0.0f) {
         frictionFactor = NormalizedClamp(-momentumPredict.coords[2] - 0.5f, 0.0f, 12.0f); // when the ball is slammed into the ground, there's gonna be more friction. only set it here so it is only done once (on impact)
         momentumPredict.coords[2] = -momentumPredict.coords[2] * bounce;
@@ -507,6 +511,17 @@ BallSpatialInfo Ball::CalculatePrediction() {
       momentumPredict += swerve * timeStep;
     }
 
+    // Low-spin, firm central strikes can have a small unsteady wake. This
+    // bounded model is deterministic and is also used by the predictor.
+    if(airborneLowSpin && nextPos.coords[2]>.15f) {
+      const float speed=momentumPredict.GetLength();
+      const float strength=NormalizedClamp(speed,18.0f,32.0f)*.65f;
+      const float age=flightAge+predictTime_ms*.001f;
+      const Vector3 sideways=Vector3(0,0,1).GetCrossProduct(momentumPredict.Get2D().GetNormalized(0));
+      const float flutter=std::sin(age*17.0f)+.35f*std::sin(age*29.0f);
+      momentumPredict+=(sideways*(strength*flutter)+Vector3(0,0,strength*.25f*std::sin(age*21.0f)))*timeStep;
+    }
+
 
     // predict next ms
 
@@ -577,6 +592,10 @@ void Ball::Process() {
 
   BallSpatialInfo spatialInfo = CalculatePrediction();
   momentum = spatialInfo.momentum;
+  if(lowSpinFlight) {
+    flightAge+=.01f;
+    if(Predict(10).coords[2]<=.111f)lowSpinFlight=false;
+  }
   rotation_ms = spatialInfo.rotation_ms;
 
   positionBuffer = Predict(10);
@@ -607,6 +626,7 @@ void Ball::Put() {
 }
 
 void Ball::ResetSituation(const Vector3 &focusPos) {
+  lowSpinFlight=false;flightAge=0;
   momentum = Vector3(0);
   rotation_ms = QUATERNION_IDENTITY;
   for (unsigned int i = 0; i < ballPredictionSize_ms / 10; i++) {

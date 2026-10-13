@@ -21,6 +21,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   lastGoalScorer = 0;
   trainingResetAt_ms = 0;
   trainingKnockOnUntil_ms = 0;
+  trainingReceiving=false;trainingReceptionFacing=direction;
   lastTouchTeamID = -1;
   for (unsigned int i = 0; i < e_TouchType_SIZE; ++i) lastTouchTeamIDs[i] = -1;
   teams[0]->ResetSituation(ballPosition);
@@ -95,6 +96,7 @@ void Match::LaunchTrainingBall(int delivery) {
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
+  if(IsFirstPerson() && trainingReceiving)return trainingReceptionFacing*stick.coords[1];
   return IsFirstPerson() ? trainingView.movement(stick) : stick;
 }
 
@@ -109,15 +111,29 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   look.coords[0] += (events.GetKeyboardState(SDLK_RIGHT) ? 1.0f : 0.0f) - (events.GetKeyboardState(SDLK_LEFT) ? 1.0f : 0.0f);
   look.coords[1] += (events.GetKeyboardState(SDLK_DOWN) ? 1.0f : 0.0f) - (events.GetKeyboardState(SDLK_UP) ? 1.0f : 0.0f);
   const Vector3 delta = ball->Predict(0) - designatedPossessionPlayer->GetPosition();
+  // Keep the original interception assistance for an approaching pass, but
+  // do not turn every loose ball or the player's own shot into a reception.
+  bool receiving=false;
+  const Vector3 incoming=ball->GetMovement();
+  if(delta.Get2D().GetLength()<14 && incoming.Get2D().GetLength()>2 &&
+      delta.Get2D().GetDotProduct(incoming.Get2D())<0 &&
+      designatedPossessionPlayer->GetLastTouchBias(350)<.01f) {
+    for(unsigned ms=100;ms<=1400;ms+=50) {
+      const Vector3 arrival=ball->Predict(ms)-designatedPossessionPlayer->GetPosition();
+      if(arrival.Get2D().GetLength()<1.25f && arrival.coords[2]<2.5f) {receiving=true;break;}
+    }
+  }
+  if(receiving && !trainingReceiving)trainingReceptionFacing=designatedPossessionPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+  trainingReceiving=receiving;
   const float relativeSpeed = (ball->GetMovement() - designatedPossessionPlayer->GetMovement()).GetLength();
   // Hysteresis keeps the head/body mode from flickering between individual dribble touches.
   // A sprint is about 8 m/s: allow a small margin when approaching a still
   // ball, so the original reception assistance engages before body contact.
   const bool closeControl = delta.Get2D().GetLength() < (trainingView.withBall ? 2.3f : 1.5f) &&
-      delta.coords[2] < (trainingView.withBall ? 1.4f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
+      delta.coords[2] < (trainingView.withBall ? 1.65f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
   const bool recoveringKnockOn = trainingKnockOnUntil_ms > actualTime_ms &&
       delta.Get2D().GetLength() < 5.0f && delta.coords[2] < 1.4f && relativeSpeed < 12.0f;
-  const bool controlled = closeControl || recoveringKnockOn;
+  const bool controlled = closeControl || recoveringKnockOn || trainingReceiving;
   // Locomotion heading reflects where the feet are actually travelling.
   // A torso can anticipate the next touch while the current step is still
   // moving elsewhere; using that pose here makes forward drift after a turn.
@@ -132,8 +148,9 @@ void Match::UpdateTrainingView(IHIDevice *input) {
           designatedPossessionPlayer->GetMovement().GetLength() < 0.5f);
   const bool continuing = controlled && trainingView.withBall && trainingView.moving;
   const float previousTarget = trainingView.travelYaw, previousSteer = trainingView.steeringAngle;
-  trainingView.update(controlled, std::atan2(body.coords[1], body.coords[0]), input->GetDirection(), look, 0.01f,
-                      clamp(GetConfiguration()->GetReal("firstperson_look_speed", 2.1f), 0.5f, 5.0f),
+  trainingView.update(controlled, std::atan2(body.coords[1], body.coords[0]),
+                      trainingReceiving?Vector3(0):input->GetDirection(), look, 0.01f,
+                      clamp(GetConfiguration()->GetReal("firstperson_look_speed", 2.6f), 0.5f, 5.0f),
                       clamp(GetConfiguration()->GetReal("firstperson_recenter_speed", 1.3f), 0.2f, 4.0f), canRepeat);
   if (continuing && trainingView.moving &&
       std::fabs(training::angle(previousSteer - trainingView.steeringAngle)) < 0.02f &&
@@ -189,6 +206,9 @@ void Match::ProcessTraining() {
   IHIDevice *input = controllers[trainingController];
   unsigned int buttons = (input->GetButton(e_ButtonFunction_Start) ? 1u : 0u)
                        | (input->GetButton(e_ButtonFunction_Select) ? 2u : 0u);
+  if(input->GetButton(e_ButtonFunction_Sprint))buttons|=128u;
+  if(!(buttons&128u) && (trainingPreviousButtons&128u) && trainingView.withBall)
+    trainingKnockOnUntil_ms=actualTime_ms+1600;
   if ((buttons & 1u) && !(trainingPreviousButtons & 1u)) pause = !pause;
   if ((buttons & 2u) && !(trainingPreviousButtons & 2u)) ResetTraining(trainingExercise);
   if (trainingController > 0) {
