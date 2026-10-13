@@ -121,7 +121,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
-        "Teste da animacao DefenseJog_F: L3 (clique no analogico esquerdo)\n"
+        "Teste da animacao DefenseJog_LoopF: L3 (clique no analogico esquerdo)\n"
         "ou T alterna entre a conducao original e a nova. Comeca na original.\n"
         "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n"
         "Corridas, viradas e jogadas usam as animacoes e contatos nativos.\n\n"
@@ -180,7 +180,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            ("Windows x64 — teste de conducao DefenseJog_F\r\n\r\n" if approved_binary is None else
+            ("Windows x64 — teste de conducao DefenseJog_LoopF\r\n\r\n" if approved_binary is None else
              "Windows x64 — gameplay original com primeira pessoa\r\n\r\n") +
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
@@ -197,6 +197,6 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
         output.write(stage / "training.config", "training.config")
         if approved_binary is None:
-            for path in sorted((stage / "media" / "training").glob("DefenseJog_F.*")):
+            for path in sorted((stage / "media" / "training").glob("DefenseJog_LoopF.*")):
                 output.write(path, path.relative_to(stage))
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

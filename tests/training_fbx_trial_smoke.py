@@ -29,7 +29,7 @@ def retain(name,samples):
           {'maximum':max(distances),'ending':distances[-1],'samples':len(samples)})
 try:
     with NativeTraining(args.build,args.output/'game',display=args.display,analog_pad=True,camera=1)as game:
-        check('converted FBX is loaded','TRAINING_FBX_LOADED frames=184'in game.log.read_text(),'184 native pose samples')
+        check('converted FBX is loaded','TRAINING_FBX_LOADED frames=71'in game.log.read_text(),'71 native pose samples')
         game.reset();game.pad(1,0);original=game.advance(3000)
         retain('original forward dribble',original)
         check('original is the default','TRAINING_FBX_POSE'not in game.log.read_text(),'No imported pose before toggle')

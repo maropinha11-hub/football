@@ -339,7 +339,7 @@ class HumanoidBase {
     float pes3RootCorrection = 0;
     std::unique_ptr<Animation> dribbleTrialAnimation;
     float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
-    float dribbleTrialSourceSpeed = 4.3653779f;
+    float dribbleTrialSourceSpeed = 3.2055483f;
     unsigned long dribbleTrialSnapshot_ms = 0;
 
     AnimApplyBuffer animApplyBuffer;

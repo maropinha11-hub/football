@@ -1,20 +1,21 @@
 {
   "result": "passed",
-  "baseline": "40bdfc530a3c68e256be488253bb4a93645c06ce",
+  "native_gameplay_baseline": "40bdfc530a3c68e256be488253bb4a93645c06ce",
+  "replaces_animation_trial": "bde40869fb2603264f2c48aebf0cd18bdf5e4e1c",
   "source": {
-    "source": "DefenseJog_F.fbx",
-    "source_sha256": "79d7e025544d0562f03634712c0cd2ca0933dc106412602451635ebf898f6f90",
+    "source": "DefenseJog_LoopF.fbx",
+    "source_sha256": "90f275578c41ea87269950c99d4d2ae682e4b31a68251bb7d604929da5ea7ee5",
     "blender": "4.3.2",
     "source_fps": 30.0,
     "source_frame_range": [
       1.0,
-      56.0
+      22.0
     ],
-    "duration_seconds": 1.8333333333333333,
+    "duration_seconds": 0.7,
     "baked_fps": 100,
-    "samples": 184,
-    "source_travel_m": 8.003192741348654,
-    "source_speed_mps": 4.365377858917448,
+    "samples": 71,
+    "source_travel_m": 2.243883827065032,
+    "source_speed_mps": 3.205548324378617,
     "native_bones": [
       "body",
       "middle",
@@ -32,31 +33,38 @@
     ],
     "root_xy_imported": false,
     "ball_events_in_source": false,
-    "maximum_segment_direction_error": 3.6983709472390583e-07,
+    "maximum_segment_direction_error": 3.82817762454305e-07,
     "maximum_source_loop_angle_error_rad": 0.0,
     "minimum_foot_clearance_m": 0.008000000000000007,
-    "minimum_toe_forward_dot": -0.7704371213912964,
+    "minimum_toe_forward_dot": -0.575492262840271,
     "native_root_height_range_m": [
-      0.8695794777870178,
-      0.993837996006012
+      0.92331902551651,
+      0.9755560593605042
     ],
-    "output_sha256": "ad77cd34f5fd5bd81c15b00840d1442ac00d60c39ed4ce00ab70fc2ad5ad31ec"
+    "output_sha256": "d6ea625fd25b9a5c75a7ed25a3b7dc22da4397c60fab5c190891e11fd6bc1727"
   },
-  "converter_reproduction_identical": true,
+  "conversion": {
+    "result": "passed",
+    "samples": 71,
+    "maximum_quaternion_norm_error": 2.825741121093017e-07,
+    "maximum_adjacent_angle_rad": 0.15930599112864394,
+    "exact_loop_closure": true,
+    "physics_fp_controls_and_config_unchanged": true
+  },
   "rendered_new_animation": {
     "result": "passed",
     "checks": [
       {
         "check": "converted FBX is loaded",
         "result": "passed",
-        "evidence": "184 native pose samples"
+        "evidence": "71 native pose samples"
       },
       {
         "check": "original forward dribble",
         "result": "passed",
         "evidence": {
-          "maximum": 0.5292000000000001,
-          "ending": 0.44690001118818456,
+          "maximum": 0.5303000000000001,
+          "ending": 0.45180001106684403,
           "samples": 30
         }
       },
@@ -74,8 +82,8 @@
         "check": "new forward dribble retains native ball control",
         "result": "passed",
         "evidence": {
-          "maximum": 0.46816314464083914,
-          "ending": 0.46816314464083914,
+          "maximum": 0.4823941334634999,
+          "ending": 0.47152020105187603,
           "samples": 35
         }
       },
@@ -83,8 +91,8 @@
         "check": "new pose visibly replaces the native gait",
         "result": "passed",
         "evidence": {
-          "pose_samples": 27,
-          "maximum_change": 1.0708
+          "pose_samples": 26,
+          "maximum_change": 0.8382
         }
       },
       {
@@ -92,8 +100,8 @@
         "result": "passed",
         "evidence": {
           "phase_range": [
-            5.1013,
-            179.8237
+            2.895,
+            69.394
           ]
         }
       },
@@ -116,7 +124,7 @@
         "check": "rendered mesh stays finite and preserves rigid lengths",
         "result": "passed",
         "evidence": {
-          "samples": 27,
+          "samples": 26,
           "unique_vertices": [
             542.0
           ],
@@ -126,19 +134,19 @@
       {
         "check": "rendered shoe vertices stay above the pitch",
         "result": "passed",
-        "evidence": 0.012739
+        "evidence": 0.013217
       },
       {
         "check": "native contacts retain their original lower-body pose",
         "result": "passed",
-        "evidence": 2
+        "evidence": 1
       },
       {
         "check": "RB remains native",
         "result": "passed",
         "evidence": {
-          "maximum": 1.0352496172421413,
-          "ending": 0.7996818492375606,
+          "maximum": 1.0339161909942212,
+          "ending": 0.7871024647401369,
           "samples": 12
         }
       },
@@ -151,7 +159,7 @@
         "check": "release RB retains ball",
         "result": "passed",
         "evidence": {
-          "maximum": 1.7845047099965874,
+          "maximum": 1.758414740611556,
           "ending": 0.33836941351132505,
           "samples": 18
         }
@@ -160,8 +168,8 @@
         "check": "FP turn uses approved gameplay",
         "result": "passed",
         "evidence": {
-          "maximum": 0.7009873964630177,
-          "ending": 0.6838861454949939,
+          "maximum": 0.6687446298849808,
+          "ending": 0.6521381218729663,
           "samples": 14
         }
       },
@@ -209,6 +217,8 @@
   },
   "native_gameplay_regression": {
     "result": "passed",
+    "validation_commit": "bde40869fb2603264f2c48aebf0cd18bdf5e4e1c",
+    "note": "The 29 prior native gameplay checks are retained as prior evidence. Physics, FP controls and config were compared byte-for-byte with that commit; only the visual FBX input was replaced.",
     "checks": [
       {
         "check": "ball.cpp matches original source",
@@ -506,9 +516,9 @@
   },
   "windows_package": {
     "result": "passed",
-    "archive_bytes": 31416211,
-    "archive_sha256": "49012f80d8d4717a9f515fbf3c29a86d69ce8d9615ba3aca79cbbd03c8992668",
-    "executable_sha256": "da31bcf6acc5eca26911292316d5dbe5bcd6e4acadb01c02a1fba85ee29f1f20",
+    "archive_bytes": 31381770,
+    "archive_sha256": "bade5aa4a859107bf799ed6e7760373e575cbe4598d6e1d08861b604b0917542",
+    "executable_sha256": "8f7071d6c072d34dd5e96fc62e2e930d34ac9110ddad5d754726a7bcb6346963",
     "zip_crc": "all members passed",
     "architecture": "PE32+ x86_64",
     "members": 548,
@@ -536,27 +546,27 @@
   },
   "windows_animation_resources": {
     "result": "passed",
-    "full_sha256": "49012f80d8d4717a9f515fbf3c29a86d69ce8d9615ba3aca79cbbd03c8992668",
-    "update_sha256": "33669bf825451adeb106f8f990f0ebef6093d400873d3f44416f09de55e2ef26",
+    "full_sha256": "bade5aa4a859107bf799ed6e7760373e575cbe4598d6e1d08861b604b0917542",
+    "update_sha256": "613bb0de87393cfdeff2fbda2adcf4f93c8085aec5e017e4e34f38e8928ea7ed",
     "matching_executable_config_bat_and_clip": true,
     "uploaded_bat_identical": true,
     "new_animation_in_both_archives": true,
+    "old_animation_removed": true,
     "new_binary_markers_present": true,
     "default_animation": "native original",
-    "update_bytes": 1547194
+    "update_bytes": 1512754
   },
   "scope": {
-    "new_animation": "visual forward dribble trial",
+    "new_animation": "DefenseJog_LoopF visual forward dribble trial",
     "physics_and_ball_events": "approved native implementation",
     "toggle": "L3 or T; native original at startup",
-    "first_person_controls": "approved baseline",
+    "first_person_controls": "unchanged approved baseline",
     "source_contains_ball_events": false,
     "windows_hardware_run": false
   },
-  "visual_inspection": "Rendered close camera: body proportions, limb sides, shoe support and changed arm/leg movement checked.",
-  "commands": [
-    "python3 tests/training_fbx_trial_smoke.py --build build --output /tmp/fbx-trial --display :94",
-    "python3 tests/training_original_fps_smoke.py --build build --output /tmp/fbx-native --display :95",
+  "visual_inspection": "Four rendered close-camera phases checked for limb orientation, proportions, shoe support and replacement movement.",
+  "commands_executed": [
+    "python3 tests/training_fbx_trial_smoke.py --build build --output /tmp/football-loop-fbx-trial --display :94",
     "ctest --test-dir build --output-on-failure",
     "python3 scripts/package-windows.py"
   ]

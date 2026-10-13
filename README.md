@@ -8,7 +8,7 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
-O [teste Windows de condução DefenseJog_F](artifacts/football-training-windows-x86_64.zip)
+O [teste Windows de condução DefenseJog_LoopF](artifacts/football-training-windows-x86_64.zip)
 inclui a animação FBX enviada pelo usuário, adaptada ao esqueleto nativo.
 Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
 L3 (clicar no analógico esquerdo) ou T alterna original/nova; a original é
@@ -165,7 +165,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Virar sem bola / olhar com bola | Analógico direito | Setas |
 | Correr | RB + analógico | Shift + WASD |
 | Reservado no treino | RT | Espaço |
-| Alternar condução original / DefenseJog_F | Clique do analógico esquerdo (L3) | T |
+| Alternar condução original / DefenseJog_LoopF | Clique do analógico esquerdo (L3) | T |
 | Passe curto | A | J |
 | Passe em profundidade | Y | I |
 | Passe alto / carrinho sem bola | B | L |

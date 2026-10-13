@@ -1,17 +1,17 @@
 {
-  "source": "DefenseJog_F.fbx",
-  "source_sha256": "79d7e025544d0562f03634712c0cd2ca0933dc106412602451635ebf898f6f90",
+  "source": "DefenseJog_LoopF.fbx",
+  "source_sha256": "90f275578c41ea87269950c99d4d2ae682e4b31a68251bb7d604929da5ea7ee5",
   "blender": "4.3.2",
   "source_fps": 30.0,
   "source_frame_range": [
     1.0,
-    56.0
+    22.0
   ],
-  "duration_seconds": 1.8333333333333333,
+  "duration_seconds": 0.7,
   "baked_fps": 100,
-  "samples": 184,
-  "source_travel_m": 8.003192741348654,
-  "source_speed_mps": 4.365377858917448,
+  "samples": 71,
+  "source_travel_m": 2.243883827065032,
+  "source_speed_mps": 3.205548324378617,
   "native_bones": [
     "body",
     "middle",
@@ -29,13 +29,13 @@
   ],
   "root_xy_imported": false,
   "ball_events_in_source": false,
-  "maximum_segment_direction_error": 3.6983709472390583e-07,
+  "maximum_segment_direction_error": 3.82817762454305e-07,
   "maximum_source_loop_angle_error_rad": 0.0,
   "minimum_foot_clearance_m": 0.008000000000000007,
-  "minimum_toe_forward_dot": -0.7704371213912964,
+  "minimum_toe_forward_dot": -0.575492262840271,
   "native_root_height_range_m": [
-    0.8695794777870178,
-    0.993837996006012
+    0.92331902551651,
+    0.9755560593605042
   ],
-  "output_sha256": "ad77cd34f5fd5bd81c15b00840d1442ac00d60c39ed4ce00ab70fc2ad5ad31ec"
+  "output_sha256": "d6ea625fd25b9a5c75a7ed25a3b7dc22da4397c60fab5c190891e11fd6bc1727"
 }

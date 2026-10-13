@@ -139,9 +139,9 @@ HumanoidBase::HumanoidBase(PlayerBase *player, Match *match, boost::intrusive_pt
   FillTemporalHumanoidNodes(humanoidNode, buf_TemporalHumanoidNodes);
 
   PrepareFullbodyModel(colorCoords);
-  if (TrainingEnabled() && boost::filesystem::exists("media/training/DefenseJog_F.anim")) {
+  if (TrainingEnabled() && boost::filesystem::exists("media/training/DefenseJog_LoopF.anim")) {
     dribbleTrialAnimation.reset(new Animation());
-    dribbleTrialAnimation->Load("media/training/DefenseJog_F.anim");
+    dribbleTrialAnimation->Load("media/training/DefenseJog_LoopF.anim");
     const float sourceSpeed = std::atof(dribbleTrialAnimation->GetVariable("source_speed_mps").c_str());
     if (sourceSpeed > .1f) dribbleTrialSourceSpeed = sourceSpeed;
     printf("TRAINING_FBX_LOADED frames=%d\n", dribbleTrialAnimation->GetFrameCount());
@@ -824,7 +824,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   const bool requested = GetConfiguration()->GetBool("training_fbx_dribble", false) && trialEligible;
   dribbleTrialBlend = clamp(dribbleTrialBlend + (requested ? 1 : -1) * trialDt / .16f, 0.0f, 1.0f);
   if (dribbleTrialAnimation && dribbleTrialBlend > 0) {
-    // FBX root travels 8.003 m in 1.833 s; advance the visual cycle by the
+    // Use the source root speed to advance the visual cycle by the
     // real player pace, leaving root translation and simulation timing native.
     dribbleTrialPhase = std::fmod(dribbleTrialPhase + spatialState.movement.GetLength() * trialDt * 100 / dribbleTrialSourceSpeed,
                                  float(dribbleTrialAnimation->GetEffectiveFrameCount()));

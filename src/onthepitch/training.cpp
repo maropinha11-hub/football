@@ -119,7 +119,7 @@ void Match::ProcessTraining() {
   auto toggleDribbleAnimation = [this]() {
     const bool enabled = !GetConfiguration()->GetBool("training_fbx_dribble", false);
     GetConfiguration()->SetBool("training_fbx_dribble", enabled);
-    SpamMessage(enabled ? "Conducao: DefenseJog_F | L3/T: original" : "Conducao: original | L3/T: DefenseJog_F", 4000);
+    SpamMessage(enabled ? "Conducao: DefenseJog_LoopF | L3/T: original" : "Conducao: original | L3/T: DefenseJog_LoopF", 4000);
     printf("TRAINING_FBX_TOGGLE enabled=%d\n", enabled ? 1 : 0);
     fflush(stdout);
   };

@@ -1,10 +1,15 @@
-# Teste de condução DefenseJog_F
+# Teste de condução DefenseJog_LoopF
 
 O FBX enviado pelo usuário foi adaptado ao esqueleto de 13 ossos do jogador
 Gameplay Football. Os comprimentos e as proporções do modelo nativo são
 preservados. O arquivo contém locomoção Biped, sem bola ou marcadores de
 contato com ela; nesta primeira comparação, os eventos de toque, a física,
 a velocidade e os controles continuam na base aprovada `40bdfc5`.
+
+Este clip substitui o `DefenseJog_F` enviado anteriormente. O novo arquivo
+tem um ciclo fechado de 0,7 segundo (quadros 1–22 a 30 fps), convertido em
+71 amostras; a cadência acompanha o deslocamento real do jogador usando
+a velocidade medida na animação, de aproximadamente 3,206 m/s.
 
 ## Jogar e comparar
 
@@ -33,15 +38,15 @@ animação. A primeira pessoa permanece com a cabeça local oculta.
 
 ## Reproduzir a conversão
 
-O arquivo original está em `assets/animation-sources/DefenseJog_F.fbx`.
+O arquivo original está em `assets/animation-sources/DefenseJog_LoopF.fbx`.
 O conversor precisa de Blender 4.3 ou posterior; quem apenas joga o pacote
 Windows não precisa instalar Blender.
 
 ```bash
 blender -b --threads 2 --python-exit-code 1 \
   --python tools/animations/import_fbx.py -- \
-  assets/animation-sources/DefenseJog_F.fbx \
-  data/media/training/DefenseJog_F.anim
+  assets/animation-sources/DefenseJog_LoopF.fbx \
+  data/media/training/DefenseJog_LoopF.anim
 ```
 
 `tools/animations/native_rig_reference.json` registra os deslocamentos e
