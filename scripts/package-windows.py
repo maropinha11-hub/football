@@ -124,7 +124,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Teste da animacao DefenseJog_LoopF: L3 (clique no analogico esquerdo)\n"
         "ou T alterna entre a conducao original e a nova. Comeca na original.\n"
         "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n"
-        "Corridas, viradas e jogadas usam as animacoes e contatos nativos.\n\n"
+        "O ciclo novo toca completo; cada contato calcula o impulso ao proximo pe.\n"
+        "Corridas, viradas, jogadas e a opcao original continuam nativas.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
@@ -191,7 +192,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
              "L3 (clique no analogico esquerdo) ou T alterna original/nova.\r\n"
              "Comeca na original; conduza reto com bola, sem corrida, para testar.\r\n"
              "R3 alterna as cameras para ver o corpo completo.\r\n"
-             "Fisica, comandos e contatos da base aprovada continuam nativos.\r\n"
+             "Ciclo completo, com impulsos calculados para o proximo contato do pe.\r\n"
+             "Fisica da bola, comandos e a opcao original continuam nativos.\r\n"
              "RB permite correr. RT continua reservado.\r\n") +
             "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")

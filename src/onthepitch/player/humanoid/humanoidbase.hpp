@@ -159,6 +159,7 @@ struct AnimApplyBuffer {
     dribbleTrialPhase = src.dribbleTrialPhase;
     dribbleTrialLegBlend = src.dribbleTrialLegBlend;
     dribbleTrialFunction = src.dribbleTrialFunction;
+    dribbleTrialFacing = src.dribbleTrialFacing;
   }
   Animation *anim;
   int frameNum;
@@ -176,6 +177,7 @@ struct AnimApplyBuffer {
   float dribbleTrialPhase = 0;
   float dribbleTrialLegBlend = 0;
   int dribbleTrialFunction = 0;
+  Quaternion dribbleTrialFacing = QUATERNION_IDENTITY;
 };
 
 struct TemporalHumanoidNode {
@@ -229,6 +231,11 @@ class HumanoidBase {
     void Put();
 
     virtual void CalculateGeomOffsets();
+    void UpdateDribbleLoopIntent();
+    void ProcessDribbleLoop();
+    void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    Vector3 DribbleBallTarget(float phase, unsigned side) const;
+    float DribbleFootGap(float phase, unsigned side, const Vector3 &root, const Quaternion &facing) const;
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -340,7 +347,10 @@ class HumanoidBase {
     std::unique_ptr<Animation> dribbleTrialAnimation;
     float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
     float dribbleTrialSourceSpeed = 3.2055483f;
-    unsigned long dribbleTrialSnapshot_ms = 0;
+    float dribbleContactFrames[2] = {0,0};
+    bool dribbleLoopRequested = false, dribbleLoopOwnsBall = false;
+    TemporalSmoother<float> buf_dribblePhase, buf_dribbleBlend;
+    TemporalSmoother<Quaternion> buf_dribbleFacing;
 
     AnimApplyBuffer animApplyBuffer;
 

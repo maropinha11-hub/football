@@ -3,8 +3,9 @@
 O FBX enviado pelo usuário foi adaptado ao esqueleto de 13 ossos do jogador
 Gameplay Football. Os comprimentos e as proporções do modelo nativo são
 preservados. O arquivo contém locomoção Biped, sem bola ou marcadores de
-contato com ela; nesta primeira comparação, os eventos de toque, a física,
-a velocidade e os controles continuam na base aprovada `40bdfc5`.
+contato com ela. O teste agora acrescenta seus próprios contatos geométricos
+para a condução reta. A física da bola, os controles e o modo original
+continuam na base aprovada `40bdfc5`.
 
 Este clip substitui o `DefenseJog_F` enviado anteriormente. O novo arquivo
 tem um ciclo fechado de 0,7 segundo (quadros 1–22 a 30 fps), convertido em
@@ -22,19 +23,30 @@ a velocidade medida na animação, de aproximadamente 3,206 m/s.
    aperte R3 duas vezes para chegar à câmera próxima. Tab faz isso no teclado.
 
 A animação nova entra na condução reta normal, com transição de 160 ms.
-Corridas, viradas, recepções, passes, chutes e movimento sem bola usam as
-animações nativas. Próximo ao instante do toque nativo, a parte inferior
-do corpo também retorna gradualmente à pose nativa para preservar a
-posição do pé no contato. É um teste visual de locomoção; adicionar um
-novo ciclo completo de condução com contatos próprios exige esses
-marcadores e a sincronização da bola em uma próxima etapa.
+O ciclo inteiro, incluindo as pernas e o tronco, segue do início ao fim em
+loop. A fase avança no passo físico de 10 ms e é interpolada no mesmo tempo
+histórico usado para desenhar a bola e o jogador. Não reinicia quando o
+seletor nativo troca um passo e não retorna às pernas nativas a cada toque.
 
-O ciclo acompanha a velocidade real do jogador, sem alterar o relógio da
-simulação. O deslocamento horizontal do FBX é removido: a posição continua
-controlada pelo jogo. Rotações são convertidas por direção dos segmentos,
-e o apoio visual usa os volumes dos calçados nativos. A pose visual é
-aplicada após o cache nativo para não contaminar a física nem a próxima
-animação. A primeira pessoa permanece com a cabeça local oculta.
+Os pontos de contato são recuperados a partir do movimento dos calçados
+adaptados ao modelo. Uma esfera tangente ao volume orientado do calçado
+marca o local do próximo toque. O impulso é calculado com o preditor
+original da bola, incluindo grama, arrasto e rotação, para que a bola alcance
+esse local junto com o próximo passo. A bola segue a física entre contatos;
+não é reposicionada nem presa ao pé. Um toque só é aceito com proximidade
+geométrica, uma vez por pé e ciclo. Na entrada, a bola rola livremente até
+encontrar um pé em avanço. Se o domínio terminar, o modo nativo retoma o
+controle; uma bola distante não é puxada para o loop.
+
+Durante o controle pelo loop, os antigos impulsos de condução e a correção
+de posição para interceptar a bola ficam suspensos. Isso evita duas lógicas
+disputarem o mesmo movimento. RB, viradas, recepções, passes, chutes,
+movimento sem bola e a opção original continuam com o comportamento nativo.
+
+O deslocamento horizontal do FBX é removido: os comandos nativos movem o
+jogador. Rotações são convertidas por direção dos segmentos, e o apoio
+visual usa os volumes dos calçados nativos. A pose é aplicada após o cache
+nativo. A primeira pessoa permanece com a cabeça local oculta.
 
 ## Reproduzir a conversão
 

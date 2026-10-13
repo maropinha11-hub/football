@@ -119,6 +119,8 @@ void Humanoid::Process() {
   }
 
   CalculateSpatialState();
+  UpdateDribbleLoopIntent();
+  const bool loopControlsMotion=dribbleLoopRequested && dribbleTrialBlend>.999f;
   spatialState.positionOffsetMovement = Vector3(0);
 
   currentAnim->frameNum++;
@@ -211,6 +213,9 @@ void Humanoid::Process() {
   if (mayReQueue) {
     interruptAnim = e_InterruptAnim_ReQueue;
   }
+  if(loopControlsMotion && (currentAnim->functionType==e_FunctionType_BallControl ||
+      currentAnim->movementSmuggle.GetLength()>.001f) && interruptAnim==e_InterruptAnim_None)
+    interruptAnim=e_InterruptAnim_ReQueue;
 
   if (interruptAnim != e_InterruptAnim_None) {
 
@@ -233,7 +238,17 @@ void Humanoid::Process() {
     bool preferPassAndShot = false; // pass/shot and such; in that case we want trap/ballcontrol anims to be less prefered
     for (unsigned int i = 0; i < commandQueue.size(); i++) {
 
-      const PlayerCommand &command = commandQueue.at(i);
+      PlayerCommand &command = commandQueue.at(i);
+      if(loopControlsMotion && (command.desiredFunctionType==e_FunctionType_BallControl ||
+          command.desiredFunctionType==e_FunctionType_Trap))continue;
+      if(loopControlsMotion && command.desiredFunctionType==e_FunctionType_Movement) {
+        // The loop already plans the ball's path. The match interception
+        // magnet must not bend the root towards each alternating foot target.
+        auto *human=static_cast<HumanController*>(player->GetExternalController());
+        command.desiredDirection=human->GetDirection();
+        command.desiredVelocityFloat=human->GetFloatVelocity();
+        command.desiredLookAt=spatialState.position+command.desiredDirection*10;
+      }
 
       if (command.desiredFunctionType == e_FunctionType_ShortPass ||
           command.desiredFunctionType == e_FunctionType_LongPass ||
@@ -363,7 +378,7 @@ void Humanoid::Process() {
   // ------------------------ EXPERIMENTAL ------------------------------------------------
   bool controlledBallCollision = CastPlayer()->IsControlledBallCollisionTriggered();
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
+  if (!loopControlsMotion && enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -388,7 +403,7 @@ void Humanoid::Process() {
   }
   // ---------------------- / EXPERIMENTAL ------------------------------------------------
 
-  if (currentAnim->touchFrame == currentAnim->frameNum) {
+  if (!loopControlsMotion && currentAnim->touchFrame == currentAnim->frameNum) {
 
     Vector3 desiredBallPosition;
     boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
@@ -783,6 +798,7 @@ void Humanoid::Process() {
   }
 
   animApplyBuffer.offsets = offsets;
+  ProcessDribbleLoop();
 }
 
 void Humanoid::CalculateGeomOffsets() {
@@ -2344,6 +2360,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
 
 Vector3 Humanoid::CalculateMovementSmuggle(const Vector3 &desiredDirection, float desiredVelocityFloat) {
+
+  if(dribbleLoopRequested && dribbleTrialBlend>.999f)return Vector3(0);
 
   if (!enableMovementSmuggle) return Vector3(0);
 

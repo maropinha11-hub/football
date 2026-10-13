@@ -13,8 +13,9 @@ inclui a animação FBX enviada pelo usuário, adaptada ao esqueleto nativo.
 Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
 L3 (clicar no analógico esquerdo) ou T alterna original/nova; a original é
 o padrão. Conduza reto com bola, sem RB, e use R3 para ver o corpo.
-As viradas, corridas e jogadas continuam nativas; física e controles
-aprovados permanecem. Consulte [o teste de animação](docs/ANIMACAO-FBX-TESTE.md).
+O ciclo toca completo em loop e os contatos geométricos calculam os
+impulsos para alcançar o próximo passo. Viradas, corridas, jogadas e a
+opção original continuam nativas; a física da bola permanece original. Consulte [o teste de animação](docs/ANIMACAO-FBX-TESTE.md).
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o

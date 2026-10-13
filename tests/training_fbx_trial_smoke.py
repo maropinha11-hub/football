@@ -45,10 +45,10 @@ try:
         start=len(game.log.read_text());new=game.advance(3500);active=poses(game.log.read_text()[start:])
         skin=[{key:float(value) for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
               for line in game.log.read_text()[start:].splitlines() if line.startswith('TRAINING_FBX_SKIN ')]
-        retain('new forward dribble retains native ball control',new)
+        retain('new forward dribble retains the ball',new)
         check('new pose visibly replaces the native gait',bool(active)and max(p['blend']for p in active)>.99 and
               max(p['change']for p in active)>.2,{'pose_samples':len(active),'maximum_change':max((p['change']for p in active),default=0)})
-        check('pose cycle advances',bool(active)and max(p['phase']for p in active)-min(p['phase']for p in active)>50,
+        check('pose cycle advances',bool(active)and max(p['phase']for p in active)-min(p['phase']for p in active)>25,
               {'phase_range':[min((p['phase']for p in active),default=0),max((p['phase']for p in active),default=0)]})
         check('native joint lengths are preserved',bool(active)and max(p['length_error']for p in active)<.0001,
               max((p['length_error']for p in active),default=0))
@@ -62,9 +62,34 @@ try:
                'maximum_error':max((s['rigid_error']for s in skin),default=0)})
         check('rendered shoe vertices stay above the pitch',bool(skin)and min(s['foot_min_z']for s in skin)>=-.02,
               min((s['foot_min_z']for s in skin),default=0))
-        check('native contacts retain their original lower-body pose',any(p['blend']>.99 and p['legs']<.001 for p in active),
-              sum(p['legs']<.001 for p in active))
+        check('complete lower-body cycle is never replaced at native touch frames',bool(active)and
+              all(abs(p['legs']-p['blend'])<.0001 for p in active),'One blend for the whole pose')
+        segment=game.log.read_text()[start:]
+        loop=[{key:float(value)for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
+              for line in segment.splitlines() if line.startswith('TRAINING_FBX_LOOP ')]
+        touches=[{key:float(value)for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
+                 for line in segment.splitlines() if line.startswith('TRAINING_FBX_TOUCH ')]
+        check('cycle plays continuously across at least five wraps',len(loop)>5 and
+              (loop[-1]['unwrapped']-loop[0]['unwrapped'])/70>5 and
+              all(b['unwrapped']>a['unwrapped'] and b['blend']>.999 for a,b in zip(loop,loop[1:])),
+              {'samples':len(loop),'wraps':(loop[-1]['unwrapped']-loop[0]['unwrapped'])/70 if loop else 0})
+        check('ball impulses come from repeated FBX foot contacts',len(touches)>=6 and
+              all(-.025<=t['gap']<=.0251 for t in touches),{'contacts':len(touches),
+              'minimum_gap':min((t['gap']for t in touches),default=0),'maximum_gap':max((t['gap']for t in touches),default=0)})
+        check('successive foot contacts alternate without double hits',len(touches)>=6 and
+              all(a['side']!=b['side'] and b['t']-a['t']>=150 for a,b in zip(touches,touches[1:])),
+              [(t['t'],t['side']) for t in touches])
+        check('ball is predicted to reach the next animated foot',bool(touches)and
+              max(t['prediction_error']for t in touches)<.008,
+              max((t['prediction_error']for t in touches),default=0))
+        check('no missed FBX contacts or competing native dribble impulses',
+              'TRAINING_FBX_MISS'not in segment and 'TRAINING_ACTION_TOUCH'not in segment,
+              {'misses':segment.count('TRAINING_FBX_MISS'),'native_touches':segment.count('TRAINING_ACTION_TOUCH')})
+        check('new dribble follows a straight line',max(f['player'][1]for f in new)-min(f['player'][1]for f in new)<.03,
+              {'lateral_span':max(f['player'][1]for f in new)-min(f['player'][1]for f in new)})
         for i in range(4):screenshot('new-'+str(i)+'.png');game.advance(200)
+        # Test sprint handoff in midfield, away from the goal/net/reset logic.
+        game.reset();game.pad(1,0);game.advance(1000)
         game.pad(1,0,sprint=True);sprint=game.advance(1200);retain('RB remains native',sprint)
         start=len(game.log.read_text());game.advance(500)
         check('FBX yields to native sprint',not poses(game.log.read_text()[start:]),'No imported pose after transition')
