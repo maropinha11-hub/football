@@ -84,8 +84,21 @@ try:
               all(b['unwrapped']>a['unwrapped'] and b['blend']>.999 for a,b in zip(loop,loop[1:])),
               {'samples':len(loop),'wraps':(loop[-1]['unwrapped']-loop[0]['unwrapped'])/70 if loop else 0})
         check('ball impulses come from repeated FBX foot contacts',len(touches)>=6 and
-              all(-.025<=t['gap']<=.0121 for t in touches),{'contacts':len(touches),
+              all(-.0015<=t['gap']<=.00051 for t in touches),{'contacts':len(touches),
               'minimum_gap':min((t['gap']for t in touches),default=0),'maximum_gap':max((t['gap']for t in touches),default=0)})
+        geometry=[{key:float(value)for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
+                  for line in segment.splitlines()if line.startswith('TRAINING_FBX_GEOMETRY ')]
+        check('sphere never passes through either animated shoe at physics frequency',len(geometry)>300 and
+              all(min(g['gap_left'],g['gap_right'])>=-.0015 for g in geometry),
+              {'steps':len(geometry),'minimum_gap':min((min(g['gap_left'],g['gap_right'])for g in geometry),default=0)})
+        check('rendered shoes agree with the ball collision surfaces',bool(active)and
+              min(min(p['gap_left'],p['gap_right'])for p in active)>=-.005,
+              {'minimum_rendered_gap':min((min(p['gap_left'],p['gap_right'])for p in active),default=0)})
+        check('contact correction is small, without pulling a remote ball',bool(touches)and
+              max(t['foot_fit']for t in touches)<.08,
+              max((t['foot_fit']for t in touches),default=0))
+        check('forward gait is modestly slower',4.45<sum(f['speed']for f in new)/len(new)<4.9,
+              {'mean_speed_mps':sum(f['speed']for f in new)/len(new),'previous_speed_mps':5})
         check('successive foot contacts alternate without double hits',len(touches)>=6 and
               all(a['side']!=b['side'] and b['t']-a['t']>=150 for a,b in zip(touches,touches[1:])),
               [(t['t'],t['side']) for t in touches])

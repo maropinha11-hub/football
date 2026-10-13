@@ -88,7 +88,7 @@ namespace blunted {
       void GetInterpolatedValues(const std::map<int, KeyFrame> &animation, int frame, Quaternion &orientation, Vector3 &position, bool getOrientation = true, bool getPosition = true) const;
       void ConvertToStartFacingForwardIfIdle();
       void Invert();
-      void Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms = 0, bool smooth = true, float smoothFactor = 1.0f, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos = Vector3(0), radian baseRot = 0, std::map < std::string, BiasedOffset > &offsets = emptyOffsets, MovementHistory *movementHistory = 0, int timeDiff_ms = 10, bool noPos = false, bool updateSpatial = true);
+      void Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms = 0, bool smooth = true, float smoothFactor = 1.0f, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos = Vector3(0), radian baseRot = 0, std::map < std::string, BiasedOffset > &offsets = emptyOffsets, MovementHistory *movementHistory = 0, int timeDiff_ms = 10, bool noPos = false, bool updateSpatial = true, float transitionFrames = 8);
       void Shift(int fromFrame, int offset);
 
       // returns end position - start position

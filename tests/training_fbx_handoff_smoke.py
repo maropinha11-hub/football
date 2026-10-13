@@ -39,7 +39,7 @@ try:
                   {'maximum_distance_m':max(distances),'ending_distance_m':distances[-1],
                    'lost_possession_frames':sum(not f['with_ball'] for f in forward)})
             check(name+' resumes visible-foot loop contacts',len(contacts)>=2 and
-                  max(t['gap'] for t in contacts)<=.0121,
+                  max(t['gap'] for t in contacts)<=.00051,
                   {'contacts':len(contacts),'maximum_surface_gap_m':max((t['gap'] for t in contacts),default=None),
                    'native_recovery_touches':segment.count('TRAINING_ACTION_TOUCH')})
         game.keys(['Escape'],True);game.game.wait(timeout=15)

@@ -213,8 +213,9 @@ void Humanoid::Process() {
   if (mayReQueue) {
     interruptAnim = e_InterruptAnim_ReQueue;
   }
-  if(loopControlsMotion && (currentAnim->functionType==e_FunctionType_BallControl ||
-      currentAnim->movementSmuggle.GetLength()>.001f) && interruptAnim==e_InterruptAnim_None)
+  if(loopControlsMotion && currentAnim->functionType==e_FunctionType_BallControl)
+    interruptAnim=e_InterruptAnim_Switch;
+  else if(loopControlsMotion && currentAnim->movementSmuggle.GetLength()>.001f && interruptAnim==e_InterruptAnim_None)
     interruptAnim=e_InterruptAnim_ReQueue;
 
   if (interruptAnim != e_InterruptAnim_None) {
@@ -298,6 +299,7 @@ void Humanoid::Process() {
           currentAnim->functionType == e_FunctionType_Sliding) animApplyBuffer.smoothFactor = 0.8f;
       if (currentAnim->functionType == e_FunctionType_BallControl ||
           currentAnim->functionType == e_FunctionType_Trap) animApplyBuffer.smoothFactor = 0.8f;
+      if(TrainingEnabled())animApplyBuffer.smoothFactor=std::max(animApplyBuffer.smoothFactor,.35f);
       //printf("smoothfac: %f, interrupt: %i\n", animApplyBuffer.smoothFactor, interruptAnim);
       //animApplyBuffer.offsets.clear();
 

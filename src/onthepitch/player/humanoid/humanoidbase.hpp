@@ -233,10 +233,13 @@ class HumanoidBase {
     virtual void CalculateGeomOffsets();
     void UpdateDribbleLoopIntent();
     void ProcessDribbleLoop();
-    void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions,
+                          const Vector3 *footOffsets = nullptr) const;
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
     float DribbleFootGap(float phase, unsigned side, const Vector3 &root, const Quaternion &facing) const;
-    float DribbleShoeDistance(const Vector3 &point, unsigned side) const;
+    float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
+    Vector3 FitDribbleFoot(float phase, unsigned side, const Vector3 &root, const Quaternion &facing,
+                          bool reachBall) const;
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -354,6 +357,10 @@ class HumanoidBase {
     bool dribbleLoopRecovering = false;
     unsigned long dribbleEntryTime_ms = 0;
     std::vector<std::array<Vector3,3>> dribbleShoeTriangles[2];
+    Vector3 dribbleFootOffsets[2], fetchedDribbleFootOffsets[2];
+    TemporalSmoother<Vector3> buf_dribbleFootOffsets[2];
+    TemporalSmoother<Vector3> buf_dribbleRoot;
+    Vector3 fetchedDribbleRoot;
     TemporalSmoother<float> buf_dribblePhase, buf_dribbleBlend;
     TemporalSmoother<Quaternion> buf_dribbleFacing;
 

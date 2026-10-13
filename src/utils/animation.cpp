@@ -367,7 +367,7 @@ namespace blunted {
     }
   }
 
-  void Animation::Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms, bool smooth, float smoothFactor, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos, radian baseRot, std::map < std::string, BiasedOffset > &offsets, MovementHistory *movementHistory, int timeDiff_ms, bool noPos, bool updateSpatial) {
+  void Animation::Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms, bool smooth, float smoothFactor, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos, radian baseRot, std::map < std::string, BiasedOffset > &offsets, MovementHistory *movementHistory, int timeDiff_ms, bool noPos, bool updateSpatial, float transitionFrames) {
 
     // simple keyframe-to-keyframe version
 
@@ -457,7 +457,7 @@ namespace blunted {
           movementHistoryEntry = &movementHistory->back();
         }
 
-        float beginBias = pow(curve(1.0f - NormalizedClamp(frame, 0, 8), 1.0f), 0.5f);
+        float beginBias = pow(curve(1.0f - NormalizedClamp(frame, 0, std::max(1.0f,transitionFrames)), 1.0f), 0.5f);
         float currentBias = 0.0f + beginBias * smoothFactor * 0.5f;
 
         if (nodeAnimation->nodeName.compare("player") != 0) {

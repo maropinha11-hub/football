@@ -13,8 +13,9 @@ inclui a animação FBX enviada pelo usuário, adaptada ao esqueleto nativo.
 Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
 L3 (clicar no analógico esquerdo) ou T alterna original/nova; a original é
 o padrão. Conduza reto com bola, sem RB, e use R3 para ver o corpo.
-O ciclo toca completo em loop, com uma leve inclinação do tronco. Os contatos
-usam a superfície da chuteira e calculam os impulsos para alcançar o próximo
+O ciclo toca completo em loop, com uma leve inclinação do tronco e da cabeça.
+A condução FBX tem cadência 6% mais calma e transições suaves de 240 ms.
+Os contatos acompanham continuamente a superfície da chuteira e calculam os impulsos para alcançar o próximo
 passo. A retomada depois de virar espera o corpo estabilizar sem abandonar
 o domínio da bola. Viradas, corridas, jogadas e a
 opção original continuam nativas; a física da bola permanece original. Consulte [o teste de animação](docs/ANIMACAO-FBX-TESTE.md).
