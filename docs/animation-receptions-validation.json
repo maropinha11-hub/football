@@ -3,7 +3,7 @@
   "date": "2026-10-13",
   "base_commit": "57b6d071cc3040f8e44d947797470876922c8347",
   "runtime_platform": "Linux, Xvfb, software OpenGL and an SDL virtual Xbox game controller",
-  "functional_checks": 110,
+  "functional_checks": 115,
   "ctest": {
     "result": "passed",
     "executed": 4,
@@ -24,7 +24,7 @@
           "evidence": [
             {
               "type": 1.0,
-              "t": 1820.0,
+              "t": 1450.0,
               "arrival_ms": 850.0,
               "error": 0.00035
             }
@@ -35,7 +35,7 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 1950.0,
+              "t": 1580.0,
               "arrival_ms": 700.0,
               "phase": -36.667
             }
@@ -46,14 +46,14 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 2660.0,
+              "t": 2290.0,
               "phase": 35.3333,
               "gap": 0.0005,
-              "correction": 0.00022,
-              "step_penetration": 0.0003,
-              "sweep": 0.99771,
+              "correction": 0.00024,
+              "step_penetration": 0.00028,
+              "sweep": 0.99748,
               "speed_before": 9.1279,
-              "speed_after": 1.0188
+              "speed_after": 1.0187
             }
           ]
         },
@@ -62,18 +62,18 @@
           "result": "passed",
           "evidence": {
             "phases": [
-              1.333,
-              149.333
+              0.333,
+              150.0
             ],
-            "pose_samples": 6
+            "pose_samples": 11
           }
         },
         {
           "check": "chest delivery 0 leaves a reachable ball",
           "result": "passed",
           "evidence": {
-            "distance": 0.34342699369735047,
-            "height": 0.1199
+            "distance": 0.3558182260649389,
+            "height": 0.1278
           }
         },
         {
@@ -82,7 +82,7 @@
           "evidence": [
             {
               "type": 1.0,
-              "t": 7730.0,
+              "t": 7180.0,
               "arrival_ms": 850.0,
               "error": 0.00035
             }
@@ -93,7 +93,7 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 7860.0,
+              "t": 7310.0,
               "arrival_ms": 700.0,
               "phase": -36.667
             }
@@ -104,14 +104,14 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 8570.0,
+              "t": 8020.0,
               "phase": 35.3333,
               "gap": 0.0005,
-              "correction": 0.00022,
-              "step_penetration": 0.0003,
-              "sweep": 0.99771,
+              "correction": 0.00023,
+              "step_penetration": 0.00029,
+              "sweep": 0.99762,
               "speed_before": 9.1279,
-              "speed_after": 1.0188
+              "speed_after": 1.0187
             }
           ]
         },
@@ -120,18 +120,18 @@
           "result": "passed",
           "evidence": {
             "phases": [
-              0.333,
-              150.0
+              1.333,
+              149.333
             ],
-            "pose_samples": 6
+            "pose_samples": 12
           }
         },
         {
           "check": "chest delivery 1 leaves a reachable ball",
           "result": "passed",
           "evidence": {
-            "distance": 0.3189960814806349,
-            "height": 0.1126
+            "distance": 0.3448278991033067,
+            "height": 0.1238
           }
         },
         {
@@ -140,7 +140,7 @@
           "evidence": [
             {
               "type": 1.0,
-              "t": 13990.0,
+              "t": 12850.0,
               "arrival_ms": 850.0,
               "error": 0.00035
             }
@@ -151,7 +151,7 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 14120.0,
+              "t": 12980.0,
               "arrival_ms": 700.0,
               "phase": -36.667
             }
@@ -162,14 +162,14 @@
           "result": "passed",
           "evidence": [
             {
-              "t": 14830.0,
+              "t": 13690.0,
               "phase": 35.3333,
               "gap": 0.0005,
-              "correction": 0.00019,
-              "step_penetration": 0.00032,
-              "sweep": 0.99802,
-              "speed_before": 9.129,
-              "speed_after": 1.014
+              "correction": 0.00023,
+              "step_penetration": 0.00029,
+              "sweep": 0.99764,
+              "speed_before": 9.1279,
+              "speed_after": 1.0188
             }
           ]
         },
@@ -181,15 +181,15 @@
               0.333,
               150.0
             ],
-            "pose_samples": 6
+            "pose_samples": 12
           }
         },
         {
           "check": "chest delivery 2 leaves a reachable ball",
           "result": "passed",
           "evidence": {
-            "distance": 0.36248966881829847,
-            "height": 0.153
+            "distance": 0.3480735554448226,
+            "height": 0.1223
           }
         },
         {
@@ -204,7 +204,7 @@
           "check": "high crossing travels above chest and preserves other receptions",
           "result": "passed",
           "evidence": {
-            "maximum_height": 4.467
+            "maximum_height": 4.463
           }
         },
         {
@@ -212,8 +212,8 @@
           "result": "passed",
           "evidence": [
             [
-              "25490",
-              "left_foot",
+              "23470",
+              "right_foot",
               "4"
             ]
           ]
@@ -223,7 +223,7 @@
           "result": "passed",
           "evidence": [
             [
-              "28950",
+              "26870",
               "head",
               "4"
             ]
@@ -233,16 +233,16 @@
           "check": "moving cancels standing chest control without locking the player",
           "result": "passed",
           "evidence": {
-            "speed": 3.5337,
+            "speed": 4.5,
             "chest_touches": 0,
-            "movement_after_delivery_ms": 630.0
+            "movement_after_delivery_ms": 670.0
           }
         },
         {
           "check": "native impulses are gated on actual skin contact",
           "result": "passed",
           "evidence": {
-            "accepted_contacts": 13,
+            "accepted_contacts": 16,
             "maximum_gap": 0.00052
           }
         },
@@ -265,8 +265,8 @@
           "check": "original forward dribble",
           "result": "passed",
           "evidence": {
-            "maximum": 0.5990033388888578,
-            "ending": 0.4406345537971336,
+            "maximum": 0.5985649505275097,
+            "ending": 0.4420457216171183,
             "samples": 30
           }
         },
@@ -284,8 +284,8 @@
           "check": "new forward dribble retains the ball",
           "result": "passed",
           "evidence": {
-            "maximum": 0.4473274080581248,
-            "ending": 0.44601247740393596,
+            "maximum": 0.4462729769995035,
+            "ending": 0.44536848788390737,
             "samples": 35
           }
         },
@@ -293,8 +293,8 @@
           "check": "new pose visibly replaces the native gait",
           "result": "passed",
           "evidence": {
-            "pose_samples": 16,
-            "maximum_change": 1.0581
+            "pose_samples": 27,
+            "maximum_change": 1.115
           }
         },
         {
@@ -303,8 +303,8 @@
           "evidence": {
             "additional_lean_radians": 0.13,
             "rendered_torso_pitch_range": [
-              0.2998,
-              0.4505
+              0.3002,
+              0.4496
             ]
           }
         },
@@ -321,15 +321,15 @@
           "result": "passed",
           "evidence": {
             "phase_range": [
-              2.2512,
-              66.8574
+              1.0782,
+              68.2207
             ]
           }
         },
         {
           "check": "native joint lengths are preserved",
           "result": "passed",
-          "evidence": 1e-06
+          "evidence": 2e-06
         },
         {
           "check": "native shoe volumes stay above the pitch",
@@ -339,13 +339,13 @@
         {
           "check": "body proportions remain bounded",
           "result": "passed",
-          "evidence": 0.8519
+          "evidence": 0.8556
         },
         {
           "check": "rendered mesh stays finite and preserves rigid lengths",
           "result": "passed",
           "evidence": {
-            "samples": 16,
+            "samples": 27,
             "unique_vertices": [
               542.0
             ],
@@ -355,7 +355,7 @@
         {
           "check": "rendered shoe vertices stay above the pitch",
           "result": "passed",
-          "evidence": 0.013156
+          "evidence": 0.011722
         },
         {
           "check": "complete lower-body cycle is never replaced at native touch frames",
@@ -367,7 +367,7 @@
           "result": "passed",
           "evidence": {
             "samples": 35,
-            "wraps": 6.8184888571428575
+            "wraps": 6.818488428571428
           }
         },
         {
@@ -391,7 +391,7 @@
           "check": "rendered shoes agree with the ball collision surfaces",
           "result": "passed",
           "evidence": {
-            "minimum_rendered_gap": 0.00386
+            "minimum_rendered_gap": 0.00418
           }
         },
         {
@@ -412,59 +412,59 @@
           "result": "passed",
           "evidence": [
             [
-              6080.0,
+              5800.0,
               1.0
             ],
             [
-              6320.0,
+              6040.0,
               0.0
             ],
             [
-              6580.0,
+              6300.0,
               1.0
             ],
             [
-              6820.0,
+              6540.0,
               0.0
             ],
             [
-              7080.0,
+              6800.0,
               1.0
             ],
             [
-              7320.0,
+              7040.0,
               0.0
             ],
             [
-              7580.0,
+              7300.0,
               1.0
             ],
             [
-              7820.0,
+              7540.0,
               0.0
             ],
             [
-              8080.0,
+              7800.0,
               1.0
             ],
             [
-              8310.0,
+              8030.0,
               0.0
             ],
             [
-              8580.0,
+              8300.0,
               1.0
             ],
             [
-              8810.0,
+              8530.0,
               0.0
             ],
             [
-              9070.0,
+              8790.0,
               1.0
             ],
             [
-              9310.0,
+              9030.0,
               0.0
             ]
           ]
@@ -472,7 +472,7 @@
         {
           "check": "ball is predicted to reach the next animated foot",
           "result": "passed",
-          "evidence": 0.00038
+          "evidence": 0.00037
         },
         {
           "check": "no missed FBX contacts or competing native dribble impulses",
@@ -493,8 +493,8 @@
           "check": "RB remains native",
           "result": "passed",
           "evidence": {
-            "maximum": 0.9126219480157163,
-            "ending": 0.816422843874424,
+            "maximum": 0.964889636176076,
+            "ending": 0.9032409036353493,
             "samples": 12
           }
         },
@@ -507,8 +507,8 @@
           "check": "release RB retains ball",
           "result": "passed",
           "evidence": {
-            "maximum": 1.0794002269779266,
-            "ending": 0.41550270757240715,
+            "maximum": 1.0353732177335866,
+            "ending": 0.40854260487738614,
             "samples": 18
           }
         },
@@ -516,8 +516,8 @@
           "check": "FP turn uses approved gameplay",
           "result": "passed",
           "evidence": {
-            "maximum": 0.6866644959512622,
-            "ending": 0.6364900784772696,
+            "maximum": 0.6794679168290452,
+            "ending": 0.6688804975479545,
             "samples": 14
           }
         },
@@ -530,8 +530,8 @@
           "check": "return forward after FP turn retains ball",
           "result": "passed",
           "evidence": {
-            "maximum": 0.5843618485151141,
-            "ending": 0.4369423302908524,
+            "maximum": 0.6058128506395357,
+            "ending": 0.4218793784957961,
             "samples": 16
           }
         },
@@ -738,8 +738,8 @@
           "check": "RB release after 300 ms retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.6759018937686149,
-            "end_distance_m": 0.4383676311043049,
+            "max_distance_m": 0.6660016891870469,
+            "end_distance_m": 0.4368183146343567,
             "controlled": 27,
             "samples": 27
           }
@@ -755,8 +755,8 @@
           "check": "RB release after 900 ms retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 1.0292218079694972,
-            "end_distance_m": 0.4378756101908397,
+            "max_distance_m": 1.0423208958857153,
+            "end_distance_m": 0.442805611978892,
             "controlled": 33,
             "samples": 33
           }
@@ -772,8 +772,8 @@
           "check": "RB release after 1800 ms retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 1.0292218079694972,
-            "end_distance_m": 0.4099924023686296,
+            "max_distance_m": 1.0331204479633536,
+            "end_distance_m": 0.4005722157114746,
             "controlled": 42,
             "samples": 42
           }
@@ -782,14 +782,14 @@
           "check": "RB release after 1800 ms returns to native walking",
           "result": "passed",
           "evidence": {
-            "walking_speed_mps": 4.9999
+            "walking_speed_mps": 4.9998
           }
         },
         {
           "check": "RB release after 3500 ms retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 1.0424215318190628,
+            "max_distance_m": 1.0423215338848182,
             "end_distance_m": 0.4555934262036701,
             "controlled": 59,
             "samples": 59
@@ -806,8 +806,8 @@
           "check": "repeated RB presses and releases retain ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 1.076345530022771,
-            "end_distance_m": 0.6255003916865268,
+            "max_distance_m": 1.0544042678214076,
+            "end_distance_m": 0.7030538315093618,
             "controlled": 56,
             "samples": 56
           }
@@ -816,8 +816,8 @@
           "check": "release RB and stick keeps ball within reach",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.6029001326919723,
-            "end_distance_m": 0.37140001346257506,
+            "max_distance_m": 0.6430308624008656,
+            "end_distance_m": 0.362407298491629,
             "controlled": 20,
             "samples": 20
           }
@@ -827,15 +827,15 @@
           "result": "passed",
           "evidence": {
             "player_speed": 0.0,
-            "ball_speed": 0.1103
+            "ball_speed": 0.0109
           }
         },
         {
           "check": "RT False RB False retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.47723606318047623,
-            "end_distance_m": 0.4195336577677646,
+            "max_distance_m": 0.453171336251534,
+            "end_distance_m": 0.45272439739868314,
             "controlled": 16,
             "samples": 16
           }
@@ -844,8 +844,8 @@
           "check": "RT False RB True retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.9660195908986521,
-            "end_distance_m": 0.786633853835443,
+            "max_distance_m": 0.969237071102835,
+            "end_distance_m": 0.7836738224542146,
             "controlled": 16,
             "samples": 16
           }
@@ -854,8 +854,8 @@
           "check": "RT True RB False retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.41342691010624794,
-            "end_distance_m": 0.39883757345566223,
+            "max_distance_m": 0.45315702576479966,
+            "end_distance_m": 0.4526805717059207,
             "controlled": 16,
             "samples": 16
           }
@@ -864,8 +864,8 @@
           "check": "RT True RB True retains ball",
           "result": "passed",
           "evidence": {
-            "max_distance_m": 0.9610587963282986,
-            "end_distance_m": 0.7888371504943207,
+            "max_distance_m": 0.9691387723128194,
+            "end_distance_m": 0.7836573039281902,
             "controlled": 16,
             "samples": 16
           }
@@ -875,22 +875,22 @@
           "result": "passed",
           "evidence": {
             "without_RT": 4.9998,
-            "with_RT": 4.9999
+            "with_RT": 4.9998
           }
         },
         {
           "check": "RT has no speed effect with RB True",
           "result": "passed",
           "evidence": {
-            "without_RT": 7.7347,
-            "with_RT": 7.718349999999999
+            "without_RT": 7.7252,
+            "with_RT": 7.725250000000001
           }
         },
         {
           "check": "head look stays independent with ball",
           "result": "passed",
           "evidence": {
-            "t": 48500,
+            "t": 46500,
             "exercise": 0,
             "player": [
               1.7893,
@@ -910,8 +910,8 @@
             "goals": 0,
             "camera": 2,
             "with_ball": 1,
-            "yaw": -0.945,
-            "head_yaw": -0.945,
+            "yaw": -0.882,
+            "head_yaw": -0.882,
             "pitch": -0.12,
             "contacts": 0,
             "look_active": 1,
@@ -925,7 +925,7 @@
             ],
             "keys": 4096,
             "player_yaw": 0.0,
-            "wall_ms": 57624
+            "wall_ms": 55144
           }
         },
         {
@@ -946,11 +946,11 @@
           "evidence": {
             "touches": [
               [
-                59050,
+                56590,
                 4
               ]
             ],
-            "peak_speed_mps": 25.0058
+            "peak_speed_mps": 25.9239
           }
         },
         {
@@ -959,11 +959,11 @@
           "evidence": {
             "touches": [
               [
-                62870,
+                60070,
                 5
               ]
             ],
-            "peak_speed_mps": 25.488
+            "peak_speed_mps": 25.4532
           }
         },
         {
@@ -972,11 +972,11 @@
           "evidence": {
             "touches": [
               [
-                66570,
+                63450,
                 6
               ]
             ],
-            "peak_speed_mps": 24.5563
+            "peak_speed_mps": 24.3168
           }
         },
         {
@@ -985,18 +985,18 @@
           "evidence": {
             "touches": [
               [
-                70050,
+                66850,
                 8
               ]
             ],
-            "peak_speed_mps": 31.2034
+            "peak_speed_mps": 31.5346
           }
         },
         {
           "check": "native actions meet visible skin instead of remote markers",
           "result": "passed",
           "evidence": {
-            "contacts": 110,
+            "contacts": 113,
             "maximum_gap": 0.0005
           }
         },
@@ -1048,13 +1048,53 @@
           }
         }
       ]
+    },
+    "rendered_contact_transitions": {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "visible physical contact pose overrides the overlapping dribble",
+          "result": "passed",
+          "evidence": {
+            "overlap_samples": 9,
+            "minimum_rendered_gap_m": 0.0005
+          }
+        },
+        {
+          "check": "both rendered shoes stay outside the moving sphere",
+          "result": "passed",
+          "evidence": {
+            "samples": 191,
+            "minimum_gap_m": 0.0005
+          }
+        },
+        {
+          "check": "yielding legs preserve their segment lengths",
+          "result": "passed",
+          "evidence": {
+            "maximum_length_error_m": 1e-06
+          }
+        },
+        {
+          "check": "sub-frame corrections remain within the local reach limit",
+          "result": "passed",
+          "evidence": {
+            "maximum_ankle_shift_m": 0.09919
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
     }
   },
   "windows": {
     "result": "passed",
-    "archive_bytes": 31464705,
-    "archive_sha256": "a44456ff830dc98caba69093ebd272a68df4362e50d1063fc682f64a9c04fbc0",
-    "executable_sha256": "739b4b66c3be82866cba53f1e96791f26f55e350bd2f6c6a12d7b2fc2c20970d",
+    "archive_bytes": 31467247,
+    "archive_sha256": "bb0f0a33b04279a7df1aa2344e9f70b38b3beda020392d1bdac326164a7d8768",
+    "executable_sha256": "d0f67334c5d5d8a9c8a88d2bbf1f7d8c9de841bc1df214437dffb36bef25d541",
     "zip_crc": "all members passed",
     "architecture": "PE32+ x86_64",
     "members": 550,
@@ -1082,8 +1122,8 @@
   },
   "packaged_resources": {
     "result": "passed",
-    "full_sha256": "a44456ff830dc98caba69093ebd272a68df4362e50d1063fc682f64a9c04fbc0",
-    "update_sha256": "c8a0d6a1cdbe272111a042e2beb60b56f46e9629ad9ae24dbddfb2816ba1d968",
+    "full_sha256": "bb0f0a33b04279a7df1aa2344e9f70b38b3beda020392d1bdac326164a7d8768",
+    "update_sha256": "b0dea318c87e4e1e1030d3cd154a77f0b464c5a17fd3f6e0a107baed574963b7",
     "matching_executable_config_bat_clips_and_notice": true,
     "uploaded_bat_identical": true,
     "chest_delivery_and_skin_contact_binary_markers_present": true,
@@ -1100,7 +1140,7 @@
     "src/onthepitch/player/humanoid/humanoid.cpp": "81f4e32147f0fbf53af75b90e8decb6c16ac5f7af89a44969632c3d8c4947674",
     "src/onthepitch/player/humanoid/humanoidbase.cpp": "8d82b9ab3552597af6ebcc46dbb9f9628f33f90b3b1e929418aeed51059f3fbd",
     "src/onthepitch/player/humanoid/humanoidbase.hpp": "7bdfcef530626e5a80f9bddae07f124ce6ca914adc3ea127f989e5aa8a5a297c",
-    "src/onthepitch/player/humanoid/humanoid_contacts.cpp": "59d4ea916a72a75908360289428bad3ab69fc51048822e226abc6ea25be9c496",
+    "src/onthepitch/player/humanoid/humanoid_contacts.cpp": "e2f88c1ebf961a6592ab6801dbb21eea9e6d37506308bc49d11043c45a3cd34f",
     "tools/animations/import_fbx.py": "1382f6f5d7b8de7222c30be7c9ba4dcf60a26c161ed380e50c01b914e69b6798"
   },
   "animations": {
@@ -1207,6 +1247,7 @@
     "source_chest_has_ball_events": false,
     "proprietary_PES_bank_included": false,
     "physical_Windows_controller_or_GPU_tested": false,
-    "final_guard": "Only start Chest_Stand with enough anticipation to present its first pose; chest suite rerun after this guard. Other suites exercised unchanged contacts, control and physics."
+    "final_guard": "Native contact poses override an outgoing dribble; both rendered shoes yield locally to the drawn sphere without changing ball physics. Receptions, native actions, default dribble and sub-frame transitions rerun on final source; separate bounce and handoff suites passed before this render-only adjustment.",
+    "native_render_foot_yield_limit_m": 0.18
   }
 }

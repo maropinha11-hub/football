@@ -11,8 +11,8 @@
       "check": "original forward dribble",
       "result": "passed",
       "evidence": {
-        "maximum": 0.5990033388888578,
-        "ending": 0.4406345537971336,
+        "maximum": 0.5985649505275097,
+        "ending": 0.4420457216171183,
         "samples": 30
       }
     },
@@ -30,8 +30,8 @@
       "check": "new forward dribble retains the ball",
       "result": "passed",
       "evidence": {
-        "maximum": 0.4473274080581248,
-        "ending": 0.44601247740393596,
+        "maximum": 0.4462729769995035,
+        "ending": 0.44536848788390737,
         "samples": 35
       }
     },
@@ -39,8 +39,8 @@
       "check": "new pose visibly replaces the native gait",
       "result": "passed",
       "evidence": {
-        "pose_samples": 16,
-        "maximum_change": 1.0581
+        "pose_samples": 27,
+        "maximum_change": 1.115
       }
     },
     {
@@ -49,8 +49,8 @@
       "evidence": {
         "additional_lean_radians": 0.13,
         "rendered_torso_pitch_range": [
-          0.2998,
-          0.4505
+          0.3002,
+          0.4496
         ]
       }
     },
@@ -67,15 +67,15 @@
       "result": "passed",
       "evidence": {
         "phase_range": [
-          2.2512,
-          66.8574
+          1.0782,
+          68.2207
         ]
       }
     },
     {
       "check": "native joint lengths are preserved",
       "result": "passed",
-      "evidence": 1e-06
+      "evidence": 2e-06
     },
     {
       "check": "native shoe volumes stay above the pitch",
@@ -85,13 +85,13 @@
     {
       "check": "body proportions remain bounded",
       "result": "passed",
-      "evidence": 0.8519
+      "evidence": 0.8556
     },
     {
       "check": "rendered mesh stays finite and preserves rigid lengths",
       "result": "passed",
       "evidence": {
-        "samples": 16,
+        "samples": 27,
         "unique_vertices": [
           542.0
         ],
@@ -101,7 +101,7 @@
     {
       "check": "rendered shoe vertices stay above the pitch",
       "result": "passed",
-      "evidence": 0.013156
+      "evidence": 0.011722
     },
     {
       "check": "complete lower-body cycle is never replaced at native touch frames",
@@ -113,7 +113,7 @@
       "result": "passed",
       "evidence": {
         "samples": 35,
-        "wraps": 6.8184888571428575
+        "wraps": 6.818488428571428
       }
     },
     {
@@ -137,7 +137,7 @@
       "check": "rendered shoes agree with the ball collision surfaces",
       "result": "passed",
       "evidence": {
-        "minimum_rendered_gap": 0.00386
+        "minimum_rendered_gap": 0.00418
       }
     },
     {
@@ -158,59 +158,59 @@
       "result": "passed",
       "evidence": [
         [
-          6080.0,
+          5800.0,
           1.0
         ],
         [
-          6320.0,
+          6040.0,
           0.0
         ],
         [
-          6580.0,
+          6300.0,
           1.0
         ],
         [
-          6820.0,
+          6540.0,
           0.0
         ],
         [
-          7080.0,
+          6800.0,
           1.0
         ],
         [
-          7320.0,
+          7040.0,
           0.0
         ],
         [
-          7580.0,
+          7300.0,
           1.0
         ],
         [
-          7820.0,
+          7540.0,
           0.0
         ],
         [
-          8080.0,
+          7800.0,
           1.0
         ],
         [
-          8310.0,
+          8030.0,
           0.0
         ],
         [
-          8580.0,
+          8300.0,
           1.0
         ],
         [
-          8810.0,
+          8530.0,
           0.0
         ],
         [
-          9070.0,
+          8790.0,
           1.0
         ],
         [
-          9310.0,
+          9030.0,
           0.0
         ]
       ]
@@ -218,7 +218,7 @@
     {
       "check": "ball is predicted to reach the next animated foot",
       "result": "passed",
-      "evidence": 0.00038
+      "evidence": 0.00037
     },
     {
       "check": "no missed FBX contacts or competing native dribble impulses",
@@ -239,8 +239,8 @@
       "check": "RB remains native",
       "result": "passed",
       "evidence": {
-        "maximum": 0.9126219480157163,
-        "ending": 0.816422843874424,
+        "maximum": 0.964889636176076,
+        "ending": 0.9032409036353493,
         "samples": 12
       }
     },
@@ -253,8 +253,8 @@
       "check": "release RB retains ball",
       "result": "passed",
       "evidence": {
-        "maximum": 1.0794002269779266,
-        "ending": 0.41550270757240715,
+        "maximum": 1.0353732177335866,
+        "ending": 0.40854260487738614,
         "samples": 18
       }
     },
@@ -262,8 +262,8 @@
       "check": "FP turn uses approved gameplay",
       "result": "passed",
       "evidence": {
-        "maximum": 0.6866644959512622,
-        "ending": 0.6364900784772696,
+        "maximum": 0.6794679168290452,
+        "ending": 0.6688804975479545,
         "samples": 14
       }
     },
@@ -276,8 +276,8 @@
       "check": "return forward after FP turn retains ball",
       "result": "passed",
       "evidence": {
-        "maximum": 0.5843618485151141,
-        "ending": 0.4369423302908524,
+        "maximum": 0.6058128506395357,
+        "ending": 0.4218793784957961,
         "samples": 16
       }
     },
@@ -464,7 +464,42 @@
       "check": "clean exit",
       "result": "passed",
       "evidence": 0
+    },
+    {
+      "check": "visible physical contact pose overrides the overlapping dribble",
+      "result": "passed",
+      "evidence": {
+        "overlap_samples": 9,
+        "minimum_rendered_gap_m": 0.0005
+      }
+    },
+    {
+      "check": "both rendered shoes stay outside the moving sphere",
+      "result": "passed",
+      "evidence": {
+        "samples": 191,
+        "minimum_gap_m": 0.0005
+      }
+    },
+    {
+      "check": "yielding legs preserve their segment lengths",
+      "result": "passed",
+      "evidence": {
+        "maximum_length_error_m": 1e-06
+      }
+    },
+    {
+      "check": "sub-frame corrections remain within the local reach limit",
+      "result": "passed",
+      "evidence": {
+        "maximum_ankle_shift_m": 0.09919
+      }
+    },
+    {
+      "check": "clean exit",
+      "result": "passed",
+      "evidence": 0
     }
   ],
-  "note": "Latest full delivery and platform limits: animation-receptions-validation.json"
+  "note": "Approved FBX gait, handoffs and actual rendered native foot transitions. Render tests use Linux software OpenGL and virtual SDL Xbox input; the Windows binary is cross-compiled."
 }

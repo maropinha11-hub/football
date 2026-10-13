@@ -66,6 +66,12 @@ resolve a extensão máxima em passes parados. A posição do corpo e as
 rotações corrigidas são armazenadas no mesmo relógio da bola a 100 Hz.
 Não se move uma bola distante para um ponto de animação.
 
+A pose de contato tem prioridade sobre a condução que está saindo. Após
+interpolar os quadros, ambas as chuteiras são conferidas contra a esfera
+desenhada. Se houver sobreposição, a perna cede localmente, até 18 cm, sem
+alterar os comprimentos, a orientação do calçado ou a trajetória da bola.
+Isso evita atravessamentos entre amostras e impulsos duplicados na virada.
+
 ## Quique e futuros gramados
 
 No treino, `training_ground_bounce` passa de 0,62 para 0,70. Esse parâmetro
@@ -95,6 +101,8 @@ calibrados: não são informações que um FBX sem bola fornece automaticamente.
 As verificações desta entrega estão em `animation-receptions-validation.json`
 e nos testes `training_chest_smoke.py`, `training_ball_bounce_smoke.py`,
 `training_fbx_trial_smoke.py`, `training_fbx_handoff_smoke.py` e
-`training_original_fps_smoke.py`. A execução renderizada usa Linux e controle
+`training_original_fps_smoke.py`. `training_contact_transition_smoke.py`
+verifica também os pés desenhados durante as transições curtas.
+A execução renderizada usa Linux e controle
 SDL Xbox virtual. O Windows é compilado em x64 e verificado quanto a recursos,
 DLLs e integridade; controle físico e GPU do usuário são testados no Windows.

@@ -332,8 +332,12 @@ bool HumanoidBase::CanMakeTrainingContact(const std::string &part) {
 }
 
 void HumanoidBase::PutTrainingContactPose() {
-  if(!TrainingEnabled() || fetchedContactBlend<=0 || fetchedbuf_animApplyBuffer.dribbleTrialBlend>.01f)return;
+  if(!TrainingEnabled() || fetchedContactBlend<=0)return;
   const float amount=fetchedContactBlend;
+  // A native touch must remain visible while the previous dribble fades out.
+  // Remove its visual support lift before applying the physical contact pose.
+  auto body=nodeMap.at("body");const auto &bind=pes3NativeReference.offsets[0];
+  body->SetPosition(body->GetPosition()*(1-amount)+Vector3(bind[0],bind[1],bind[2])*amount,false);
   Vector3 root=humanoidNode->GetPosition();
   root=root*(1-amount)+(fetchedContactRoot+Vector3(0,0,fetchedContactHeight/zMultiplier-.96f))*amount;
   humanoidNode->SetPosition(root,false);
@@ -342,14 +346,77 @@ void HumanoidBase::PutTrainingContactPose() {
     node->SetRotation(node->GetRotation().GetSlerped(amount,fetchedContactLocal[i]).GetNormalized(),false);
   }
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
-  if(fetchedChestPhase>=0 && GetConfiguration()->GetBool("training_telemetry",false)) {
-    Quaternion global[13];Vector3 positions[13];
-    const Vector3 origin=humanoidNode->GetPosition().Get2D();
+  Quaternion local[13],global[13];Vector3 positions[13];
+  const Vector3 origin=humanoidNode->GetPosition().Get2D();
+  for(unsigned i=0;i<13;++i) {
+    const auto node=nodeMap.at(pes3::nativeBoneNames[i]);
+    local[i]=node->GetRotation();global[i]=node->GetDerivedRotation();
+    positions[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;
+  }
+  const Vector3 sphere=match->GetBall()->GetBallGeom()->GetPosition();
+  float renderedFootShift=0;
+  // Interpolating a leg and a moving sphere independently can put the shoe
+  // inside the ball between physical samples. Yield with the leg, retaining
+  // its lengths and shoe orientation; never add a second impulse to the ball.
+  for(unsigned side=0;side<2;++side) {
+    const std::string part=side?"right_ankle":"left_ankle";
+    if(ContactSurface(sphere,part,global,positions)>=.0005f)continue;
+    const unsigned ankle=side?12:9;
+    const auto &lo=pes3NativeReference.footMin[side],&hi=pes3NativeReference.footMax[side];
+    const Vector3 center=positions[ankle]+global[ankle]*Vector3((lo[0]+hi[0])*.5f,
+        (lo[1]+hi[1])*.5f,(lo[2]+hi[2])*.5f)*zMultiplier;
+    const Vector3 away=(center-sphere).Get2D().GetNormalized(global[0]*Vector3(0,1,0));
+    const Vector3 directions[]={away,(away+Vector3(0,0,1)).GetNormalized(0),Vector3(0,0,1)};
+    Quaternion bestLocal[13],bestGlobal[13];Vector3 bestPositions[13];
+    float bestShift=100;
+    for(const auto &direction:directions) {
+      Quaternion trialLocal[13],trialGlobal[13];Vector3 trialPositions[13];
+      auto trial=[&](float distance) {
+        std::copy(local,local+13,trialLocal);std::copy(global,global+13,trialGlobal);
+        std::copy(positions,positions+13,trialPositions);
+        FitContactLeg(side,direction*distance,trialLocal,trialGlobal,trialPositions);
+        return ContactSurface(sphere,part,trialGlobal,trialPositions);
+      };
+      if(trial(.18f)<.0005f)continue;
+      float low=0,high=.18f;
+      for(unsigned iteration=0;iteration<16;++iteration) {
+        const float distance=(low+high)*.5f;
+        if(trial(distance)<.0005f)low=distance;else high=distance;
+      }
+      trial(high);
+      const float shift=(trialPositions[ankle]-positions[ankle]).GetLength();
+      if(shift<bestShift) {
+        bestShift=shift;std::copy(trialLocal,trialLocal+13,bestLocal);
+        std::copy(trialGlobal,trialGlobal+13,bestGlobal);std::copy(trialPositions,trialPositions+13,bestPositions);
+      }
+    }
+    if(bestShift<100) {
+      std::copy(bestLocal,bestLocal+13,local);std::copy(bestGlobal,bestGlobal+13,global);
+      std::copy(bestPositions,bestPositions+13,positions);
+      renderedFootShift=std::max(renderedFootShift,bestShift);
+      for(unsigned i=side?10:7;i<(side?13:10);++i)
+        nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(local[i],false);
+    }
+  }
+  humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  if(GetConfiguration()->GetBool("training_telemetry",false)) {
     for(unsigned i=0;i<13;++i) {
       const auto node=nodeMap.at(pes3::nativeBoneNames[i]);global[i]=node->GetDerivedRotation();
       positions[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;
     }
-    const float gap=ContactSurface(match->GetBall()->GetBallGeom()->GetPosition(),"chest",global,positions);
-    printf("TRAINING_CHEST_POSE t=%lu phase=%.3f blend=%.4f gap=%.5f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,fetchedChestPhase,amount,gap);
+    const std::string part=fetchedChestPhase>=0?"chest":fetchedbuf_animApplyBuffer.anim->GetVariable("touch_bodypart");
+    const float gap=ContactSurface(sphere,part,global,positions);
+    float lengthError=0;
+    for(unsigned i=1;i<13;++i) {
+      const auto &offset=pes3NativeReference.offsets[i];
+      const float expected=Vector3(offset[0],offset[1],offset[2]).GetLength()*zMultiplier;
+      lengthError=std::max(lengthError,std::fabs((positions[i]-positions[pes3::nativeParents[i]]).GetLength()-expected));
+    }
+    if(fetchedChestPhase>=0)
+      printf("TRAINING_CHEST_POSE t=%lu phase=%.3f blend=%.4f gap=%.5f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,fetchedChestPhase,amount,gap);
+    else
+      printf("TRAINING_NATIVE_POSE t=%lu blend=%.4f dribble_remaining=%.4f gap=%.5f gap_left=%.5f gap_right=%.5f foot_shift=%.5f length_error=%.6f\n",
+        fetchedbuf_animApplyBuffer.snapshotTime_ms,amount,fetchedbuf_animApplyBuffer.dribbleTrialBlend,gap,
+        ContactSurface(sphere,"left_ankle",global,positions),ContactSurface(sphere,"right_ankle",global,positions),renderedFootShift,lengthError);
   }
 }

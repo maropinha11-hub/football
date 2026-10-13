@@ -174,7 +174,6 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Virar sem bola / olhar com bola | Analógico direito | Setas |
 | Correr | RB + analógico | Shift + WASD |
 | Reservado no treino | RT | Espaço |
-| Alternar condução original / DefenseJog_LoopF | Clique do analógico esquerdo (L3) | T |
 | Passe curto | A | J |
 | Passe em profundidade | Y | I |
 | Passe alto / carrinho sem bola | B | L |
@@ -189,6 +188,9 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Livre / condução / finalização / bola aérea | D-pad cima / direita / baixo / esquerda | 1 / 2 / 3 / 4 |
 | Cobrança de falta parada | LB + D-pad baixo | 5 ou F3 |
 | Receber passe rasteiro / jogar de primeira | LB + D-pad direita | 6 |
+| Receber passe na posição atual | — | F4 |
+| Receber no peito, parado | — | F5 |
+| Receber cruzamento alto | — | F6 |
 | Sair | — | Esc ou F12 |
 
 Segure e solte A/B/X/Y para graduar a força. X também aumenta a elevação
