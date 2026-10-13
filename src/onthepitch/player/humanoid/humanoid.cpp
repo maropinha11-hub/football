@@ -120,7 +120,7 @@ void Humanoid::Process() {
 
   CalculateSpatialState();
   UpdateDribbleLoopIntent();
-  const bool loopControlsMotion=dribbleLoopRequested && dribbleTrialBlend>.999f;
+  const bool loopControlsMotion=dribbleLoopRequested;
   spatialState.positionOffsetMovement = Vector3(0);
 
   currentAnim->frameNum++;
@@ -2361,7 +2361,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
 Vector3 Humanoid::CalculateMovementSmuggle(const Vector3 &desiredDirection, float desiredVelocityFloat) {
 
-  if(dribbleLoopRequested && dribbleTrialBlend>.999f)return Vector3(0);
+  if(dribbleLoopRequested)return Vector3(0);
 
   if (!enableMovementSmuggle) return Vector3(0);
 

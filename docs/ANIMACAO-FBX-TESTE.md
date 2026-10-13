@@ -28,17 +28,25 @@ loop. A fase avança no passo físico de 10 ms e é interpolada no mesmo tempo
 histórico usado para desenhar a bola e o jogador. Não reinicia quando o
 seletor nativo troca um passo e não retorna às pernas nativas a cada toque.
 
+O tronco recebe cerca de seis graus adicionais de inclinação para frente,
+sem alterar o ciclo das pernas ou os comprimentos dos ossos.
+
 Os pontos de contato são recuperados a partir do movimento dos calçados
-adaptados ao modelo. Uma esfera tangente ao volume orientado do calçado
+adaptados ao modelo. Uma esfera tangente aos triângulos da chuteira visível
 marca o local do próximo toque. O impulso é calculado com o preditor
 original da bola, incluindo grama, arrasto e rotação, para que a bola alcance
 esse local junto com o próximo passo. A bola segue a física entre contatos;
 não é reposicionada nem presa ao pé. Um toque só é aceito com proximidade
-geométrica, uma vez por pé e ciclo. Na entrada, a bola rola livremente até
-encontrar um pé em avanço. Se o domínio terminar, o modo nativo retoma o
+geométrica de até 12 mm da superfície, uma vez por pé e ciclo. A retomada
+depois de virar espera o deslocamento real do corpo se alinhar à nova frente:
+a assistência nativa continua recuperando a bola durante essa etapa.
+Na entrada, a pose é alinhada à posição prevista da bola ao fim dos 160 ms.
+A troca só começa com um pé baixo e avançando que consiga alcançar essa
+posição; a bola rola livremente até esse contato.
+Se um toque for perdido ou a entrada não alcançar a bola, o modo nativo retoma o
 controle; uma bola distante não é puxada para o loop.
 
-Durante o controle pelo loop, os antigos impulsos de condução e a correção
+Desde essa entrada alcançável, os antigos impulsos de condução e a correção
 de posição para interceptar a bola ficam suspensos. Isso evita duas lógicas
 disputarem o mesmo movimento. RB, viradas, recepções, passes, chutes,
 movimento sem bola e a opção original continuam com o comportamento nativo.
@@ -71,7 +79,8 @@ Imagens capturadas na execução do teste: [original](images/fbx-dribble-origina
 e [nova animação](images/fbx-dribble-new.png).
 
 As verificações reproduzíveis desta entrega estão em
-`fbx-dribble-trial-validation.json`, `tests/training_fbx_trial_smoke.py` e
+`fbx-dribble-trial-validation.json`, `tests/training_fbx_trial_smoke.py`,
+`tests/training_fbx_handoff_smoke.py` e
 `tests/training_original_fps_smoke.py`. A execução com renderização e
 controle virtual ocorre no Linux; o pacote Windows é compilado em x64 e
 verificado quanto aos recursos, DLLs e integridade. A avaliação de sensação

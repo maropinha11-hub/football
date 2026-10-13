@@ -236,6 +236,7 @@ class HumanoidBase {
     void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions) const;
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
     float DribbleFootGap(float phase, unsigned side, const Vector3 &root, const Quaternion &facing) const;
+    float DribbleShoeDistance(const Vector3 &point, unsigned side) const;
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -346,9 +347,13 @@ class HumanoidBase {
     float pes3RootCorrection = 0;
     std::unique_ptr<Animation> dribbleTrialAnimation;
     float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
+    float dribbleEntryPhase = 0;
     float dribbleTrialSourceSpeed = 3.2055483f;
     float dribbleContactFrames[2] = {0,0};
     bool dribbleLoopRequested = false, dribbleLoopOwnsBall = false;
+    bool dribbleLoopRecovering = false;
+    unsigned long dribbleEntryTime_ms = 0;
+    std::vector<std::array<Vector3,3>> dribbleShoeTriangles[2];
     TemporalSmoother<float> buf_dribblePhase, buf_dribbleBlend;
     TemporalSmoother<Quaternion> buf_dribbleFacing;
 

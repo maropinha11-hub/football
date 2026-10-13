@@ -42,12 +42,22 @@ try:
         game.pad(1,0,buttons=1<<7);game.advance(500);game.pad(1,0)
         game.wait(lambda:game.log.read_text().count('TRAINING_FBX_TOGGLE')>old)
         check('held L3 toggles once',game.log.read_text().count('TRAINING_FBX_TOGGLE')==old+1,'Held 500 ms')
+        game.wait(lambda:'TRAINING_FBX_TOUCH' in game.log.read_text(),seconds=10)
+        game.advance(200)
         start=len(game.log.read_text());new=game.advance(3500);active=poses(game.log.read_text()[start:])
         skin=[{key:float(value) for key,value in re.findall(r'(\w+)=(-?[\d.]+)',line)}
               for line in game.log.read_text()[start:].splitlines() if line.startswith('TRAINING_FBX_SKIN ')]
         retain('new forward dribble retains the ball',new)
         check('new pose visibly replaces the native gait',bool(active)and max(p['blend']for p in active)>.99 and
               max(p['change']for p in active)>.2,{'pose_samples':len(active),'maximum_change':max((p['change']for p in active),default=0)})
+        check('upper body has a small forward lean',bool(active)and
+              all(.10<p['lean']<.11 and .05<p['torso_pitch']<.6 for p in active if p['blend']>.999),
+              {'additional_lean_radians':max((p['lean']for p in active),default=0),
+               'rendered_torso_pitch_range':[min((p['torso_pitch']for p in active),default=0),
+                                            max((p['torso_pitch']for p in active),default=0)]})
+        shoe=re.search(r'TRAINING_FBX_SHOES left=(\d+) right=(\d+)',game.log.read_text())
+        check('contacts use visible shoe triangles',bool(shoe)and min(map(int,shoe.groups()))>=8,
+              list(map(int,shoe.groups())) if shoe else None)
         check('pose cycle advances',bool(active)and max(p['phase']for p in active)-min(p['phase']for p in active)>25,
               {'phase_range':[min((p['phase']for p in active),default=0),max((p['phase']for p in active),default=0)]})
         check('native joint lengths are preserved',bool(active)and max(p['length_error']for p in active)<.0001,
@@ -74,7 +84,7 @@ try:
               all(b['unwrapped']>a['unwrapped'] and b['blend']>.999 for a,b in zip(loop,loop[1:])),
               {'samples':len(loop),'wraps':(loop[-1]['unwrapped']-loop[0]['unwrapped'])/70 if loop else 0})
         check('ball impulses come from repeated FBX foot contacts',len(touches)>=6 and
-              all(-.025<=t['gap']<=.0251 for t in touches),{'contacts':len(touches),
+              all(-.025<=t['gap']<=.0121 for t in touches),{'contacts':len(touches),
               'minimum_gap':min((t['gap']for t in touches),default=0),'maximum_gap':max((t['gap']for t in touches),default=0)})
         check('successive foot contacts alternate without double hits',len(touches)>=6 and
               all(a['side']!=b['side'] and b['t']-a['t']>=150 for a,b in zip(touches,touches[1:])),
@@ -99,7 +109,7 @@ try:
         game.pad(1,0);turn=game.advance(1400);retain('FP turn uses approved gameplay',turn)
         start=len(game.log.read_text());game.advance(300)
         check('FBX yields to the native FP turn',not poses(game.log.read_text()[start:]),'Side stick is not the forward trial')
-        game.pad(0,-1);game.advance(1600)
+        game.pad(0,-1);retain('return forward after FP turn retains ball',game.advance(1600))
         start=len(game.log.read_text());game.advance(500)
         check('FBX resumes in the new front',bool(poses(game.log.read_text()[start:])), 'Forward input after turning')
         # T must return to the untouched native pose without restarting.
