@@ -32,7 +32,7 @@ try:
         check('converted FBX is loaded','TRAINING_FBX_LOADED frames=71'in game.log.read_text(),'71 native pose samples')
         game.reset();game.pad(1,0);original=game.advance(3000)
         retain('original forward dribble',original)
-        check('original is the default','TRAINING_FBX_POSE'not in game.log.read_text(),'No imported pose before toggle')
+        check('approved FBX is the default','TRAINING_FBX_TOUCH' in game.log.read_text(),'Imported dribble without a toggle')
         def screenshot(name):
             path=args.output/name
             subprocess.run(['ffmpeg','-nostdin','-loglevel','error','-y','-f','x11grab','-video_size','960x540',
@@ -40,8 +40,8 @@ try:
         screenshot('original.png')
         old=game.log.read_text().count('TRAINING_FBX_TOGGLE')
         game.pad(1,0,buttons=1<<7);game.advance(500);game.pad(1,0)
-        game.wait(lambda:game.log.read_text().count('TRAINING_FBX_TOGGLE')>old)
-        check('held L3 toggles once',game.log.read_text().count('TRAINING_FBX_TOGGLE')==old+1,'Held 500 ms')
+        game.advance(200)
+        check('L3 no longer changes dribbling',game.log.read_text().count('TRAINING_FBX_TOGGLE')==old,'Held 500 ms; approved default remains active')
         game.wait(lambda:'TRAINING_FBX_TOUCH' in game.log.read_text(),seconds=10)
         game.advance(200)
         start=len(game.log.read_text());new=game.advance(3500);active=poses(game.log.read_text()[start:])
@@ -51,7 +51,7 @@ try:
         check('new pose visibly replaces the native gait',bool(active)and max(p['blend']for p in active)>.99 and
               max(p['change']for p in active)>.2,{'pose_samples':len(active),'maximum_change':max((p['change']for p in active),default=0)})
         check('upper body has a small forward lean',bool(active)and
-              all(.10<p['lean']<.11 and .05<p['torso_pitch']<.6 for p in active if p['blend']>.999),
+              all(.125<p['lean']<.135 and .05<p['torso_pitch']<.6 for p in active if p['blend']>.999),
               {'additional_lean_radians':max((p['lean']for p in active),default=0),
                'rendered_torso_pitch_range':[min((p['torso_pitch']for p in active),default=0),
                                             max((p['torso_pitch']for p in active),default=0)]})
@@ -97,7 +97,7 @@ try:
         check('contact correction is small, without pulling a remote ball',bool(touches)and
               max(t['foot_fit']for t in touches)<.08,
               max((t['foot_fit']for t in touches),default=0))
-        check('forward gait is modestly slower',4.45<sum(f['speed']for f in new)/len(new)<4.9,
+        check('forward gait is modestly slower',4.35<sum(f['speed']for f in new)/len(new)<4.9,
               {'mean_speed_mps':sum(f['speed']for f in new)/len(new),'previous_speed_mps':5})
         check('successive foot contacts alternate without double hits',len(touches)>=6 and
               all(a['side']!=b['side'] and b['t']-a['t']>=150 for a,b in zip(touches,touches[1:])),
@@ -125,12 +125,10 @@ try:
         game.pad(0,-1);retain('return forward after FP turn retains ball',game.advance(1600))
         start=len(game.log.read_text());game.advance(500)
         check('FBX resumes in the new front',bool(poses(game.log.read_text()[start:])), 'Forward input after turning')
-        # T must return to the untouched native pose without restarting.
         game.keys(['t'],True);game.keys(['t'],False);game.advance(500)
         start=len(game.log.read_text());game.advance(400)
-        check('T switches back to original',not poses(game.log.read_text()[start:])and
-              'TRAINING_FBX_TOGGLE enabled=0'in game.log.read_text(),'No imported pose after blend-out')
-        game.keys(['t'],True);game.keys(['t'],False);game.advance(500)
+        check('T no longer changes dribbling',bool(poses(game.log.read_text()[start:])) and
+              'TRAINING_FBX_TOGGLE'not in game.log.read_text(),'Approved gait remains active')
         game.pad(0,-1,buttons=1<<0);game.advance(250);game.pad(0,-1)
         passing=game.advance(1200)
         check('A still selects a native pass',any(f['function']==4 for f in passing)and max(f['ball_speed']for f in passing)>5,

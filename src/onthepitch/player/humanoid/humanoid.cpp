@@ -119,8 +119,10 @@ void Humanoid::Process() {
   }
 
   CalculateSpatialState();
+  UpdateChestReception();
   UpdateDribbleLoopIntent();
-  const bool loopControlsMotion=dribbleLoopRequested;
+  if(chestActive)dribbleLoopRequested=false;
+  const bool loopControlsMotion=dribbleLoopRequested || chestActive;
   spatialState.positionOffsetMovement = Vector3(0);
 
   currentAnim->frameNum++;
@@ -247,7 +249,8 @@ void Humanoid::Process() {
         // magnet must not bend the root towards each alternating foot target.
         auto *human=static_cast<HumanController*>(player->GetExternalController());
         command.desiredDirection=human->GetDirection();
-        command.desiredVelocityFloat=human->GetFloatVelocity();
+        command.desiredVelocityFloat=chestActive ? 0.0f : human->GetFloatVelocity();
+        if(chestActive)command.desiredDirection=chestFacing*Vector3(0,-1,0);
         command.desiredLookAt=spatialState.position+command.desiredDirection*10;
       }
 
@@ -379,8 +382,9 @@ void Humanoid::Process() {
 
   // ------------------------ EXPERIMENTAL ------------------------------------------------
   bool controlledBallCollision = CastPlayer()->IsControlledBallCollisionTriggered();
+  UpdateTrainingContactPose();
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (!loopControlsMotion && enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
+  if (!loopControlsMotion && enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1 && CanMakeTrainingContact("")) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -437,7 +441,8 @@ void Humanoid::Process() {
     bumpyRideBias = curve(bumpyRideBias, 0.5f);
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
-    if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
+    if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f &&
+        CanMakeTrainingContact(currentAnim->anim->GetVariable("touch_bodypart"))) {
 
       if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
         printf("TRAINING_ACTION_TOUCH t=%lu part=%s function=%d z=%.4f\n", match->GetActualTime_ms(),
@@ -801,6 +806,7 @@ void Humanoid::Process() {
 
   animApplyBuffer.offsets = offsets;
   ProcessDribbleLoop();
+  ProcessChestReception();
 }
 
 void Humanoid::CalculateGeomOffsets() {

@@ -113,6 +113,7 @@ class Match {
 
     void Exit();
     void ResetTraining(int exercise, bool ballAtPlayer = false);
+    void LaunchTrainingBall(int delivery);
     void ProcessTraining();
     void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;

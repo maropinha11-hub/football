@@ -149,6 +149,12 @@ HumanoidBase::HumanoidBase(PlayerBase *player, Match *match, boost::intrusive_pt
   FillTemporalHumanoidNodes(humanoidNode, buf_TemporalHumanoidNodes);
 
   PrepareFullbodyModel(colorCoords);
+  if (TrainingEnabled() && boost::filesystem::exists("media/training/Chest_Stand.anim")) {
+    chestAnimation.reset(new Animation());
+    chestAnimation->Load("media/training/Chest_Stand.anim");
+    chestContactFrame=std::atof(chestAnimation->GetVariable("contact_frame").c_str());
+    printf("TRAINING_CHEST_LOADED frames=%d contact=%.3f\n",chestAnimation->GetFrameCount(),chestContactFrame);
+  }
   if (TrainingEnabled() && boost::filesystem::exists("media/training/DefenseJog_LoopF.anim")) {
     dribbleTrialAnimation.reset(new Animation());
     dribbleTrialAnimation->Load("media/training/DefenseJog_LoopF.anim");
@@ -490,6 +496,7 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
 
   delete straightAnim;
   delete baseAnim;
+  CaptureContactMesh();
 
   //printf("vertexcount: %i, unique vertexcount: %i\n", elementOffset / 3, uniqueElementOffset / 3);
 }
@@ -861,7 +868,7 @@ void HumanoidBase::SampleDribbleLoop(float phase, Quaternion *local, Quaternion 
     local[i]=a.GetSlerped(phase-frame,b).GetNormalized();
     if(i==1 || i==2) {
       // A small upper-body lean; the authored pelvis and legs keep their cycle.
-      Quaternion lean;lean.SetAngleAxis(i==1?.105f:.08f,Vector3(1,0,0));
+      Quaternion lean;lean.SetAngleAxis(i==1?.13f:.12f,Vector3(1,0,0));
       local[i]=(lean*local[i]).GetNormalized();
     }
     global[i]=i?global[pes3::nativeParents[i]]*local[i]:local[i];
@@ -974,7 +981,7 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
   const bool wasRequested=dribbleLoopRequested;
   dribbleLoopRequested=false;
   if(dribbleTrialBlend==0)dribbleLoopRecovering=false;
-  if(dribbleTrialAnimation && TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",false) &&
+  if(dribbleTrialAnimation && TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",true) &&
       match->TrainingHasBall() && match->GetDesignatedPossessionPlayer()==player && player->GetExternalController() &&
       (currentAnim->functionType==e_FunctionType_Movement || currentAnim->functionType==e_FunctionType_BallControl)) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
@@ -1147,6 +1154,13 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   // Fetch it at the same historical render time as the ball and player root.
   for(unsigned side=0;side<2;++side)buf_dribbleFootOffsets[side].SetValue(dribbleFootOffsets[side],snapshotTime_ms);
   buf_dribbleRoot.SetValue(animApplyBuffer.position.Get2D(),snapshotTime_ms);
+  for(unsigned i=0;i<13;++i)buf_contactLocal[i].SetValue(contactLocal[i],snapshotTime_ms);
+  buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
+  buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
+  buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
+  const bool chestTail=chestAnimation && chestPhase>0 && chestPhase<chestAnimation->GetEffectiveFrameCount() &&
+      match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms();
+  buf_chestPhase.SetValue(chestActive || chestTail ? chestPhase : -1.0f,snapshotTime_ms);
   buf_dribblePhase.SetValue(dribbleTrialPhase,snapshotTime_ms);
   buf_dribbleBlend.SetValue(dribbleTrialBlend,snapshotTime_ms);
   Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
@@ -1183,6 +1197,11 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
 
   fetchedbuf_animApplyBuffer = buf_animApplyBuffer;
   fetchedDribbleRoot=buf_dribbleRoot.GetValue(putTime_ms);
+  for(unsigned i=0;i<13;++i)fetchedContactLocal[i]=buf_contactLocal[i].GetValue(putTime_ms);
+  fetchedContactRoot=buf_contactRoot.GetValue(putTime_ms);
+  fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
+  fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
+  fetchedChestPhase=buf_chestPhase.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialPhase=buf_dribblePhase.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialBlend=smoothBlend(buf_dribbleBlend.GetValue(putTime_ms));
   for(unsigned side=0;side<2;++side)fetchedDribbleFootOffsets[side]=buf_dribbleFootOffsets[side].GetValue(putTime_ms);
@@ -1310,7 +1329,7 @@ void HumanoidBase::Put() {
   }
 
   if(!studyApplied && TrainingEnabled()) {
-    auto neck=nodeMap.at("neck");Quaternion lean;lean.SetAngleAxis(.08f,Vector3(1,0,0));
+    auto neck=nodeMap.at("neck");Quaternion lean;lean.SetAngleAxis(.12f,Vector3(1,0,0));
     neck->SetRotation((lean*neck->GetRotation()).GetNormalized(),false);
   }
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
@@ -1402,9 +1421,10 @@ void HumanoidBase::Put() {
     if (GetConfiguration()->GetBool("training_telemetry", false))
       printf("TRAINING_FBX_POSE t=%lu blend=%.4f legs=%.4f phase=%.4f change=%.4f sole_z=%.4f lift=%.4f function=%d length_error=%.6f radius=%.4f lean=%.4f torso_pitch=%.4f gap_left=%.5f gap_right=%.5f head_pitch=%.5f head_lean=%.5f\n",
              fetchedbuf_animApplyBuffer.snapshotTime_ms, blend, fetchedbuf_animApplyBuffer.dribbleTrialLegBlend,
-             phase, largestChange, lowest+lift, lift, fetchedbuf_animApplyBuffer.dribbleTrialFunction, lengthError, maximumRadius, .105f*blend,torsoPitch,renderedGap[0],renderedGap[1],headPitch,.08f);
+             phase, largestChange, lowest+lift, lift, fetchedbuf_animApplyBuffer.dribbleTrialFunction, lengthError, maximumRadius, .13f*blend,torsoPitch,renderedGap[0],renderedGap[1],headPitch,.12f);
   }
 
+  if(!studyApplied)PutTrainingContactPose();
   UpdateFullbodyNodes();
 }
 
@@ -1535,6 +1555,9 @@ int HumanoidBase::GetIdleMovementAnimID() {
 }
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
+  chestActive=false;chestTouched=false;chestPhase=0;chestCooldown_ms=0;contactPoseBlend=0;fetchedContactBlend=0;
+  buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();
+  for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;buf_contactLocal[i].Clear();}
   dribbleTrialPhase=0;dribbleTrialBlend=0;dribbleLoopRequested=false;dribbleLoopOwnsBall=false;
   dribbleLoopRecovering=false;dribbleEntryTime_ms=0;
   for(unsigned side=0;side<2;++side){dribbleFootOffsets[side]=Vector3(0);fetchedDribbleFootOffsets[side]=Vector3(0);buf_dribbleFootOffsets[side].Clear();}

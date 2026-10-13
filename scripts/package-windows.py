@@ -121,21 +121,26 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
-        "Teste da animacao DefenseJog_LoopF: L3 (clique no analogico esquerdo)\n"
-        "ou T alterna entre a conducao original e a nova. Comeca na original.\n"
-        "Nova conducao: cabeca levemente inclinada, cadencia 6% mais calma,\n"
-        "transicoes suaves e contato continuo na superficie da chuteira.\n"
-        "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n"
-        "O ciclo novo toca completo; cada contato calcula o impulso ao proximo pe.\n"
-        "Corridas, viradas, jogadas e a opcao original continuam nativas.\n\n"
+        "A conducao DefenseJog_LoopF aprovada agora e o padrao. L3 e T nao\n"
+        "alternam mais a animacao. Tronco e cabeca olham mais para a bola.\n"
+        "Cadencia normal 10% mais calma, sem desacelerar o relogio fisico.\n"
+        "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n\n"
+        "NOVOS LANCAMENTOS NO TECLADO, A PARTIR DA SUA POSICAO:\n"
+        "F4: passe rasteiro recebido. F5: bola para dominio no peito.\n"
+        "F6: cruzamento alto. F3/5 continua sendo treino de falta.\n"
+        "Para testar Chest_Stand, solte os analogicos e aperte F5.\n"
+        "O dominio de peito e automatico, sem segurar passe/chute; move-lo\n"
+        "interrompe o dominio parado. As outras recepcoes continuam disponiveis.\n"
+        "Acoes usam contato na malha do corpo e chuteiras, com a pose\n"
+        "sincronizada com a bola. O gramado do treino tem quique maior.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
         "Baixo vira para trás; mantê-lo repete a virada após completar a anterior.\n"
-        + ("Gameplay original do Football: fisica, impulsos e passos nativos.\n"
+        + ("Gameplay Football: seletor e jogadas nativas com contatos na malha.\n"
            "RT reservado, sem alterar movimento, dominio ou corrida.\n"
            "Simulacao em tempo real, com passo fisico de 10 ms.\n" if approved_binary is None else "") +
-        ("Nucleo nativo restaurado da origem vi3itor (68159a2).\n" if approved_binary is None else
+        ("Base nativa da origem vi3itor (68159a2), com animacoes FBX integradas.\n" if approved_binary is None else
            "Gameplay nativa original aprovada (37a5543), sem a correcao da puxada.\n") +
         "Após passes/chutes o movimento fica livre; aproxime-se para dominar de novo.\n"
         "A passe; Y enfiada; B alto/carrinho; X chute (segure para carregar);\n"
@@ -191,16 +196,15 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "3. Aceite substituir os arquivos.\r\n"
             "4. Abra run-training.bat.\r\n\r\n"
             + ("Restaurada a base aprovada 37a5543.\r\n" if approved_binary is not None else
-             "L3 (clique no analogico esquerdo) ou T alterna original/nova.\r\n"
-             "Comeca na original; conduza reto com bola, sem corrida, para testar.\r\n"
+             "Conducao aprovada como padrao, sem toggle em L3/T.\r\n"
              "R3 alterna as cameras para ver o corpo completo.\r\n"
-             "Ciclo completo, com impulsos calculados para o proximo contato do pe.\r\n"
-             "Fisica da bola, comandos e a opcao original continuam nativos.\r\n"
+             "F4: passe recebido; F5: dominio de peito parado; F6: cruzamento.\r\n"
+             "Solte os analogicos e use F5 para testar Chest_Stand.\r\n"
              "RB permite correr. RT continua reservado.\r\n") +
             "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
         output.write(stage / "training.config", "training.config")
         if approved_binary is None:
-            for path in sorted((stage / "media" / "training").glob("DefenseJog_LoopF.*")):
+            for path in sorted((stage / "media" / "training").glob("*.*")):
                 output.write(path, path.relative_to(stage))
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

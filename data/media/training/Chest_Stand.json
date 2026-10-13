@@ -1,0 +1,44 @@
+{
+  "source": "Chest_Stand.fbx",
+  "source_sha256": "e35051d4b43461ee88fae28ab28767c9972ffb2a2973476041f074bb3f7ccfcf",
+  "blender": "4.3.2",
+  "source_fps": 30.0,
+  "source_frame_range": [
+    1.0,
+    46.0
+  ],
+  "duration_seconds": 1.5,
+  "baked_fps": 100,
+  "samples": 151,
+  "source_travel_m": 0.6947846591143443,
+  "source_speed_mps": 0.4631897727428962,
+  "native_bones": [
+    "body",
+    "middle",
+    "neck",
+    "left_shoulder",
+    "left_elbow",
+    "right_shoulder",
+    "right_elbow",
+    "left_thigh",
+    "left_knee",
+    "left_ankle",
+    "right_thigh",
+    "right_knee",
+    "right_ankle"
+  ],
+  "root_xy_imported": false,
+  "ball_events_in_source": false,
+  "loop": false,
+  "contact_source_frame": 11.0,
+  "contact_marker_origin": "integration marker; FBX contains no ball track",
+  "maximum_segment_direction_error": 3.7814907850174666e-07,
+  "maximum_source_loop_angle_error_rad": 0.8195645213127136,
+  "minimum_foot_clearance_m": 0.008000000000000007,
+  "minimum_toe_forward_dot": -0.20926931500434875,
+  "native_root_height_range_m": [
+    0.7961538271903992,
+    1.04370294380188
+  ],
+  "output_sha256": "7ef0bc74fb11a9be4c845730d4dde5aa077a32a8f595d1d49405604619058c0a"
+}

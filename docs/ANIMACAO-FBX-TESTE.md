@@ -1,105 +1,100 @@
-# Teste de condução DefenseJog_LoopF
+# Animações FBX no treino
 
-O FBX enviado pelo usuário foi adaptado ao esqueleto de 13 ossos do jogador
-Gameplay Football. Os comprimentos e as proporções do modelo nativo são
-preservados. O arquivo contém locomoção Biped, sem bola ou marcadores de
-contato com ela. O teste agora acrescenta seus próprios contatos geométricos
-para a condução reta. A física da bola, os controles e o modo original
-continuam na base aprovada `40bdfc5`.
+A condução aprovada `DefenseJog_LoopF` é o padrão. L3 e T não alternam mais
+animações. Extraia o ZIP completo em uma pasta nova e abra `run-training.bat`.
+Os recursos das duas animações já acompanham o pacote.
 
-Este clip substitui o `DefenseJog_F` enviado anteriormente. O novo arquivo
-tem um ciclo fechado de 0,7 segundo (quadros 1–22 a 30 fps), convertido em
-71 amostras; a cadência acompanha o deslocamento real do jogador usando
-a velocidade medida na animação, de aproximadamente 3,206 m/s.
+| Tecla | Exercício na posição atual do jogador |
+| --- | --- |
+| F4 | Receber passe rasteiro |
+| F5 | Receber bola na altura do peito |
+| F6 | Receber cruzamento alto |
+| R3 / Tab | Alternar câmera; a terceira opção mostra o corpo de perto |
+| R / View | Reiniciar |
 
-## Jogar e comparar
+Para testar o peito, solte os analógicos e pressione F5. O novo domínio é
+escolhido quando o jogador está parado, não solicita passe/chute e uma bola
+chega de frente à região do peito. Preparar A permite jogar de primeira;
+bolas rasteiras e bolas de cabeçada continuam usando as ações nativas.
+F3 e a tecla 5 continuam sendo o exercício de falta.
 
-1. Extraia `football-training-windows-x86_64.zip` em uma pasta nova.
-2. Conecte o controle e execute `run-training.bat`.
-3. Clique no analógico esquerdo (L3) para alternar original/nova. No teclado,
-   use T. A mensagem na tela informa a opção; a original é o padrão.
-4. Conduza reto com a bola, sem RB. R3 alterna as câmeras; a câmera externa
-   próxima permite conferir braços, pernas e pés. Partindo da primeira pessoa,
-   aperte R3 duas vezes para chegar à câmera próxima. Tab faz isso no teclado.
+## Condução e postura
 
-A animação nova entra na condução reta normal, com transição de 240 ms e
-curva de aceleração/desaceleração suave. A cabeça recebe mais 0,08 radiano
-(cerca de 4,6 graus) de inclinação para frente. As transições nativas de
-movimento e jogadas usam 120 ms, mantendo seus eventos de contato.
-O ciclo inteiro, incluindo as pernas e o tronco, segue do início ao fim em
-loop. A fase avança no passo físico de 10 ms e é interpolada no mesmo tempo
-histórico usado para desenhar a bola e o jogador. Não reinicia quando o
-seletor nativo troca um passo e não retorna às pernas nativas a cada toque.
+O ciclo de condução toca completo, independentemente das trocas do seletor
+nativo. Os pés encostam nos triângulos das chuteiras; o preditor da bola
+calcula seu percurso até o próximo passo. As pequenas correções de alcance
+preservam os comprimentos das pernas e a orientação do calçado. Entre
+contatos, a perna cede à esfera sem aplicar forças adicionais à bola. Esse
+ajuste fica limitado a 8 cm.
 
-Com a opção FBX ligada, a velocidade normal solicitada ao caminhar/conduzir
-é 6% menor (4,7 m/s com o analógico inteiro). A fase acompanha o deslocamento
-real, reduzindo a cadência sem desacelerar o relógio do jogo. RB segue nativo.
+O tronco recebe 0,13 radiano adicional de inclinação e a cabeça 0,12 radiano
+para olhar mais para a bola. A velocidade normal sem RB é 10% menor que a
+base: 4,5 m/s com o analógico inteiro. A fase acompanha a velocidade real,
+sem alterar o relógio de 10 ms. RB continua sendo corrida e RT fica reservado.
+A entrada/saída da condução usa 240 ms; transições nativas usam 120 ms.
 
-O tronco recebe cerca de seis graus adicionais de inclinação para frente,
-sem alterar o ciclo das pernas ou os comprimentos dos ossos.
+## Domínio Chest_Stand
 
-Os pontos de contato são recuperados a partir do movimento dos calçados
-adaptados ao modelo. Uma esfera tangente aos triângulos da chuteira visível
-marca o local do próximo toque. O impulso é calculado com o preditor
-original da bola, incluindo grama, arrasto e rotação, para que a bola alcance
-esse local junto com o próximo passo. A bola segue a física entre contatos;
-não é reposicionada nem presa ao pé. Um toque só é aceito com proximidade
-geométrica de 0,5 mm da superfície. Pequenos ajustes de alcance do pé
-encaixam a chuteira na bola no momento do toque. As duas articulações da
-perna preservam os comprimentos originais e a rotação do calçado. O ciclo
-inteiro permanece em execução, sem substituir suas pernas por outro passo.
-Entre contatos, o pé cede levemente quando sua trajetória original cruzaria
-a esfera, evitando atravessá-la. A bola mantém o impulso e o rolamento do
-controlador aprovado; não recebe forças extras de colisores invisíveis nem
-é reposicionada. Os ajustes da perna ficam limitados a 8 cm; o modo original
-mantém os contatos e a física originais.
+O FBX fornecido tem 46 poses a 30 FPS, de frame 1 a 46: duração de 1,5 s.
+Foi convertido para 151 amostras a 100 FPS, mantendo o último quadro, sem
+fechar um loop. O deslocamento horizontal original fica com a gameplay;
+as rotações e o apoio são adaptados às proporções do modelo nativo.
 
-A posição do corpo, a fase e os ajustes dos pés usam amostras físicas de
-10 ms e o mesmo instante de desenho da bola. Isso evita que o jogador
-pareça atrasado em relação a um contato calculado corretamente.
+O frame 11 da fonte é um **marcador de integração** para a apresentação do
+peito. O FBX não contém trajetória da bola nem evento de contato. O marcador
+ajuda a antecipar a pose; a mudança de velocidade da bola só acontece quando
+sua esfera encontra a camisa na região do peito. O encontro é refinado
+entre os passos de 10 ms e conserva o tempo restante do passo após o choque.
+A bola perde velocidade, cai diante do jogador e permanece livre.
 
-Na entrada, a pose é alinhada à posição prevista da bola ao fim dos 240 ms.
-A troca só começa com um pé baixo e avançando que consiga alcançar essa
-posição; a bola rola livremente até esse contato.
-Se um toque for perdido ou a entrada não alcançar a bola, o modo nativo retoma o
-controle; uma bola distante não é puxada para o loop.
+A ação entra em 180 ms, recupera-se em 220 ms e toca uma única vez. Um novo
+comando de movimento ou jogada libera o controle e retira a pose em até
+180 ms. Não troca as outras animações de recepção.
 
-Desde essa entrada alcançável, os antigos impulsos de condução e a correção
-de posição para interceptar a bola ficam suspensos. Isso evita duas lógicas
-disputarem o mesmo movimento. RB, viradas, recepções, passes, chutes,
-movimento sem bola e a opção original continuam com os eventos nativos.
+## Contatos das jogadas nativas
 
-O deslocamento horizontal do FBX é removido: os comandos nativos movem o
-jogador. Rotações são convertidas por direção dos segmentos, e o apoio
-visual usa os volumes dos calçados nativos. A pose é aplicada após o cache
-nativo. A primeira pessoa permanece com a cabeça local oculta.
+O motor usava marcadores de animação com tolerância de até 40 cm, além de
+colisores auxiliares. No treino, esses marcadores continuam ajudando a
+escolher as jogadas, mas o impulso exige contato com a malha real da parte
+correspondente: chuteira, cabeça ou tronco. A distância positiva permitida
+é de até 2 mm. Uma interpenetração é separada na superfície, conservando
+movimento angular e histórico, antes do impulso nativo.
 
-## Reproduzir a conversão
+A perna pode ajustar o alcance com cinemática de duas articulações, sem
+mudar seus comprimentos. Um deslocamento visual de apoio de até 2,5 cm
+resolve a extensão máxima em passes parados. A posição do corpo e as
+rotações corrigidas são armazenadas no mesmo relógio da bola a 100 Hz.
+Não se move uma bola distante para um ponto de animação.
 
-O arquivo original está em `assets/animation-sources/DefenseJog_LoopF.fbx`.
-O conversor precisa de Blender 4.3 ou posterior; quem apenas joga o pacote
-Windows não precisa instalar Blender.
+## Quique e futuros gramados
+
+No treino, `training_ground_bounce` passa de 0,62 para 0,70. Esse parâmetro
+separa a restituição do gramado dos contatos com o jogador. Gravidade,
+arrasto, atrito e rotação continuam no preditor da base. O teste de queda
+com o jogador fora do caminho compara os dois valores.
+
+## Converter novas fontes
+
+Blender 4.3+ é necessário apenas para desenvolver/importar animações.
+Quem joga no Windows não precisa instalar Blender.
 
 ```bash
 blender -b --threads 2 --python-exit-code 1 \
   --python tools/animations/import_fbx.py -- \
-  assets/animation-sources/DefenseJog_LoopF.fbx \
-  data/media/training/DefenseJog_LoopF.anim
+  assets/animation-sources/Chest_Stand.fbx \
+  data/media/training/Chest_Stand.anim --non-loop --contact-frame 11
 ```
 
-`tools/animations/native_rig_reference.json` registra os deslocamentos e
-volumes do esqueleto nativo calibrado. O JSON ao lado do clip registra os
-hashes, a duração, a velocidade original e os erros da conversão. O clip
-preparado já acompanha os pacotes completo e de atualização; não é preciso
-copiar recursos PES de versões anteriores.
+Para conduções em loop, omita `--non-loop` e `--contact-frame`. O conversor
+valida segmentos, lateralidade e continuidade. As proporções e superfícies
+vêm de `tools/animations/native_rig_reference.json`. Os JSONs ao lado dos
+clips registram origem, hashes, duração, FPS e limites da adaptação.
+O contato e as condições de seleção de cada nova ação ainda precisam ser
+calibrados: não são informações que um FBX sem bola fornece automaticamente.
 
-Imagens capturadas na execução do teste: [original](images/fbx-dribble-original.png)
-e [nova animação](images/fbx-dribble-new.png).
-
-As verificações reproduzíveis desta entrega estão em
-`fbx-dribble-trial-validation.json`, `tests/training_fbx_trial_smoke.py`,
-`tests/training_fbx_handoff_smoke.py` e
-`tests/training_original_fps_smoke.py`. A execução com renderização e
-controle virtual ocorre no Linux; o pacote Windows é compilado em x64 e
-verificado quanto aos recursos, DLLs e integridade. A avaliação de sensação
-com o controle físico e a GPU do usuário continua no Windows.
+As verificações desta entrega estão em `animation-receptions-validation.json`
+e nos testes `training_chest_smoke.py`, `training_ball_bounce_smoke.py`,
+`training_fbx_trial_smoke.py`, `training_fbx_handoff_smoke.py` e
+`training_original_fps_smoke.py`. A execução renderizada usa Linux e controle
+SDL Xbox virtual. O Windows é compilado em x64 e verificado quanto a recursos,
+DLLs e integridade; controle físico e GPU do usuário são testados no Windows.

@@ -98,7 +98,7 @@ add_library(blunted2 ${BLUNTED_CORE_SOURCES} ${BLUNTED_CORE_HEADERS} ${OWN_LIBRA
 
 add_library(leaguelib ${LEAGUE_SOURCES} ${LEAGUE_HEADERS})
 add_library(gamelib ${GAME_SOURCES} ${GAME_HEADERS})
-target_sources(gamelib PRIVATE src/onthepitch/training.cpp src/onthepitch/trainingcontrol.cpp)
+target_sources(gamelib PRIVATE src/onthepitch/training.cpp src/onthepitch/trainingcontrol.cpp src/onthepitch/player/humanoid/humanoid_contacts.cpp)
 add_library(pes3motion STATIC src/pes3/animation_bank.cpp src/pes3/pes_animation_pose.cpp src/pes3/pes_pose_math.cpp)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pes3motion PRIVATE -fno-fast-math -ffp-contract=off)

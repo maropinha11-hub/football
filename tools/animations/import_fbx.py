@@ -16,6 +16,8 @@ from mathutils import Matrix, Quaternion, Vector
 parser = argparse.ArgumentParser()
 parser.add_argument('source', type=Path)
 parser.add_argument('output', type=Path)
+parser.add_argument('--non-loop', action='store_true', help='Preserve a one-shot action, including its last pose')
+parser.add_argument('--contact-frame', type=float, help='Source action frame of the intended body contact (not supplied by FBX)')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 rig = json.loads(Path(__file__).with_name('native_rig_reference.json').read_text())
 parents = [-1, 0, 1, 1, 3, 1, 5, 0, 7, 8, 0, 10, 11]
@@ -50,6 +52,10 @@ def evaluate(frame):
 start, finish = evaluate(first), evaluate(last)
 travel = finish['Pelvis'].translation-start['Pelvis'].translation
 forward = Vector((travel.x,travel.y,0)).normalized()
+if args.non_loop:
+    anatomical_left=start['LThigh'].translation-start['RThigh'].translation
+    anatomical_left.z=0
+    forward=anatomical_left.normalized().cross(Vector((0,0,1)))
 left = Vector((0,0,1)).cross(forward).normalized()
 if left.dot(start['LThigh'].translation-start['RThigh'].translation) < 0:
     raise ValueError('Root motion disagrees with anatomical left/right')
@@ -106,13 +112,18 @@ for sample in range(count+1):
 # Close the exported loop explicitly; source endpoints are the same biped pose
 # to floating-point tolerance. Never import FBX horizontal root displacement.
 for a,b in zip(all_poses[0]['q'],all_poses[-1]['q']):loop_errors.append(a.rotation_difference(b).angle)
-if max(loop_errors) > .03:raise ValueError('Source clip is not a seamless locomotion loop')
-all_poses[-1]=all_poses[0]
+if not args.non_loop:
+    if max(loop_errors) > .03:raise ValueError('Source clip is not a seamless locomotion loop')
+    all_poses[-1]=all_poses[0]
 args.output.parent.mkdir(parents=True,exist_ok=True)
 lines=['player'+''.join(',%d,0,0,%.8f'%(i,p['height']) for i,p in enumerate(all_poses))]
 for bone in range(13):
     lines.append(rig['bones'][bone]['name']+''.join(',%d,%.9f,%.9f,%.9f,%.9f'%(i,p['q'][bone].x,p['q'][bone].y,p['q'][bone].z,p['q'][bone].w) for i,p in enumerate(all_poses)))
 lines += ['<type>trainingpose</type>', '<source_speed_mps>%.9f</source_speed_mps>'%(travel.length/duration)]
+lines += ['<loop>%s</loop>'%('false' if args.non_loop else 'true')]
+if args.contact_frame is not None:
+    if not first <= args.contact_frame <= last:raise ValueError('Contact outside source clip')
+    lines.append('<contact_frame>%.6f</contact_frame>'%((args.contact_frame-first)*100/fps))
 args.output.write_text('\n'.join(lines)+'\n')
 metadata={'source':args.source.name,'source_sha256':hashlib.sha256(args.source.read_bytes()).hexdigest(),
           'blender':bpy.app.version_string,'source_fps':fps,'source_frame_range':[first,last],
@@ -120,6 +131,8 @@ metadata={'source':args.source.name,'source_sha256':hashlib.sha256(args.source.r
           'source_travel_m':travel.length,'source_speed_mps':travel.length/duration,
           'native_bones':[b['name'] for b in rig['bones']],
           'root_xy_imported':False,'ball_events_in_source':False,
+          'loop':not args.non_loop,'contact_source_frame':args.contact_frame,
+          'contact_marker_origin':'integration marker; FBX contains no ball track' if args.contact_frame is not None else None,
           'maximum_segment_direction_error':max(direction_errors),
           'maximum_source_loop_angle_error_rad':max(loop_errors),
           'minimum_foot_clearance_m':min(feet_clearance),'minimum_toe_forward_dot':min(toe_forward),

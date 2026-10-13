@@ -60,6 +60,7 @@ class PlayerBase {
     bool GetDebug() const;
 
     boost::intrusive_ptr<Node> GetHumanoidNode() { return humanoid->GetHumanoidNode(); }
+    HumanoidBase *GetHumanoid() { return humanoid; }
     boost::intrusive_ptr<Node> GetFullbodyNode() { return humanoid->GetFullbodyNode(); }
 
     float GetDecayingPositionOffsetLength() { return humanoid->GetDecayingPositionOffsetLength(); }

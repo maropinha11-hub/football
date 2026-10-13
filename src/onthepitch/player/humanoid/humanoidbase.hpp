@@ -240,6 +240,19 @@ class HumanoidBase {
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
     Vector3 FitDribbleFoot(float phase, unsigned side, const Vector3 &root, const Quaternion &facing,
                           bool reachBall) const;
+    void UpdateChestReception();
+    void ProcessChestReception();
+    void UpdateTrainingContactPose();
+    bool CanMakeTrainingContact(const std::string &part);
+    Vector3 GetStandingChestTarget() const;
+    void CaptureContactMesh();
+    void SampleContactAnimation(const Animation *animation, float phase, const Vector3 &root,
+                               radian facing, bool source, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    void ContactForwardKinematics(Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    float ContactSurface(const Vector3 &ballPosition, const std::string &part, const Quaternion *global,
+                         const Vector3 *positions, Vector3 *closest = nullptr) const;
+    void FitContactLeg(unsigned side, const Vector3 &offset, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    void PutTrainingContactPose();
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -363,6 +376,25 @@ class HumanoidBase {
     Vector3 fetchedDribbleRoot;
     TemporalSmoother<float> buf_dribblePhase, buf_dribbleBlend;
     TemporalSmoother<Quaternion> buf_dribbleFacing;
+    struct ContactTriangle { unsigned mesh; std::array<unsigned,3> vertices; std::string part; };
+    std::vector<ContactTriangle> contactTriangles;
+    std::array<int,13> contactJointBone{};
+    std::unique_ptr<Animation> chestAnimation;
+    float chestPhase = 0, chestContactFrame = 33.333f;
+    bool chestActive = false, chestTouched = false;
+    unsigned long chestStarted_ms = 0, chestCooldown_ms = 0;
+    Quaternion chestFacing = QUATERNION_IDENTITY;
+    radian chestAngle = 0;
+    Vector3 chestRoot, chestPreviousBall;
+    Quaternion contactLocal[13], contactGlobal[13];
+    Vector3 contactPositions[13];
+    float contactPoseBlend = 0, fetchedContactBlend = 0;
+    TemporalSmoother<Quaternion> buf_contactLocal[13];
+    TemporalSmoother<Vector3> buf_contactRoot;
+    TemporalSmoother<float> buf_contactHeight, buf_contactBlend, buf_chestPhase;
+    Quaternion fetchedContactLocal[13];
+    Vector3 fetchedContactRoot;
+    float fetchedContactHeight = 0, fetchedChestPhase = -1;
 
     AnimApplyBuffer animApplyBuffer;
 

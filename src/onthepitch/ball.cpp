@@ -20,7 +20,7 @@
 
 Ball::Ball(Match *match) : match(match) {
 
-  bounce = 0.62f; // 1 = full bounce, 0 = no bounce
+  bounce = TrainingEnabled() ? clamp(GetConfiguration()->GetReal("training_ground_bounce", 0.70f), 0.0f, 0.95f) : 0.62f;
   linearBounce = 0.06f; // bigger = more brake force
   drag = 0.015f;//previously 0.025f; // bigger = more
   friction = 0.04f; // bigger = more
@@ -114,6 +114,13 @@ void Ball::SetPosition(const Vector3 &target) {
 void Ball::SetMomentum(const Vector3 &target) {
   momentum.Set(target);
   CalculatePrediction();
+}
+
+void Ball::ResolveBodyContact(const Vector3 &surfacePosition,const Vector3 &outgoingMomentum) {
+  // The caller has measured a crossing of the actual skin in this 10 ms step.
+  // Unlike an exercise reset, this preserves angular momentum and ball history.
+  positionBuffer=surfacePosition;
+  Touch(outgoingMomentum);
 }
 
 void Ball::SetRotation(radian x, radian y, radian z, float bias) { // radians per second for each axis

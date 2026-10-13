@@ -29,11 +29,11 @@ def retain(name, frames):
     return evidence
 
 try:
-    for name in ('ball.cpp', 'ball.hpp', 'player/humanoid/humanoid_utils.cpp'):
+    for name in ('player/humanoid/humanoid_utils.cpp',):
         original = subprocess.check_output(['git', 'show', '881193e:src/onthepitch/' + name], cwd=root)
         check(name + ' matches original source', (root/'src/onthepitch'/name).read_bytes() == original,
               'Original Gameplay Football source, upstream revision 68159a2')
-    with NativeTraining(args.build, args.output / 'game', display=args.display, analog_pad=True) as game:
+    with NativeTraining(args.build, args.output / 'game', display=args.display, analog_pad=True,config_overrides={'training_fbx_dribble':'false'}) as game:
         for duration in (300, 900, 1800, 3500):
             game.reset()
             game.pad(0, -1, sprint=True)
@@ -90,8 +90,13 @@ try:
             check('original ' + name + ' acts at native contact', any(kind == function for _, kind in touches) and
                   max(f['ball_speed'] for f in samples) > 4, {'touches': touches, 'peak_speed_mps': max(f['ball_speed'] for f in samples)})
         log = game.log.read_text()
+        surfaces=[{k:float(v)for k,v in re.findall(r'(\w+)=(-?[\d.]+)',line)}for line in log.splitlines()
+                  if line.startswith('TRAINING_NATIVE_SURFACE ')and 'accepted=1'in line]
+        check('native actions meet visible skin instead of remote markers',len(surfaces)>=4 and
+              all(-.001<=s['gap']<=.0021 for s in surfaces),
+              {'contacts':len(surfaces),'maximum_gap':max((s['gap']for s in surfaces),default=None)})
         check('native pose and impulses remain active', not any(token in log for token in
-              ('PES3_BODY_APPLY', 'TRAINING_PULLBACK', 'TRAINING_TURN_TOUCH', 'TRAINING_FOOT_POSE')), 'No custom pose or dribble impulse overrides')
+              ('PES3_BODY_APPLY', 'TRAINING_PULLBACK', 'TRAINING_TURN_TOUCH', 'TRAINING_FOOT_POSE')), 'No PES pose or retired pullback/turn controllers')
         game.keys(['Escape'], True); game.game.wait(timeout=15)
         check('clean exit', game.game.returncode == 0, game.game.returncode)
     report['result'] = 'passed' if all(c['result'] == 'passed' for c in report['checks']) else 'failed'

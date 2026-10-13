@@ -545,8 +545,8 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     else rawInputVelocityFloat = walkVelocity;
     // Keep the imported gait linked to actual travel, rather than slowing
     // its pose clock independently and making planted shoes slide.
-    if(TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",false) &&
-        !hid->GetButton(e_ButtonFunction_Sprint))rawInputVelocityFloat*=.94f;
+    if(TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",true) &&
+        !hid->GetButton(e_ButtonFunction_Sprint))rawInputVelocityFloat*=.90f;
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still

@@ -8,17 +8,22 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
-O [teste Windows de condução DefenseJog_LoopF](artifacts/football-training-windows-x86_64.zip)
-inclui a animação FBX enviada pelo usuário, adaptada ao esqueleto nativo.
-Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
-L3 (clicar no analógico esquerdo) ou T alterna original/nova; a original é
-o padrão. Conduza reto com bola, sem RB, e use R3 para ver o corpo.
-O ciclo toca completo em loop, com uma leve inclinação do tronco e da cabeça.
-A condução FBX tem cadência 6% mais calma e transições suaves de 240 ms.
-Os contatos acompanham continuamente a superfície da chuteira e calculam os impulsos para alcançar o próximo
-passo. A retomada depois de virar espera o corpo estabilizar sem abandonar
-o domínio da bola. Viradas, corridas, jogadas e a
-opção original continuam nativas; a física da bola permanece original. Consulte [o teste de animação](docs/ANIMACAO-FBX-TESTE.md).
+O [pacote Windows completo](artifacts/football-training-windows-x86_64.zip)
+inclui a condução aprovada `DefenseJog_LoopF` como padrão e o novo domínio
+parado `Chest_Stand`, adaptados ao esqueleto nativo. Extraia em uma pasta nova
+e execute `run-training.bat`; L3 e T não alternam mais a condução.
+Use **F4** para receber um passe rasteiro, **F5** para uma bola na altura do
+peito e **F6** para um cruzamento alto. Esses lançamentos começam à frente do
+jogador, na posição atual do campo. R3/Tab alterna a câmera para ver o corpo.
+
+O domínio novo é automático quando o jogador está parado, sem solicitar
+passe/chute, diante de uma bola que chega ao peito. O clip toca uma vez e
+volta à gameplay; as outras recepções permanecem disponíveis.
+A condução sem RB tem velocidade normal de 4,5 m/s (10% abaixo da base),
+com o tronco e a cabeça um pouco inclinados para olhar a bola. O relógio
+físico continua em tempo real. O quique no treino passa de 0,62 a 0,70,
+ajustável em `training_ground_bounce` para ensaios de gramado.
+Consulte [a integração de animações e contatos](docs/ANIMACAO-FBX-TESTE.md).
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o

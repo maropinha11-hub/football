@@ -63,6 +63,37 @@ void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
       (function == e_FunctionType_BallControl || function == e_FunctionType_Trap) ? actualTime_ms + 1600 : 0;
 }
 
+void Match::LaunchTrainingBall(int delivery) {
+  Player *player=designatedPossessionPlayer;
+  const Vector3 root=player->GetPosition().Get2D();
+  const Vector3 forward=player->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+  // Reset only this attempt, retaining the player's current field position and facing.
+  ResetTraining(0,true);
+  const Vector3 chest=player->GetHumanoid()->GetStandingChestTarget();
+  const float flight=delivery==0?1.0f:delivery==1?.85f:1.15f;
+  const Vector3 target=delivery==0 ? root+forward*.55f+Vector3(0,0,.11f) :
+    delivery==1 ? chest : root+forward*.18f+Vector3(0,0,1.92f);
+  const Vector3 origin=root+forward*(delivery==0?8.0f:delivery==1?7.0f:10.0f)+
+    Vector3(0,0,delivery==0?.11f:delivery==1?2.0f:3.6f);
+  ball->SetPosition(origin);
+  Vector3 velocity=(target-origin)/flight;
+  if(delivery)velocity.coords[2]+=4.905f*flight;
+  // Account for the game's drag, spin and turf using its own predictor.
+  const unsigned time=unsigned(std::round(flight*1000/10))*10;
+  for(unsigned i=0;i<8;++i) {
+    ball->SetMomentum(velocity);
+    const Vector3 error=target-ball->Predict(time);
+    if(error.GetLength()<.001f)break;
+    velocity+=error/flight;
+  }
+  ball->SetMomentum(velocity);
+  SpamMessage(delivery==0?"Passe rasteiro recebido | F4: repetir":
+      delivery==1?"Dominio de peito parado | F5: repetir":"Cruzamento alto | F6: repetir",4500);
+  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f]\n",
+    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2]);
+  fflush(stdout);
+}
+
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
   return IsFirstPerson() ? trainingView.movement(stick) : stick;
 }
@@ -116,18 +147,10 @@ void Match::ProcessTraining() {
   auto keyOnce = [&events](SDL_Keycode key) {
     return events.ConsumeKeyPress(key);
   };
-  auto toggleDribbleAnimation = [this]() {
-    const bool enabled = !GetConfiguration()->GetBool("training_fbx_dribble", false);
-    GetConfiguration()->SetBool("training_fbx_dribble", enabled);
-    SpamMessage(enabled ? "Conducao: DefenseJog_LoopF | L3/T: original" : "Conducao: original | L3/T: DefenseJog_LoopF", 4000);
-    printf("TRAINING_FBX_TOGGLE enabled=%d\n", enabled ? 1 : 0);
-    fflush(stdout);
-  };
 
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
-  if (keyOnce(SDLK_t)) toggleDribbleAnimation();
   if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
@@ -141,6 +164,9 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_F2)) ResetTraining(trainingExercise, true);
   if (keyOnce(SDLK_F3) || keyOnce(SDLK_5)) ResetTraining(4);
   if (keyOnce(SDLK_6)) ResetTraining(5);
+  if (keyOnce(SDLK_F4)) LaunchTrainingBall(0);
+  if (keyOnce(SDLK_F5)) LaunchTrainingBall(1);
+  if (keyOnce(SDLK_F6)) LaunchTrainingBall(2);
   for (int exercise = 0; exercise < 4; ++exercise) {
     if (keyOnce(SDLK_1 + exercise)) ResetTraining(exercise);
   }
@@ -167,9 +193,6 @@ void Match::ProcessTraining() {
   if ((buttons & 2u) && !(trainingPreviousButtons & 2u)) ResetTraining(trainingExercise);
   if (trainingController > 0) {
     int slot = static_cast<HIDGamepad*>(input)->GetGamepadID();
-    const unsigned int trialMask = 1u << 7;
-    if (events.GetControllerButton(slot, SDL_CONTROLLER_BUTTON_LEFTSTICK)) buttons |= trialMask;
-    if ((buttons & trialMask) && !(trainingPreviousButtons & trialMask)) toggleDribbleAnimation();
     const SDL_GameControllerButton shortcuts[] = {SDL_CONTROLLER_BUTTON_DPAD_UP,
         SDL_CONTROLLER_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_DOWN,
         SDL_CONTROLLER_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_RIGHTSTICK};
@@ -199,6 +222,8 @@ void Match::ProcessTraining() {
     previousBallPos = ball->Predict(0);
     CheckBallCollisions();
     ball->Process();
+    // Contacts query the position after this physical step, not the previous prediction cache.
+    ball->CalculatePrediction();
 
     auto *image = new MentalImage(this);
     image->TakeSnapshot();
@@ -256,8 +281,8 @@ void Match::ProcessTraining() {
       for (unsigned int i = 0; i < 11; ++i)
         if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
       const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t};
-      for (unsigned int i = 0; i < 13; ++i)
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t,SDLK_F4,SDLK_F5,SDLK_F6};
+      for (unsigned int i = 0; i < 16; ++i)
         if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);
