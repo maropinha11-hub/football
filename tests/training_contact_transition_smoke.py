@@ -30,7 +30,7 @@ try:
              max(p['length_error']for p in poses)<.0001,
              {'maximum_length_error_m':max((p['length_error']for p in poses),default=None)}),
             ('sub-frame corrections remain within the local reach limit',bool(poses)and
-             0<max(p['foot_shift']for p in poses)<=.1801,
+             0<=max(p['foot_shift']for p in poses)<=.0801,
              {'maximum_ankle_shift_m':max((p['foot_shift']for p in poses),default=None)})]:
             report['checks'].append({'check':name,'result':'passed'if ok else'failed','evidence':evidence})
             print(report['checks'][-1],flush=True)

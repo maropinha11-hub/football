@@ -121,8 +121,13 @@ void Ball::SetMomentum(const Vector3 &target) {
 void Ball::ResolveBodyContact(const Vector3 &surfacePosition,const Vector3 &outgoingMomentum) {
   // The caller has measured a crossing of the actual skin in this 10 ms step.
   // Unlike an exercise reset, this preserves angular momentum and ball history.
+  const bool positionalOnly=(outgoingMomentum-momentum).GetLength()<.00001f;
   positionBuffer=surfacePosition;
-  Touch(outgoingMomentum);
+  if(positionalOnly) {
+    // A continuing shoe constraint changes no impulse, spin or flight age.
+    CalculatePrediction();
+    match->UpdateLatestMentalImageBallPredictions();
+  } else Touch(outgoingMomentum);
 }
 
 void Ball::SetRotation(radian x, radian y, radian z, float bias) { // radians per second for each axis

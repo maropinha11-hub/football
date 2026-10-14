@@ -121,7 +121,7 @@ void Humanoid::Process() {
     currentMentalImage = match->GetMentalImage(0); // first-time run (todo: ehh, why this specific branch?)
   } else {
     bool instaDoorheb = false;
-    if (match->GetLastTouchTeamID() == team->GetID()) instaDoorheb = true;
+    if (match->GetLastTouchTeamID() == team->GetID() || TrainingEnabled()) instaDoorheb = true;
     currentMentalImage = match->GetMentalImage(instaDoorheb ? 0 : CastPlayer()->GetController()->GetReactionTime_ms());
   }
 
@@ -222,7 +222,7 @@ void Humanoid::Process() {
   if (mayReQueue) {
     interruptAnim = e_InterruptAnim_ReQueue;
   }
-  if(loopControlsMotion && currentAnim->functionType==e_FunctionType_BallControl)
+  if(loopControlsMotion && (currentAnim->functionType==e_FunctionType_BallControl || currentAnim->functionType==e_FunctionType_Trap))
     interruptAnim=e_InterruptAnim_Switch;
   else if(loopControlsMotion && currentAnim->movementSmuggle.GetLength()>.001f && interruptAnim==e_InterruptAnim_None)
     interruptAnim=e_InterruptAnim_ReQueue;
@@ -418,9 +418,13 @@ void Humanoid::Process() {
   // ---------------------- / EXPERIMENTAL ------------------------------------------------
 
   const bool contactWindow=TrainingEnabled() ? currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
-      currentAnim->frameNum>=currentAnim->touchFrame-(currentAnim->functionType==e_FunctionType_BallControl?0:3) &&
+      currentAnim->frameNum>=currentAnim->touchFrame-(currentAnim->anim->GetVariable("touch_bodypart")=="head"?10:currentAnim->functionType==e_FunctionType_BallControl?0:3) &&
       currentAnim->frameNum<=currentAnim->touchFrame+(currentAnim->anim->GetVariable("touch_bodypart")=="head"?8:4) :
       currentAnim->touchFrame==currentAnim->frameNum;
+  if(TrainingEnabled() && !loopControlsMotion && !currentAnim->touchMade && currentAnim->touchFrame>=0 &&
+      currentAnim->frameNum==currentAnim->touchFrame+9 && currentAnim->functionType>=e_FunctionType_ShortPass && currentAnim->functionType<=e_FunctionType_Shot &&
+      GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_ACTION_MISS t=%lu function=%d\n",match->GetActualTime_ms(),int(currentAnim->functionType));
   if (!loopControlsMotion && contactWindow) {
 
     Vector3 desiredBallPosition;
@@ -453,7 +457,7 @@ void Humanoid::Process() {
     bumpyRideBias = curve(bumpyRideBias, 0.5f);
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
-    if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f &&
+    if ((TrainingEnabled() || (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f)) &&
         CanMakeTrainingContact(currentAnim->anim->GetVariable("touch_bodypart"))) {
       currentAnim->touchMade=true;
       match->NotifyTrainingTouch(currentAnim->functionType,(currentAnim->originatingCommand.modifier&e_PlayerCommandModifier_KnockOn)!=0);
@@ -534,6 +538,7 @@ void Humanoid::Process() {
 
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.6f * (1.0f - bumpyRideBias)); // 1.0
+
 
         team->SetLastTouchPlayer(CastPlayer(), GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
         CastPlayer()->UpdatePossessionStats(false);
@@ -747,6 +752,57 @@ void Humanoid::Process() {
         team->SetLastTouchPlayer(CastPlayer(), e_TouchType_Accidental);
       }
 
+      if(TrainingEnabled() && player->GetExternalController() && currentAnim->functionType>=e_FunctionType_BallControl &&
+          currentAnim->functionType<=e_FunctionType_Shot && currentAnim->anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos) {
+        auto *human=static_cast<HumanController*>(player->GetExternalController());
+        if(currentAnim->functionType>=e_FunctionType_ShortPass || human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) ||
+            human->GetActionMode()!=0 || spatialState.movement.GetLength()>6) {
+          // A single real touch must clear the authored follow-through.
+          // Plan its outgoing momentum, rather than move the shoe or add
+          // rapid extra impulses as the leg continues its natural swing.
+          Ball *ball=match->GetBall();const Vector3 touchVec=ball->GetMovement();
+          Vector3 approach=currentAnim->actionSmuggleOffset;
+          std::vector<std::array<Quaternion,13>> futureGlobal;
+          std::vector<std::array<Vector3,13>> futurePositions;
+          const int last=std::min(currentAnim->frameNum+18,currentAnim->anim->GetEffectiveFrameCount());
+          for(int frame=currentAnim->frameNum;frame<=last;++frame) {
+            if(frame<=currentAnim->touchFrame) {
+              const float n=float(currentAnim->touchFrame+1);
+              approach+=currentAnim->actionSmuggle*((1-.1f*std::cos(2*pi*frame/n))/n);
+            }
+            if(frame==currentAnim->frameNum)continue;
+            Quaternion local[13];std::array<Quaternion,13> global;std::array<Vector3,13> positions;
+            const Vector3 root=startPos+currentAnim->positions[frame]+approach+currentAnim->actionSmuggleSustainOffset;
+            const float progress=std::max(0.0f,float(frame-currentAnim->touchFrame)/(currentAnim->anim->GetEffectiveFrameCount()-currentAnim->touchFrame));
+            const float begin=std::min(1.0f,(frame+1.0f)/std::min(16.0f,currentAnim->touchFrame+1.0f));
+            SampleContactAnimation(currentAnim->anim,float(frame),root,startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*progress,false,local,global.data(),positions.data());
+            futureGlobal.push_back(global);futurePositions.push_back(positions);
+          }
+          Vector3 outgoing=touchVec;const Vector3 direction=touchVec.Get2D().GetNormalized(spatialState.directionVec);
+          for(unsigned iteration=0;iteration<8;++iteration) {
+            ball->SetMomentum(outgoing);float worst=0;Vector3 correction;
+            for(unsigned step=0;step<futureGlobal.size();++step) {
+              const float time=(step+1)*.01f;const Vector3 point=ball->Predict((step+1)*10);
+              if(point.coords[2]>.5f)continue;
+              for(const std::string part:{"left_foot","right_foot"}) {
+                Vector3 surface;const float gap=ContactSurface(point,part,futureGlobal[step].data(),futurePositions[step].data(),&surface);
+                if(gap>=-.0005f)continue;
+                Vector3 normal=(point-surface).Get2D().GetNormalized(direction);
+                if(normal.GetDotProduct(direction)<.1f)normal=(normal+direction*(.1f-normal.GetDotProduct(direction))).GetNormalized(direction);
+                const float severity=(.002f-gap)/time;
+                if(severity>worst){worst=severity;correction=normal*severity;}
+              }
+            }
+            if(worst==0)break;
+            const Vector3 candidate=outgoing+correction;
+            if(!std::isfinite(candidate.GetLength()) || candidate.Get2D().GetLength()>std::max(12.0f,touchVec.GetLength()*1.1f) || (candidate-touchVec).GetLength()>1.2f)break;
+            outgoing=candidate;
+          }
+          ball->SetMomentum(outgoing);
+          if(GetConfiguration()->GetBool("training_telemetry",false))
+            printf("TRAINING_CONTROL_RELEASE t=%lu adjustment=%.5f speed=%.5f\n",match->GetActualTime_ms(),(outgoing-touchVec).GetLength(),outgoing.GetLength());
+        }
+      }
     }
   }
 
@@ -1880,12 +1936,17 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
     *previousAnim = *currentAnim;
 
+
     currentAnim->anim = anims->GetAnim(selectedAnimID);
     currentAnim->id = selectedAnimID;
     currentAnim->functionType = command.desiredFunctionType;//StringToFunctionType(currentAnim->anim->GetVariable("type"));
     currentAnim->frameNum = 0;
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->touchMade = false;
+    if(TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry",false) &&
+        command.desiredFunctionType>=e_FunctionType_ShortPass && command.desiredFunctionType<=e_FunctionType_Shot)
+      printf("TRAINING_ACTION_START t=%lu function=%d contact_frame=%d approach=%.5f foot_reach=0\n",
+        match->GetActualTime_ms(),int(command.desiredFunctionType),touchFrame_tmp,actionSmuggle_tmp.GetLength());
     currentAnim->originatingInterrupt = localInterruptAnim;
     currentAnim->radiusOffset = radiusOffset_tmp;
     currentAnim->touchPos = touchPos_tmp;
@@ -2339,6 +2400,52 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         float bodyBallDistanceAdvantage = GetBodyBallDistanceAdvantage(anim, functionType, animTouchMovement, touchMovement, incomingMovement, adaptedOutgoingMovement, predictedAngle, bodyPos, FFO, animBallPos.Get2D(), ballPos.Get2D(), ballMovement.Get2D(), touchFramedRadiusFactor, radiusCheatOffset, 1.0f, debug);
 
         if (bodyBallDistanceAdvantage >= 1.0f || match->GetBallRetainer() == player) {
+          if(TrainingEnabled() && functionType>=e_FunctionType_BallControl && functionType<=e_FunctionType_Shot) {
+            // Keep the native candidate order and approach motion, but verify
+            // the future mesh contact before committing. Never stretch a leg
+            // toward a ball after starting a kick that cannot reach it.
+            const Vector3 sphere=match->GetBall()->Predict(animTouchFrame*10);
+            const float approachBias=1.0f; // complete native approach at its contact frame
+            Vector3 shift=actionSmuggleVec2D.GetRotated2D(spatialState.angle);
+            Quaternion local[13],global[13];Vector3 joints[13];float gap=100;
+            for(unsigned adjustment=0;adjustment<10;++adjustment) {
+              const Vector3 root=spatialState.position.Get2D()+positions_ret[animTouchFrame].Get2D()+shift*approachBias;
+              SampleContactAnimation(anim,float(animTouchFrame),root,spatialState.angle,false,local,global,joints);
+              Vector3 surface;gap=ContactSurface(sphere,anim->GetVariable("touch_bodypart"),global,joints,&surface);
+              if(std::fabs(gap-.0005f)<.001f)break;
+              const Vector3 toward=(sphere-surface).Get2D();
+              if(toward.GetLength()<.001f)break;
+              shift+=toward.GetNormalized(0)*clamp(gap-.0005f,-.04f,.04f)/approachBias;
+            }
+            const float maxApproach=(functionType>=e_FunctionType_ShortPass?3.0f:2.0f)*animTouchFrame*.01f;
+            const Vector3 root=spatialState.position.Get2D()+positions_ret[animTouchFrame].Get2D()+shift*approachBias;
+            const bool forwardControl=functionType==e_FunctionType_BallControl &&
+              anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos &&
+              desiredDirection.GetDotProduct(spatialState.directionVec)>.98f;
+            if(gap> .002f || gap<-.002f || shift.GetLength()>std::min(.60f,maxApproach) ||
+                (forwardControl && (sphere-root).Get2D().GetDotProduct(desiredDirection)<.28f)) {
+              touchNum++;continue;
+            }
+            const std::string part=anim->GetVariable("touch_bodypart");
+            const bool foot=part=="left_foot" || part=="right_foot";
+            bool blocked=false;
+            if(foot)for(int frame=0;frame<animTouchFrame;++frame) {
+              const Vector3 forecast=match->GetBall()->Predict(frame*10);
+              if(forecast.coords[2]>.5f)continue;
+              const float n=float(animTouchFrame+1),a=pi/n;
+              const float sum=std::sin((frame+1)*a)*std::cos(frame*a)/std::sin(a);
+              const float fraction=((frame+1)-.1f*sum)/n;
+              const Vector3 root=spatialState.position.Get2D()+positions_ret[frame].Get2D()+shift*fraction;
+              const float begin=std::min(1.0f,(frame+1.0f)/std::min(16.0f,n));
+              const float incomingRotation=clamp(ModulateIntoRange(-pi,pi,spatialState.relBodyAngleNonquantized-anim->GetIncomingBodyAngle())*bodyRotationSmoothingFactor,
+                -bodyRotationSmoothingMaxAngle*.5f,bodyRotationSmoothingMaxAngle*.5f);
+              SampleContactAnimation(anim,float(frame),root,spatialState.angle+incomingRotation*(1-begin),false,local,global,joints);
+              const std::string other=part=="left_foot"?"right_foot":"left_foot";
+              if(ContactSurface(forecast,other,global,joints)<-.002f) {blocked=true;break;}
+            }
+            if(blocked) {touchNum++;continue;}
+            actionSmuggleVec2D=shift.GetRotated2D(-spatialState.angle);
+          }
 
           //SetGreenDebugPilon(spatialState.position + animBallPos.GetRotated2D(spatialState.angle));
 
@@ -2368,7 +2475,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
       actionSmuggle_ret = 0;
 
-    } else if (enableActionSmuggleDiscard) {
+    } else if (enableActionSmuggleDiscard && (!TrainingEnabled() || functionType<e_FunctionType_BallControl || functionType>e_FunctionType_Shot)) {
 
       // cheat discard distance (don't show some amount of cheat, like, a cheat-cheat :D CHEATCEPTION)
       float smuggleDistance = actionSmuggle_ret.GetLength();

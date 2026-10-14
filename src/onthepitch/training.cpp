@@ -96,7 +96,9 @@ void Match::LaunchTrainingBall(int delivery) {
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
-  if(IsFirstPerson() && trainingReceiving)return trainingReceptionFacing*stick.coords[1];
+  if(IsFirstPerson() && trainingReceiving)
+    return trainingReceptionFacing*stick.coords[1]+
+      Vector3(-trainingReceptionFacing.coords[1],trainingReceptionFacing.coords[0],0)*stick.coords[0];
   return IsFirstPerson() ? trainingView.movement(stick) : stick;
 }
 
@@ -115,8 +117,9 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   // do not turn every loose ball or the player's own shot into a reception.
   bool receiving=false;
   const Vector3 incoming=ball->GetMovement();
-  if(delta.Get2D().GetLength()<14 && incoming.Get2D().GetLength()>2 &&
-      delta.Get2D().GetDotProduct(incoming.Get2D())<0 &&
+  if(delta.Get2D().GetLength()<14 && incoming.GetLength()>.5f &&
+      (delta.Get2D().GetDotProduct(incoming.Get2D())<0 ||
+       (delta.Get2D().GetLength()<.75f && delta.coords[2]>0 && incoming.coords[2]<-.2f)) &&
       designatedPossessionPlayer->GetLastTouchBias(350)<.01f) {
     for(unsigned ms=100;ms<=1400;ms+=50) {
       const Vector3 arrival=ball->Predict(ms)-designatedPossessionPlayer->GetPosition();

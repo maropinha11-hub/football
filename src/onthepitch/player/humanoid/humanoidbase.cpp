@@ -1020,9 +1020,8 @@ void HumanoidBase::UpdateDribbleLoopIntent() {
         // A low, advancing toe behind the sphere, never a heel or backswing.
         if(positions[ankle].coords[2]>.25f || sphere.coords[1]>positions[ankle].coords[1]-.08f ||
             positions[ankle].coords[1]>-.02f)continue;
-        Quaternion previousLocal[13],previousGlobal[13];Vector3 previousPositions[13];
-        SampleDribbleLoop(float(frame-1),previousLocal,previousGlobal,previousPositions);
-        if(positions[ankle].coords[1]>=previousPositions[ankle].coords[1])continue;
+        if(DribbleBallTarget(float(frame+1),side).coords[1]>=
+            DribbleBallTarget(float(frame-1),side).coords[1])continue;
         const Vector3 point=global[ankle].GetInverse()*(sphere-positions[ankle]);
         const float error=std::fabs(DribbleShoeDistance(point,side)*zMultiplier-.11f);
         if(error<best){best=error;dribbleEntryPhase=float(frame)-movement.GetLength()*100/dribbleTrialSourceSpeed*dribbleTransitionSeconds;}
@@ -1045,7 +1044,13 @@ void HumanoidBase::ProcessDribbleLoop() {
     if(outgoing.GetLength()>.8f && outgoing.GetNormalized(0).GetDotProduct(rootMovement.GetNormalized(0))>.99f)
       plannedMovement=outgoing;
   }
-  const float rate=rootMovement.GetLength()*100/dribbleTrialSourceSpeed;
+  float rate=rootMovement.GetLength()*100/dribbleTrialSourceSpeed;
+  if(dribbleLoopRequested && !dribbleLoopOwnsBall && dribbleTrialBlend<.999f) {
+    // Keep the cadence used to plan the first fully blended toe contact.
+    // A native turn's residual approach speed must not skip that contact.
+    auto *human=static_cast<HumanController*>(player->GetExternalController());
+    rate=human->GetFloatVelocity()*100/dribbleTrialSourceSpeed;
+  }
   const float period=float(dribbleTrialAnimation->GetEffectiveFrameCount());
   Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
   const Vector3 root=animApplyBuffer.position.Get2D();
@@ -1127,6 +1132,7 @@ void HumanoidBase::ProcessDribbleLoop() {
     if(impulse.GetLength()>10 || !std::isfinite(impulse.GetLength())) {
       ball->SetMomentum(previous);dribbleLoopOwnsBall=false;continue;
     }
+    const bool acquiring=!dribbleLoopOwnsBall;
     ball->Touch(impulse);
     match->NotifyTrainingTouch(e_FunctionType_BallControl,false);
     ball->TriggerBallTouchSound(pow(NormalizedClamp(impulse.GetLength(),4.0f,40.0f),.7f));
@@ -1136,10 +1142,10 @@ void HumanoidBase::ProcessDribbleLoop() {
     dribbleLoopOwnsBall=true;
     if(GetConfiguration()->GetBool("training_telemetry",false)) {
       const Vector3 predicted=ball->Predict(horizon_ms);
-      printf("TRAINING_FBX_TOUCH t=%lu side=%u phase=%.5f gap=%.5f next_ms=%d prediction_error=%.5f ball=[%.5f,%.5f,%.5f] target=[%.5f,%.5f,%.5f] speed=%.5f foot_fit=%.6f raw_gap=%.6f\n",
+      printf("TRAINING_FBX_TOUCH t=%lu side=%u phase=%.5f gap=%.5f next_ms=%d prediction_error=%.5f ball=[%.5f,%.5f,%.5f] target=[%.5f,%.5f,%.5f] speed=%.5f foot_fit=%.6f raw_gap=%.6f acquire=%d\n",
         match->GetActualTime_ms(),side,std::fmod(dribbleTrialPhase,period),gap,horizon_ms,
         (target-predicted).Get2D().GetLength(),start.coords[0],start.coords[1],start.coords[2],
-        target.coords[0],target.coords[1],target.coords[2],impulse.GetLength(),dribbleFootOffsets[side].GetLength()*zMultiplier,rawGap);
+        target.coords[0],target.coords[1],target.coords[2],impulse.GetLength(),dribbleFootOffsets[side].GetLength()*zMultiplier,rawGap,acquiring?1:0);
     }
   }
   if(dribbleTrialBlend>0) {
@@ -1187,7 +1193,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
-  const bool chestTail=chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
+  const bool chestTail=currentAnim->touchFrame<0 && chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
       match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms();
   buf_chestPhase.SetValue(chestActive || chestTail ? chestPhase : -1.0f,snapshotTime_ms);
   buf_trainingLook.SetValue(match->GetTrainingLookDirection(),snapshotTime_ms);

@@ -42,7 +42,7 @@ try:
             text=g.log.read_text()[start:];native=rows(text,'TRAINING_NATIVE_SURFACE')
             check(name+' before impact reselects an original reception',
                   'TRAINING_CHEST_CANCEL' in text and 'TRAINING_CHEST_TOUCH' not in text and
-                  (any(s['accepted']and s['function']in (2,3)for s in native)or'TRAINING_BODY_TOUCH'in text),
+                  (any(s['accepted']and -.001<=s['gap']<=.0021 for s in native)or'TRAINING_BODY_TOUCH'in text),
                   {'chest_contacts':text.count('TRAINING_CHEST_TOUCH'),'cancellations':rows(text,'TRAINING_CHEST_CANCEL'),'native_contacts':[s for s in native if s['accepted']],'body_contacts':rows(text,'TRAINING_BODY_TOUCH')})
         g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)
     report['result']='passed'if all(c['result']=='passed'for c in report['checks'])else'failed'

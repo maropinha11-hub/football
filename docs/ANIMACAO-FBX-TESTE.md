@@ -34,6 +34,10 @@ A velocidade normal sem RB é 3,6 m/s com o analógico inteiro. A corrida
 usa 90% da velocidade de entrada original. A fase acompanha a velocidade real,
 sem alterar o relógio de 10 ms. RB continua sendo corrida e RT fica reservado.
 A entrada/saída da condução usa 240 ms; transições nativas usam 120 ms.
+Na entrada, a fase usa a cadência prevista até a mistura terminar. A
+velocidade residual de uma virada nativa não pode adiantar o toque antes
+que a pose nova esteja completa. A escolha da primeira pose confere a
+ponta da chuteira avançando, da mesma forma que a aquisição real da bola.
 O próximo alvo de condução fica no pé direito. A esquerda continua fazendo
 os passos e pode adquirir uma bola fora desse corredor; viradas mantêm
 animações da outra perna como alternativa quando a direita não alcança.
@@ -70,13 +74,19 @@ A bola perde velocidade, cai diante do jogador e permanece livre.
 
 A ação entra em 180 ms e toca uma única vez. A apresentação inicial mantém
 seu tempo; os passos de recuperação usam 85% da velocidade da fonte.
+O alvo do domínio mantém a posição e orientação escolhidas na previsão,
+mesmo quando o movimento nativo de fundo troca de animação. A cabeça
+autorizada pelo clip é preservada antes do contato, para não interpor o
+queixo entre a bola e o peito. O choque varre todo o percurso do passo.
 Antes do contato, qualquer movimento sai do domínio parado e solicita
 novamente uma recepção nativa, mantendo a assistência de interceptação.
 O impulso de amortecimento no peito é calculado com a previsão real de
 quique e atrito, para terminar à frente dos passos finais, sem novos toques
 no ar. Há 120 ms de acomodação depois do contato e 120 ms no término,
-seguidos de uma saída de pose em 180 ms. Mover depois da acomodação ou
-solicitar uma jogada devolve o movimento ao sistema nativo.
+seguidos de uma saída de pose em 180 ms. O movimento pode sair após o contato quando a bola já está descendo
+ao alcance dos pés, antes dos passos finais. Sem novo comando, a animação
+completa é preservada. Lados continuam chegando ao seletor de recepção;
+a locomoção de espera permite antecipar ou recuar na direção do passe.
 A assistência original de interceptação é mantida para passes que chegam;
 não transforma bolas afastando-se do jogador em recepções automáticas.
 
@@ -89,25 +99,24 @@ correspondente: chuteira, cabeça ou tronco. A distância positiva permitida
 é de até 2 mm. Uma interpenetração é separada na superfície, conservando
 movimento angular e histórico, antes do impulso nativo.
 
-A perna pode ajustar o alcance com cinemática de duas articulações, sem
-mudar seus comprimentos. Um deslocamento visual de apoio de até 2,5 cm
-resolve a extensão máxima em passes parados. A posição do corpo e as
-rotações corrigidas são armazenadas no mesmo relógio da bola a 100 Hz.
-Não se move uma bola distante para um ponto de animação.
+O seletor conserva a ordem nativa de candidatos, mas confere a malha na
+trajetória prevista antes de iniciar a jogada. A aproximação usa o movimento
+do jogador inteiro; os ângulos gravados da perna não são esticados para
+buscar uma bola distante. As trocas de movimento conservam a interpolação
+do motor nativo e a condução aprovada.
 
-A pose de contato tem prioridade sobre a condução que está saindo. Após
-interpolar os quadros, ambas as chuteiras são conferidas contra a esfera
-desenhada. Se houver sobreposição, a perna cede localmente, até 18 cm, sem
-alterar os comprimentos, a orientação do calçado ou a trajetória da bola.
-A busca usa a normal real da malha e alternativas laterais. Procura a
-primeira posição livre dentro do alcance, pois a extensão da perna pode
-impedir a solução na direção do calcanhar. Isso evita atravessamentos
-entre amostras e impulsos duplicados na virada.
-Uma janela curta em torno do marcador permite o impulso no encontro físico,
-uma única vez por jogada. Cabeçadas admitem até oito quadros posteriores
-ao marcador, sempre condicionados ao contato real na cabeça. Isso evita perder um passe porque o encontro ocorreu
-alguns milissegundos antes ou depois do marcador. Cruzar com B durante a
-corrida mantém o contexto de passe enquanto a bola está sob controle.
+A previsão também descarta uma aproximação que passe pelo outro pé. Um
+contato de pé em corrida, passe ou chute planeja uma saída que deixe espaço
+para a continuação da passada; o impulso ocorre uma vez, no contato real. O ajuste
+visual residual de separação está limitado a 8 cm, conservando os comprimentos
+e a orientação do calçado, e não busca a bola. A pose de contato tem prioridade
+sobre a condução ou o domínio que está saindo. Bola, altura e rotação do corpo
+usam o mesmo instante do passo de 10 ms.
+
+Uma cabeçada pode usar um contato anterior ao marcador quando a cabeça já
+encontra realmente a bola. Marcadores continuam selecionando a animação;
+o impulso exige a parte correta do corpo e não usa a tolerância antiga de
+40 cm para produzir um toque no vazio.
 
 Bolas altas recebidas também usam a superfície do corpo para contatos
 acidentais. Uma bola que atinge a cabeça não é registrada como domínio de
@@ -154,7 +163,7 @@ O contato e as condições de seleção de cada nova ação ainda precisam ser
 calibrados: não são informações que um FBX sem bola fornece automaticamente.
 
 As verificações das correções de condução e recepção estão em
-`control-reception-validation.json` e `training_control_reception_smoke.py`.
+`natural-contact-validation.json` e `training_control_reception_smoke.py`.
 A integração anterior está documentada em `animation-receptions-validation.json`
 e nos testes `training_chest_smoke.py`, `training_ball_bounce_smoke.py`,
 `training_fbx_trial_smoke.py`, `training_fbx_handoff_smoke.py` e
@@ -171,7 +180,11 @@ Corridas e viradas mantêm a ordem original dos candidatos nativos, sem
 forçar uma perna inadequada. A preparação da passada FBX só se aplica à condução frontal acima de
 3 m/s e depois da aceleração ou desaceleração. A velocidade manual
 também fica restrita à condução sem RB acima de 3 m/s, preservando
-a assistência original com o analógico parcial e na corrida. Domínios nativos de condução aguardam o
-marcador original antes de testar contato físico; passes/chutes mantêm
-a janela curta de contato. Os multiplicadores de velocidade continuam
+a assistência original com o analógico parcial e na corrida. Domínios nativos de condução usam uma janela curta em torno do
+marcador original, para reconhecer o pé que já encostou na esfera;
+passes/chutes também exigem contato físico. Os multiplicadores de velocidade continuam
 em 0,72 (normal) e 0,90 (RB), com simulação em tempo real.
+
+Os testes específicos desta correção são `training_natural_actions_smoke.py`
+e `training_reception_commit_smoke.py`, com contato de cada ação em corrida,
+viradas durante a carga, recepções repetidas e mudança de comando após o peito.

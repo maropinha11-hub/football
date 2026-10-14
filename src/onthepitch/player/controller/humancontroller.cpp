@@ -326,6 +326,41 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }
+      if(match->TrainingReceivingBall() && actionMode==0) {
+        // Once the incoming path reaches this player, wait for it. The full
+        // stick still reaches Trap selection (including a lateral exit), but
+        // locomotion before the contact only anticipates forward/backward.
+        float closest=100;
+        for(unsigned ms=50;ms<=1400;ms+=50) {
+          const Vector3 arrival=match->GetBall()->Predict(ms)-player->GetPosition();
+          if(arrival.coords[2]>.1f && arrival.coords[2]<2.5f)
+            closest=std::min(closest,arrival.Get2D().GetLength());
+        }
+        if(closest<.4f) {
+          const Vector3 facing=(-match->GetBall()->GetMovement()).Get2D().GetNormalized(player->GetBodyDirectionVec());
+          const float longitudinal=inputDirection.GetDotProduct(facing);
+          command.desiredDirection=longitudinal<-.001f?-facing:facing;
+          command.desiredVelocityFloat=inputVelocityFloat*std::fabs(longitudinal);
+          if(longitudinal>0) {
+            // Anticipate only as far as the descending ball can meet the
+            // standing body. Running beneath a high pass overshoots the
+            // interception and prevents the native reception from reaching it.
+            const float reachableHeight=player->GetPlayerData()->GetHeight()*.90f;
+            for(unsigned ms=10;ms<=1400;ms+=10) {
+              const Vector3 arrival=match->GetBall()->Predict(ms)-player->GetPosition();
+              if(arrival.coords[2]>.1f && arrival.coords[2]<=reachableHeight) {
+                const float ahead=arrival.Get2D().GetDotProduct(facing)-.18f;
+                command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,std::max(0.0f,ahead)/.18f);
+                break;
+              }
+            }
+          }
+          command.desiredLookAt=player->GetPosition()+facing*10;
+          if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%100==0)
+            printf("TRAINING_RECEPTION_WAIT t=%lu longitudinal=%.5f speed=%.5f closest=%.5f\n",
+              match->GetActualTime_ms(),longitudinal,command.desiredVelocityFloat,closest);
+        }
+      }
       if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 && inputVelocityFloat>3.0f &&
           !hid->GetButton(e_ButtonFunction_Sprint) &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<.95f &&

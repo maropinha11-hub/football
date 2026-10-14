@@ -31,9 +31,13 @@ try:
         check('normal movement is slower while the simulation remains real time',
               3.4<sum(f['speed']for f in walk)/len(walk)<3.8,
               {'mean_speed_mps':sum(f['speed']for f in walk)/len(walk)})
-        check('right-foot dribbling has separated physical contacts',len(touches)>=5 and
-              all(t['side']==1 and -.0015<=t['gap']<=.0006 for t in touches)and
-              all(b['t']-a['t']>=450 for a,b in zip(touches,touches[1:])),touches)
+        # An uncontrolled ball can be acquired once with the nearer foot;
+        # the approved owned gait must then use spaced right-foot contacts.
+        steady=[t for t in touches if not t['acquire']]
+        check('right-foot dribbling has separated physical contacts',len(steady)>=5 and
+              sum(t['acquire']for t in touches)<=1 and
+              all(-.0015<=t['gap']<=.0006 for t in touches)and all(t['side']==1 for t in steady)and
+              all(b['t']-a['t']>=450 for a,b in zip(steady,steady[1:])),touches)
         game.keys(['Right','Up'],True);looking=game.advance(250);game.keys(['Right','Up'],False)
         head=rows(game.log.read_text()[start:],'TRAINING_HEAD_POSE')
         check('the rendered head follows independent camera yaw and pitch',bool(head)and
