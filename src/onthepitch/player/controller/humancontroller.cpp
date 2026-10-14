@@ -364,8 +364,32 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 && inputVelocityFloat>3.0f &&
           !hid->GetButton(e_ButtonFunction_Sprint) &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<.95f &&
+          match->GetBall()->GetMovement().Get2D().GetLength()<=inputVelocityFloat+.5f &&
           (match->GetBall()->GetMovement()-player->GetMovement()).GetLength()<2)
+      {
         command.desiredVelocityFloat=inputVelocityFloat;
+        const Vector3 ahead=match->GetBall()->Predict(0)-player->GetPosition();
+        const float rolling=std::max(0.0f,match->GetBall()->GetMovement().Get2D().GetDotProduct(inputDirection));
+        if(GetConfiguration()->GetBool("training_fbx_dribble",true) && rolling<inputVelocityFloat && ahead.coords[2]<.3f &&
+            inputDirection.GetDotProduct(player->GetDirectionVec())>.98f) {
+          // Approach a resting ball without walking over it. The first real
+          // foot contact then releases this speed limit into the forward loop.
+          const float available=std::max(0.0f,ahead.Get2D().GetDotProduct(inputDirection)-.25f);
+          command.desiredVelocityFloat=std::min(inputVelocityFloat,rolling+available/.20f);
+        }
+      }
+      if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 &&
+          hid->GetButton(e_ButtonFunction_Sprint) && command.desiredDirection.GetDotProduct(inputDirection)>.98f) {
+        const Vector3 ahead=match->GetBall()->Predict(0)-player->GetPosition();
+        if(ahead.coords[2]<.3f && ahead.Get2D().GetLength()<1.25f) {
+          // A fallback running step must not overtake a rolling ball while
+          // the next native foot contact is being selected. Keep its normal
+          // sprint speed as soon as a touch sends the ball ahead again.
+          const float room=std::max(0.0f,ahead.Get2D().GetDotProduct(inputDirection)-.30f);
+          const float rolling=std::max(0.0f,match->GetBall()->GetMovement().Get2D().GetDotProduct(inputDirection));
+          command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,rolling+room/.15f);
+        }
+      }
       if (match->TrainingHasBall() && actionMode != 2 && inputVelocityFloat < 0.05f &&
           (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength() < 0.9f &&
           match->GetBall()->GetMovement().Get2D().GetLength() < 1.0f)

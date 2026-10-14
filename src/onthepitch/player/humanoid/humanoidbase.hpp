@@ -234,6 +234,7 @@ class HumanoidBase {
 
     virtual void CalculateGeomOffsets();
     void UpdateDribbleLoopIntent();
+    Vector3 PrepareDribbleEntryTouch(const Vector3 &nativeTouch);
     void ProcessDribbleLoop();
     void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions,
                           const Vector3 *footOffsets = nullptr) const;
@@ -374,6 +375,7 @@ class HumanoidBase {
     float dribbleContactFrames[2] = {0,0};
     bool dribbleLoopRequested = false, dribbleLoopOwnsBall = false;
     bool dribbleLoopRecovering = false;
+    bool dribbleStationaryEntry = false;
     unsigned long dribbleEntryTime_ms = 0;
     std::vector<std::array<Vector3,3>> dribbleShoeTriangles[2];
     Vector3 dribbleFootOffsets[2], fetchedDribbleFootOffsets[2];

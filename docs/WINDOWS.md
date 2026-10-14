@@ -79,3 +79,22 @@ dinâmico do vcpkg (`sdl2`, `sdl2-image`, `sdl2-ttf`, `sdl2-gfx`, `openal-soft`,
 `boost-filesystem`, `boost-system`, `boost-thread` e `sqlite3`), configure com
 `CMAKE_SYSTEM_NAME=Windows` e execute `scripts/package-windows.py` depois do
 build.
+
+Neste ambiente, o SDK MinGW/vcpkg restaurado fica em
+`/workspace/.football-windows/vcpkg`, com cache e fontes nessa mesma pasta
+persistente. A configuração de `build-windows-mingw2` usa esse caminho.
+Os cabeçalhos adicionais necessários são `boost-signals2`, `boost-random`
+e `boost-circular-buffer`; SDL2_image inclui JPEG, WebP e TIFF.
+Para recompilar e empacotar nesta máquina:
+
+```bash
+source scripts/native-env.sh
+cmake --build build-windows-mingw2 -j2
+python scripts/package-windows.py
+```
+
+Os servidores indisponíveis de dependências foram substituídos por espelhos
+GitHub oficiais ou pelo arquivo fonte Debian. A amalgamação SQLite 3.53.4
+foi gerada pelos scripts do próprio SQLite a partir da tag oficial;
+os arquivos e as verificações SHA512 ficam no cache do SDK. Esses arquivos
+são necessários para desenvolvimento, e não para executar o ZIP completo.

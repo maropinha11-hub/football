@@ -39,7 +39,7 @@ if approved_binary is None and not executable.exists():
 # override so the same packager can be used from a Windows/MSYS2 checkout.
 vcpkg_bin = Path(os.environ.get(
     "FOOTBALL_WINDOWS_VCPKG_BIN",
-    "/tmp/vcpkg/installed/x64-mingw-dynamic/bin",
+    "/workspace/.football-windows/vcpkg/installed/x64-mingw-dynamic/bin",
 ))
 mingw_root = Path(os.environ.get(
     "FOOTBALL_WINDOWS_MINGW_ROOT",
@@ -125,6 +125,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "alternam mais a animacao. Tronco e cabeca olham mais para a bola.\n"
         "Conducao normal a 3,6 m/s, corrida 10% mais calma e toques\n"
         "espacados pelo pe direito, sem desacelerar o relogio fisico.\n"
+        "Ao sair parado, o primeiro toque adianta a bola antes dos passos.\n"
+        "Interromper o dominio mistura as poses e acompanha o primeiro quique.\n"
+        "RB usa a conducao nativa, com assistencia ao soltar a corrida.\n"
         "Conduza reto com a bola, sem RB; R3 mostra o corpo na camera externa.\n\n"
         "NOVOS LANCAMENTOS NO TECLADO, A PARTIR DA SUA POSICAO:\n"
         "F4: passe rasteiro recebido. F5: bola para dominio no peito.\n"

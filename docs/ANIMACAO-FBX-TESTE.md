@@ -188,3 +188,27 @@ em 0,72 (normal) e 0,90 (RB), com simulação em tempo real.
 Os testes específicos desta correção são `training_natural_actions_smoke.py`
 e `training_reception_commit_smoke.py`, com contato de cada ação em corrida,
 viradas durante a carga, recepções repetidas e mudança de comando após o peito.
+
+## Retomar a condução e interromper o domínio
+
+Ao sair parado, a entrada da condução mantém a raiz parada durante a mistura
+até o primeiro contato físico da chuteira. A fase e o pequeno ajuste do pé
+são preparados gradualmente para esse contato; o toque considera a aceleração
+nativa até a próxima passada. Nas demais entradas, a preparação usa a posição
+prevista da bola e do jogador ao final da mistura. Uma entrada que não alcança
+a bola devolve a assistência nativa ao terminar sua janela de contato.
+
+A interrupção de `Chest_Stand` preserva uma transição de 180 ms também quando
+o seletor prepara outra animação de contato. O personagem acompanha o primeiro
+quique até o toque seguinte, evitando caminhar sobre a bola enquanto ela sobe.
+O RB mantém o movimento e a seleção de animações nativos, e sua soltura conserva
+a assistência quando a bola ainda está mais rápida. O impulso do contato real
+considera a continuação da passada para manter a chuteira fora da bola;
+a preparação de um chute admite uma correção limitada maior que a corrida.
+O alvo seguinte da condução corresponde à distância restante da fase, com
+o tempo calculado pela curva nativa de aceleração ou desaceleração. Reduzir
+o analógico durante um toque não encurta indevidamente essa distância.
+
+`training_stationary_handoff_smoke.py` verifica pausas, apertar/soltar RB,
+interrupções após o peito, contato real e continuidade das rotações desenhadas.
+Os resultados desta versão estão em `stationary-handoff-validation.json`.

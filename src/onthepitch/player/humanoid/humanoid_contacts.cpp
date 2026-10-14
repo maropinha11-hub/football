@@ -195,6 +195,8 @@ void HumanoidBase::UpdateChestReception() {
       for(unsigned i=0;i<20;++i){const float u=(lo+hi)*.5f;if(ease(u)<contactPoseBlend)lo=u;else hi=u;}
       const unsigned elapsed=unsigned((1-hi)*180);
       chestStarted_ms=match->GetActualTime_ms()>elapsed?match->GetActualTime_ms()-elapsed:0;
+      if(GetConfiguration()->GetBool("training_telemetry",false))
+        printf("TRAINING_CHEST_RELEASE t=%lu phase=%.4f touched=%d blend=%.5f\n",now,chestPhase,chestTouched?1:0,contactPoseBlend);
     }
     return;
   }
@@ -358,7 +360,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   if(!match->TrainingReceivingBall() && !chestActive && chestCooldown_ms<=match->GetActualTime_ms())return;
   Quaternion local[13],global[13];Vector3 positions[13];
   std::copy(contactLocal,contactLocal+13,local);std::copy(contactPositions,contactPositions+13,positions);
-  const bool chestTail=!chestActive && currentAnim->touchFrame<0 && chestCooldown_ms>match->GetActualTime_ms() &&
+  const bool chestTail=!chestActive && chestCooldown_ms>match->GetActualTime_ms() &&
       match->GetActualTime_ms()<chestStarted_ms+180;
   if((chestActive || chestTail) && contactPoseBlend<.999f) {
     Quaternion nativeLocal[13],nativeGlobal[13];Vector3 nativePositions[13];
@@ -420,11 +422,23 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const float angle=startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*end;
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
-  if(!chestActive && currentAnim->touchFrame<0 && chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
+  const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
+  const float nativeBlend=currentAnim->touchFrame>=0 ?
+      ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;
+  if(!chestActive && chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
       match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms()) {
     chestPhase=std::min(chestPhase+1,float(chestAnimation->GetEffectiveFrameCount()));
-    contactPoseBlend=ease(1-float(match->GetActualTime_ms()-chestStarted_ms)/180);
-    SampleContactAnimation(chestAnimation.get(),chestPhase,root,chestAngle,true,contactLocal,contactGlobal,contactPositions);
+    const float tail=ease(1-float(match->GetActualTime_ms()-chestStarted_ms)/180);
+    contactPoseBlend=tail+(1-tail)*nativeBlend;
+    Quaternion chestLocal[13],chestGlobal[13];Vector3 chestPositions[13];
+    SampleContactAnimation(chestAnimation.get(),chestPhase,root,chestAngle,true,chestLocal,chestGlobal,chestPositions);
+    const float weight=contactPoseBlend>0?tail/contactPoseBlend:0;
+    for(unsigned i=0;i<13;++i)contactLocal[i]=contactLocal[i].GetSlerped(weight,chestLocal[i]).GetNormalized();
+    contactPositions[0]=contactPositions[0]*(1-weight)+chestPositions[0]*weight;
+    ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("TRAINING_CHEST_HANDOFF t=%lu tail=%.5f native=%.5f blend=%.5f function=%d remaining=%d\n",
+        match->GetActualTime_ms(),tail,nativeBlend,contactPoseBlend,int(currentAnim->functionType),remaining);
     return;
   }
   if(GetConfiguration()->GetBool("training_telemetry",false) && currentAnim->touchFrame>=0 && match->GetActualTime_ms()%20==0) {
@@ -439,9 +453,8 @@ void HumanoidBase::UpdateTrainingContactPose() {
     if(match->TrainingReceivingBall())contactPoseBlend=1;
     return;
   }
-  const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   if(remaining>20 || remaining< -14)return;
-  contactPoseBlend=ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f);
+  contactPoseBlend=nativeBlend;
   // Authored joint rotations stay intact. Contact is planned with the
   // native whole-player approach, never a late per-leg reach adjustment.
 

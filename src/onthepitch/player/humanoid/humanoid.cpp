@@ -249,6 +249,20 @@ void Humanoid::Process() {
     for (unsigned int i = 0; i < commandQueue.size(); i++) {
 
       PlayerCommand &command = commandQueue.at(i);
+      if(command.desiredFunctionType==e_FunctionType_Movement && chestTouched && !chestActive &&
+          CastPlayer()->GetLastTouchTime_ms()<chestSettleUntil_ms) {
+        auto *human=static_cast<HumanController*>(player->GetExternalController());
+        const Vector3 forward=chestFacing*Vector3(0,-1,0);
+        if(human && human->GetFloatVelocity()>.8f && human->GetDirection().GetDotProduct(forward)>.98f) {
+          // Retain reception assistance through the first bounce, until an
+          // actual foot touch. A low descending sample is not settled ground.
+          const float rolling=std::max(0.0f,match->GetBall()->GetMovement().Get2D().GetDotProduct(forward));
+          const float room=std::max(0.0f,(match->GetBall()->Predict(0)-spatialState.position).Get2D().GetDotProduct(forward)-.35f);
+          command.desiredDirection=forward;
+          command.desiredVelocityFloat=std::min(human->GetFloatVelocity(),rolling+room/.20f);
+          if(match->GetActualTime_ms()<chestStarted_ms+180)command.desiredVelocityFloat=0;
+        }
+      }
       if(loopControlsMotion && (command.desiredFunctionType==e_FunctionType_BallControl ||
           command.desiredFunctionType==e_FunctionType_Trap))continue;
       if(loopControlsMotion && command.desiredFunctionType==e_FunctionType_Movement) {
@@ -256,7 +270,9 @@ void Humanoid::Process() {
         // magnet must not bend the root towards each alternating foot target.
         auto *human=static_cast<HumanController*>(player->GetExternalController());
         command.desiredDirection=human->GetDirection();
-        command.desiredVelocityFloat=chestActive ? 0.0f : human->GetFloatVelocity();
+        // Leaving idle starts with the advancing toe, then locomotion. Moving
+        // the root first would carry a resting ball between the planted feet.
+        command.desiredVelocityFloat=chestActive || (dribbleStationaryEntry && !dribbleLoopOwnsBall) ? 0.0f : human->GetFloatVelocity();
         if(chestActive)command.desiredDirection=chestFacing*Vector3(0,-1,0);
         command.desiredLookAt=spatialState.position+command.desiredDirection*10;
       }
@@ -407,6 +423,7 @@ void Humanoid::Process() {
     touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
     if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (controlledcollision): %f\n", bumpyRideBias);
 
+    touchVec=PrepareDribbleEntryTouch(touchVec);
     match->GetBall()->Touch(touchVec);
     match->NotifyTrainingTouch(currentAnim->functionType,false);
     match->GetBall()->SetRotation(xRot, yRot, 0, 0.2f * (1.0f - bumpyRideBias)); // 0.9
@@ -484,6 +501,7 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (trap): %f\n", bumpyRideBias);
 
+        if(currentAnim->functionType==e_FunctionType_BallControl)touchVec=PrepareDribbleEntryTouch(touchVec);
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.5f * (1.0f - bumpyRideBias));
 
@@ -502,39 +520,7 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (ballcontrol): %f\n", bumpyRideBias);
 
-        if(TrainingEnabled() && dribbleTrialAnimation && GetConfiguration()->GetBool("training_fbx_dribble",true) &&
-            player->GetExternalController() && !match->TrainingReceivingBall()) {
-          auto *human=static_cast<HumanController*>(player->GetExternalController());
-          const Vector3 stick=human->GetHIDevice()->GetDirection(),direction=human->GetDirection();
-          const bool forward=!match->IsFirstPerson() || (stick.coords[1]>.1f && std::fabs(stick.coords[0])<.15f);
-          if(forward && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) && human->GetActionMode()==0 &&
-              human->GetFloatVelocity()>3.0f && direction.GetDotProduct(spatialState.directionVec)>.99f &&
-              std::fabs(spatialState.movement.GetLength()-human->GetFloatVelocity())<.3f) {
-            // Finish acceleration/deceleration before planning the shorter FBX
-            // stride. Otherwise an RB release puts the ball under the body.
-            // A real native recovery touch introduces the shorter FBX stride.
-            // Let the ball roll to its next right-foot step rather than keep
-            // sending it to the native gait's more distant control marker.
-            Quaternion facing;facing.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
-            const Vector3 target=contactPositions[0].Get2D()+direction*human->GetFloatVelocity()*.24f+
-              facing*DribbleBallTarget(dribbleContactFrames[1],1);
-            Ball *ball=match->GetBall();const Vector3 previous=ball->GetMovement();
-            Vector3 candidate=(target-ball->Predict(0)).Get2D()/.24f;
-            candidate.coords[2]=touchVec.coords[2];
-            for(unsigned iteration=0;iteration<5;++iteration) {
-              ball->SetMomentum(candidate);
-              const Vector3 error=(target-ball->Predict(240)).Get2D();
-              if(error.GetLength()<.002f)break;
-              candidate+=error/.24f;
-            }
-            ball->SetMomentum(previous);
-            if(std::isfinite(candidate.GetLength()) && candidate.GetLength()<7.0f) {
-              touchVec=candidate;
-              if(GetConfiguration()->GetBool("training_telemetry",false))
-                printf("TRAINING_FBX_PREPARE t=%lu speed=%.5f\n",match->GetActualTime_ms(),touchVec.GetLength());
-            }
-          }
-        }
+        touchVec=PrepareDribbleEntryTouch(touchVec);
 
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.6f * (1.0f - bumpyRideBias)); // 1.0
@@ -755,8 +741,8 @@ void Humanoid::Process() {
       if(TrainingEnabled() && player->GetExternalController() && currentAnim->functionType>=e_FunctionType_BallControl &&
           currentAnim->functionType<=e_FunctionType_Shot && currentAnim->anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos) {
         auto *human=static_cast<HumanController*>(player->GetExternalController());
-        if(currentAnim->functionType>=e_FunctionType_ShortPass || human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) ||
-            human->GetActionMode()!=0 || spatialState.movement.GetLength()>6) {
+        if(currentAnim->functionType>=e_FunctionType_ShortPass || human->GetActionMode()!=0 ||
+            human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint)) {
           // A single real touch must clear the authored follow-through.
           // Plan its outgoing momentum, rather than move the shoe or add
           // rapid extra impulses as the leg continues its natural swing.
@@ -794,8 +780,18 @@ void Humanoid::Process() {
               }
             }
             if(worst==0)break;
-            const Vector3 candidate=outgoing+correction;
-            if(!std::isfinite(candidate.GetLength()) || candidate.Get2D().GetLength()>std::max(12.0f,touchVec.GetLength()*1.1f) || (candidate-touchVec).GetLength()>1.2f)break;
+            const bool preparingStep=currentAnim->functionType==e_FunctionType_BallControl && human->GetActionMode()==2;
+            const float limit=preparingStep?2.5f:1.2f;
+            Vector3 candidate=outgoing+correction;
+            if(preparingStep) {
+              // A shorter entry/recovery stride can need more than the sprint
+              // correction. Use the bounded part instead of discarding it and
+              // letting the advancing shoe pass into the ball.
+              Vector3 delta=candidate-touchVec;delta.NormalizeMax(limit);
+              candidate=touchVec+delta;
+            }
+            if(!std::isfinite(candidate.GetLength()) || candidate.Get2D().GetLength()>std::max(12.0f,touchVec.GetLength()*1.1f) ||
+                (candidate-touchVec).GetLength()>limit+.00001f || (candidate-outgoing).GetLength()<.00001f)break;
             outgoing=candidate;
           }
           ball->SetMomentum(outgoing);
@@ -2401,6 +2397,12 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
         if (bodyBallDistanceAdvantage >= 1.0f || match->GetBallRetainer() == player) {
           if(TrainingEnabled() && functionType>=e_FunctionType_BallControl && functionType<=e_FunctionType_Shot) {
+            // Let the chest-to-locomotion blend finish before its next foot
+            // impact. The native selector may prepare that action immediately.
+            if(chestTouched && chestCooldown_ms>match->GetActualTime_ms() &&
+                match->GetActualTime_ms()+animTouchFrame*10<chestStarted_ms+180) {
+              touchNum++;continue;
+            }
             // Keep the native candidate order and approach motion, but verify
             // the future mesh contact before committing. Never stretch a leg
             // toward a ball after starting a kick that cannot reach it.
