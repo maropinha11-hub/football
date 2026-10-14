@@ -389,6 +389,7 @@ class HumanoidBase {
     float chestPhase = 0, chestContactFrame = 33.333f;
     bool chestActive = false, chestTouched = false;
     unsigned long chestStarted_ms = 0, chestCooldown_ms = 0;
+    unsigned long chestSettleUntil_ms = 0, chestFinish_ms = 0;
     Quaternion chestFacing = QUATERNION_IDENTITY;
     radian chestAngle = 0;
     Vector3 chestRoot, chestPreviousBall;

@@ -326,7 +326,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.desiredDirection = inputDirection;
         command.desiredVelocityFloat = inputVelocityFloat;
       }
-      if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 && inputVelocityFloat>.05f &&
+      if(match->TrainingHasBall() && !match->TrainingReceivingBall() && actionMode==0 && inputVelocityFloat>3.0f &&
+          !hid->GetButton(e_ButtonFunction_Sprint) &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<.95f &&
           (match->GetBall()->GetMovement()-player->GetMovement()).GetLength()<2)
         command.desiredVelocityFloat=inputVelocityFloat;

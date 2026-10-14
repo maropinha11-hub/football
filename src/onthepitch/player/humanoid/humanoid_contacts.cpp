@@ -168,7 +168,19 @@ void HumanoidBase::UpdateChestReception() {
   auto *human=static_cast<HumanController*>(player->GetExternalController());
   if(!human)return;
   if(chestActive) {
-    if((chestTouched && human->GetFloatVelocity()>.8f) || human->GetActionMode()!=0 || chestPhase>=chestAnimation->GetEffectiveFrameCount()) {
+    const unsigned long now=match->GetActualTime_ms();
+    const bool moving=human->GetFloatVelocity()>.05f;
+    const unsigned arrival=unsigned(std::max(0.0f,(chestContactFrame-chestPhase)*10));
+    const bool missed=!chestTouched &&
+        (match->GetBall()->Predict(arrival)-GetStandingChestTarget()).GetLength()>.20f;
+    const bool finished=chestPhase>=chestAnimation->GetEffectiveFrameCount() && chestFinish_ms && now>=chestFinish_ms;
+    if((moving && (!chestTouched || now>=chestSettleUntil_ms)) || human->GetActionMode()!=0 || missed || finished) {
+      if(!chestTouched) {
+        // Return immediately to the original moving reception selector.
+        interruptAnim=e_InterruptAnim_ReQueue;
+        if(GetConfiguration()->GetBool("training_telemetry",false))
+          printf("TRAINING_CHEST_CANCEL t=%lu moving=%d phase=%.4f\n",now,moving?1:0,chestPhase);
+      }
       chestActive=false;chestCooldown_ms=match->GetActualTime_ms()+500;
       float lo=0,hi=1;
       for(unsigned i=0;i<20;++i){const float u=(lo+hi)*.5f;if(ease(u)<contactPoseBlend)lo=u;else hi=u;}
@@ -177,7 +189,7 @@ void HumanoidBase::UpdateChestReception() {
     }
     return;
   }
-  if(match->GetActualTime_ms()<chestCooldown_ms || human->GetFloatVelocity()>.8f ||
+  if(match->GetActualTime_ms()<chestCooldown_ms || human->GetFloatVelocity()>.05f ||
       human->GetActionMode()!=0 || spatialState.actualMovement.GetLength()>.8f)return;
   const Vector3 target=GetStandingChestTarget(),incoming=match->GetBall()->GetMovement();
   const Vector3 delta=match->GetBall()->Predict(0)-target;
@@ -195,6 +207,7 @@ void HumanoidBase::UpdateChestReception() {
   chestRoot=spatialState.position;chestAngle=spatialState.angle;chestFacing=facing;
   chestPreviousBall=match->GetBall()->Predict(0);chestStarted_ms=match->GetActualTime_ms();
   chestRecoveryBase=Vector3(0);chestAppliedMotion=Vector3(0);
+  chestSettleUntil_ms=0;chestFinish_ms=0;
   dribbleLoopRequested=false;dribbleLoopOwnsBall=false;
   printf("TRAINING_CHEST_START t=%lu arrival_ms=%u phase=%.3f target=[%.4f,%.4f,%.4f]\n",
       match->GetActualTime_ms(),bestTime,chestPhase,target.coords[0],target.coords[1],target.coords[2]);
@@ -202,18 +215,15 @@ void HumanoidBase::UpdateChestReception() {
 
 void HumanoidBase::ProcessChestReception() {
   if(!chestActive)return;
-  chestPhase+=chestTouched?.85f:1.0f;
+  const float end=float(chestAnimation->GetEffectiveFrameCount());
+  if(!chestTouched || match->GetActualTime_ms()>=chestSettleUntil_ms)
+    chestPhase=std::min(chestPhase+(chestTouched?.85f:1.0f),end);
+  if(chestPhase>=end && !chestFinish_ms)chestFinish_ms=match->GetActualTime_ms()+120;
   const float phase=clamp(chestPhase,0.0f,float(chestAnimation->GetEffectiveFrameCount()));
   Vector3 displacement;
   if(chestTouched) {
     const Vector3 recovery=chestFacing*(ChestRootMotion(phase)-chestRecoveryBase)*zMultiplier;
     displacement=recovery-chestAppliedMotion;chestAppliedMotion=recovery;
-  } else {
-    auto *human=static_cast<HumanController*>(player->GetExternalController());
-    const Vector3 input=human->GetHIDevice()->GetDirection();
-    const float request=match->IsFirstPerson()?input.coords[1]:input.GetDotProduct(chestFacing*Vector3(0,-1,0));
-    const Vector3 next=chestAppliedMotion+chestFacing*Vector3(0,-1,0)*(request*.45f*.01f);
-    if(next.GetLength()<.18f) {displacement=next-chestAppliedMotion;chestAppliedMotion=next;}
   }
   const Vector3 desiredRoot=chestRoot+displacement;
   // The idle native graph can requeue while the presentation owns movement.
@@ -222,8 +232,7 @@ void HumanoidBase::ProcessChestReception() {
   const Vector3 correction=desiredRoot-animApplyBuffer.position.Get2D();
   if(correction.GetLength()>.000001f)OffsetPosition(correction);
   animApplyBuffer.position+=correction;spatialState.position=desiredRoot;chestRoot=desiredRoot;
-  const float enter=ease(phase/18),exit=ease((chestAnimation->GetEffectiveFrameCount()-phase)/22);
-  contactPoseBlend=enter*exit;
+  contactPoseBlend=ease(phase/18);
   SampleContactAnimation(chestAnimation.get(),phase,chestRoot,chestAngle,true,contactLocal,contactGlobal,contactPositions);
   Ball *ball=match->GetBall();ball->CalculatePrediction();
   const Vector3 current=ball->Predict(0);Vector3 surface;
@@ -247,12 +256,28 @@ void HumanoidBase::ProcessChestReception() {
     const Vector3 incoming=ball->GetMovement();
     const float inward=incoming.GetDotProduct(normal);
     if(inward<-.2f && normal.GetDotProduct(chestFacing*Vector3(0,-1,0))>.3f) {
-      const Vector3 tangent=incoming-normal*inward;
-      Vector3 outgoing=normal*clamp(-inward*.10f,.35f,1.1f)+tangent*.12f;
-      outgoing.coords[2]=clamp(outgoing.coords[2],-1.2f,-.45f);
-      // Only undo this 10 ms penetration. Preserve spin/history and never pull a remote ball.
+      const Vector3 forward=chestFacing*Vector3(0,-1,0);
+      Vector3 outgoing=forward*clamp(-inward*.18f,1.1f,2.2f);
+      outgoing.coords[2]=clamp(incoming.coords[2]*.12f,-1.2f,-.45f);
+      // Separate only the actual 10 ms skin crossing. Plan the cushioned
+      // outgoing velocity with the same bounce/drag prediction as the ball.
       const Vector3 resolved=surface+normal*.1105f+outgoing*(1-sweep)*.01f;
       ball->ResolveBodyContact(resolved,outgoing);
+      const Vector3 remainingSteps=chestFacing*(ChestRootMotion(end)-ChestRootMotion(phase))*zMultiplier;
+      const Vector3 target=chestRoot+remainingSteps+forward*.46f;
+      const unsigned recovery_ms=unsigned(std::ceil((end-phase)*10/.85f))+240;
+      for(unsigned iteration=0;iteration<8;++iteration) {
+        ball->SetMomentum(outgoing);
+        const Vector3 error=(target-ball->Predict(recovery_ms)).Get2D();
+        if(error.GetLength()<.005f)break;
+        const Vector3 candidate=outgoing+error/(recovery_ms*.001f)*.8f;
+        if(!std::isfinite(candidate.GetLength()) || candidate.Get2D().GetLength()>3.5f || candidate.GetDotProduct(normal)<.15f)break;
+        outgoing=candidate;
+      }
+      // Apply one impulse at the chest, never a later invisible correction.
+      outgoing.coords[2]=clamp(incoming.coords[2]*.12f,-1.2f,-.45f);
+      ball->SetMomentum(outgoing);
+      chestSettleUntil_ms=match->GetActualTime_ms()+120;
       auto *p=static_cast<Player*>(player);
       p->GetTeam()->SetLastTouchPlayer(p,e_TouchType_Intentional_Nonkicked);
       p->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.18f);
@@ -364,7 +389,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
     currentAnim->actionSmuggleSustainOffset+currentAnim->movementSmuggleOffset;
   SampleContactAnimation(currentAnim->anim,currentAnim->frameNum+.5f,root,startAngle+currentAnim->rotationSmuggleOffset,
     false,contactLocal,contactGlobal,contactPositions);
-  if(!chestActive && chestAnimation && chestPhase>0 && chestPhase<chestAnimation->GetEffectiveFrameCount() &&
+  if(!chestActive && chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
       match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms()) {
     chestPhase=std::min(chestPhase+1,float(chestAnimation->GetEffectiveFrameCount()));
     contactPoseBlend=ease(1-float(match->GetActualTime_ms()-chestStarted_ms)/180);
@@ -471,13 +496,19 @@ void HumanoidBase::PutTrainingContactPose() {
   // its lengths and shoe orientation; never add a second impulse to the ball.
   for(unsigned side=0;side<2;++side) {
     const std::string part=side?"right_ankle":"left_ankle";
-    if(ContactSurface(sphere,part,global,positions)>=.0005f)continue;
+    Vector3 surface;
+    if(ContactSurface(sphere,part,global,positions,&surface)>=.0005f)continue;
     const unsigned ankle=side?12:9;
     const auto &lo=pes3NativeReference.footMin[side],&hi=pes3NativeReference.footMax[side];
     const Vector3 center=positions[ankle]+global[ankle]*Vector3((lo[0]+hi[0])*.5f,
         (lo[1]+hi[1])*.5f,(lo[2]+hi[2])*.5f)*zMultiplier;
     const Vector3 away=(center-sphere).Get2D().GetNormalized(global[0]*Vector3(0,1,0));
-    const Vector3 directions[]={away,(away+Vector3(0,0,1)).GetNormalized(0),Vector3(0,0,1)};
+    // An extended leg may not yield along its heel/centre direction. Use
+    // the actual skin normal and lateral alternatives before lifting it.
+    const Vector3 normal=(surface-sphere).GetNormalized(away);
+    const Vector3 lateral=global[0]*Vector3(1,0,0);
+    const Vector3 directions[]={normal,normal.Get2D().GetNormalized(away),away,
+      lateral,-lateral,(away+Vector3(0,0,1)).GetNormalized(0),Vector3(0,0,1)};
     Quaternion bestLocal[13],bestGlobal[13];Vector3 bestPositions[13];
     float bestShift=100;
     for(const auto &direction:directions) {
@@ -488,8 +519,15 @@ void HumanoidBase::PutTrainingContactPose() {
         FitContactLeg(side,direction*distance,trialLocal,trialGlobal,trialPositions);
         return ContactSurface(sphere,part,trialGlobal,trialPositions);
       };
-      if(trial(.18f)<.0005f)continue;
-      float low=0,high=.18f;
+      float low=0,high=0;
+      // Find the first clear position: IK reach limits make the gap
+      // non-monotonic, so checking only the far endpoint misses valid exits.
+      for(unsigned sample=1;sample<=9;++sample) {
+        const float distance=sample*.02f;
+        if(trial(distance)>=.0005f){high=distance;break;}
+        low=distance;
+      }
+      if(high==0)continue;
       for(unsigned iteration=0;iteration<16;++iteration) {
         const float distance=(low+high)*.5f;
         if(trial(distance)<.0005f)low=distance;else high=distance;

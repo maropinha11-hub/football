@@ -88,7 +88,9 @@ Player *Humanoid::CastPlayer() const { return static_cast<Player*>(player); }
 
 bool Humanoid::TouchPending() {
   if(!TrainingEnabled())return currentAnim->frameNum<currentAnim->touchFrame;
-  return currentAnim->touchFrame>=0 && !currentAnim->touchMade && currentAnim->frameNum<currentAnim->touchFrame+5;
+  const int lastContactFrame=currentAnim->touchFrame+
+      (currentAnim->anim->GetVariable("touch_bodypart")=="head"?9:5);
+  return currentAnim->touchFrame>=0 && !currentAnim->touchMade && currentAnim->frameNum<lastContactFrame;
 }
 
 bool _PassFiddlingEnabled() {
@@ -416,7 +418,8 @@ void Humanoid::Process() {
   // ---------------------- / EXPERIMENTAL ------------------------------------------------
 
   const bool contactWindow=TrainingEnabled() ? currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
-      currentAnim->frameNum>=currentAnim->touchFrame-3 && currentAnim->frameNum<=currentAnim->touchFrame+4 :
+      currentAnim->frameNum>=currentAnim->touchFrame-(currentAnim->functionType==e_FunctionType_BallControl?0:3) &&
+      currentAnim->frameNum<=currentAnim->touchFrame+(currentAnim->anim->GetVariable("touch_bodypart")=="head"?8:4) :
       currentAnim->touchFrame==currentAnim->frameNum;
   if (!loopControlsMotion && contactWindow) {
 
@@ -501,8 +504,10 @@ void Humanoid::Process() {
           const Vector3 stick=human->GetHIDevice()->GetDirection(),direction=human->GetDirection();
           const bool forward=!match->IsFirstPerson() || (stick.coords[1]>.1f && std::fabs(stick.coords[0])<.15f);
           if(forward && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) && human->GetActionMode()==0 &&
-              human->GetFloatVelocity()>.8f && direction.GetDotProduct(spatialState.directionVec)>.99f &&
-              spatialState.movement.GetLength()>human->GetFloatVelocity()-.3f) {
+              human->GetFloatVelocity()>3.0f && direction.GetDotProduct(spatialState.directionVec)>.99f &&
+              std::fabs(spatialState.movement.GetLength()-human->GetFloatVelocity())<.3f) {
+            // Finish acceleration/deceleration before planning the shorter FBX
+            // stride. Otherwise an RB release puts the ball under the body.
             // A real native recovery touch introduces the shorter FBX stride.
             // Let the ball roll to its next right-foot step rather than keep
             // sending it to the native gait's more distant control marker.
@@ -1762,19 +1767,6 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   }
   */
 
-  if(TrainingEnabled() && command.desiredFunctionType==e_FunctionType_BallControl &&
-      (command.desiredDirection.GetDotProduct(spatialState.directionVec)<.8f ||
-       (player->GetExternalController() && static_cast<HumanController*>(player->GetExternalController())->GetHIDevice()->GetButton(e_ButtonFunction_Sprint))) &&
-      GetConfiguration()->GetBool("training_prefer_right_foot",true)) {
-    // Prefer a reachable dominant-foot candidate; retain the other leg as a
-    // fallback for interceptions and reversals that it cannot execute.
-    std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id) {
-      const auto *candidate=anims->GetAnim(id);
-      return candidate->GetVariable("touch_bodypart")=="right_foot" &&
-          candidate->GetCurrentFoot()==spatialState.foot &&
-          FloatToEnumVelocity(candidate->GetIncomingVelocity())==spatialState.enumVelocity;
-    });
-  }
   int selectedAnimID = -1;
   std::vector<Vector3> positions_tmp;
   int touchFrame_tmp = -1;

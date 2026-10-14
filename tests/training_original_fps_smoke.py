@@ -51,6 +51,9 @@ try:
         for _ in range(4):
             game.pad(0, -1, sprint=True); repeated.extend(game.advance(700))
             game.pad(0, -1); repeated.extend(game.advance(700))
+        # Keep checking every sprint/deceleration sample, then let the final
+        # native recovery finish before judging the steady walking distance.
+        repeated.extend(game.advance(1000))
         retain('repeated RB presses and releases retain ball', repeated)
         game.pad(0, 0)
         stopped = game.advance(2000)

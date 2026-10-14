@@ -35,7 +35,7 @@ try:
             check('chest delivery '+str(attempt)+' makes one real body contact',len(touch)==1 and
                   abs(touch[0]['gap'])<=.0011 and touch[0]['correction']<.09,touch)
             check('chest delivery '+str(attempt)+' plays through recovery',bool(state) and
-                  max(s['phase']for s in state)>140 and all(b['phase']>a['phase']for a,b in zip(state,state[1:])),
+                  max(s['phase']for s in state)>140 and all(b['phase']>=a['phase']for a,b in zip(state,state[1:])),
                   {'phases':[state[0]['phase'],state[-1]['phase']]if state else [],'pose_samples':len(pose)})
             check('chest delivery '+str(attempt)+' leaves a reachable ball',math.dist(after[-1]['ball'][:2],after[-1]['player'][:2])<1.4,
                   {'distance':math.dist(after[-1]['ball'][:2],after[-1]['player'][:2]),'height':after[-1]['ball'][2]})
@@ -60,13 +60,22 @@ try:
         game.reset();start=len(game.log.read_text());game.keys(['F5'],True)
         delivery=rows(game.log.read_text()[start:],'TRAINING_DELIVERY')[-1]['t']
         game.wait(lambda:game.frames()[-1]['t']>=delivery+600)
-        move_started=game.frames()[-1]['t'];game.pad(0,1)
+        move_started=game.frames()[-1]['t'];game.pad(1,0)
         game.keys(['F5'],False);moving=game.advance(700);game.pad(0,0)
         segment=game.log.read_text()[start:]
-        check('advancing during reception keeps the real chest contact and then releases movement',
-              'TRAINING_CHEST_START'in segment and 'TRAINING_CHEST_TOUCH'in segment and moving[-1]['speed']>2 and
+        # The original engine can receive through a controlled skin collision
+        # in Movement as well as through a dedicated Trap animation.
+        check('advancing before impact returns to native physical reception',
+              'TRAINING_CHEST_START'in segment and 'TRAINING_CHEST_CANCEL'in segment and
+              'TRAINING_CHEST_TOUCH'not in segment and
+              (any(s['accepted']for s in rows(segment,'TRAINING_NATIVE_SURFACE')) or
+               bool(rows(segment,'TRAINING_BODY_TOUCH'))) and
+              moving[-1]['speed']>2 and
               move_started-delivery<800,
-              {'speed':moving[-1]['speed'],'chest_touches':segment.count('TRAINING_CHEST_TOUCH'),'movement_after_delivery_ms':move_started-delivery})
+              {'speed':moving[-1]['speed'],'chest_touches':segment.count('TRAINING_CHEST_TOUCH'),
+               'native_trap_selected':any(f['function']==3 for f in moving),
+               'physical_body_contacts':rows(segment,'TRAINING_BODY_TOUCH'),
+               'movement_after_delivery_ms':move_started-delivery})
         native=rows(game.log.read_text(),'TRAINING_NATIVE_SURFACE');accepted=[n for n in native if n['accepted']]
         check('native impulses are gated on actual skin contact',bool(accepted)and all(-.001<=n['gap']<=.0021 for n in accepted),
               {'accepted_contacts':len(accepted),'maximum_gap':max((n['gap']for n in accepted),default=None)})

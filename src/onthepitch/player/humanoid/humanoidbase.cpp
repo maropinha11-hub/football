@@ -1187,7 +1187,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
-  const bool chestTail=chestAnimation && chestPhase>0 && chestPhase<chestAnimation->GetEffectiveFrameCount() &&
+  const bool chestTail=chestAnimation && chestPhase>0 && chestPhase<=chestAnimation->GetEffectiveFrameCount() &&
       match->GetActualTime_ms()<chestStarted_ms+180 && chestCooldown_ms>match->GetActualTime_ms();
   buf_chestPhase.SetValue(chestActive || chestTail ? chestPhase : -1.0f,snapshotTime_ms);
   buf_trainingLook.SetValue(match->GetTrainingLookDirection(),snapshotTime_ms);
@@ -1589,7 +1589,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
 }
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
-  chestActive=false;chestTouched=false;chestPhase=0;chestCooldown_ms=0;contactPoseBlend=0;fetchedContactBlend=0;
+  chestActive=false;chestTouched=false;chestPhase=0;chestCooldown_ms=0;chestSettleUntil_ms=0;chestFinish_ms=0;contactPoseBlend=0;fetchedContactBlend=0;
   chestRecoveryBase=Vector3(0);chestAppliedMotion=Vector3(0);contactPreviousBallValid=false;bodyContactUntil_ms=0;
   buf_trainingLook.Clear();
   buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();

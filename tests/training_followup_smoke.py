@@ -85,8 +85,9 @@ try:
         game.wait(lambda:game.frames()[-1]['t']>=delivery+600)
         game.pad(0,-1);game.keys(['F5'],False);after=game.advance(800);game.pad(0,0)
         segment=game.log.read_text()[start:];contact=rows(segment,'TRAINING_CHEST_TOUCH')
-        check('forward adjustment while awaiting the ball retains a chest contact',len(contact)==1,
-              {'contacts':contact,'speed_after_mps':after[-1]['speed']})
+        check('moving before impact returns to an original reception',not contact and
+              'TRAINING_CHEST_CANCEL' in segment and ('TRAINING_ACTION_TOUCH' in segment or 'TRAINING_BODY_TOUCH' in segment),
+              {'chest_contacts':contact,'native_contacts':rows(segment,'TRAINING_NATIVE_SURFACE'),'speed_after_mps':after[-1]['speed']})
         game.reset();start=len(game.log.read_text());game.keys(['F6'],True);game.keys(['F6'],False)
         game.pad(0,0,buttons=1);game.advance(300);game.pad(0,0);game.advance(2000)
         segment=game.log.read_text()[start:]

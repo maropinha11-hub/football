@@ -70,8 +70,13 @@ A bola perde velocidade, cai diante do jogador e permanece livre.
 
 A ação entra em 180 ms e toca uma única vez. A apresentação inicial mantém
 seu tempo; os passos de recuperação usam 85% da velocidade da fonte.
-Enquanto espera o contato, frente/trás permitem ajuste de até 18 cm. Após
-o contato, mover ou solicitar uma jogada retira a pose em até 180 ms.
+Antes do contato, qualquer movimento sai do domínio parado e solicita
+novamente uma recepção nativa, mantendo a assistência de interceptação.
+O impulso de amortecimento no peito é calculado com a previsão real de
+quique e atrito, para terminar à frente dos passos finais, sem novos toques
+no ar. Há 120 ms de acomodação depois do contato e 120 ms no término,
+seguidos de uma saída de pose em 180 ms. Mover depois da acomodação ou
+solicitar uma jogada devolve o movimento ao sistema nativo.
 A assistência original de interceptação é mantida para passes que chegam;
 não transforma bolas afastando-se do jogador em recepções automáticas.
 
@@ -94,9 +99,13 @@ A pose de contato tem prioridade sobre a condução que está saindo. Após
 interpolar os quadros, ambas as chuteiras são conferidas contra a esfera
 desenhada. Se houver sobreposição, a perna cede localmente, até 18 cm, sem
 alterar os comprimentos, a orientação do calçado ou a trajetória da bola.
-Isso evita atravessamentos entre amostras e impulsos duplicados na virada.
+A busca usa a normal real da malha e alternativas laterais. Procura a
+primeira posição livre dentro do alcance, pois a extensão da perna pode
+impedir a solução na direção do calcanhar. Isso evita atravessamentos
+entre amostras e impulsos duplicados na virada.
 Uma janela curta em torno do marcador permite o impulso no encontro físico,
-uma única vez por jogada. Isso evita perder um passe porque o encontro ocorreu
+uma única vez por jogada. Cabeçadas admitem até oito quadros posteriores
+ao marcador, sempre condicionados ao contato real na cabeça. Isso evita perder um passe porque o encontro ocorreu
 alguns milissegundos antes ou depois do marcador. Cruzar com B durante a
 corrida mantém o contexto de passe enquanto a bola está sob controle.
 
@@ -144,7 +153,9 @@ clips registram origem, hashes, duração, FPS e limites da adaptação.
 O contato e as condições de seleção de cada nova ação ainda precisam ser
 calibrados: não são informações que um FBX sem bola fornece automaticamente.
 
-As verificações desta entrega estão em `animation-receptions-validation.json`
+As verificações das correções de condução e recepção estão em
+`control-reception-validation.json` e `training_control_reception_smoke.py`.
+A integração anterior está documentada em `animation-receptions-validation.json`
 e nos testes `training_chest_smoke.py`, `training_ball_bounce_smoke.py`,
 `training_fbx_trial_smoke.py`, `training_fbx_handoff_smoke.py` e
 `training_original_fps_smoke.py`. `training_contact_transition_smoke.py`
@@ -152,3 +163,15 @@ verifica também os pés desenhados durante as transições curtas.
 A execução renderizada usa Linux e controle
 SDL Xbox virtual. O Windows é compilado em x64 e verificado quanto a recursos,
 DLLs e integridade; controle físico e GPU do usuário são testados no Windows.
+
+## Analógico parcial e corrida
+
+A preferência pelo pé direito pertence à condução frontal FBX aprovada.
+Corridas e viradas mantêm a ordem original dos candidatos nativos, sem
+forçar uma perna inadequada. A preparação da passada FBX só se aplica à condução frontal acima de
+3 m/s e depois da aceleração ou desaceleração. A velocidade manual
+também fica restrita à condução sem RB acima de 3 m/s, preservando
+a assistência original com o analógico parcial e na corrida. Domínios nativos de condução aguardam o
+marcador original antes de testar contato físico; passes/chutes mantêm
+a janela curta de contato. Os multiplicadores de velocidade continuam
+em 0,72 (normal) e 0,90 (RB), com simulação em tempo real.
