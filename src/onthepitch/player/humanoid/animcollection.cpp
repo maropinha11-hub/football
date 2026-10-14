@@ -474,6 +474,34 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
   }
 
+  // Additional reception candidate: the existing native chest clips remain
+  // in the collection, and the original trajectory/approach selector owns it.
+  if(TrainingEnabled() && boost::filesystem::exists("media/training/Chest_Stand.anim")) {
+    Animation *animation=new Animation();
+    boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
+    animation->AddExtension("football",extension);
+    animation->Load("media/training/Chest_Stand.anim");
+    animation->SetName("training/Chest_Stand");
+    animation->SetVariable("type","trap");
+    animation->SetVariable("baseanim","false");
+    animation->SetVariable("added_chest","true");
+    animation->SetVariable("incomingballdirection","0.0, 0.980581, -0.196116");
+    animation->SetVariable("incomingballdirection_maxdeviation","0.7");
+    // Imported roots contain absolute pelvis height; native clips store the
+    // offset from the player's 0.96 m bind height. Retain the authored walk.
+    for(auto *node:animation->GetNodeAnimations())if(node->nodeName=="player")
+      for(auto &entry:node->animation)entry.second.position.coords[2]-=.96f;
+    animation->DirtyCache();
+    const int frame=int(std::round(std::atof(animation->GetVariable("contact_frame").c_str())));
+    // Contact in the retargeted chest pose, in the same local coordinates as
+    // the native football extension (ball radius included).
+    extension->SetKeyFrame(frame,QUATERNION_IDENTITY,Vector3(-.028f,-.302f,1.286f));
+    _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+    printf("TRAINING_CHEST_CANDIDATE frames=%d contact=%s part=%s native_preserved=1\n",
+      animation->GetFrameCount(),animation->GetVariable("touchframe").c_str(),
+      animation->GetVariable("touch_bodypart").c_str());
+  }
+
   //Log(e_Notice, "AnimCollection", "Load", "Deleting base anim");
 
   //delete baseAnim;

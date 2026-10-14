@@ -1338,6 +1338,7 @@ namespace blunted {
   }
 
   void Animation::SetVariable(const std::string &name, const std::string &value) {
+    if (name == "type") cache_AnimType = value;
     std::multimap<std::string, XMLTree>::iterator iter = customData->children.find(name);
     if (iter != customData->children.end()) {
       XMLTree &tree = iter->second;

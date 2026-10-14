@@ -233,20 +233,12 @@ class HumanoidBase {
     void Put();
 
     virtual void CalculateGeomOffsets();
-    void UpdateDribbleLoopIntent();
-    Vector3 PrepareDribbleEntryTouch(const Vector3 &nativeTouch);
     void ProcessDribbleLoop();
     void SampleDribbleLoop(float phase, Quaternion *local, Quaternion *global, Vector3 *positions,
                           const Vector3 *footOffsets = nullptr) const;
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
-    float DribbleFootGap(float phase, unsigned side, const Vector3 &root, const Quaternion &facing) const;
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
-    Vector3 FitDribbleFoot(float phase, unsigned side, const Vector3 &root, const Quaternion &facing,
-                          bool reachBall) const;
-    void UpdateChestReception();
-    void ProcessChestReception();
     void UpdateTrainingContactPose();
-    bool CanMakeTrainingContact(const std::string &part);
     Vector3 GetStandingChestTarget() const;
     void CaptureContactMesh();
     void SampleContactAnimation(const Animation *animation, float phase, const Vector3 &root,
@@ -259,7 +251,6 @@ class HumanoidBase {
     void PutTrainingHeadLook();
     void AimTrainingHead(Quaternion *local, Quaternion *global, Vector3 *positions, const Vector3 &look) const;
     void ProcessTrainingBodyContact();
-    Vector3 ChestRootMotion(float phase) const;
     void SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation, bool isRelative = false);
 
     inline int GetFrameNum() { return currentAnim->frameNum; }
@@ -370,13 +361,8 @@ class HumanoidBase {
     float pes3RootCorrection = 0;
     std::unique_ptr<Animation> dribbleTrialAnimation;
     float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
-    float dribbleEntryPhase = 0;
     float dribbleTrialSourceSpeed = 3.2055483f;
     float dribbleContactFrames[2] = {0,0};
-    bool dribbleLoopRequested = false, dribbleLoopOwnsBall = false;
-    bool dribbleLoopRecovering = false;
-    bool dribbleStationaryEntry = false;
-    unsigned long dribbleEntryTime_ms = 0;
     std::vector<std::array<Vector3,3>> dribbleShoeTriangles[2];
     Vector3 dribbleFootOffsets[2], fetchedDribbleFootOffsets[2];
     TemporalSmoother<Vector3> buf_dribbleFootOffsets[2];
@@ -388,14 +374,7 @@ class HumanoidBase {
     std::vector<ContactTriangle> contactTriangles;
     std::array<int,13> contactJointBone{};
     std::unique_ptr<Animation> chestAnimation;
-    float chestPhase = 0, chestContactFrame = 33.333f;
-    bool chestActive = false, chestTouched = false;
-    unsigned long chestStarted_ms = 0, chestCooldown_ms = 0;
-    unsigned long chestSettleUntil_ms = 0, chestFinish_ms = 0;
-    Quaternion chestFacing = QUATERNION_IDENTITY;
-    radian chestAngle = 0;
-    Vector3 chestRoot, chestPreviousBall;
-    Vector3 chestRecoveryBase, chestAppliedMotion;
+    float chestContactFrame = 33.333f;
     Vector3 contactPreviousBall;
     bool contactPreviousBallValid=false;
     unsigned long bodyContactUntil_ms=0;

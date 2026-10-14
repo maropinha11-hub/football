@@ -71,11 +71,11 @@ void Match::LaunchTrainingBall(int delivery) {
   // Reset only this attempt, retaining the player's current field position and facing.
   ResetTraining(0,true);
   const Vector3 chest=player->GetHumanoid()->GetStandingChestTarget();
-  const float flight=delivery==0?1.0f:delivery==1?.85f:1.15f;
+  const float flight=delivery==0?1.0f:delivery==1?.45f:1.15f;
   const Vector3 target=delivery==0 ? root+forward*.55f+Vector3(0,0,.11f) :
     delivery==1 ? chest : root+forward*.18f+Vector3(0,0,1.92f);
-  const Vector3 origin=root+forward*(delivery==0?8.0f:delivery==1?7.0f:10.0f)+
-    Vector3(0,0,delivery==0?.11f:delivery==1?2.0f:3.6f);
+  const Vector3 origin=root+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
+    Vector3(0,0,delivery==0?.11f:delivery==1?1.35f:3.6f);
   ball->SetPosition(origin);
   Vector3 velocity=(target-origin)/flight;
   if(delivery)velocity.coords[2]+=4.905f*flight;

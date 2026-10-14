@@ -1,0 +1,2132 @@
+{
+  "result": "passed",
+  "native_executable_sha256": "5d7c40a5cfb77973082636f1e70fa84b456cca1e43915eec23ce51e81a595e30",
+  "windows_unstripped_executable_sha256": "fcfa19a12f56683aca718216d973de9a8cb6b6b6ba016cbce57d1fd03ca7ec1c",
+  "runtime_platform": "Linux, rendered OpenGL/SDL/Xvfb with virtual Xbox controller",
+  "windows_build": "MinGW x86_64, RelWithDebInfo, persistent SDK",
+  "windows_graphical_runtime_tested": false,
+  "physical_controller_tested": false,
+  "scope": "Original native dribble/approach/touch logic with visual forward FBX and an additional chest candidate. Original reception clips retained. Recovery can leave on input after touch.",
+  "native_source_preservation": {
+    "base": "40bdfc5",
+    "checks": [
+      {
+        "function": "signed int Humanoid::GetBestCheatableAnimID",
+        "matches_approved_native_base": true,
+        "sha256": "14cbb69b1c16527693f5e6d0e288569e0e58d51913f982cb501b03a680be803e"
+      },
+      {
+        "function": "Vector3 Humanoid::CalculateMovementSmuggle",
+        "matches_approved_native_base": true,
+        "sha256": "57caaa4d0fba2511838aa8a49caf77ec2fc913fdc542b9879be777c3b8e3546c"
+      },
+      {
+        "file": "src/onthepitch/player/humanoid/humanoid_utils.cpp",
+        "matches_approved_native_base": true,
+        "sha256": "1479f450240b8abaa8bc4f6efadad4e938850fbb4941c3b44373daac6ce4b48d"
+      }
+    ]
+  },
+  "simulation_clock": [
+    {
+      "suite": "football-native-additive-release",
+      "case": "start from resting ball after 0 ms",
+      "simulation_to_real_time": 0.9995456610631531,
+      "result": "passed"
+    },
+    {
+      "suite": "football-native-additive-release",
+      "case": "start from resting ball after 400 ms",
+      "simulation_to_real_time": 1.0,
+      "result": "passed"
+    },
+    {
+      "suite": "football-native-additive-release",
+      "case": "start from resting ball after 1400 ms",
+      "simulation_to_real_time": 0.9995456610631531,
+      "result": "passed"
+    },
+    {
+      "suite": "football-native-additive-reference-release",
+      "case": "start from resting ball after 0 ms",
+      "simulation_to_real_time": 1.0,
+      "result": "passed"
+    },
+    {
+      "suite": "football-native-additive-reference-release",
+      "case": "start from resting ball after 400 ms",
+      "simulation_to_real_time": 0.9995456610631531,
+      "result": "passed"
+    },
+    {
+      "suite": "football-native-additive-reference-release",
+      "case": "start from resting ball after 1400 ms",
+      "simulation_to_real_time": 1.0119595216191353,
+      "result": "passed"
+    }
+  ],
+  "visual_enabled_disabled_comparison": [
+    {
+      "case": "start from resting ball after 0 ms",
+      "visual_enabled_disabled_ball_range_m": [
+        0.5930294512079476,
+        0.5954537429557392
+      ],
+      "visual_enabled_disabled_travel_m": [
+        8.716811165712686,
+        8.672079356288318
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "start from resting ball after 400 ms",
+      "visual_enabled_disabled_ball_range_m": [
+        0.5967979976507962,
+        0.596958231369666
+      ],
+      "visual_enabled_disabled_travel_m": [
+        8.670061975059294,
+        8.647352690492381
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "start from resting ball after 1400 ms",
+      "visual_enabled_disabled_ball_range_m": [
+        0.5930022765554948,
+        0.6002266655189524
+      ],
+      "visual_enabled_disabled_travel_m": [
+        8.716850361142649,
+        8.618791782023496
+      ],
+      "result": "passed"
+    }
+  ],
+  "functional_checks_passed": 71,
+  "functional_suites": [
+    {
+      "suite": "football-native-additive-release",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "standing chest is added without removing native receptions",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_CHEST_CANDIDATE frames=151 contact=33 part=trunk native_preserved=1"
+          ]
+        },
+        {
+          "check": "start from resting ball after 0 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5930294512079476,
+            "ending_distance_m": 0.5666229522354337,
+            "ending_speed_mps": 4.5227,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 0 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.78317249745216,
+            "native_touches": [
+              {
+                "t": 1380.0,
+                "function": 2.0,
+                "z": 0.1096
+              },
+              {
+                "t": 1690.0,
+                "function": 2.0,
+                "z": 0.1135
+              },
+              {
+                "t": 1940.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 2190.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 2440.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 2690.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 3040.0,
+                "function": 2.0,
+                "z": 0.1106
+              },
+              {
+                "t": 3380.0,
+                "function": 2.0,
+                "z": 0.1082
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5967979976507962,
+            "ending_distance_m": 0.574278068534748,
+            "ending_speed_mps": 4.3591,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.699853756242112,
+            "native_touches": [
+              {
+                "t": 4900.0,
+                "function": 2.0,
+                "z": 0.1109
+              },
+              {
+                "t": 5210.0,
+                "function": 2.0,
+                "z": 0.1151
+              },
+              {
+                "t": 5460.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 5710.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 5960.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 6210.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 6560.0,
+                "function": 2.0,
+                "z": 0.1106
+              },
+              {
+                "t": 6900.0,
+                "function": 2.0,
+                "z": 0.1082
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 1400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5930022765554948,
+            "ending_distance_m": 0.5666229522354337,
+            "ending_speed_mps": 4.5226,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 1400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.782773033615294,
+            "native_touches": [
+              {
+                "t": 9380.0,
+                "function": 2.0,
+                "z": 0.1096
+              },
+              {
+                "t": 9690.0,
+                "function": 2.0,
+                "z": 0.1135
+              },
+              {
+                "t": 9940.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 10190.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 10440.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 10690.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 11040.0,
+                "function": 2.0,
+                "z": 0.1106
+              },
+              {
+                "t": 11380.0,
+                "function": 2.0,
+                "z": 0.1082
+              }
+            ]
+          }
+        },
+        {
+          "check": "right then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6295569235581483,
+            "ending_distance_m": 0.4926331799625344,
+            "ending_speed_mps": 4.3591,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "right resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 4.3591
+          }
+        },
+        {
+          "check": "reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5967979976507962,
+            "ending_distance_m": 0.533849210920087,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "long reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.64936234876993,
+            "ending_distance_m": 0.43505986944327496,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 27,
+            "samples": 27
+          }
+        },
+        {
+          "check": "long reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "stop then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5967979976507962,
+            "ending_distance_m": 0.48622644930114745,
+            "ending_speed_mps": 4.4985,
+            "controlled_samples": 26,
+            "samples": 26
+          }
+        },
+        {
+          "check": "stop resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 4.4985
+          }
+        },
+        {
+          "check": "three RB bursts and releases",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 1.0231164400985846,
+            "ending_distance_m": 0.6908293566431546,
+            "ending_speed_mps": 4.2771,
+            "controlled_samples": 69,
+            "samples": 69
+          }
+        },
+        {
+          "check": "running pass touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 40340.0,
+                "function": 4.0,
+                "z": 0.1145
+              }
+            ],
+            "peak_ball_speed_mps": 26.7437
+          }
+        },
+        {
+          "check": "running cross touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 44770.0,
+                "function": 6.0,
+                "z": 0.1078
+              }
+            ],
+            "peak_ball_speed_mps": 24.5621
+          }
+        },
+        {
+          "check": "running shot touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 49250.0,
+                "function": 8.0,
+                "z": 0.1128
+              }
+            ],
+            "peak_ball_speed_mps": 26.1103
+          }
+        },
+        {
+          "check": "chest interruption 0 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 52110.0,
+              "function": 3.0,
+              "z": 1.4566
+            },
+            "travel_in_500ms_m": 0.4375883225132956,
+            "ending_speed_mps": 3.8399
+          }
+        },
+        {
+          "check": "chest interruption 0 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6562175553884549,
+            "ending_distance_m": 0.5583006806372347,
+            "ending_speed_mps": 3.8399,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 200 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 55830.0,
+              "function": 3.0,
+              "z": 1.3905
+            },
+            "travel_in_500ms_m": 1.480941538346467,
+            "ending_speed_mps": 3.8399
+          }
+        },
+        {
+          "check": "chest interruption 200 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.61505542026715,
+            "ending_distance_m": 0.5514270305307868,
+            "ending_speed_mps": 3.8399,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 500 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 59880.0,
+              "function": 3.0,
+              "z": 1.1449
+            },
+            "travel_in_500ms_m": 1.62095306532916,
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "chest interruption 500 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 1.5870450025125311,
+            "ending_distance_m": 0.7566433572033777,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: forward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 3.84,
+            "path_length_m": 6.132176998366759,
+            "touches": [
+              {
+                "t": 64020.0,
+                "function": 3.0,
+                "z": 1.3716
+              },
+              {
+                "t": 64470.0,
+                "function": 2.0,
+                "z": 0.5148
+              },
+              {
+                "t": 64990.0,
+                "function": 2.0,
+                "z": 0.3094
+              },
+              {
+                "t": 65240.0,
+                "function": 2.0,
+                "z": 0.1196
+              },
+              {
+                "t": 65580.0,
+                "function": 2.0,
+                "z": 0.1151
+              },
+              {
+                "t": 65920.0,
+                "function": 2.0,
+                "z": 0.1168
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 64380.0,
+                "correction": 0.01039,
+                "sweep": 0.34338,
+                "speed_before": 3.43166,
+                "speed_after": 2.61903
+              }
+            ]
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: backward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.4694,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 2.5608,
+            "path_length_m": 3.457127142441404,
+            "touches": [
+              {
+                "t": 67170.0,
+                "function": 3.0,
+                "z": 1.4566
+              },
+              {
+                "t": 67630.0,
+                "function": 2.0,
+                "z": 0.4508
+              },
+              {
+                "t": 68160.0,
+                "function": 2.0,
+                "z": 0.2793
+              },
+              {
+                "t": 68410.0,
+                "function": 2.0,
+                "z": 0.1229
+              }
+            ],
+            "body_contacts": []
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: lateral stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 2.2833,
+            "ending_function": 1,
+            "initial_peak_speed_mps": 2.15,
+            "path_length_m": 2.9993641669797477,
+            "touches": [
+              {
+                "t": 70410.0,
+                "function": 3.0,
+                "z": 1.4566
+              },
+              {
+                "t": 71420.0,
+                "function": 2.0,
+                "z": 0.489
+              },
+              {
+                "t": 71770.0,
+                "function": 2.0,
+                "z": 0.1474
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 70810.0,
+                "correction": 0.024105,
+                "sweep": 0.0,
+                "speed_before": 3.80167,
+                "speed_after": 2.83655
+              }
+            ]
+          }
+        },
+        {
+          "check": "additional chest clip is selected and used by the native state machine",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": 64870.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65120.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65460.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65800.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 66840.0,
+              "function": 3.0,
+              "contact_frame": 33.0,
+              "added_chest": 1.0
+            },
+            {
+              "t": 67500.0,
+              "function": 2.0,
+              "contact_frame": 13.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 68040.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 68290.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 69030.0,
+              "function": 2.0,
+              "contact_frame": 19.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 70080.0,
+              "function": 3.0,
+              "contact_frame": 33.0,
+              "added_chest": 1.0
+            },
+            {
+              "t": 71340.0,
+              "function": 2.0,
+              "contact_frame": 8.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 71650.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            }
+          ]
+        },
+        {
+          "check": "imported forward loop is visual and native actions remain active",
+          "result": "passed",
+          "evidence": {
+            "rendered_imported_samples": 561,
+            "native_contacts": 143
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "suite": "football-native-additive-reference-release",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "standing chest is added without removing native receptions",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_CHEST_CANDIDATE frames=151 contact=33 part=trunk native_preserved=1"
+          ]
+        },
+        {
+          "check": "start from resting ball after 0 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5954537429557392,
+            "ending_distance_m": 0.5736708551076989,
+            "ending_speed_mps": 4.3591,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 0 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.70073656652125,
+            "native_touches": [
+              {
+                "t": 1400.0,
+                "function": 2.0,
+                "z": 0.1096
+              },
+              {
+                "t": 1710.0,
+                "function": 2.0,
+                "z": 0.1135
+              },
+              {
+                "t": 1960.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 2210.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 2460.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 2710.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 3060.0,
+                "function": 2.0,
+                "z": 0.1106
+              },
+              {
+                "t": 3400.0,
+                "function": 2.0,
+                "z": 0.1082
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.596958231369666,
+            "ending_distance_m": 0.5768769192817479,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.720997622405363,
+            "native_touches": [
+              {
+                "t": 4880.0,
+                "function": 2.0,
+                "z": 0.1107
+              },
+              {
+                "t": 5190.0,
+                "function": 2.0,
+                "z": 0.1135
+              },
+              {
+                "t": 5440.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 5690.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 5940.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 6280.0,
+                "function": 2.0,
+                "z": 0.113
+              },
+              {
+                "t": 6620.0,
+                "function": 2.0,
+                "z": 0.1083
+              },
+              {
+                "t": 6960.0,
+                "function": 2.0,
+                "z": 0.1083
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 1400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6002266655189524,
+            "ending_distance_m": 0.5776649028632436,
+            "ending_speed_mps": 4.1908,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 1400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.620508540103652,
+            "native_touches": [
+              {
+                "t": 9420.0,
+                "function": 2.0,
+                "z": 0.1109
+              },
+              {
+                "t": 9730.0,
+                "function": 2.0,
+                "z": 0.1151
+              },
+              {
+                "t": 9980.0,
+                "function": 2.0,
+                "z": 0.118
+              },
+              {
+                "t": 10230.0,
+                "function": 2.0,
+                "z": 0.1179
+              },
+              {
+                "t": 10480.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 10730.0,
+                "function": 2.0,
+                "z": 0.1178
+              },
+              {
+                "t": 11080.0,
+                "function": 2.0,
+                "z": 0.1106
+              },
+              {
+                "t": 11420.0,
+                "function": 2.0,
+                "z": 0.1082
+              }
+            ]
+          }
+        },
+        {
+          "check": "right then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6307299977010767,
+            "ending_distance_m": 0.46461903749200906,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "right resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5954318516841365,
+            "ending_distance_m": 0.5322872344890484,
+            "ending_speed_mps": 3.8401,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.8401
+          }
+        },
+        {
+          "check": "long reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6011016303421584,
+            "ending_distance_m": 0.4446511104225422,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 27,
+            "samples": 27
+          }
+        },
+        {
+          "check": "long reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "stop then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5930294512079476,
+            "ending_distance_m": 0.47064323005860875,
+            "ending_speed_mps": 4.2767,
+            "controlled_samples": 26,
+            "samples": 26
+          }
+        },
+        {
+          "check": "stop resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 4.2767
+          }
+        },
+        {
+          "check": "three RB bursts and releases",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 1.0281163601460686,
+            "ending_distance_m": 0.5603988311907869,
+            "ending_speed_mps": 4.0277,
+            "controlled_samples": 69,
+            "samples": 69
+          }
+        },
+        {
+          "check": "running pass touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 40340.0,
+                "function": 4.0,
+                "z": 0.1145
+              }
+            ],
+            "peak_ball_speed_mps": 26.7437
+          }
+        },
+        {
+          "check": "running cross touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 44770.0,
+                "function": 6.0,
+                "z": 0.1078
+              }
+            ],
+            "peak_ball_speed_mps": 23.2039
+          }
+        },
+        {
+          "check": "running shot touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 49250.0,
+                "function": 8.0,
+                "z": 0.1128
+              }
+            ],
+            "peak_ball_speed_mps": 26.1103
+          }
+        },
+        {
+          "check": "chest interruption 0 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 52110.0,
+              "function": 3.0,
+              "z": 1.4566
+            },
+            "travel_in_500ms_m": 0.44651236265080047,
+            "ending_speed_mps": 4.0275
+          }
+        },
+        {
+          "check": "chest interruption 0 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5995454945206412,
+            "ending_distance_m": 0.5402879602582307,
+            "ending_speed_mps": 4.0275,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 200 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 55860.0,
+              "function": 3.0,
+              "z": 1.3711
+            },
+            "travel_in_500ms_m": 1.1007535328128635,
+            "ending_speed_mps": 3.84
+          }
+        },
+        {
+          "check": "chest interruption 200 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5046969982078356,
+            "ending_distance_m": 0.4663641174018422,
+            "ending_speed_mps": 3.84,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 500 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 59820.0,
+              "function": 3.0,
+              "z": 1.1442
+            },
+            "travel_in_500ms_m": 1.678243772519356,
+            "ending_speed_mps": 3.8401
+          }
+        },
+        {
+          "check": "chest interruption 500 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 1.5415008303598152,
+            "ending_distance_m": 0.7536353561239021,
+            "ending_speed_mps": 3.8401,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: forward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.84,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 3.84,
+            "path_length_m": 6.570435708973033,
+            "touches": [
+              {
+                "t": 63990.0,
+                "function": 3.0,
+                "z": 1.4566
+              },
+              {
+                "t": 64450.0,
+                "function": 2.0,
+                "z": 0.5187
+              },
+              {
+                "t": 64700.0,
+                "function": 2.0,
+                "z": 0.2329
+              },
+              {
+                "t": 65080.0,
+                "function": 2.0,
+                "z": 0.171
+              },
+              {
+                "t": 65330.0,
+                "function": 2.0,
+                "z": 0.1469
+              },
+              {
+                "t": 65680.0,
+                "function": 2.0,
+                "z": 0.1247
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 64380.0,
+                "correction": 0.02675,
+                "sweep": 0.0,
+                "speed_before": 3.70781,
+                "speed_after": 2.92518
+              }
+            ]
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: backward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 1.4435,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 2.4693,
+            "path_length_m": 3.104524706575495,
+            "touches": [
+              {
+                "t": 67260.0,
+                "function": 3.0,
+                "z": 1.3716
+              },
+              {
+                "t": 67710.0,
+                "function": 2.0,
+                "z": 0.5537
+              },
+              {
+                "t": 68390.0,
+                "function": 2.0,
+                "z": 0.163
+              },
+              {
+                "t": 68940.0,
+                "function": 2.0,
+                "z": 0.1091
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 67670.0,
+                "correction": 0.028606,
+                "sweep": 0.20249,
+                "speed_before": 3.90758,
+                "speed_after": 2.38481
+              }
+            ]
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: lateral stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 0.1462,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 3.7361,
+            "path_length_m": 4.536627816427779,
+            "touches": [
+              {
+                "t": 70590.0,
+                "function": 3.0,
+                "z": 1.1442
+              },
+              {
+                "t": 70910.0,
+                "function": 2.0,
+                "z": 0.2701
+              },
+              {
+                "t": 71510.0,
+                "function": 2.0,
+                "z": 0.1559
+              },
+              {
+                "t": 71960.0,
+                "function": 2.0,
+                "z": 0.1154
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 70570.0,
+                "correction": 0.068001,
+                "sweep": 0.46299,
+                "speed_before": 9.88361,
+                "speed_after": 3.22074
+              }
+            ]
+          }
+        },
+        {
+          "check": "imported forward loop is visual and native actions remain active",
+          "result": "passed",
+          "evidence": {
+            "rendered_imported_samples": 0,
+            "native_contacts": 142
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "suite": "football-native-additive-controls",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "RT remains reserved with RB False",
+          "result": "passed",
+          "evidence": [
+            3.8400499999999997,
+            3.8400499999999997
+          ]
+        },
+        {
+          "check": "RT remains reserved with RB True",
+          "result": "passed",
+          "evidence": [
+            7.55635,
+            7.59195
+          ]
+        },
+        {
+          "check": "right stick/head look is independent from forward body travel",
+          "result": "passed",
+          "evidence": {
+            "t": 17300,
+            "exercise": 0,
+            "player": [
+              4.2017,
+              0.0029,
+              0.0
+            ],
+            "speed": 3.84,
+            "ball": [
+              4.689,
+              0.0,
+              0.1179
+            ],
+            "ball_speed": 4.0912,
+            "function": 2,
+            "frame": 5,
+            "controller": 1,
+            "goals": 0,
+            "camera": 2,
+            "with_ball": 1,
+            "yaw": -1.404,
+            "head_yaw": -1.404,
+            "pitch": -0.12,
+            "contacts": 0,
+            "look_active": 1,
+            "move_active": 1,
+            "shot_active": 0,
+            "charge_ms": 0,
+            "action_mode": 0,
+            "move": [
+              0.0,
+              1.0
+            ],
+            "keys": 4096,
+            "player_yaw": 0.0,
+            "wall_ms": 25867
+          }
+        },
+        {
+          "check": "head recenters gradually",
+          "result": "passed",
+          "evidence": -0.1285
+        },
+        {
+          "check": "full shot retains charge/elevation modifier",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_SHOT t=21270 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[0.03278,1.56610,-10.66534] lever=[-0.06513,0.04191,-0.01809] low_spin=0"
+          ]
+        },
+        {
+          "check": "lob retains charge/elevation modifier",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_SHOT t=24370 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[-0.08370,-3.99912,-4.68356] lever=[-0.06515,0.04193,-0.01810] low_spin=0"
+          ]
+        },
+        {
+          "check": "pass can leave chest recovery",
+          "result": "passed",
+          "evidence": [
+            [
+              27620,
+              "right_foot",
+              2
+            ],
+            [
+              28250,
+              "right_foot",
+              4
+            ]
+          ]
+        },
+        {
+          "check": "one-touch pass uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              31390,
+              "right_foot",
+              4
+            ]
+          ]
+        },
+        {
+          "check": "header shot uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              35510,
+              "head",
+              8
+            ]
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    }
+  ],
+  "ctest": {
+    "passed": 4,
+    "failed": 0,
+    "output": "Internal ctest changing into directory: /workspace/football/build\nTest project /workspace/football/build\n    Start 1: xbox_controller\n1/4 Test #1: xbox_controller ..................   Passed    0.03 sec\n    Start 2: pes3_motion_runtime\n2/4 Test #2: pes3_motion_runtime ..............   Passed    1.88 sec\n    Start 3: pes3_native_pose\n3/4 Test #3: pes3_native_pose .................   Passed    0.26 sec\n    Start 4: pes3_native_retarget\n4/4 Test #4: pes3_native_retarget .............   Passed    0.48 sec\n\n100% tests passed, 0 tests failed out of 4\n\nTotal Test time (real) =   2.66 sec\n"
+  },
+  "windows_package": {
+    "archive_sha256": "c16d9c8cbc27fa08f9189799a0a89060cf0943e13df87c3f4b7afdefc14475fd",
+    "checks": [
+      {
+        "check": "CRC",
+        "result": "passed",
+        "evidence": 560
+      },
+      {
+        "check": "no duplicate paths",
+        "result": "passed",
+        "evidence": 560
+      },
+      {
+        "check": "one self-contained root",
+        "result": "passed",
+        "evidence": "football-training-windows-x86_64/"
+      },
+      {
+        "check": "required runtime libraries",
+        "result": "passed",
+        "evidence": [
+          "libboost_atomic-gcc14-mt-x64-1_92.dll",
+          "libboost_chrono-gcc14-mt-x64-1_92.dll",
+          "libboost_container-gcc14-mt-x64-1_92.dll",
+          "libboost_date_time-gcc14-mt-x64-1_92.dll",
+          "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+          "libboost_random-gcc14-mt-x64-1_92.dll",
+          "libboost_serialization-gcc14-mt-x64-1_92.dll",
+          "libboost_thread-gcc14-mt-x64-1_92.dll",
+          "libboost_wserialization-gcc14-mt-x64-1_92.dll",
+          "libbrotlicommon.dll",
+          "libbrotlidec.dll",
+          "libbrotlienc.dll",
+          "libbz2.dll",
+          "libfmt.dll",
+          "libfreetype.dll",
+          "libgcc_s_seh-1.dll",
+          "libjpeg-62.dll",
+          "liblzma.dll",
+          "libpng16.dll",
+          "libsdl2_gfx.dll",
+          "libsharpyuv.dll",
+          "libspng.dll",
+          "libsqlite3.dll",
+          "libstdc++-6.dll",
+          "libtiff-6.dll",
+          "libturbojpeg.dll",
+          "libwebp.dll",
+          "libwebpdecoder.dll",
+          "libwebpdemux.dll",
+          "libwebpmux.dll",
+          "libwinpthread-1.dll",
+          "libz.dll",
+          "openal32.dll",
+          "sdl2.dll",
+          "sdl2_image.dll",
+          "sdl2_ttf.dll"
+        ]
+      },
+      {
+        "check": "all native resources match the source tree",
+        "result": "passed",
+        "evidence": {
+          "source_files": 514,
+          "media_files": 482
+        }
+      },
+      {
+        "check": "no external PES bank needed",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "training.config matches tested resource",
+        "result": "passed",
+        "evidence": "2c6366634d506e42d07f1698b7abd3588a730c9ee808a75d859683673e52e32c"
+      },
+      {
+        "check": "media/training/DefenseJog_LoopF.anim matches tested resource",
+        "result": "passed",
+        "evidence": "d6ea625fd25b9a5c75a7ed25a3b7dc22da4397c60fab5c190891e11fd6bc1727"
+      },
+      {
+        "check": "media/training/Chest_Stand.anim matches tested resource",
+        "result": "passed",
+        "evidence": "f9b5c03337dab5121c66004a4bbc1d0888f23b19596ad80f542decb76684572d"
+      },
+      {
+        "check": "original BAT unchanged",
+        "result": "passed",
+        "evidence": "45fe182bdece59def75f9491ce42dbd4032e47f0fa027476498c2afa0d0cfb4f"
+      },
+      {
+        "check": "packaged code matches final link",
+        "result": "passed",
+        "evidence": {
+          "exe_sha256": "31cd5ada277886df1606742c8b671d3513b7cc0eeb4027a924990842cef4c52e",
+          "normalized_code_sha256": "44559e73d34d653c53e730d2a8884b509b6095636850d8bbaff1755c624c6c1c"
+        }
+      },
+      {
+        "check": "OpenAL32.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "OpenAL32.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "SDL2.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "SDL2.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "SDL2_image.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "SDL2_image.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "SDL2_ttf.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "SDL2_ttf.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "gameplayfootball.exe is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "gameplayfootball.exe imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libSDL2_gfx.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libSDL2_gfx.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_atomic-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_atomic-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_chrono-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_chrono-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_container-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_container-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_date_time-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_date_time-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_filesystem-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_filesystem-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_random-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_random-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_serialization-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_serialization-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_thread-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_thread-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libboost_wserialization-gcc14-mt-x64-1_92.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libboost_wserialization-gcc14-mt-x64-1_92.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libbrotlicommon.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libbrotlicommon.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libbrotlidec.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libbrotlidec.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libbrotlienc.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libbrotlienc.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libbz2.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libbz2.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libfmt.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libfmt.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libfreetype.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libfreetype.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libgcc_s_seh-1.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libgcc_s_seh-1.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libjpeg-62.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libjpeg-62.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "liblzma.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "liblzma.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libpng16.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libpng16.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libsharpyuv.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libsharpyuv.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libspng.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libspng.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libsqlite3.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libsqlite3.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libstdc++-6.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libstdc++-6.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libtiff-6.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libtiff-6.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libturbojpeg.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libturbojpeg.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libwebp.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libwebp.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libwebpdecoder.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libwebpdecoder.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libwebpdemux.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libwebpdemux.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libwebpmux.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libwebpmux.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libwinpthread-1.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libwinpthread-1.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "libz.dll is x64 PE32+",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "libz.dll imports available",
+        "result": "passed",
+        "evidence": []
+      },
+      {
+        "check": "SDL image imports JPEG codec",
+        "result": "passed",
+        "evidence": [
+          "KERNEL32.dll",
+          "msvcrt.dll",
+          "SDL2.dll",
+          "libjpeg-62.dll",
+          "libpng16.dll",
+          "libtiff-6.dll",
+          "libwebp.dll",
+          "libwebpdemux.dll"
+        ]
+      },
+      {
+        "check": "update archive CRC",
+        "result": "passed",
+        "evidence": 10
+      },
+      {
+        "check": "same file in complete/update: gameplayfootball.exe",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "same file in complete/update: run-training.bat",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "same file in complete/update: training.config",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "same file in complete/update: media/training/DefenseJog_LoopF.anim",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "same file in complete/update: media/training/Chest_Stand.anim",
+        "result": "passed",
+        "evidence": true
+      }
+    ],
+    "exe_sha256": "31cd5ada277886df1606742c8b671d3513b7cc0eeb4027a924990842cef4c52e",
+    "imports": {
+      "OpenAL32.dll": [
+        "AVRT.dll",
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "ole32.dll",
+        "libwinpthread-1.dll",
+        "SHELL32.dll",
+        "USER32.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll",
+        "libfmt.dll"
+      ],
+      "SDL2.dll": [
+        "ADVAPI32.dll",
+        "GDI32.dll",
+        "IMM32.dll",
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "ole32.dll",
+        "OLEAUT32.dll",
+        "SETUPAPI.dll",
+        "SHELL32.dll",
+        "USER32.dll",
+        "VERSION.dll",
+        "WINMM.dll"
+      ],
+      "SDL2_image.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "SDL2.dll",
+        "libjpeg-62.dll",
+        "libpng16.dll",
+        "libtiff-6.dll",
+        "libwebp.dll",
+        "libwebpdemux.dll"
+      ],
+      "SDL2_ttf.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "SDL2.dll",
+        "libfreetype.dll"
+      ],
+      "gameplayfootball.exe": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "USER32.dll",
+        "XINPUT9_1_0.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll",
+        "OpenAL32.dll",
+        "SDL2.dll",
+        "libSDL2_gfx.dll",
+        "SDL2_image.dll",
+        "SDL2_ttf.dll",
+        "libboost_filesystem-gcc14-mt-x64-1_92.dll",
+        "libboost_thread-gcc14-mt-x64-1_92.dll",
+        "libsqlite3.dll"
+      ],
+      "libSDL2_gfx.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "SDL2.dll"
+      ],
+      "libboost_atomic-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_chrono-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_container-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_date_time-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libboost_filesystem-gcc14-mt-x64-1_92.dll": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libwinpthread-1.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_random-gcc14-mt-x64-1_92.dll": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_serialization-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_thread-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libboost_wserialization-gcc14-mt-x64-1_92.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll",
+        "libboost_serialization-gcc14-mt-x64-1_92.dll"
+      ],
+      "libbrotlicommon.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libbrotlidec.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libbrotlicommon.dll"
+      ],
+      "libbrotlienc.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libbrotlicommon.dll"
+      ],
+      "libbz2.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libfmt.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll"
+      ],
+      "libfreetype.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libbrotlidec.dll",
+        "libbz2.dll",
+        "libpng16.dll",
+        "libz.dll"
+      ],
+      "libgcc_s_seh-1.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libwinpthread-1.dll"
+      ],
+      "libjpeg-62.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "liblzma.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libpng16.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libz.dll"
+      ],
+      "libsharpyuv.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libspng.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libz.dll"
+      ],
+      "libsqlite3.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libstdc++-6.dll": [
+        "libgcc_s_seh-1.dll",
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libwinpthread-1.dll"
+      ],
+      "libtiff-6.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libjpeg-62.dll",
+        "liblzma.dll",
+        "libz.dll"
+      ],
+      "libturbojpeg.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libgcc_s_seh-1.dll",
+        "libspng.dll"
+      ],
+      "libwebp.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libsharpyuv.dll"
+      ],
+      "libwebpdecoder.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libwebpdemux.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libwebp.dll"
+      ],
+      "libwebpmux.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll",
+        "libwebp.dll"
+      ],
+      "libwinpthread-1.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ],
+      "libz.dll": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ]
+    },
+    "result": "passed"
+  },
+  "prior_implementation_tests": "Historical loop-owned/mesh-gated test reports are superseded by these native-state-machine regressions; they were not counted as passing."
+}
