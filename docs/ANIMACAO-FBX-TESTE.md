@@ -1,51 +1,82 @@
-# Animações adicionais no treino
+# Condução antiga e ciclo novo no treino
 
 Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
-A câmera em primeira pessoa, o controle Xbox, a cadência aprovada e o RT
-reservado continuam disponíveis.
+A câmera e os comandos Xbox em primeira pessoa continuam disponíveis.
+
+| Situação | Animação |
+| --- | --- |
+| Saída parado | Condução original |
+| Analógico leve | Condução original em cadência mais lenta |
+| Analógico forte para frente, após a saída | Ciclo DefenseJog_LoopF |
+| Virada, corrida com RB ou ação com a bola | Animação apropriada do seletor nativo |
+
+O ciclo novo foi registrado como animações nativas complementares, para
+os dois lados da passada e as velocidades de locomoção suportadas pelo motor.
+A segunda metade continua a primeira, em vez de sobrepor uma pose velha
+a cada toque. A mistura normal do motor faz a entrada e a saída.
+As rotações dos ossos e seus comprimentos permanecem os da adaptação aprovada;
+não há um pé sendo esticado rapidamente até a bola.
+
+A entrada tem 400 ms de estabilização depois de atingir a faixa de movimento.
+O analógico usa limites diferentes para entrar e permanecer no ciclo, evitando
+alternâncias por pequenas variações de pressão. Os limites internos de força
+são 0,84 para entrar e 0,72 para permanecer. A escolha considera movimento,
+recepção e ações; não existe um botão de alternância em L3.
+
+O balanço lateral do quadril é parte da pose. Ele não classifica uma passada
+para frente como uma virada, nem impede a seleção da outra metade do ciclo.
+Um quique da bola tocada pelo próprio jogador também não inicia uma recepção
+externa ou uma troca indevida de animação.
+
+## Contatos na bola
+
+Os eventos foram ligados à superfície do modelo, incluindo as chuteiras,
+na pose correspondente de cada animação. O cálculo nativo de aproximação
+conserva o deslocamento necessário para chegar a essa superfície. Um impulso
+exige encontro entre a esfera e a região do corpo, com tolerância numérica
+máxima de 2,5 mm. A antiga margem de 40 cm não autoriza toques no ar.
+
+Uma passada que não encontra a bola não aplica força. O ciclo novo completa
+a passada e segue; as outras ações podem ser escolhidas novamente sem
+segurar o jogador. Os vetores nativos de condução, domínio, passe e chute
+continuam calculando o resultado de contatos válidos. A bola não é arrastada
+até um alvo do loop, e a animação não possui um controle paralelo de posse.
+
+## Recepção e exercícios
+
+`Chest_Stand` continua como candidato adicional aos domínios de peito originais.
+A seleção verifica a altura da chegada para não escolher um domínio com a
+cabeça quando a bola vai encontrar o peito. Após o contato, mover ou solicitar
+uma ação permite sair da recuperação pela transição do motor.
 
 | Tecla | Exercício |
 | --- | --- |
-| F4 | Receber passe rasteiro |
-| F5 | Receber bola na altura do peito |
-| F6 | Receber cruzamento alto |
-| R3 / Tab | Alternar câmera para conferir o corpo |
+| F4 | Passe rasteiro recebido |
+| F5 | Bola para domínio no peito |
+| F6 | Cruzamento alto |
+| R3 / Tab | Alternar câmera |
 | R / View | Reiniciar |
 
-## Condução original com apresentação nova
+RB continua sendo corrida; RT fica reservado. O relógio físico permanece em
+10 ms. As cópias lentas da animação antiga mudam sua cadência, sem colocar a
+partida em câmera lenta.
 
-O Football volta a escolher as animações, calcular a aproximação, aplicar
-os toques e manter a posse. `DefenseJog_LoopF` acompanha visualmente a
-condução para frente sem RB. Sua fase avança com a distância percorrida e
-continua durante as trocas internas do seletor. Nos contatos, os pés usam
-a pose da jogada nativa; a mistura entra e sai em 240 ms.
+## Reprodução e validação
 
-A animação visual não altera a velocidade da bola, não bloqueia comandos,
-não segura o jogador esperando um pé e não precisa adquirir uma posse
-separada. Viradas, saída parado, corrida, passe e chute usam o mesmo
-caminho com a apresentação nova ligada ou desligada. A opção interna
-`training_fbx_dribble` serve para comparar esses dois casos nos testes;
-L3 não alterna mais a condução durante o jogo.
+`scripts/register_dribble_cycle.py` gera as variantes do ciclo a partir de
+`data/media/training/DefenseJog_LoopF.anim`. Os arquivos gerados acompanham
+tanto o ZIP completo quanto a atualização. O carregamento registra também
+cópias retimadas da condução antiga para o analógico leve.
 
-## Domínio adicional
+`tests/training_forward_cycle_smoke.py` verifica saída parado, analógico leve,
+entrada na nova condução, continuidade das duas metades, estabilidade com
+variação do analógico e encontro entre bola e chuteira. Ele também compara
+contatos físicos com amostras da malha realmente renderizada.
+Os testes de recepção e ações verificam as transições do restante da gameplay.
+A resposta ao comando é medida após a confirmação da entrada pelo SDL;
+o teclado dos testes usa XTEST em uma sessão X11 isolada.
+Resultados desta versão: [forward-cycle-validation.json](forward-cycle-validation.json).
 
-`Chest_Stand` entra como candidato de domínio no seletor original, ao lado
-das animações de peito existentes. O carregamento preserva suas 151 amostras,
-a posição relativa do corpo e o deslocamento da recuperação. O evento de
-contato usa a extensão de futebol do motor, com previsão e aproximação
-calculadas pelo seletor nativo. Os domínios antigos continuam disponíveis
-para outras alturas, velocidades e direções.
-
-Mover ou solicitar uma ação depois do contato pode interromper a recuperação
-do clip novo usando a transição normal do motor. Não há um segundo sistema
-prendendo a posição do jogador ou esperando a bola cair. Uma colisão real
-com o corpo continua sendo tratada quando a recepção não alcança a bola.
-
-## Validação
-
-Os testes novos verificam respostas ao controle, retenção da bola, ações e
-interrupções com a apresentação ligada e desligada. Os relatórios das
-versões anteriores documentam implementações substituídas: expectativas
-como `TRAINING_FBX_TOUCH` e posse exclusiva do loop não descrevem esta versão.
-A compilação Windows é verificada separadamente; testes de partida neste
-ambiente usam a versão Linux e um controle Xbox virtual em SDL.
+Os testes renderizados usam Linux e controle Xbox virtual em SDL. A compilação,
+as DLLs e a integridade do pacote Windows são verificadas separadamente;
+a execução no Windows 11 com o controle físico precisa ser conferida nesse PC.

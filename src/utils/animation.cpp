@@ -962,6 +962,8 @@ namespace blunted {
   }
 
   radian Animation::GetIncomingBodyAngle() const {
+    // Pelvis twist inside a forward gait does not change its travel heading.
+    if(GetVariable("training_dribble")=="true")return 0;
     if (cache_incomingBodyAngle_dirty) {
       if (nodeAnimations.at(1)->animation.size() > 0) {
 
@@ -991,6 +993,8 @@ namespace blunted {
   }
 
   radian Animation::GetOutgoingBodyAngle() const {
+    // Pelvis twist inside a forward gait does not change its travel heading.
+    if(GetVariable("training_dribble")=="true")return 0;
     if (cache_outgoingBodyAngle_dirty || cache_angle_dirty || cache_outgoingVelocity_dirty) {
       if (GetOutgoingVelocity() >= 1.8) {
         if (nodeAnimations.at(1)->animation.size() > 0) {
@@ -1192,6 +1196,7 @@ namespace blunted {
     }
 
     cache_AnimType = variableCache.find("type")->second;
+    if(GetVariable("starting_foot")=="left")currentFoot=e_Foot_Left;
 
     ConvertToStartFacingForwardIfIdle();
 

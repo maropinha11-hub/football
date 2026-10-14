@@ -474,6 +474,45 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
   }
 
+  // A slow copy of the original forward gait keeps light-stick movement
+  // below jogging speed. Stretch time, not limb reach or the simulation clock.
+  if(TrainingEnabled()) {
+    const auto originals=animations;
+    for(Animation *source:originals) {
+      const std::string name=source->GetName();
+      if(name!="media/animations/ballcontrol/walk/000.anim" && name!="media/animations/ballcontrol/walk/000.anim_mirror")continue;
+      for(const std::string kind:{"movement","ballcontrol"}) {
+        Animation *animation=new Animation(*source);
+        const int end=(source->GetFrameCount()-1)*2;
+        for(auto *node:animation->GetNodeAnimations()) {
+          const auto track=node->animation;node->animation.clear();
+          for(const auto &entry:track)node->animation[entry.first*2]=entry.second;
+        }
+        Quaternion q;Vector3 v;source->GetKeyFrame("player",source->GetFrameCount()-1,q,v);
+        animation->SetKeyFrame("player",end,q,v);
+        auto extension=boost::shared_ptr<FootballAnimationExtension>(new FootballAnimationExtension(animation));
+        if(kind=="ballcontrol") {
+          auto old=boost::static_pointer_cast<FootballAnimationExtension>(source->GetExtension("football"));
+          for(const auto &entry:old->GetAnimation())extension->GetAnimation()[entry.first*2]=entry.second;
+        }
+        animation->GetExtensions()["football"]=extension;
+        animation->SetVariable("type",kind);animation->SetVariable("training_slow_dribble","true");
+        animation->SetName(name+"_slow_"+kind);
+        _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+      }
+    }
+  }
+
+  if(TrainingEnabled())for(const std::string kind:{"movement","movement_walk","ballcontrol"})for(int half=0;half<2;++half) {
+    const std::string path="media/training/DefenseJog_native_"+kind+"_"+int_to_str(half)+".anim";
+    if(!boost::filesystem::exists(path))continue;
+    Animation *animation=new Animation();
+    boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
+    animation->AddExtension("football",extension);animation->Load(path);
+    _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+    if(kind=="ballcontrol")animation->SetVariable("touch_bodypart",half?"left_foot":"right_foot");
+  }
+
   // Additional reception candidate: the existing native chest clips remain
   // in the collection, and the original trajectory/approach selector owns it.
   if(TrainingEnabled() && boost::filesystem::exists("media/training/Chest_Stand.anim")) {
@@ -557,6 +596,10 @@ void AnimCollection::CrudeSelection(DataSet &dataSet, const CrudeSelectionQuery 
       if (query.byIncomingVelocity == true) {
 
         e_Velocity animIncomingVelocity = FloatToEnumVelocity(animations.at(i)->GetIncomingVelocity());
+        // BallControl queries intentionally use the walk input class. The
+        // slow copy retains that compatibility with a slower physical track.
+        if(animations.at(i)->GetVariable("training_slow_dribble")=="true" &&
+            animations.at(i)->GetAnimType()=="ballcontrol")animIncomingVelocity=e_Velocity_Walk;
 
         if (query.incomingVelocity_Strict == false) {
 
@@ -934,6 +977,9 @@ int AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode,
     }
     //printf("closest: %s\n", closestBodyPart->GetName().c_str());
     animation->SetVariable("touch_bodypart", closestBodyPart->GetName());
+    if(TrainingEnabled() && animation->GetAnimType()=="trap" &&
+        (animation->GetName().find("chest")!=std::string::npos || animation->GetVariable("added_chest")=="true"))
+      animation->SetVariable("touch_bodypart","trunk");
 
     return animTouchFrame; // XDEBUG disable this
 

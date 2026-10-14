@@ -3,6 +3,8 @@
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../../../main.hpp"
+#include "humanoid_utils.hpp"
+#include "utils/animationextensions/footballanimationextension.hpp"
 #include <cmath>
 #include <limits>
 
@@ -67,6 +69,51 @@ void HumanoidBase::CaptureContactMesh() {
     }
   }
   geometry->resourceMutex.unlock();
+  if(TrainingEnabled())for(Animation *animation:anims->GetAnimations()) {
+    if(animation->GetVariable("training_dribble")!="true")continue;
+    for(int frame=0;frame<animation->GetFrameCount();++frame) {
+      Quaternion local[13],global[13],unused;Vector3 positions[13],root;
+      animation->GetKeyFrame("player",frame,unused,root);
+      SampleContactAnimation(animation,float(frame),root,0,false,local,global,positions);
+      float lowest=100;
+      for(unsigned side=0;side<2;++side) {
+        const auto &lo=pes3NativeReference.footMin[side],&hi=pes3NativeReference.footMax[side];
+        const unsigned ankle=side?12:9;
+        for(unsigned mask=0;mask<8;++mask) {
+          Vector3 p(mask&1?hi[0]:lo[0],mask&2?hi[1]:lo[1],mask&4?hi[2]:lo[2]);
+          lowest=std::min(lowest,(positions[ankle]+global[ankle]*p*zMultiplier).coords[2]);
+        }
+      }
+      root.coords[2]+=(.005f-lowest)/zMultiplier;
+      animation->SetKeyFrame("player",frame,unused,root);
+    }
+  }
+
+  // Bind each event to this player's weighted skin. The old markers describe
+  // proxy body parts; the native approach solver can now aim at the real mesh.
+  if(TrainingEnabled())for(Animation *animation:anims->GetAnimations()) {
+    auto extension=boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"));
+    const std::string part=animation->GetVariable("touch_bodypart");
+    if(!extension || part.empty() || extension->GetTouchCount()==0)continue;
+    for(auto &entry:extension->GetAnimation()) {
+      Quaternion local[13],global[13];Vector3 positions[13],root;Quaternion unused;
+      animation->GetKeyFrame("player",entry.first,unused,root);
+      SampleContactAnimation(animation,float(entry.first),root,0,false,local,global,positions);
+      Vector3 probe=entry.second.position;probe.coords[2]*=zMultiplier;
+      if(animation->GetVariable("training_dribble")=="true") {
+        const unsigned ankle=part=="left_foot"?9:12;
+        probe=positions[ankle]+Vector3(0,-.45f,0);probe.coords[2]=.11f;
+      }
+      const bool chest=animation->GetAnimType()=="trap" &&
+        (animation->GetName().find("chest")!=std::string::npos || animation->GetVariable("added_chest")=="true");
+      if(chest)probe=positions[1]+global[1]*Vector3(0,-.4f,.30f)*zMultiplier;
+      Vector3 surface;if(ContactSurface(probe,chest?"chest":part,global,positions,&surface)>50)continue;
+      const Vector3 normal=(probe-surface).GetNormalized(Vector3(0,-1,0));
+      Vector3 point=surface+normal*.1105f;point.coords[2]/=zMultiplier;
+      entry.second.position=point;
+    }
+  }
+
 }
 
 void HumanoidBase::ContactForwardKinematics(Quaternion *local,Quaternion *global,Vector3 *positions) const {
@@ -280,7 +327,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
     return;
   }
   if(remaining>20 || remaining< -14)return;
-  contactPoseBlend=nativeBlend*dribbleTrialBlend;
+  contactPoseBlend=0;
   // Authored joint rotations stay intact. Contact is planned with the
   // native whole-player approach, never a late per-leg reach adjustment.
 

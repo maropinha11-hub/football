@@ -67,11 +67,15 @@ try:
             g.wait(lambda:any(r['function']==3 for r in events(g.log.read_text()[start:],'TRAINING_ACTION_TOUCH')))
             hits=events(g.log.read_text()[start:],'TRAINING_ACTION_TOUCH');touch=next(r for r in hits if r['function']==3)
             if delay:g.advance(delay)
-            origin=g.frames()[-1];g.pad(0,-1);frames=g.advance(2400)
+            g.pad(0,-1)
+            # Measure from the frame where SDL acknowledges this input, not
+            # from an older 100 ms telemetry sample before the pad file write.
+            g.wait(lambda:g.frames()[-1]['move_active']==1)
+            origin=g.frames()[-1];frames=g.advance(2400)
             movement=[f for f in frames if f['t']<=origin['t']+500]
             check('chest interruption '+str(delay)+' ms accepts movement promptly',
                   math.dist(origin['player'][:2],movement[-1]['player'][:2])>.12 and frames[-1]['speed']>1,
-                  {'touch':touch,'travel_in_500ms_m':math.dist(origin['player'][:2],movement[-1]['player'][:2]),'ending_speed_mps':frames[-1]['speed']})
+                  {'touch':touch,'input_ack_t':origin['t'],'travel_in_500ms_m':math.dist(origin['player'][:2],movement[-1]['player'][:2]),'ending_speed_mps':frames[-1]['speed']})
             retained('chest interruption '+str(delay)+' ms keeps the ball',frames)
         # Held lateral/back input turns relative to each new front. Judge
         # response and travelled path; a turn can naturally brake at the last sample.
@@ -82,10 +86,10 @@ try:
                   max(f['speed']for f in frames[:6])>.5 and frames[-1]['function']!=3 and sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:]))>.5,
                   {'ending_speed_mps':frames[-1]['speed'],'ending_function':frames[-1]['function'],'initial_peak_speed_mps':max(f['speed']for f in frames[:6]),'path_length_m':sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:])),'touches':events(g.log.read_text()[start:],'TRAINING_ACTION_TOUCH'),
                    'body_contacts':events(g.log.read_text()[start:],'TRAINING_BODY_TOUCH')})
-        log=g.log.read_text();poses=events(log,'TRAINING_FBX_POSE')
+        log=g.log.read_text();poses=events(log,'TRAINING_NATIVE_DRIBBLE_POSE')
         if not a.native_only:
             check('additional chest clip is selected and used by the native state machine',any(r.get('added_chest')==1 for r in events(log,'TRAINING_NATIVE_START')),events(log,'TRAINING_NATIVE_START')[-12:])
-        check('imported forward loop is visual and native actions remain active',
+        check('imported forward gait uses native animation selection and actions',
               (bool(poses)if not a.native_only else not poses)and
               'TRAINING_FBX_TOUCH'not in log and 'TRAINING_CHEST_START'not in log,
               {'rendered_imported_samples':len(poses),'native_contacts':len(events(log,'TRAINING_ACTION_TOUCH'))})

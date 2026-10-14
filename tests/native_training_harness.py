@@ -63,7 +63,11 @@ class NativeTraining:
         names=list(names)
         if not names:return
         def send():
-            subprocess.run(['xdotool','keydown'if down else'keyup','--window',self.window,*names],
+            # Use XTEST keyboard state on this harness's private X server.
+            # XSendEvent (--window) can leave SDL repeat detection holding a
+            # key after a synthetic release, especially on repeated F5 trials.
+            subprocess.run(['xdotool','windowfocus','--sync',self.window],env=self.env,check=True)
+            subprocess.run(['xdotool','keydown'if down else'keyup',*names],
                            env=self.env,check=True)
         send()
         if down:self.held.update(names)

@@ -908,24 +908,25 @@ float HumanoidBase::DribbleShoeDistance(const Vector3 &point,unsigned side,Vecto
 }
 
 void HumanoidBase::ProcessDribbleLoop() {
-  bool eligible=false;
-  if(dribbleTrialAnimation && TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",true) &&
-      match->TrainingHasBall() && player->GetExternalController() &&
-      (currentAnim->functionType==e_FunctionType_Movement || currentAnim->functionType==e_FunctionType_BallControl)) {
+  bool eligible=false;float strength=0;
+  if(TrainingEnabled() && GetConfiguration()->GetBool("training_fbx_dribble",true) && match->TrainingHasBall() &&
+      player->GetExternalController()) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
-    const Vector3 movement=spatialState.movement.Get2D();
-    const Vector3 stick=human->GetHIDevice()->GetDirection();
+    const Vector3 stick=human->GetHIDevice()->GetDirection();strength=stick.GetLength();
+    const float threshold=dribbleTrialPhase>.5f?.72f:.84f;
     eligible=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
-      (!match->IsFirstPerson() || (stick.coords[1]>.1f && std::fabs(stick.coords[0])<.15f)) &&
-      movement.GetLength()>.5f && movement.GetLength()<6 &&
-      movement.GetNormalized(0).GetDotProduct(human->GetDirection())>.90f &&
-      spatialState.bodyDirectionVec.GetDotProduct(movement.GetNormalized(0))>.90f;
+      strength>threshold && (!match->IsFirstPerson() || (stick.coords[1]>threshold && std::fabs(stick.coords[0])<.20f)) &&
+      (dribbleTrialPhase>.5f || spatialState.movement.GetLength()>2.5f);
   }
   const float dt=match->GetPause()?0:.01f;
-  dribbleTrialBlend=clamp(dribbleTrialBlend+(eligible?1:-1)*dt/.24f,0.0f,1.0f);
-  if(dribbleTrialAnimation && dribbleTrialBlend>0)
-    dribbleTrialPhase=std::fmod(dribbleTrialPhase+spatialState.movement.Get2D().GetLength()*dt*100/dribbleTrialSourceSpeed,
-      float(dribbleTrialAnimation->GetEffectiveFrameCount()));
+  dribbleTrialBlend=clamp(dribbleTrialBlend+(eligible?1:-1)*dt/.40f,0.0f,1.0f);
+  if(dribbleTrialBlend>=1)dribbleTrialPhase=1;
+  if(dribbleTrialBlend<=0)dribbleTrialPhase=0;
+  if(TrainingEnabled() && player->GetExternalController() && match->GetActualTime_ms()%100==0 &&
+      GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_DRIBBLE_STATE t=%lu strength=%.5f ready=%.3f active=%d new_cycle=%d function=%d\n",
+      match->GetActualTime_ms(),strength,dribbleTrialBlend,dribbleTrialPhase>.5f?1:0,
+      currentAnim->anim->GetVariable("training_dribble")=="true"?1:0,int(currentAnim->functionType));
 }
 
 void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
@@ -1126,77 +1127,31 @@ void HumanoidBase::Put() {
   }
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
-  if (!studyApplied && dribbleTrialAnimation && fetchedbuf_animApplyBuffer.dribbleTrialBlend > 0) {
-    const float blend = fetchedbuf_animApplyBuffer.dribbleTrialBlend;
-    Vector3 rootPosition=humanoidNode->GetPosition();
-    for(unsigned axis=0;axis<2;++axis)rootPosition.coords[axis]+=(fetchedDribbleRoot.coords[axis]-rootPosition.coords[axis])*blend;
-    humanoidNode->SetPosition(rootPosition,false);
-    const float phase = std::fmod(fetchedbuf_animApplyBuffer.dribbleTrialPhase,float(dribbleTrialAnimation->GetEffectiveFrameCount()));
-    const Quaternion facing=fetchedbuf_animApplyBuffer.dribbleTrialFacing;
-    Quaternion local[13],global[13];Vector3 positions[13];
-    SampleDribbleLoop(phase,local,global,positions,fetchedDribbleFootOffsets);
-    float largestChange = 0;
-    for (unsigned i = 0; i < 13; ++i) {
-      Quaternion pose=local[i];
-      if (i == 0) pose = facing * pose;
-      auto node = nodeMap.at(pes3::nativeBoneNames[i]);
-      const Quaternion native = node->GetRotation();
-      const float amount = (i == 0 || i >= 7) ? fetchedbuf_animApplyBuffer.dribbleTrialLegBlend : blend;
-      const Quaternion result = native.GetSlerped(amount, pose).GetNormalized();
-      float difference = 0;
-      for (unsigned a = 0; a < 4; ++a) difference += std::fabs(result.elements[a]-native.elements[a]);
-      largestChange = std::max(largestChange, difference);
-      node->SetRotation(result, false);
-    }
-    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
-    // Solve support after entry/exit blending against the native shoe volumes.
-    // Never write this lift into the cached simulation pose.
-    float lowest = 100;
-    for (unsigned side = 0; side < 2; ++side) {
-      auto ankle = nodeMap.at(side ? "right_ankle" : "left_ankle");
-      for (unsigned corner = 0; corner < 8; ++corner) {
-        Vector3 point;
-        for (unsigned a = 0; a < 3; ++a) point.coords[a] = (corner & (1u << a)) ?
-            pes3NativeReference.footMax[side][a] : pes3NativeReference.footMin[side][a];
-        lowest = std::min(lowest, (ankle->GetDerivedPosition() + ankle->GetDerivedRotation()*point).coords[2]);
-      }
-    }
-    auto body = nodeMap.at("body");
-    const float lift = .008f - lowest;
-    body->SetPosition(body->GetPosition()+Vector3(0,0,lift), false);
-    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
-    const Vector3 chest=facing.GetInverse()*(nodeMap.at("neck")->GetDerivedPosition()-nodeMap.at("middle")->GetDerivedPosition());
-    const float torsoPitch=std::atan2(-chest.coords[1],chest.coords[2]);
-    float renderedGap[2]={0,0};
-    if(GetConfiguration()->GetBool("training_telemetry",false)) {
-      const Vector3 sphere=match->GetBall()->GetBallGeom()->GetPosition();
-      const Vector3 anchor=humanoidNode->GetPosition().Get2D();
-      for(unsigned side=0;side<2;++side) {
-        auto ankle=nodeMap.at(side?"right_ankle":"left_ankle");
-        const Vector3 world=anchor+(ankle->GetDerivedPosition()-anchor)*zMultiplier;
-        const Vector3 point=ankle->GetDerivedRotation().GetInverse()*(sphere-world)/zMultiplier;
-        renderedGap[side]=DribbleShoeDistance(point,side)*zMultiplier-.11f;
-      }
-    }
-    const Vector3 headForward=facing.GetInverse()*(nodeMap.at("neck")->GetDerivedRotation()*Vector3(0,-1,0));
-    const float headPitch=std::atan2(-headForward.coords[2],headForward.Get2D().GetLength());
-    float lengthError = 0, maximumRadius = 0;
-    for (unsigned i = 1; i < 13; ++i) {
-      const Vector3 joint = nodeMap.at(pes3::nativeBoneNames[i])->GetDerivedPosition();
-      const Vector3 parent = nodeMap.at(pes3::nativeBoneNames[pes3::nativeParents[i]])->GetDerivedPosition();
-      const auto &offset = pes3NativeReference.offsets[i];
-      const float expected = Vector3(offset[0],offset[1],offset[2]).GetLength();
-      lengthError = std::max(lengthError, std::fabs((joint-parent).GetLength()-expected));
-      maximumRadius = std::max(maximumRadius, (joint-body->GetDerivedPosition()).GetLength());
-    }
-    if (GetConfiguration()->GetBool("training_telemetry", false))
-      printf("TRAINING_FBX_POSE t=%lu blend=%.4f legs=%.4f phase=%.4f change=%.4f sole_z=%.4f lift=%.4f function=%d length_error=%.6f radius=%.4f lean=%.4f torso_pitch=%.4f gap_left=%.5f gap_right=%.5f head_pitch=%.5f head_lean=%.5f\n",
-             fetchedbuf_animApplyBuffer.snapshotTime_ms, blend, fetchedbuf_animApplyBuffer.dribbleTrialLegBlend,
-             phase, largestChange, lowest+lift, lift, fetchedbuf_animApplyBuffer.dribbleTrialFunction, lengthError, maximumRadius, .13f*blend,torsoPitch,renderedGap[0],renderedGap[1],headPitch,.12f);
-  }
-
-  if(!studyApplied)PutTrainingContactPose();
+  if(!studyApplied && TrainingEnabled() && fetchedbuf_animApplyBuffer.anim->GetVariable("training_dribble")=="true" &&
+      GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_NATIVE_DRIBBLE_POSE t=%lu frame=%d phase=%.4f function=%d\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,
+      fetchedbuf_animApplyBuffer.frameNum,std::atof(fetchedbuf_animApplyBuffer.anim->GetVariable("source_phase_start").c_str())+
+      fetchedbuf_animApplyBuffer.frameNum*std::atof(fetchedbuf_animApplyBuffer.anim->GetVariable("source_phase_scale").c_str()),
+      int(fetchedbuf_animApplyBuffer.dribbleTrialFunction));
+  // All contacts and transitions use the selected animation directly.
   if(!studyApplied)PutTrainingHeadLook();
+  if(TrainingEnabled() && player->GetExternalController() && GetConfiguration()->GetBool("training_telemetry",false)) {
+    const auto anim=fetchedbuf_animApplyBuffer.anim;
+    const int marker=std::atoi(anim->GetVariable("touchframe").c_str());
+    if(anim->GetExtension("football") && anim->GetVariable("touchframe")!="-1" &&
+        std::abs(fetchedbuf_animApplyBuffer.frameNum-marker)<=8) {
+      Quaternion rotations[13];Vector3 positions[13];const Vector3 origin=humanoidNode->GetPosition().Get2D();
+      for(unsigned i=0;i<13;++i) {
+        auto node=nodeMap.at(pes3::nativeBoneNames[i]);rotations[i]=node->GetDerivedRotation();
+        positions[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;
+      }
+      const Vector3 sphere=match->GetBall()->GetBallGeom()->GetPosition();
+      printf("TRAINING_RENDER_SURFACE t=%lu frame=%d marker=%d gap=%.5f new_cycle=%d\n",
+        fetchedbuf_animApplyBuffer.snapshotTime_ms,fetchedbuf_animApplyBuffer.frameNum,marker,
+        ContactSurface(sphere,anim->GetVariable("touch_bodypart"),rotations,positions),
+        anim->GetVariable("training_dribble")=="true"?1:0);
+    }
+  }
   if(TrainingEnabled() && player->GetExternalController() && GetConfiguration()->GetBool("training_telemetry",false)) {
     printf("TRAINING_CONTACT_JOINTS t=%lu",fetchedbuf_animApplyBuffer.snapshotTime_ms);
     for(const unsigned i:{1u,7u,8u,9u,10u,11u,12u}) {

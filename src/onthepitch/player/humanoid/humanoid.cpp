@@ -293,6 +293,8 @@ void Humanoid::Process() {
           currentAnim->functionType == e_FunctionType_Sliding) animApplyBuffer.smoothFactor = 0.8f;
       if (currentAnim->functionType == e_FunctionType_BallControl ||
           currentAnim->functionType == e_FunctionType_Trap) animApplyBuffer.smoothFactor = 0.8f;
+      if(TrainingEnabled() && previousAnim->anim->GetVariable("training_dribble")!=currentAnim->anim->GetVariable("training_dribble"))
+        animApplyBuffer.smoothFactor=.8f;
       //printf("smoothfac: %f, interrupt: %i\n", animApplyBuffer.smoothFactor, interruptAnim);
       //animApplyBuffer.offsets.clear();
 
@@ -372,8 +374,24 @@ void Humanoid::Process() {
 
   // ------------------------ EXPERIMENTAL ------------------------------------------------
   bool controlledBallCollision = CastPlayer()->IsControlledBallCollisionTriggered();
+  UpdateTrainingContactPose();
+  auto physicalContact=[&](const std::string &part) {
+    if(!TrainingEnabled())return true;
+    Ball *ball=match->GetBall();Vector3 surface;
+    const Vector3 point=ball->Predict(0);
+    const float gap=ContactSurface(point,part,contactGlobal,contactPositions,&surface);
+    const bool accepted=gap<=.0025f;
+    if(accepted && gap<0) {
+      const Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
+      ball->ResolveBodyContact(surface+normal*.1105f,ball->GetMovement());
+    }
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("TRAINING_SKIN_CONTACT t=%lu part=%s gap=%.5f accepted=%d new_cycle=%d\n",match->GetActualTime_ms(),
+        part.c_str(),gap,accepted?1:0,currentAnim->anim->GetVariable("training_dribble")=="true"?1:0);
+    return accepted;
+  };
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1) {
+  if (enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1 && physicalContact("")) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -399,7 +417,13 @@ void Humanoid::Process() {
   }
   // ---------------------- / EXPERIMENTAL ------------------------------------------------
 
-  if (currentAnim->touchFrame == currentAnim->frameNum) {
+  const bool contactWindow=TrainingEnabled() ? currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
+    currentAnim->frameNum>=currentAnim->touchFrame-3 && currentAnim->frameNum<=currentAnim->touchFrame+6 :
+    currentAnim->touchFrame==currentAnim->frameNum;
+  if(TrainingEnabled() && currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
+      currentAnim->frameNum==currentAnim->touchFrame+7 && currentAnim->anim->GetVariable("training_dribble")!="true")
+    interruptAnim=e_InterruptAnim_Switch; // A missed physical contact retries without holding locomotion.
+  if (contactWindow) {
 
     Vector3 desiredBallPosition;
     boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
@@ -431,8 +455,10 @@ void Humanoid::Process() {
     bumpyRideBias = curve(bumpyRideBias, 0.5f);
     Vector3 currentBallVec = match->GetBall()->GetMovement();
 
-    if (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f) {
+    if ((TrainingEnabled() || (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f)) && physicalContact(currentAnim->anim->GetVariable("touch_bodypart"))) {
       currentAnim->touchMade=true;
+      // A measured skin contact is not a miss against an old proxy marker.
+      if(TrainingEnabled())bumpyRideBias=0;
       match->NotifyTrainingTouch(currentAnim->functionType,(currentAnim->originatingCommand.modifier&e_PlayerCommandModifier_KnockOn)!=0);
 
       if (TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry", false))
@@ -1416,6 +1442,21 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head") dataSet.push_back(id);
   }
   //if (command.desiredFunctionType == e_FunctionType_Special) printf("size: %i\n", dataSet.size());
+  bool preferSlowGait=false,preferNewGait=false;
+  if(TrainingEnabled() && player->GetExternalController()) {
+    auto *human=static_cast<HumanController*>(player->GetExternalController());
+    const float strength=human->GetHIDevice()->GetDirection().GetLength();
+    const bool locomotion=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
+      match->TrainingHasBall() && !match->TrainingReceivingBall();
+    preferSlowGait=locomotion && strength>.01f && strength<=.72f;
+    preferNewGait=locomotion && strength>.72f && dribbleTrialPhase>.5f && GetConfiguration()->GetBool("training_fbx_dribble",true);
+    dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id) {
+      Animation *anim=anims->GetAnim(id);
+      return (anim->GetVariable("training_dribble")=="true" && !preferNewGait) ||
+        (anim->GetVariable("training_slow_dribble")=="true" && !preferSlowGait);
+    }),dataSet.end());
+  }
+
   if (dataSet.size() == 0) {
     if (command.desiredFunctionType == e_FunctionType_Movement) {
       //if (player->GetDebug()) printf("selected player: ");
@@ -1722,6 +1763,24 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
           break;
         }
     }
+  }
+
+  if(preferSlowGait)
+    std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("training_slow_dribble")=="true";});
+  if(preferNewGait &&
+      (command.desiredFunctionType==e_FunctionType_Movement || command.desiredFunctionType==e_FunctionType_BallControl)) {
+    const bool continuing=currentAnim->anim->GetVariable("training_dribble")=="true";
+    const float phase=continuing ? std::fmod(std::atof(currentAnim->anim->GetVariable("source_phase_start").c_str())+
+      currentAnim->frameNum*std::atof(currentAnim->anim->GetVariable("source_phase_scale").c_str()),70.0f) : -1;
+    auto cost=[&](int id) {
+      Animation *anim=anims->GetAnim(id);
+      if(anim->GetVariable("training_dribble")!="true")return 1000.0f;
+      if(!continuing)return 0.0f;
+      const float start=std::atof(anim->GetVariable("source_phase_start").c_str());
+      const float delta=std::fabs(start-phase);
+      return std::min(delta,70-delta);
+    };
+    std::stable_sort(dataSet.begin(),dataSet.end(),[&](int a,int b){return cost(a)<cost(b);});
   }
 
   int selectedAnimID = -1;
@@ -2218,6 +2277,12 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       // ball height
 
       float ballDistanceZ = fabs(actionSmuggleVec3D.coords[2]);
+      // Control and pass candidates must meet their authored body region.
+      // A height cheat must not commit a kick above or below the ball.
+      if(TrainingEnabled() && functionType>=e_FunctionType_BallControl &&
+          functionType<=e_FunctionType_HighPass && ballDistanceZ>.075f) {
+        touchNum++;continue;
+      }
       //if (CastPlayer()->GetDebug()) printf("%f\n", actionSmuggleVec3D.coords[2]);
       //if (CastPlayer()->GetDebug() && anim->GetName().find("jump_180") != std::string::npos) printf("ballDistanceZ: %f\n", actionSmuggleVec3D.coords[2]);
 
@@ -2329,7 +2394,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
       actionSmuggle_ret = 0;
 
-    } else if (enableActionSmuggleDiscard) {
+    } else if (enableActionSmuggleDiscard && !TrainingEnabled()) {
 
       // cheat discard distance (don't show some amount of cheat, like, a cheat-cheat :D CHEATCEPTION)
       float smuggleDistance = actionSmuggle_ret.GetLength();

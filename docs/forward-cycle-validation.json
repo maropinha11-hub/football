@@ -1,0 +1,964 @@
+{
+  "result": "passed",
+  "recorded_at_utc": "2026-10-14T22:52:21.745876+00:00",
+  "request": "Original gait at rest/light stick, smooth continuous approved forward gait at strong input, ball impulses only at skin contact.",
+  "native_executable_sha256": "7a0a21e544f369bb6a21081ac1afd98c323d7f1edc40dbdb25a4b0762080c642",
+  "windows_linked_executable_sha256": "12f1c473004a34504c64e0e834c0c1702b3e7a6bc964b7c357421a8bd89eb7cc",
+  "rendered_environment": {
+    "platform": "Linux, OpenGL via Mesa software renderer, SDL virtual Xbox controller",
+    "resolution": [
+      320,
+      180
+    ],
+    "physical_xbox_controller_tested": false,
+    "windows_graphical_runtime_tested": false
+  },
+  "rendered_checks_passed": 57,
+  "suites": {
+    "forward_cycle": {
+      "result": "passed",
+      "checks_passed": 16,
+      "checks": [
+        {
+          "check": "light stick moves with the original gait",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 3.8749001290355856,
+            "ending_speed_mps": 1.85
+          }
+        },
+        {
+          "check": "light stick retains ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_range_m": 0.6158013721972369,
+            "ending_range_m": 0.5201024610593573
+          }
+        },
+        {
+          "check": "full stick starts natively and enters the new gait",
+          "result": "passed",
+          "evidence": {}
+        },
+        {
+          "check": "steady forward does not switch back at every touch",
+          "result": "passed",
+          "evidence": {
+            "steady_samples": 38,
+            "old_pose_samples": 0
+          }
+        },
+        {
+          "check": "both halves form complete continuous loops",
+          "result": "passed",
+          "evidence": {
+            "pose_samples": 77,
+            "phase_min": 1.1667,
+            "phase_max": 67.6667,
+            "phase_jumps": []
+          }
+        },
+        {
+          "check": "new gait pushes at measured shoe contacts",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": 4530.0,
+              "gap": -0.00362,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 5130.0,
+              "gap": -0.0006,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 5730.0,
+              "gap": -0.00095,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 6330.0,
+              "gap": -0.00089,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 6930.0,
+              "gap": -0.0009,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 7530.0,
+              "gap": -0.0009,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            },
+            {
+              "t": 8130.0,
+              "gap": -0.0009,
+              "accepted": 1.0,
+              "new_cycle": 1.0
+            }
+          ]
+        },
+        {
+          "check": "visible shoe follows the actual impacts",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": 4530.0,
+              "closest_rendered_gap_m": 0.04462
+            },
+            {
+              "t": 5130.0,
+              "closest_rendered_gap_m": 0.01142
+            },
+            {
+              "t": 5730.0,
+              "closest_rendered_gap_m": 0.01934
+            },
+            {
+              "t": 6330.0,
+              "closest_rendered_gap_m": 0.02331
+            },
+            {
+              "t": 6930.0,
+              "closest_rendered_gap_m": 0.01225
+            },
+            {
+              "t": 7530.0,
+              "closest_rendered_gap_m": 0.01512
+            },
+            {
+              "t": 8130.0,
+              "closest_rendered_gap_m": 0.01505
+            }
+          ]
+        },
+        {
+          "check": "full loop retains ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_range_m": 0.5890006876057111,
+            "ending_range_m": 0.4573905333519705
+          }
+        },
+        {
+          "check": "strong stick has stable hysteresis",
+          "result": "passed",
+          "evidence": {
+            "samples": 18,
+            "first": {
+              "t": 8300.0,
+              "strength": 0.99996,
+              "ready": 1.0,
+              "active": 1.0,
+              "new_cycle": 1.0,
+              "function": 2.0
+            },
+            "last": {
+              "t": 10000.0,
+              "strength": 0.96464,
+              "ready": 1.0,
+              "active": 1.0,
+              "new_cycle": 1.0,
+              "function": 2.0
+            }
+          }
+        },
+        {
+          "check": "stick strength changes retain ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_range_m": 0.4712649361028254,
+            "ending_range_m": 0.4573905333519705
+          }
+        },
+        {
+          "check": "soft stick returns smoothly to the old gait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 1.8503
+          }
+        },
+        {
+          "check": "return to soft gait retains ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_range_m": 0.629907628148762,
+            "ending_range_m": 0.5881003060703137
+          }
+        },
+        {
+          "check": "resting start uses old gait before new",
+          "result": "passed",
+          "evidence": {}
+        },
+        {
+          "check": "resting start stays connected",
+          "result": "passed",
+          "evidence": {
+            "maximum_range_m": 0.6505022213643855,
+            "ending_range_m": 0.4625088647799081
+          }
+        },
+        {
+          "check": "every authored impulse is guarded by real skin contact",
+          "result": "passed",
+          "evidence": {
+            "impulses": 25,
+            "measured_contacts": 25,
+            "maximum_accepted_gap_m": 0.00132
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    "native_regressions": {
+      "result": "passed",
+      "checks_passed": 31,
+      "checks": [
+        {
+          "check": "standing chest is added without removing native receptions",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_CHEST_CANDIDATE frames=151 contact=33 part=trunk native_preserved=1"
+          ]
+        },
+        {
+          "check": "start from resting ball after 0 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6371028331439126,
+            "ending_distance_m": 0.4596716219215613,
+            "ending_speed_mps": 3.8001,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 0 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.268829001134321,
+            "native_touches": [
+              {
+                "t": 1390.0,
+                "function": 2.0,
+                "z": 0.1233
+              },
+              {
+                "t": 1710.0,
+                "function": 2.0,
+                "z": 0.1142
+              },
+              {
+                "t": 1970.0,
+                "function": 2.0,
+                "z": 0.1112
+              },
+              {
+                "t": 2600.0,
+                "function": 2.0,
+                "z": 0.114
+              },
+              {
+                "t": 3200.0,
+                "function": 2.0,
+                "z": 0.1108
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6540019571836158,
+            "ending_distance_m": 0.4294922234453157,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.102314070683757,
+            "native_touches": [
+              {
+                "t": 4890.0,
+                "function": 2.0,
+                "z": 0.1238
+              },
+              {
+                "t": 5320.0,
+                "function": 2.0,
+                "z": 0.1119
+              },
+              {
+                "t": 5970.0,
+                "function": 2.0,
+                "z": 0.1088
+              },
+              {
+                "t": 6580.0,
+                "function": 2.0,
+                "z": 0.1106
+              }
+            ]
+          }
+        },
+        {
+          "check": "start from resting ball after 1400 ms",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6513022186358648,
+            "ending_distance_m": 0.43641921360086894,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "resting start 1400 responds and uses native touches",
+          "result": "passed",
+          "evidence": {
+            "travel_m": 8.029216342831969,
+            "native_touches": [
+              {
+                "t": 9410.0,
+                "function": 2.0,
+                "z": 0.1238
+              },
+              {
+                "t": 9840.0,
+                "function": 2.0,
+                "z": 0.1119
+              },
+              {
+                "t": 10490.0,
+                "function": 2.0,
+                "z": 0.1088
+              },
+              {
+                "t": 11100.0,
+                "function": 2.0,
+                "z": 0.1106
+              }
+            ]
+          }
+        },
+        {
+          "check": "right then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5270203506507122,
+            "ending_distance_m": 0.46912396016404906,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "right resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.8
+          }
+        },
+        {
+          "check": "reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6097551393797351,
+            "ending_distance_m": 0.4286334681286575,
+            "ending_speed_mps": 3.7999,
+            "controlled_samples": 23,
+            "samples": 23
+          }
+        },
+        {
+          "check": "reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.7999
+          }
+        },
+        {
+          "check": "long reverse then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6708004770421677,
+            "ending_distance_m": 0.46709318128185023,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 27,
+            "samples": 27
+          }
+        },
+        {
+          "check": "long reverse resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.8
+          }
+        },
+        {
+          "check": "stop then forward retains native ball control",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6776018890174377,
+            "ending_distance_m": 0.4599002065665981,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 26,
+            "samples": 26
+          }
+        },
+        {
+          "check": "stop resumes movement without ownership wait",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.8
+          }
+        },
+        {
+          "check": "three RB bursts and releases",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.8841177353723881,
+            "ending_distance_m": 0.46900819822258805,
+            "ending_speed_mps": 3.7998,
+            "controlled_samples": 69,
+            "samples": 69
+          }
+        },
+        {
+          "check": "running pass touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 40200.0,
+                "function": 4.0,
+                "z": 0.1385
+              }
+            ],
+            "peak_ball_speed_mps": 26.7316
+          }
+        },
+        {
+          "check": "running cross touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 44740.0,
+                "function": 6.0,
+                "z": 0.1608
+              }
+            ],
+            "peak_ball_speed_mps": 24.631
+          }
+        },
+        {
+          "check": "running shot touches ball once",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": 48890.0,
+                "function": 8.0,
+                "z": 0.1149
+              }
+            ],
+            "peak_ball_speed_mps": 27.1115
+          }
+        },
+        {
+          "check": "chest interruption 0 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 52160.0,
+              "function": 3.0,
+              "z": 1.3485
+            },
+            "input_ack_t": 52300,
+            "travel_in_500ms_m": 0.6749224103554423,
+            "ending_speed_mps": 3.7999
+          }
+        },
+        {
+          "check": "chest interruption 0 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.547400228352163,
+            "ending_distance_m": 0.45482172331584964,
+            "ending_speed_mps": 3.7999,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 200 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 55980.0,
+              "function": 3.0,
+              "z": 1.3297
+            },
+            "input_ack_t": 56300,
+            "travel_in_500ms_m": 0.9811171438722289,
+            "ending_speed_mps": 3.8
+          }
+        },
+        {
+          "check": "chest interruption 200 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.6381412147792995,
+            "ending_distance_m": 0.4596716219215631,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "chest interruption 500 ms accepts movement promptly",
+          "result": "passed",
+          "evidence": {
+            "touch": {
+              "t": 59980.0,
+              "function": 3.0,
+              "z": 1.3482
+            },
+            "input_ack_t": 60600,
+            "travel_in_500ms_m": 0.8809763731224578,
+            "ending_speed_mps": 3.8
+          }
+        },
+        {
+          "check": "chest interruption 500 ms keeps the ball",
+          "result": "passed",
+          "evidence": {
+            "maximum_distance_m": 0.5709315282938927,
+            "ending_distance_m": 0.4130685778415004,
+            "ending_speed_mps": 3.8,
+            "controlled_samples": 24,
+            "samples": 24
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: forward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.8,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 3.84,
+            "path_length_m": 5.437647657023668,
+            "touches": [
+              {
+                "t": 64300.0,
+                "function": 3.0,
+                "z": 1.33
+              },
+              {
+                "t": 64860.0,
+                "function": 2.0,
+                "z": 0.1335
+              },
+              {
+                "t": 65130.0,
+                "function": 2.0,
+                "z": 0.1104
+              },
+              {
+                "t": 65780.0,
+                "function": 2.0,
+                "z": 0.1088
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 64660.0,
+                "correction": 0.060781,
+                "sweep": 0.0,
+                "speed_before": 3.47746,
+                "speed_after": 2.68138
+              }
+            ]
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: backward stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 2.3579,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 3.1238,
+            "path_length_m": 2.7680067615424155,
+            "touches": [
+              {
+                "t": 67460.0,
+                "function": 3.0,
+                "z": 1.3481
+              },
+              {
+                "t": 68530.0,
+                "function": 2.0,
+                "z": 0.2861
+              },
+              {
+                "t": 69360.0,
+                "function": 2.0,
+                "z": 0.1168
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 67850.0,
+                "correction": 0.009636,
+                "sweep": 0.55295,
+                "speed_before": 3.75923,
+                "speed_after": 2.77202
+              }
+            ]
+          }
+        },
+        {
+          "check": "movement during incoming chest ball: lateral stays responsive",
+          "result": "passed",
+          "evidence": {
+            "ending_speed_mps": 3.5458,
+            "ending_function": 2,
+            "initial_peak_speed_mps": 2.0,
+            "path_length_m": 3.7941995897970853,
+            "touches": [
+              {
+                "t": 70660.0,
+                "function": 3.0,
+                "z": 1.3485
+              },
+              {
+                "t": 71830.0,
+                "function": 2.0,
+                "z": 0.1484
+              },
+              {
+                "t": 72350.0,
+                "function": 2.0,
+                "z": 0.1181
+              }
+            ],
+            "body_contacts": [
+              {
+                "t": 71020.0,
+                "correction": 0.092268,
+                "sweep": 0.0,
+                "speed_before": 3.47985,
+                "speed_after": 2.61298
+              }
+            ]
+          }
+        },
+        {
+          "check": "additional chest clip is selected and used by the native state machine",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": 64760.0,
+              "function": 2.0,
+              "contact_frame": 9.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65010.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65260.0,
+              "function": 2.0,
+              "contact_frame": 21.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65560.0,
+              "function": 2.0,
+              "contact_frame": 21.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 65860.0,
+              "function": 2.0,
+              "contact_frame": 21.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 66160.0,
+              "function": 2.0,
+              "contact_frame": 21.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 67120.0,
+              "function": 3.0,
+              "contact_frame": 33.0,
+              "added_chest": 1.0
+            },
+            {
+              "t": 68440.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 69260.0,
+              "function": 2.0,
+              "contact_frame": 12.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 70320.0,
+              "function": 3.0,
+              "contact_frame": 33.0,
+              "added_chest": 1.0
+            },
+            {
+              "t": 71640.0,
+              "function": 2.0,
+              "contact_frame": 19.0,
+              "added_chest": 0.0
+            },
+            {
+              "t": 72160.0,
+              "function": 2.0,
+              "contact_frame": 19.0,
+              "added_chest": 0.0
+            }
+          ]
+        },
+        {
+          "check": "imported forward gait uses native animation selection and actions",
+          "result": "passed",
+          "evidence": {
+            "rendered_imported_samples": 357,
+            "native_contacts": 89
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    "camera_and_actions": {
+      "result": "passed",
+      "checks_passed": 10,
+      "checks": [
+        {
+          "check": "RT remains reserved with RB False",
+          "result": "passed",
+          "evidence": [
+            3.8,
+            3.8
+          ]
+        },
+        {
+          "check": "RT remains reserved with RB True",
+          "result": "passed",
+          "evidence": [
+            7.4308,
+            7.4308
+          ]
+        },
+        {
+          "check": "right stick/head look is independent from forward body travel",
+          "result": "passed",
+          "evidence": {
+            "t": 17300,
+            "exercise": 0,
+            "player": [
+              3.966,
+              -0.0165,
+              0.0
+            ],
+            "speed": 3.8,
+            "ball": [
+              4.4086,
+              0.0015,
+              0.1091
+            ],
+            "ball_speed": 3.4273,
+            "function": 2,
+            "frame": 0,
+            "controller": 1,
+            "goals": 0,
+            "camera": 2,
+            "with_ball": 1,
+            "yaw": -1.378,
+            "head_yaw": -1.378,
+            "pitch": -0.12,
+            "contacts": 0,
+            "look_active": 1,
+            "move_active": 1,
+            "shot_active": 0,
+            "charge_ms": 0,
+            "action_mode": 0,
+            "move": [
+              0.0,
+              1.0
+            ],
+            "keys": 4096,
+            "player_yaw": 0.0,
+            "wall_ms": 26832
+          }
+        },
+        {
+          "check": "head recenters gradually",
+          "result": "passed",
+          "evidence": -0.1302
+        },
+        {
+          "check": "full shot retains charge/elevation modifier",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_SHOT t=21280 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[-0.07242,-0.87220,1.19717] lever=[-0.10265,0.00396,-0.04072] low_spin=1"
+          ]
+        },
+        {
+          "check": "lob retains charge/elevation modifier",
+          "result": "passed",
+          "evidence": [
+            "TRAINING_SHOT t=24380 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[-0.33098,-3.98628,0.52537] lever=[-0.10265,0.00396,-0.04072] low_spin=0"
+          ]
+        },
+        {
+          "check": "pass can leave chest recovery",
+          "result": "passed",
+          "evidence": [
+            [
+              27680,
+              "left_foot",
+              2
+            ],
+            [
+              28050,
+              "left_foot",
+              4
+            ]
+          ]
+        },
+        {
+          "check": "one-touch pass uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              31390,
+              "right_foot",
+              4
+            ]
+          ]
+        },
+        {
+          "check": "header shot uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              35510,
+              "head",
+              8
+            ]
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    }
+  },
+  "contact_guard_evidence": {
+    "forward_cycle": {
+      "authored_impulses": 28,
+      "all_have_same_tick_accepted_skin_contact": true,
+      "max_accepted_gap_m": 0.00132
+    },
+    "native_regressions": {
+      "authored_impulses": 89,
+      "all_have_same_tick_accepted_skin_contact": true,
+      "max_accepted_gap_m": 0.00241
+    },
+    "camera_and_actions": {
+      "authored_impulses": 35,
+      "all_have_same_tick_accepted_skin_contact": true,
+      "max_accepted_gap_m": 0.00132
+    }
+  },
+  "ctest": {
+    "passed": 4,
+    "failed": 0,
+    "tests": [
+      "xbox_controller",
+      "pes3_motion_runtime",
+      "pes3_native_pose",
+      "pes3_native_retarget"
+    ],
+    "note": "The PES utility tests exercise existing math helpers; this gameplay uses native animation selection and does not require a PES bank."
+  },
+  "source_validation": {
+    "generated_cycle_assets": {
+      "data/media/training/DefenseJog_native_ballcontrol_0.anim": "92998d32050a67828405f6776d58166f1482d90360b572ccb4612f9e129b28a5",
+      "data/media/training/DefenseJog_native_ballcontrol_1.anim": "c2328cfbbd65cbb9f180e26288b40d879d5bca1c1bd85562b9be2ef90305deec",
+      "data/media/training/DefenseJog_native_movement_0.anim": "c4b94e25475d32cd5c97c82202d54c61dcef359b1321f7419ade7522d62b80b9",
+      "data/media/training/DefenseJog_native_movement_1.anim": "7e46a74e01682f11b2f3a2c0ea5f3f7adc9b811542f2d8a434551267b1e0f7bd",
+      "data/media/training/DefenseJog_native_movement_walk_0.anim": "5db7360056382b5ed3c85d0f05d2b23492ef0c5f88c5b703cc4056df6d7f676b",
+      "data/media/training/DefenseJog_native_movement_walk_1.anim": "c37648c7340b6f0dab06bfd15ca0baeaef43cd35297dfbcb77de6eb1c4a8271c"
+    },
+    "generation_deterministic": true,
+    "preserved_sources": {
+      "src/onthepitch/player/humanoid/humanoid_utils.cpp": "1479f450240b8abaa8bc4f6efadad4e938850fbb4941c3b44373daac6ce4b48d",
+      "data/media/training/DefenseJog_LoopF.anim": "d6ea625fd25b9a5c75a7ed25a3b7dc22da4397c60fab5c190891e11fd6bc1727",
+      "data/media/training/Chest_Stand.anim": "f9b5c03337dab5121c66004a4bbc1d0888f23b19596ad80f542decb76684572d"
+    }
+  },
+  "windows_package": {
+    "result": "passed",
+    "checks_passed": 92,
+    "dlls": 36,
+    "archive_sha256": "f9ba3ae39dc3bf72653d5ccde3d618f12e8d02c11882faeaf96ee69a64a4fba6",
+    "packaged_executable_sha256": "1b49bbe1c37a6c3e6d918e0124270bba145eb05a4a259f156e481d91a6402d9c",
+    "native_cycle_assets_in_both_archives": 6,
+    "archive_bytes": 33301192,
+    "archive_entries": 566
+  },
+  "reproduction": [
+    ". scripts/native-env.sh",
+    "cmake --build build -j2",
+    "FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_forward_cycle_smoke.py --build build --output /tmp/forward-cycle-check --display :135",
+    "FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_additive_animations_smoke.py --build build --output /tmp/native-regressions-check --display :136",
+    "FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_native_controls_smoke.py --build build --output /tmp/native-controls-check --display :134",
+    "ctest --test-dir build --output-on-failure",
+    "cmake --build build-windows-mingw2 -j2",
+    "python3 scripts/package-windows.py"
+  ],
+  "limits": [
+    "Gameplay checks cover the recorded scenarios; they do not prove absence of every possible animation or physics defect.",
+    "Windows x64 build, PE imports, DLLs, resources and ZIP CRC were checked; a rendered Windows 11 session with a physical controller was not available.",
+    "Historical loop-owned/pose-overlay experiment tests are superseded by the native-state tests above and are not counted."
+  ]
+}

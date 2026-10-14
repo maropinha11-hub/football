@@ -1,23 +1,21 @@
 # Condução nativa com animações adicionais
 
-A condução usa novamente as rotinas da versão `40bdfc5`, que restaurou o
-Gameplay Football aberto com os comandos aprovados em primeira pessoa.
-`GetBestCheatableAnimID`, `CalculateMovementSmuggle`, os vetores de domínio
-e os vetores de condução permanecem iguais àquela base. O jogador não
-espera uma posse paralela do loop FBX para começar a andar ou tocar a bola.
+A condução continua usando o seletor e os vetores do Gameplay Football.
+Na saída e com o analógico leve, usa as animações antigas. Com pressão forte
+para frente, entra nas duas metades consecutivas de `DefenseJog_LoopF`,
+registradas no próprio catálogo nativo. Não há sobreposição de pose antiga
+na hora do toque nem um segundo controlador arrastando a bola.
 
-O seletor continua decidindo os passos, a aproximação, a trajetória e os
-eventos de contato. `DefenseJog_LoopF` acompanha visualmente a condução sem
-RB, com fase contínua e transições de pose. Não aplica impulsos adicionais
-nem filtra os comandos de condução e recepção.
+Os marcadores são vinculados à pele do modelo e o deslocamento de aproximação
+calculado pelo motor é conservado. O impulso só ocorre quando a esfera alcança
+a região correspondente, com margem de 2,5 mm. Isso substitui a autorização
+anterior por proximidade de até 40 cm. Os vetores de condução e domínio
+continuam vindo de `humanoid_utils.cpp`; não é uma substituição da física
+por alvos de posse exclusivos do ciclo FBX.
 
-`Chest_Stand` foi acrescentado ao catálogo. Os domínios de peito antigos
-permanecem. Para chegadas compatíveis ao peito e jogador parado, o candidato
-novo tem preferência, passando pela mesma validação nativa de alcance e
-aproximação. O exercício F5 entrega uma bola mais direta nessa região.
-Após o contato de uma recepção, um comando pode sair da recuperação usando
-o seletor e a mistura de poses do motor. A recepção usa a previsão atual
-da bola; o atraso de reação não reaproveita a trajetória do exercício anterior.
+`Chest_Stand` permanece como domínio adicional. O seletor verifica a altura
+da chegada, e comandos podem interromper a recuperação após o contato.
+Quiques da própria condução não são tratados como passes externos.
 
 A câmera, as direções do controle, o RT reservado e o passo físico de 10 ms
 foram mantidos. Também permanecem a cadência aprovada, os exercícios de
@@ -31,7 +29,7 @@ controlador extra arrastando a bola até o próximo pé ou prendendo o jogador
 à posição capturada no início do domínio.
 
 Os resultados desta versão ficam em
-[additive-native-validation.json](additive-native-validation.json).
+[forward-cycle-validation.json](forward-cycle-validation.json).
 Os relatórios anteriores preservam o histórico das implementações substituídas.
 
 ```bash
@@ -39,7 +37,7 @@ source scripts/native-env.sh
 cmake --build build -j2
 ctest --test-dir build --output-on-failure
 FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_additive_animations_smoke.py --build build --output /tmp/football-additive-check --display :132
-FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_additive_animations_smoke.py --build build --output /tmp/football-additive-reference --display :133 --native-only
+FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_forward_cycle_smoke.py --build build --output /tmp/football-forward-cycle --display :135
 ```
 
 Use pastas de saída novas. As partidas renderizadas são verificadas no Linux

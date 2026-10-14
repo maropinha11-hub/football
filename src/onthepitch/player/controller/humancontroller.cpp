@@ -560,6 +560,11 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
         hid->GetButton(e_ButtonFunction_Sprint)?"training_sprint_speed_scale":"training_walk_speed_scale",
         hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
+    // The native solver quantizes speeds below this boundary as idle. Keep
+    // a light on-ball stick in its slow native gait instead of holding still.
+    if(TrainingEnabled() && match->TrainingHasBall() && !match->TrainingReceivingBall() &&
+        !hid->GetButton(e_ButtonFunction_Sprint) && rawInputVelocityFloat>.05f)
+      rawInputVelocityFloat=std::max(rawInputVelocityFloat,idleDribbleSwitch+.05f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still
   }
