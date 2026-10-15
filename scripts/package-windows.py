@@ -132,10 +132,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "LANCAMENTOS NO TECLADO, A PARTIR DA SUA POSICAO:\n"
         "F4: passe rasteiro. F5: bola para o peito. F6: cruzamento alto.\n"
         "F3/5 continua sendo treino de falta.\n"
-        "Chest_Stand e um dominio adicional no seletor original; os dominios\n"
-        "de peito anteriores continuam disponiveis. Solte os analogicos e\n"
-        "aperte F5 para testar. Depois do contato, mover ou solicitar uma\n"
-        "acao interrompe a recuperacao sem esperar os passos finais.\n\n"
+        "Chest_Stand e Chest_Run sao dominios adicionais no seletor original.\n"
+        "Os dominios anteriores continuam disponiveis. Solte o analogico e\n"
+        "aperte F5 para Stand; segure para frente e F5 para Run.\n"
+        "Os dois completam a animacao; o movimento retoma ao final.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
@@ -204,8 +204,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             + ("Restaurada a base aprovada 37a5543.\r\n" if approved_binary is not None else
              "Conducao aprovada como padrao, sem toggle em L3/T.\r\n"
              "R3 alterna as cameras para ver o corpo completo.\r\n"
-             "F4: passe recebido; F5: dominio de peito parado; F6: cruzamento.\r\n"
-             "Solte os analogicos e use F5 para testar Chest_Stand.\r\n"
+             "F4: passe recebido; F5: dominio de peito parado/avancando; F6: cruzamento.\r\n"
+             "F5 sem direcao: Stand; F5 segurando para frente: Run.\r\n"
              "RB permite correr. RT continua reservado.\r\n") +
             "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")

@@ -72,19 +72,20 @@ try:
             # from an older 100 ms telemetry sample before the pad file write.
             g.wait(lambda:g.frames()[-1]['move_active']==1)
             origin=g.frames()[-1];frames=g.advance(2400)
-            movement=[f for f in frames if f['t']<=origin['t']+500]
-            check('chest interruption '+str(delay)+' ms accepts movement promptly',
-                  math.dist(origin['player'][:2],movement[-1]['player'][:2])>.12 and frames[-1]['speed']>1,
-                  {'touch':touch,'input_ack_t':origin['t'],'travel_in_500ms_m':math.dist(origin['player'][:2],movement[-1]['player'][:2]),'ending_speed_mps':frames[-1]['speed']})
-            retained('chest interruption '+str(delay)+' ms keeps the ball',frames)
+            ends=[r for r in events(g.log.read_text()[start:],'TRAINING_ANIMATION_CHANGE')if r.get('old_chest')==1]
+            check('chest input after '+str(delay)+' ms waits for completion then moves',
+                  bool(ends) and all(r['old_frame']>=r['old_frames']-1 for r in ends) and frames[-1]['speed']>1,
+                  {'touch':touch,'input_ack_t':origin['t'],'completion_transitions':ends,'ending_speed_mps':frames[-1]['speed']})
+            retained('completed chest with input after '+str(delay)+' ms keeps the ball',frames)
         # Held lateral/back input turns relative to each new front. Judge
         # response and travelled path; a turn can naturally brake at the last sample.
         for name,stick in [('forward',(0,-1)),('backward',(0,1)),('lateral',(1,0))]:
             g.reset();start=len(g.log.read_text());g.keys(['F5'],True);g.keys(['F5'],False);g.advance(350)
             g.pad(*stick);frames=g.advance(1800)
-            check('movement during incoming chest ball: '+name+' stays responsive',
-                  max(f['speed']for f in frames[:6])>.5 and frames[-1]['function']!=3 and sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:]))>.5,
-                  {'ending_speed_mps':frames[-1]['speed'],'ending_function':frames[-1]['function'],'initial_peak_speed_mps':max(f['speed']for f in frames[:6]),'path_length_m':sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:])),'touches':events(g.log.read_text()[start:],'TRAINING_ACTION_TOUCH'),
+            ends=[r for r in events(g.log.read_text()[start:],'TRAINING_ANIMATION_CHANGE')if r.get('old_chest')==1]
+            check('input during incoming chest ball: '+name+' waits for the selected reception then moves',
+                  bool(ends) and all(r['old_frame']>=r['old_frames']-1 for r in ends) and frames[-1]['function']!=3 and sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:]))>.5,
+                  {'ending_speed_mps':frames[-1]['speed'],'ending_function':frames[-1]['function'],'completion_transitions':ends,'path_length_m':sum(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(frames,frames[1:])),'touches':events(g.log.read_text()[start:],'TRAINING_ACTION_TOUCH'),
                    'body_contacts':events(g.log.read_text()[start:],'TRAINING_BODY_TOUCH')})
         log=g.log.read_text();poses=events(log,'TRAINING_NATIVE_DRIBBLE_POSE')
         if not a.native_only:

@@ -14,7 +14,10 @@ O ciclo novo foi registrado como animações nativas complementares, para
 os dois lados da passada e as velocidades de locomoção suportadas pelo motor.
 A segunda metade continua a primeira, em vez de sobrepor uma pose velha
 a cada toque. A mistura normal do motor faz a entrada e a saída.
-As rotações dos ossos e seus comprimentos permanecem os da adaptação aprovada;
+Quando a bola ainda não precisa de outro toque, a variante de locomoção
+continua a mesma passada. A assistência não acelera esse intervalo como uma
+corrida sem RB. Após uma corrida, a recuperação nativa termina antes de
+entrar no novo ciclo: ele exige bola próxima e velocidade relativa controlada. As rotações dos ossos e seus comprimentos permanecem os da adaptação aprovada;
 não há um pé sendo esticado rapidamente até a bola.
 
 A entrada tem 400 ms de estabilização depois de atingir a faixa de movimento.
@@ -30,6 +33,10 @@ externa ou uma troca indevida de animação.
 
 ## Contatos na bola
 
+Nos chutes e passes com o pé, a aproximação também confere a superfície na
+altura prevista da bola. Uma correção pequena do jogador inteiro é distribuída
+pela aproximação nativa, sem reposicionar a perna no último instante.
+
 Os eventos foram ligados à superfície do modelo, incluindo as chuteiras,
 na pose correspondente de cada animação. O cálculo nativo de aproximação
 conserva o deslocamento necessário para chegar a essa superfície. Um impulso
@@ -44,10 +51,17 @@ até um alvo do loop, e a animação não possui um controle paralelo de posse.
 
 ## Recepção e exercícios
 
-`Chest_Stand` continua como candidato adicional aos domínios de peito originais.
-A seleção verifica a altura da chegada para não escolher um domínio com a
-cabeça quando a bola vai encontrar o peito. Após o contato, mover ou solicitar
-uma ação permite sair da recuperação pela transição do motor.
+`Chest_Stand` e `Chest_Run` são candidatos adicionais; os domínios nativos
+continuam disponíveis. Sem direção no analógico, a chegada ao peito pode
+selecionar Stand. Com direção para frente, pode selecionar Run. O seletor
+confere a trajetória, a altura e o alcance; o impulso exige contato no tronco.
+Ambos completam sua animação antes de liberar a próxima jogada. Segurar uma
+direção durante o domínio não corta o clip: o movimento retoma ao final.
+Run conserva o deslocamento da fonte e continua para a bola.
+
+`Chest_Run.fbx` tem 28 quadros a 30 Hz, convertido em 91 amostras a 100 Hz.
+A fonte não contém trilha de bola: o marcador do quadro 10 é de integração
+e é ligado à superfície do peito no carregamento, não recuperado do FBX.
 
 | Tecla | Exercício |
 | --- | --- |
@@ -72,10 +86,13 @@ cópias retimadas da condução antiga para o analógico leve.
 entrada na nova condução, continuidade das duas metades, estabilidade com
 variação do analógico e encontro entre bola e chuteira. Ele também compara
 contatos físicos com amostras da malha realmente renderizada.
-Os testes de recepção e ações verificam as transições do restante da gameplay.
+`tests/training_reception_variants_smoke.py` verifica os dois domínios,
+seu término com comandos mantidos e a retomada do movimento.
+`tests/training_running_actions_smoke.py` verifica chutes e cruzamentos
+em corrida com mira para frente, lateral e diagonal.
 A resposta ao comando é medida após a confirmação da entrada pelo SDL;
 o teclado dos testes usa XTEST em uma sessão X11 isolada.
-Resultados desta versão: [forward-cycle-validation.json](forward-cycle-validation.json).
+Resultados desta versão: [chest-run-validation.json](chest-run-validation.json).
 
 Os testes renderizados usam Linux e controle Xbox virtual em SDL. A compilação,
 as DLLs e a integridade do pacote Windows são verificadas separadamente;

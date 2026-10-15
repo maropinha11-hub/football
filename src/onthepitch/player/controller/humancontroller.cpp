@@ -318,6 +318,18 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     assert(command.desiredFunctionType == e_FunctionType_Movement); // make sure this is the movement command (is probably guaranteed, check out _MovementCommand)
 
     if (TrainingEnabled()) {
+      // Assistance may request a faster interception than the raw stick.
+      // Keep small reception adjustments small, and do not let that fallback
+      // sprint after every forward-loop touch while RB is released.
+      const Vector3 stick=hid->GetDirection();
+      if(actionMode==0 && match->TrainingReceivingBall())
+        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,1.4f);
+      else if(actionMode==0 && match->TrainingHasBall() && !hid->GetButton(e_ButtonFunction_Sprint) &&
+          player->GetHumanoid()->GetCurrentAnim()->anim->GetVariable("training_dribble")=="true" &&
+          (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.1f &&
+          (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f &&
+          stick.coords[1]>.72f && std::fabs(stick.coords[0])<.20f)
+        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,inputVelocityFloat);
       // Dribbling still needs the original movement assistance between touches,
       // especially when a turn cannot immediately use a ball-control animation.
       // Solo training always designates this player, so disable the match AI's
@@ -560,6 +572,8 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
         hid->GetButton(e_ButtonFunction_Sprint)?"training_sprint_speed_scale":"training_walk_speed_scale",
         hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
+    if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0)
+      rawInputVelocityFloat=std::min(rawInputVelocityFloat,1.4f);
     // The native solver quantizes speeds below this boundary as idle. Keep
     // a light on-ball stick in its slow native gait instead of holding still.
     if(TrainingEnabled() && match->TrainingHasBall() && !match->TrainingReceivingBall() &&

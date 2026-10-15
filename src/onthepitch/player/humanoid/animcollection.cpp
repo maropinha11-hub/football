@@ -515,15 +515,18 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
   // Additional reception candidate: the existing native chest clips remain
   // in the collection, and the original trajectory/approach selector owns it.
-  if(TrainingEnabled() && boost::filesystem::exists("media/training/Chest_Stand.anim")) {
+  for(const std::string mode:{"Stand","Run"})if(TrainingEnabled() &&
+      boost::filesystem::exists("media/training/Chest_"+mode+".anim")) {
     Animation *animation=new Animation();
     boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
     animation->AddExtension("football",extension);
-    animation->Load("media/training/Chest_Stand.anim");
-    animation->SetName("training/Chest_Stand");
+    animation->Load("media/training/Chest_"+mode+".anim");
+    animation->SetName("training/Chest_"+mode);
     animation->SetVariable("type","trap");
     animation->SetVariable("baseanim","false");
     animation->SetVariable("added_chest","true");
+    animation->SetVariable("reception_mode",mode=="Stand"?"stand":"forward");
+    animation->SetVariable("committed_reception","true");
     animation->SetVariable("incomingballdirection","0.0, 0.980581, -0.196116");
     animation->SetVariable("incomingballdirection_maxdeviation","0.7");
     // Imported roots contain absolute pelvis height; native clips store the
@@ -536,9 +539,9 @@ void AnimCollection::Load(boost::filesystem::path directory) {
     // the native football extension (ball radius included).
     extension->SetKeyFrame(frame,QUATERNION_IDENTITY,Vector3(-.028f,-.302f,1.286f));
     _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
-    printf("TRAINING_CHEST_CANDIDATE frames=%d contact=%s part=%s native_preserved=1\n",
+    printf("TRAINING_CHEST_CANDIDATE frames=%d contact=%s part=%s native_preserved=1 mode=%s\n",
       animation->GetFrameCount(),animation->GetVariable("touchframe").c_str(),
-      animation->GetVariable("touch_bodypart").c_str());
+      animation->GetVariable("touch_bodypart").c_str(),mode.c_str());
   }
 
   //Log(e_Notice, "AnimCollection", "Load", "Deleting base anim");
@@ -596,6 +599,12 @@ void AnimCollection::CrudeSelection(DataSet &dataSet, const CrudeSelectionQuery 
       if (query.byIncomingVelocity == true) {
 
         e_Velocity animIncomingVelocity = FloatToEnumVelocity(animations.at(i)->GetIncomingVelocity());
+        // The additional forward reception begins at a near-standstill, but
+        // its approach can also accept a short step toward an incoming pass.
+        // Reach and trajectory are still checked by the native contact solver.
+        if(animations.at(i)->GetVariable("reception_mode")=="forward" &&
+            query.incomingVelocity!=e_Velocity_Sprint)
+          animIncomingVelocity=query.incomingVelocity;
         // BallControl queries intentionally use the walk input class. The
         // slow copy retains that compatibility with a slower physical track.
         if(animations.at(i)->GetVariable("training_slow_dribble")=="true" &&

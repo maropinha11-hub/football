@@ -11,7 +11,7 @@ individual file notices. The Alegreya font has its own OFL license in data.
 Modifications add solo training, robust SDL2 controller handling,
 build/start instructions, diagnostics and validation.
 Player models, field resources and animation files are retained from the
-referenced fork. The additional DefenseJog_LoopF and Chest_Stand FBX
+referenced fork. The additional DefenseJog_LoopF, Chest_Stand and Chest_Run FBX
 animations were supplied by the repository owner. Their native-rig
 conversions accompany the training packages; source provenance and hashes
 are recorded beside the clips in data/media/training.

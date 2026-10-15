@@ -2,6 +2,7 @@
 #include "humanoidbase.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
+#include "../controller/humancontroller.hpp"
 #include "../../../main.hpp"
 #include "humanoid_utils.hpp"
 #include "utils/animationextensions/footballanimationextension.hpp"
@@ -109,7 +110,25 @@ void HumanoidBase::CaptureContactMesh() {
       if(chest)probe=positions[1]+global[1]*Vector3(0,-.4f,.30f)*zMultiplier;
       Vector3 surface;if(ContactSurface(probe,chest?"chest":part,global,positions,&surface)>50)continue;
       const Vector3 normal=(probe-surface).GetNormalized(Vector3(0,-1,0));
-      Vector3 point=surface+normal*.1105f;point.coords[2]/=zMultiplier;
+      Vector3 point=surface+normal*.1105f;
+      const std::string type=animation->GetAnimType();
+      if(part.find("foot")!=std::string::npos &&
+          (type=="shot" || type=="pass" || type=="shortpass" || type=="longpass" || type=="highpass")) {
+        // Keep the authored ball height. A radial projection from a sloped
+        // shoe can raise a ground-ball marker, making a valid side kick miss.
+        Vector3 origin=surface;origin.coords[2]=probe.coords[2];
+        const Vector3 outward=normal.Get2D().GetNormalized(Vector3(0,-1,0));
+        float low=0,high=.35f;
+        if(ContactSurface(origin,part,global,positions)<.0005f &&
+            ContactSurface(origin+outward*high,part,global,positions)>.0005f) {
+          for(unsigned step=0;step<12;++step) {
+            const float middle=(low+high)*.5f;
+            if(ContactSurface(origin+outward*middle,part,global,positions)>.0005f)high=middle;else low=middle;
+          }
+          point=origin+outward*((low+high)*.5f);
+        }
+      }
+      point.coords[2]/=zMultiplier;
       entry.second.position=point;
     }
   }
@@ -207,10 +226,21 @@ void HumanoidBase::FitContactLeg(unsigned side,const Vector3 &offset,Quaternion 
 
 Vector3 HumanoidBase::GetStandingChestTarget() const {
   if(!chestAnimation)return spatialState.position+spatialState.bodyDirectionVec*.22f+Vector3(0,0,1.4f);
+  const Animation *animation=chestAnimation.get();float phase=chestContactFrame;bool source=true;
+  bool forward=false;
+  if(player->GetExternalController()) {
+    const Vector3 stick=static_cast<HumanController*>(player->GetExternalController())->GetHIDevice()->GetDirection();
+    forward=stick.coords[1]>.15f && std::fabs(stick.coords[0])<.35f;
+  }
+  for(const Animation *candidate:anims->GetAnimations())
+    if(candidate->GetVariable("added_chest")=="true" &&
+        (candidate->GetVariable("reception_mode")=="forward")==forward) {
+      animation=candidate;phase=std::atof(candidate->GetVariable("touchframe").c_str());source=false;break;
+    }
   Quaternion local[13],global[13];Vector3 positions[13];
   const float angle=spatialState.angle;
   const Vector3 root=spatialState.position;
-  SampleContactAnimation(chestAnimation.get(),chestContactFrame,root,angle,true,local,global,positions);
+  SampleContactAnimation(animation,phase,root,angle,source,local,global,positions);
   Quaternion facing;facing.SetAngleAxis(angle,Vector3(0,0,1));
   const Vector3 probe=positions[1]+global[1]*Vector3(0,-.4f,.30f)*zMultiplier;
   Vector3 surface;ContactSurface(probe,"chest",global,positions,&surface);

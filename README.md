@@ -10,17 +10,20 @@ Carreira e partidas online ficam para etapas posteriores.
 
 O [pacote Windows completo](artifacts/football-training-windows-x86_64.zip)
 inclui a condução aprovada `DefenseJog_LoopF` como padrão e o novo domínio
-parado `Chest_Stand`, adaptados ao esqueleto nativo. Extraia em uma pasta nova
+parado `Chest_Stand` e o domínio avançando `Chest_Run`, adaptados ao
+esqueleto nativo. Extraia em uma pasta nova
 e execute `run-training.bat`; L3 e T não alternam mais a condução.
 Use **F4** para receber um passe rasteiro, **F5** para uma bola na altura do
 peito e **F6** para um cruzamento alto. Esses lançamentos começam à frente do
 jogador, na posição atual do campo. R3/Tab alterna a câmera para ver o corpo.
 
-O domínio novo é automático quando o jogador está parado, sem solicitar
-passe/chute, diante de uma bola que chega ao peito. O clip toca uma vez e
-volta à gameplay; as outras recepções permanecem disponíveis.
-A condução sem RB tem velocidade normal de 3,6 m/s, com toques espaçados
-pelo pé direito. A corrida fica 10% mais lenta. A cabeça acompanha a câmera
+O domínio parado pode ser selecionado sem direção no analógico; o novo
+domínio avançando pode ser selecionado com direção para frente, diante de
+uma bola que chega ao peito. Os dois clips completam sua animação antes
+da próxima jogada; as outras recepções permanecem disponíveis.
+A condução sem RB usa o ciclo aprovado com o analógico forte para frente
+e a condução antiga com o analógico leve. A corrida fica 10% mais lenta.
+A cabeça acompanha a câmera
 e o tronco mantém uma pequena inclinação para frente. O relógio
 físico continua em tempo real. O quique no treino passa de 0,62 a 0,70,
 ajustável em `training_ground_bounce` para ensaios de gramado.
@@ -194,7 +197,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Cobrança de falta parada | LB + D-pad baixo | 5 ou F3 |
 | Receber passe rasteiro / jogar de primeira | LB + D-pad direita | 6 |
 | Receber passe na posição atual | — | F4 |
-| Receber no peito, parado | — | F5 |
+| Receber no peito, parado ou avançando | — | F5 |
 | Receber cruzamento alto | — | F6 |
 | Sair | — | Esc ou F12 |
 

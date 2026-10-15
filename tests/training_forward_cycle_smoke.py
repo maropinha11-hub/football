@@ -17,6 +17,7 @@ try:
   state=rows(s,'TRAINING_DRIBBLE_STATE')
   check('light stick moves with the original gait',math.dist(origin['player'][:2],f[-1]['player'][:2])>.8 and f[-1]['speed']>.5 and bool(state)and not any(x['new_cycle']for x in state),{'travel_m':math.dist(origin['player'][:2],f[-1]['player'][:2]),'ending_speed_mps':f[-1]['speed'],'states':state})
   retain('light stick retains ball',f)
+  light_speed=f[-1]['speed'];light_peak=max(x['ball'][0]-x['player'][0]for x in f)
   start=len(g.log.read_text());g.pad(0,-1);f=g.advance(5000);s=g.log.read_text()[start:]
   state=rows(s,'TRAINING_DRIBBLE_STATE');new=[x for x in state if x['new_cycle']]
   check('full stick starts natively and enters the new gait',bool(new)and any(not x['new_cycle']for x in state[:3]),{'first_states':state[:9]})
@@ -36,6 +37,10 @@ try:
    evidence.append({'t':touch['t'],'closest_rendered_gap_m':gap})
   check('visible shoe follows the actual impacts',bool(evidence)and all(x['closest_rendered_gap_m']<.085 for x in evidence),evidence)
   retain('full loop retains ball',f)
+  changes=rows(s,'TRAINING_ANIMATION_CHANGE');boundaries=[x for x in changes if x['old_cycle']and x['new_cycle']]
+  check('steady gait completes each half before changing animation',len(boundaries)>5 and all(x['old_frame']>=x['old_frames']-1 for x in boundaries),boundaries)
+  full_peak=max(x['ball'][0]-x['player'][0]for x in f)
+  check('strong forward gait is faster and pushes slightly farther than light input',f[-1]['speed']>light_speed*1.05 and full_peak>light_peak+.025,{'light_speed_mps':light_speed,'full_speed_mps':f[-1]['speed'],'light_peak_lead_m':light_peak,'full_peak_lead_m':full_peak})
   # Strong-stick noise must not toggle the gait on each threshold crossing.
   start=len(g.log.read_text());f=[]
   for amount in [.87,.96,.85,.94,.88,.97]:g.pad(0,-amount);f+=g.advance(250)
@@ -51,6 +56,9 @@ try:
   log=g.log.read_text();skin=rows(log,'TRAINING_SKIN_CONTACT');accepted=[x for x in skin if x['accepted']]
   touches=rows(log,'TRAINING_ACTION_TOUCH');times={x['t']for x in accepted}
   check('every authored impulse is guarded by real skin contact',len(touches)>10 and all(x['t']in times for x in touches)and all(x['gap']<=.00251 for x in accepted),{'impulses':len(touches),'measured_contacts':len(accepted),'maximum_accepted_gap_m':max((x['gap']for x in accepted),default=None)})
+  for name,stick in [('right',(1,0)),('reverse',(0,1))]:
+   g.reset();g.pad(0,-1);g.advance(1800);g.pad(*stick);f=g.advance(350);g.pad(0,-1);f+=g.advance(1800)
+   retain('full gait '+name+' turn returns to native ball control',f)
   g.keys(['Tab'],True);g.keys(['Tab'],False);g.keys(['Tab'],True);g.keys(['Tab'],False);g.advance(500)
   subprocess.run(['import','-window',g.window,str(a.output/'forward-cycle.png')],env=g.env,check=True)
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)

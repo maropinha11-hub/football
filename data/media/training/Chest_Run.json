@@ -1,0 +1,44 @@
+{
+  "source": "Chest_Run.fbx",
+  "source_sha256": "e885cdf4a5b2c5d58d4e9eb9b7bb50e0c7ce8662d984c27b582285ec17456a3d",
+  "blender": "4.3.2",
+  "source_fps": 30.0,
+  "source_frame_range": [
+    1.0,
+    28.0
+  ],
+  "duration_seconds": 0.9,
+  "baked_fps": 100,
+  "samples": 91,
+  "source_travel_m": 0.4267623710716202,
+  "source_speed_mps": 0.4741804123018002,
+  "native_bones": [
+    "body",
+    "middle",
+    "neck",
+    "left_shoulder",
+    "left_elbow",
+    "right_shoulder",
+    "right_elbow",
+    "left_thigh",
+    "left_knee",
+    "left_ankle",
+    "right_thigh",
+    "right_knee",
+    "right_ankle"
+  ],
+  "root_xy_imported": true,
+  "ball_events_in_source": false,
+  "loop": false,
+  "contact_source_frame": 10.0,
+  "contact_marker_origin": "integration marker; FBX contains no ball track",
+  "maximum_segment_direction_error": 4.539364060440262e-07,
+  "maximum_source_loop_angle_error_rad": 0.590435802936554,
+  "minimum_foot_clearance_m": 0.008000000000000007,
+  "minimum_toe_forward_dot": -0.3493167459964752,
+  "native_root_height_range_m": [
+    0.7967042760848999,
+    1.0588016347885132
+  ],
+  "output_sha256": "d75f9df8ea7f579a2300b88551e24c342ff95af043b4afc2c8ba21f796a1d903"
+}

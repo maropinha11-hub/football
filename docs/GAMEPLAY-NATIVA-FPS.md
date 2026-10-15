@@ -13,8 +13,9 @@ anterior por proximidade de até 40 cm. Os vetores de condução e domínio
 continuam vindo de `humanoid_utils.cpp`; não é uma substituição da física
 por alvos de posse exclusivos do ciclo FBX.
 
-`Chest_Stand` permanece como domínio adicional. O seletor verifica a altura
-da chegada, e comandos podem interromper a recuperação após o contato.
+`Chest_Stand` e `Chest_Run` são domínios adicionais. A chegada ao peito
+e o comando para frente distinguem as duas opções. Ambos completam o clip
+antes da próxima jogada; comandos mantidos retomam o movimento ao final.
 Quiques da própria condução não são tratados como passes externos.
 
 A câmera, as direções do controle, o RT reservado e o passo físico de 10 ms
@@ -29,7 +30,7 @@ controlador extra arrastando a bola até o próximo pé ou prendendo o jogador
 à posição capturada no início do domínio.
 
 Os resultados desta versão ficam em
-[forward-cycle-validation.json](forward-cycle-validation.json).
+[chest-run-validation.json](chest-run-validation.json).
 Os relatórios anteriores preservam o histórico das implementações substituídas.
 
 ```bash
@@ -37,7 +38,10 @@ source scripts/native-env.sh
 cmake --build build -j2
 ctest --test-dir build --output-on-failure
 FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_additive_animations_smoke.py --build build --output /tmp/football-additive-check --display :132
+FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_reception_variants_smoke.py --build build --output /tmp/football-receptions-check --display :137
 FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_forward_cycle_smoke.py --build build --output /tmp/football-forward-cycle --display :135
+FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_running_actions_smoke.py --build build --output /tmp/football-running-actions --display :138
+FOOTBALL_TEST_GL_THREADS=1 python3 tests/training_native_controls_smoke.py --build build --output /tmp/football-native-controls --display :134
 ```
 
 Use pastas de saída novas. As partidas renderizadas são verificadas no Linux

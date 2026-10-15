@@ -89,7 +89,7 @@ void Match::LaunchTrainingBall(int delivery) {
   }
   ball->SetMomentum(velocity);
   SpamMessage(delivery==0?"Passe rasteiro recebido | F4: repetir":
-      delivery==1?"Dominio de peito parado | F5: repetir":"Cruzamento alto | F6: repetir",4500);
+      delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
   printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f]\n",
     delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2]);
   fflush(stdout);

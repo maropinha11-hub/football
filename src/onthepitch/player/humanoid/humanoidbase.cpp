@@ -916,7 +916,9 @@ void HumanoidBase::ProcessDribbleLoop() {
     const float threshold=dribbleTrialPhase>.5f?.72f:.84f;
     eligible=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
       strength>threshold && (!match->IsFirstPerson() || (stick.coords[1]>threshold && std::fabs(stick.coords[0])<.20f)) &&
-      (dribbleTrialPhase>.5f || spatialState.movement.GetLength()>2.5f);
+      (dribbleTrialPhase>.5f || spatialState.movement.GetLength()>2.5f) &&
+      (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<(dribbleTrialPhase>.5f?1.1f:.95f) &&
+      (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f;
   }
   const float dt=match->GetPause()?0:.01f;
   dribbleTrialBlend=clamp(dribbleTrialBlend+(eligible?1:-1)*dt/.40f,0.0f,1.0f);
@@ -2036,6 +2038,9 @@ void HumanoidBase::CalculateSpatialState() {
 
   Vector3 quatDirection; quatDirection = bodyOrientation;
 
+  // The forward loop's pelvis sway is visual, not a change in travel heading.
+  // Use the same semantic heading as its incoming/outgoing catalogue angles.
+  if(TrainingEnabled() && currentAnim->anim->GetVariable("training_dribble")=="true")z=0;
   Vector3 bodyDirectionVec = Vector3(0, -1, 0).GetRotated2D(z + startAngle + currentAnim->rotationSmuggleOffset);
 
   spatialState.floatVelocity = spatialState.movement.GetLength();
