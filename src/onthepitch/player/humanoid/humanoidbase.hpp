@@ -162,6 +162,7 @@ struct AnimApplyBuffer {
     dribbleTrialLegBlend = src.dribbleTrialLegBlend;
     dribbleTrialFunction = src.dribbleTrialFunction;
     dribbleTrialFacing = src.dribbleTrialFacing;
+    upperReception = src.upperReception; upperPhase=src.upperPhase; upperWeight=src.upperWeight;
   }
   Animation *anim;
   int frameNum;
@@ -172,6 +173,8 @@ struct AnimApplyBuffer {
   Vector3 position;
   radian orientation;
   std::map < std::string, BiasedOffset > offsets;
+  Animation *upperReception=nullptr;
+  float upperPhase=0,upperWeight=0;
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
@@ -239,6 +242,11 @@ class HumanoidBase {
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
     void UpdateTrainingContactPose();
+    bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
+    void TickUpperReception();
+    bool StartUpperReception(Animation *clip,int contactFrame);
+    void BlendUpperReception(Animation *clip,float phase,float weight,radian facing,Quaternion *local) const;
+    void PutUpperReception();
     Vector3 GetStandingChestTarget() const;
     void CaptureContactMesh();
     void SampleContactAnimation(const Animation *animation, float phase, const Vector3 &root,
@@ -376,6 +384,11 @@ class HumanoidBase {
     std::unique_ptr<Animation> chestAnimation;
     float chestContactFrame = 33.333f;
     Vector3 contactPreviousBall;
+    Animation *upperReceptionClip=nullptr;
+    unsigned long upperReceptionStarted_ms=0;
+    float upperReceptionPhase=0,upperReceptionWeight=0;
+    int upperReceptionContactFrame=0,upperReceptionEndFrame=0;
+    bool upperReceptionTouchMade=false;
     bool contactPreviousBallValid=false;
     unsigned long bodyContactUntil_ms=0;
     TemporalSmoother<Vector3> buf_trainingLook;

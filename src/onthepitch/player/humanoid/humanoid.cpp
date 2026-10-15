@@ -118,6 +118,7 @@ void Humanoid::Process() {
     currentMentalImage = match->GetMentalImage(instaDoorheb ? 0 : CastPlayer()->GetController()->GetReactionTime_ms());
   }
 
+  TickUpperReception();
   CalculateSpatialState();
   UpdateTrainingContactPose();
   spatialState.positionOffsetMovement = Vector3(0);
@@ -209,10 +210,6 @@ void Humanoid::Process() {
 
   // okay, see if we need to requeue
 
-  const bool committedReception=TrainingEnabled() &&
-    currentAnim->anim->GetVariable("committed_reception")=="true" &&
-    currentAnim->frameNum<currentAnim->anim->GetFrameCount()-1;
-  if(committedReception)mayReQueue=false;
   if(TrainingEnabled() && currentAnim->anim->GetVariable("training_dribble")=="true" &&
       player->GetExternalController()) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
@@ -226,9 +223,9 @@ void Humanoid::Process() {
     interruptAnim = e_InterruptAnim_ReQueue;
   }
 
-  // Native receptions keep their original recovery. The additional clips
-  // complete the authored motion before returning to native selection/blending.
-  if(TrainingEnabled() && !committedReception && currentAnim->functionType==e_FunctionType_Trap &&
+  // Native foot receptions keep their usual recovery. The added chest
+  // gestures are independent layers and never own this locomotion state.
+  if(TrainingEnabled() && currentAnim->functionType==e_FunctionType_Trap &&
       currentAnim->touchMade && player->GetExternalController()) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
     if(human->GetFloatVelocity()>.05f || human->GetActionMode()!=0)
@@ -396,7 +393,14 @@ void Humanoid::Process() {
     Ball *ball=match->GetBall();Vector3 surface;
     const Vector3 point=ball->Predict(0);
     const float gap=ContactSurface(point,part,contactGlobal,contactPositions,&surface);
-    const bool accepted=gap<=.0025f;
+    bool cadence=true;
+    if(currentAnim->functionType==e_FunctionType_BallControl && player->GetExternalController() &&
+        CastPlayer()->GetLastTouchType()==e_TouchType_Intentional_Kicked) {
+      auto *human=static_cast<HumanController*>(player->GetExternalController());
+      const unsigned interval=human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint)?300:420;
+      cadence=match->GetActualTime_ms()>=CastPlayer()->GetLastTouchTime_ms()+interval;
+    }
+    const bool accepted=gap<=.0025f && (part=="chest" || cadence);
     if(accepted && gap<0) {
       const Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
       ball->ResolveBodyContact(surface+normal*.1105f,ball->GetMovement());
@@ -406,8 +410,21 @@ void Humanoid::Process() {
         part.c_str(),gap,accepted?1:0,currentAnim->anim->GetVariable("training_dribble")=="true"?1:0);
     return accepted;
   };
+  if(upperReceptionClip && !upperReceptionTouchMade &&
+      upperReceptionWeight>.85f && upperReceptionPhase<=upperReceptionContactFrame+6 &&
+      physicalContact("chest")) {
+    upperReceptionTouchMade=true;
+    radian xRot=0,yRot=0;
+    const Vector3 touch=GetTrapVector(match,CastPlayer(),nextStartPos,nextStartAngle,spatialState.angle,
+      CalculateOutgoingMovement(currentAnim->positions),currentAnim,currentAnim->frameNum,spatialState,decayingPositionOffset,xRot,yRot);
+    match->GetBall()->Touch(touch);match->GetBall()->SetRotation(xRot,yRot,0,.5f);
+    match->NotifyTrainingTouch(e_FunctionType_Trap,false);
+    team->SetLastTouchPlayer(CastPlayer(),e_TouchType_Intentional_Nonkicked);CastPlayer()->UpdatePossessionStats(false);
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("TRAINING_ACTION_TOUCH t=%lu part=trunk function=3 z=%.4f upper_layer=1\n",match->GetActualTime_ms(),match->GetBall()->Predict(0).coords[2]);
+  }
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (enableControlledBallCollisions && controlledBallCollision && currentAnim->touchFrame == -1 && physicalContact("")) {
+  if (enableControlledBallCollisions && !UpperReceptionActive() && controlledBallCollision && currentAnim->touchFrame == -1 && physicalContact("")) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -1468,20 +1485,26 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     preferSlowGait=locomotion && strength>.01f && strength<=.72f;
     preferNewGait=locomotion && strength>.72f && dribbleTrialPhase>.5f &&
       (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.1f &&
+      (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetDotProduct(spatialState.directionVec)>.10f &&
       (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f &&
       human->GetHIDevice()->GetDirection().coords[1]>.72f && std::fabs(human->GetHIDevice()->GetDirection().coords[0])<.20f &&
       GetConfiguration()->GetBool("training_fbx_dribble",true);
     const Vector3 stick=human->GetHIDevice()->GetDirection();
     const bool forwardReception=stick.coords[1]>.15f && std::fabs(stick.coords[0])<.35f;
     const bool stillReception=strength<.10f;
+    const Vector3 ballDelta=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D();
+    const bool coasting=ballDelta.GetDotProduct((match->GetBall()->GetMovement()-player->GetMovement()).Get2D())>.03f;
     dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id) {
       Animation *anim=anims->GetAnim(id);
-      return (preferNewGait && command.desiredFunctionType==e_FunctionType_BallControl &&
+      return (preferNewGait && coasting && command.desiredFunctionType==e_FunctionType_BallControl) ||
+        (command.desiredFunctionType==e_FunctionType_Trap && anim->GetVariable("added_chest")!="true" &&
+          anim->GetVariable("touch_bodypart")=="trunk") ||
+        (preferNewGait && command.desiredFunctionType==e_FunctionType_BallControl &&
           anim->GetVariable("training_dribble")!="true") ||
-        (anim->GetVariable("training_dribble")=="true" && !preferNewGait) ||
+        (anim->GetVariable("training_dribble")=="true" && (!preferNewGait || command.desiredFunctionType==e_FunctionType_Movement)) ||
         (anim->GetVariable("training_slow_dribble")=="true" && !preferSlowGait) ||
         (anim->GetVariable("added_chest")=="true" &&
-          !(anim->GetVariable("reception_mode")=="forward"?forwardReception:stillReception));
+          (UpperReceptionActive() || !(anim->GetVariable("reception_mode")=="forward"?forwardReception:stillReception)));
     }),dataSet.end());
   }
 
@@ -1798,16 +1821,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   if(TrainingEnabled() && command.desiredFunctionType==e_FunctionType_Trap)
     std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("added_chest")=="true";});
   if(preferNewGait &&
-      (command.desiredFunctionType==e_FunctionType_Movement || command.desiredFunctionType==e_FunctionType_BallControl)) {
-    // A step without an upcoming ball impact is still part of the same
-    // authored gait. Preserve its movement variants even when the match's
-    // generic velocity/look filters preferred another locomotion quadrant.
-    if(command.desiredFunctionType==e_FunctionType_Movement)
-      for(unsigned id=0;id<anims->GetAnimations().size();++id) {
-        Animation *candidate=anims->GetAnim(id);
-        if(candidate->GetVariable("training_dribble")=="true" && candidate->GetAnimType()=="movement" &&
-            std::find(dataSet.begin(),dataSet.end(),int(id))==dataSet.end())dataSet.push_back(id);
-      }
+      command.desiredFunctionType==e_FunctionType_BallControl) {
     const bool continuing=currentAnim->anim->GetVariable("training_dribble")=="true";
     const float phase=continuing ? std::fmod(std::atof(currentAnim->anim->GetVariable("source_phase_start").c_str())+
       currentAnim->frameNum*std::atof(currentAnim->anim->GetVariable("source_phase_scale").c_str()),70.0f) : -1;
@@ -1918,6 +1932,12 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     }
   }
 
+
+  // The added chest clip is an upper-body layer, never the locomotion clip.
+  if(selectedAnimID>=0 && TrainingEnabled() && anims->GetAnim(selectedAnimID)->GetVariable("added_chest")=="true") {
+    StartUpperReception(anims->GetAnim(selectedAnimID),touchFrame_tmp);
+    return false; // Continue the native command queue for the legs/root.
+  }
 
   // make it so
 
@@ -2267,6 +2287,15 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
       bool exists = footballExtension->GetTouch(touchIDs[touchNum], animBallPos, animTouchFrame);
       assert(exists);
+      if(TrainingEnabled() && functionType==e_FunctionType_BallControl && player->GetExternalController() &&
+          CastPlayer()->GetLastTouchType()==e_TouchType_Intentional_Kicked) {
+        auto *human=static_cast<HumanController*>(player->GetExternalController());
+        const unsigned interval=human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint)?300:420;
+        if(match->GetActualTime_ms()+animTouchFrame*10<CastPlayer()->GetLastTouchTime_ms()+interval+30) {
+          touchNum++;continue;
+        }
+      }
+
 
       //if (player->GetDebug()) printf("anim: %s, animTouchFrame: %i, touchIDs[touchNum]: %i, touchNum: %i, totalTouches: %i, defaultTouchFrame: %i\n", anim->GetName().c_str(), animTouchFrame, touchIDs[touchNum], touchNum, totalTouches, defaultTouchFrame);
 
@@ -2312,10 +2341,11 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       // now pick the ballPos from the previous 9ms that is closest to animBallPos. this is to emulate a continuous 'close enough?'-check instead of a 'single moment' check.
       // Real mesh contacts must aim at the same physics instant as the pose.
       // The legacy +/- millisecond proxy shifts a fast ball beyond the shoe.
-      const bool exactFootKick=TrainingEnabled() && anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos &&
-        (functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
+      const bool exactBodyStrike=TrainingEnabled() &&
+        (anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos || anim->GetVariable("touch_bodypart")=="head") &&
+        (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
          functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot);
-      if (useContinuousBallCheck && !exactFootKick) {
+      if (useContinuousBallCheck && !exactBodyStrike) {
         Line ballLine(ballPos - ballMovement * 0.006f, ballPos + ballMovement * 0.003f);
         float u = clamp(ballLine.GetClosestToPoint(animBallPos), 0.0f, 1.0f);
         ballPos = ballLine.GetVertex(0) + (ballLine.GetVertex(1) - ballLine.GetVertex(0)) * u;
@@ -2427,12 +2457,12 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         if (bodyBallDistanceAdvantage >= 1.0f || match->GetBallRetainer() == player) {
 
           // Correct the whole-player approach at the predicted ball height.
-          // A shoe marker on a sloped surface cannot represent every bounce
+          // An authored body marker cannot represent every bounce
           // height. Spread this small correction over the native approach;
-          // never stretch a leg or apply a kick without a real runtime contact.
+          // never stretch a limb or apply an impulse without a real runtime contact.
           const std::string part=anim->GetVariable("touch_bodypart");
-          if(TrainingEnabled() && part.find("foot")!=std::string::npos &&
-              (functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
+          if(TrainingEnabled() && (part.find("foot")!=std::string::npos || part=="head") &&
+              (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
                functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot)) {
             Quaternion local[13],global[13];Vector3 joints[13],surface;
             Vector3 root=spatialState.position+positions_ret.at(animTouchFrame)+

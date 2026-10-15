@@ -9,29 +9,30 @@ da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
 O [pacote Windows completo](artifacts/football-training-windows-x86_64.zip)
-inclui a condução aprovada `DefenseJog_LoopF` como padrão e o novo domínio
-parado `Chest_Stand` e o domínio avançando `Chest_Run`, adaptados ao
-esqueleto nativo. Extraia em uma pasta nova
-e execute `run-training.bat`; L3 e T não alternam mais a condução.
-Use **F4** para receber um passe rasteiro, **F5** para uma bola na altura do
-peito e **F6** para um cruzamento alto. Esses lançamentos começam à frente do
-jogador, na posição atual do campo. R3/Tab alterna a câmera para ver o corpo.
+inclui a condução `DefenseJog_LoopF` e os domínios `Chest_Stand` e `Chest_Run`.
+Extraia em uma pasta nova e execute `run-training.bat`.
+Use **F4** para receber um passe rasteiro, **F5** para uma bola no peito e
+**F6** para um cruzamento alto. R3/Tab alterna a câmera para ver o corpo.
 
-O domínio parado pode ser selecionado sem direção no analógico; o novo
-domínio avançando pode ser selecionado com direção para frente, diante de
-uma bola que chega ao peito. Os dois clips completam sua animação antes
-da próxima jogada; as outras recepções permanecem disponíveis.
-A condução sem RB usa o ciclo aprovado com o analógico forte para frente
-e a condução antiga com o analógico leve. A corrida fica 10% mais lenta.
-A cabeça acompanha a câmera
-e o tronco mantém uma pequena inclinação para frente. O relógio
-físico continua em tempo real. O quique no treino passa de 0,62 a 0,70,
-ajustável em `training_ground_bounce` para ensaios de gramado.
-Ao esperar um passe, a assistência nativa de recepção permite ajustar para
-frente ou para trás; o domínio de peito inclui o deslocamento da recuperação.
-X atinge a carga máxima em 0,52 s e LB+X faz cobertura. A rotação da bola é
-calculada pelo ponto de contato real, com curva e efeito vertical.
-Consulte [a integração de animações e contatos](docs/ANIMACAO-FBX-TESTE.md).
+O domínio adicional usa uma camada para tronco, braços e cabeça. As pernas
+e a posição do jogador continuam sob a locomoção normal; é possível andar
+antes e depois do contato sem esperar o gesto terminar. A trajetória prevista
+precisa encontrar a região frontal do peito, e a força só é aplicada quando
+a bola alcança essa superfície real. Sair da trajetória pode fazer o domínio
+falhar; as recepções nativas com os pés continuam disponíveis.
+
+Na condução forte para frente, o jogador faz o gesto de toque, volta à
+locomoção nativa enquanto a bola rola e faz outro toque quando se aproxima
+dela. O analógico leve mantém a condução antiga. L3 e T não alternam o modo.
+As animações têm duração cerca de 12% maior, preservando as velocidades dos
+percursos e o passo físico de 10 ms. Os toques de condução são espaçados para
+evitar repiques rápidos nas diagonais. RB continua sendo corrida e RT fica
+reservado. A cabeça acompanha a câmera e o tronco mantém a inclinação aprovada.
+
+O quique continua ajustável em `training_ground_bounce`. X atinge carga máxima
+em 0,52 s e LB+X faz cobertura. Chutes, passes e cabeçadas conferem a superfície
+do modelo na altura prevista da bola; o controle não estica uma perna até ela.
+Consulte [a integração e os testes](docs/ANIMACAO-FBX-TESTE.md).
 
 Em primeira pessoa, sem bola, o direito vira a visão e o esquerdo move e
 desloca lateralmente em relação a ela. Com bola, o esquerdo conduz e o

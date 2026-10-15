@@ -939,6 +939,9 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   ProcessDribbleLoop();
   buf_animApplyBuffer = animApplyBuffer;
   buf_animApplyBuffer.snapshotTime_ms = snapshotTime_ms;
+  buf_animApplyBuffer.upperReception=upperReceptionClip;
+  buf_animApplyBuffer.upperPhase=upperReceptionPhase;
+  buf_animApplyBuffer.upperWeight=upperReceptionWeight;
   // The phase advances at physics frequency, independently of native requeues.
   // Fetch it at the same historical render time as the ball and player root.
   for(unsigned side=0;side<2;++side)buf_dribbleFootOffsets[side].SetValue(dribbleFootOffsets[side],snapshotTime_ms);
@@ -1052,6 +1055,7 @@ void HumanoidBase::Put() {
     fetchedbuf_animApplyBuffer.smooth && !restoreNative, fetchedbuf_animApplyBuffer.smoothFactor,
     fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets,
     &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false,TrainingEnabled()?12.0f:8.0f);
+  if(!studyApplied)PutUpperReception();
   pes3StudyWasApplied=studyApplied;
   if (studyApplied) {
     Quaternion facing;
@@ -1292,6 +1296,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
 }
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
+  upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
   contactPoseBlend=0;fetchedContactBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
   buf_trainingLook.Clear();
   buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();

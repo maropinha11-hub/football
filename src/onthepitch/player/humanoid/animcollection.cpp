@@ -529,10 +529,10 @@ void AnimCollection::Load(boost::filesystem::path directory) {
     animation->SetVariable("committed_reception","true");
     animation->SetVariable("incomingballdirection","0.0, 0.980581, -0.196116");
     animation->SetVariable("incomingballdirection_maxdeviation","0.7");
-    // Imported roots contain absolute pelvis height; native clips store the
-    // offset from the player's 0.96 m bind height. Retain the authored walk.
+    // The upper layer retains authored bone rotations. Locomotion supplies
+    // the pelvis height and travel, so discard the FBX root displacement.
     for(auto *node:animation->GetNodeAnimations())if(node->nodeName=="player")
-      for(auto &entry:node->animation)entry.second.position.coords[2]-=.96f;
+      for(auto &entry:node->animation)entry.second.position=Vector3(0);
     animation->DirtyCache();
     const int frame=int(std::round(std::atof(animation->GetVariable("contact_frame").c_str())));
     // Contact in the retargeted chest pose, in the same local coordinates as
@@ -1252,7 +1252,42 @@ void SmoothPositions(Animation *animation, bool convertAngledDribbleToWalk) {
 
 void AnimCollection::_PrepareAnim(Animation *animation, boost::intrusive_ptr<Node> playerNode, const std::list < boost::intrusive_ptr<Object> > &bodyParts, const std::map < const std::string, boost::intrusive_ptr<Node> > &nodeMap, bool convertAngledDribbleToWalk) {
 
-  //animation->Hax();
+  // Lengthen poses/events while retaining the original travel velocities.
+  // The match clock stays at 100 Hz. Copies already retimed are not stretched twice.
+  if(TrainingEnabled() && animation->GetVariable("training_retimed")!="true") {
+    const float scale=clamp(GetConfiguration()->GetReal("training_animation_time_scale",1.12f),1.0f,1.4f);
+    const int oldEnd=animation->GetFrameCount()-1;
+    auto frameAt=[&](int frame){return int(std::round(frame*scale));};
+    auto football=boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"));
+    const auto events=football->GetAnimation();football->GetAnimation().clear();
+    for(const auto &entry:events) {
+      auto event=entry.second;Quaternion q;Vector3 root;
+      animation->GetKeyFrame("player",entry.first,q,root);
+      const float ratio=entry.first>0?float(frameAt(entry.first))/entry.first:1;
+      event.position+=(root.Get2D()*(ratio-1));
+      football->GetAnimation()[frameAt(entry.first)]=event;
+    }
+    for(auto *node:animation->GetNodeAnimations()) {
+      const auto track=node->animation;node->animation.clear();
+      for(const auto &entry:track) {
+        auto key=entry.second;const int frame=frameAt(entry.first);
+        if(node->nodeName=="player" && entry.first>0) {
+          const float ratio=float(frame)/entry.first;
+          key.position.coords[0]*=ratio;key.position.coords[1]*=ratio;
+        }
+        node->animation[frame]=key;
+      }
+      if(!node->animation.empty()) {
+        const auto last=*node->animation.rbegin();
+        animation->SetKeyFrame(node->nodeName,last.first,last.second.orientation,last.second.position);
+      }
+    }
+    animation->SetVariable("training_source_frames",int_to_str(oldEnd+1));
+    if(animation->GetVariable("training_dribble")=="true" && oldEnd>0)
+      animation->SetVariable("source_phase_scale",real_to_str(std::atof(animation->GetVariable("source_phase_scale").c_str())*oldEnd/frameAt(oldEnd)));
+    animation->SetVariable("training_retimed","true");animation->DirtyCache();
+  }
+
 
   Vector3 animBallPos;
   int animTouchFrame;

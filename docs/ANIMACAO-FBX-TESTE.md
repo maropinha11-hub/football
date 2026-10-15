@@ -1,99 +1,82 @@
-# Condução antiga e ciclo novo no treino
+# Domínio superior e condução com intervalos
 
-Extraia o pacote completo em uma pasta nova e execute `run-training.bat`.
-A câmera e os comandos Xbox em primeira pessoa continuam disponíveis.
+Extraia o ZIP completo em uma pasta nova e abra `run-training.bat`.
 
-| Situação | Animação |
+| Situação | Comportamento |
 | --- | --- |
-| Saída parado | Condução original |
-| Analógico leve | Condução original em cadência mais lenta |
-| Analógico forte para frente, após a saída | Ciclo DefenseJog_LoopF |
-| Virada, corrida com RB ou ação com a bola | Animação apropriada do seletor nativo |
+| Saída parado / analógico leve | Condução nativa |
+| Frente forte, bola próxima e alcançável | Gesto de toque DefenseJog_LoopF |
+| Bola se afastando depois do toque | Locomoção nativa enquanto a bola rola |
+| Virada ou RB | Seleção e recuperação nativas |
+| Bola na trajetória do peito | Camada Chest_Stand ou Chest_Run sobre pernas livres |
+| Jogador sai da trajetória | Sem domínio forçado; recepções nativas continuam disponíveis |
 
-O ciclo novo foi registrado como animações nativas complementares, para
-os dois lados da passada e as velocidades de locomoção suportadas pelo motor.
-A segunda metade continua a primeira, em vez de sobrepor uma pose velha
-a cada toque. A mistura normal do motor faz a entrada e a saída.
-Quando a bola ainda não precisa de outro toque, a variante de locomoção
-continua a mesma passada. A assistência não acelera esse intervalo como uma
-corrida sem RB. Após uma corrida, a recuperação nativa termina antes de
-entrar no novo ciclo: ele exige bola próxima e velocidade relativa controlada. As rotações dos ossos e seus comprimentos permanecem os da adaptação aprovada;
-não há um pé sendo esticado rapidamente até a bola.
+## Camada do peito
 
-A entrada tem 400 ms de estabilização depois de atingir a faixa de movimento.
-O analógico usa limites diferentes para entrar e permanecer no ciclo, evitando
-alternâncias por pequenas variações de pressão. Os limites internos de força
-são 0,84 para entrar e 0,72 para permanecer. A escolha considera movimento,
-recepção e ações; não existe um botão de alternância em L3.
+A camada altera `middle`, `neck`, ombros e cotovelos. Ela não altera a raiz,
+a orientação da pelve nem os ossos das pernas. A rotação do tronco das fontes
+é adaptada à referência da pelve atual. O deslocamento de raiz e as passadas
+dos FBX não são aplicados nesse experimento.
 
-O balanço lateral do quadril é parte da pose. Ele não classifica uma passada
-para frente como uma virada, nem impede a seleção da outra metade do ciclo.
-Um quique da bola tocada pelo próprio jogador também não inicia uma recepção
-externa ou uma troca indevida de animação.
+A pose composta é usada tanto pelo renderizador quanto pelas colisões. A
+previsão confere a parte frontal do peito; o evento real depende de a esfera
+alcançar a pele nessa região, com margem numérica de 2,5 mm. A cabeça, as
+costas e um alvo distante do corpo não autorizam o domínio. A camada não
+prende o jogador ao ponto previsto de recepção. Um gesto que perde a bola
+se desfaz suavemente; um gesto com contato pode continuar com as pernas andando.
 
-## Contatos na bola
+`Chest_Stand` e `Chest_Run` continuam sendo fontes adicionais. Com o analógico
+solto, a seleção pode usar Stand; com avanço moderado, pode usar Run. Movimento
+mais forte pode alterar o encontro com a bola e exigir outra recepção.
+As fontes FBX não têm trilha de bola: os marcadores de integração são ligados
+à superfície do modelo durante o carregamento.
 
-Nos chutes e passes com o pé, a aproximação também confere a superfície na
-altura prevista da bola. Uma correção pequena do jogador inteiro é distribuída
-pela aproximação nativa, sem reposicionar a perna no último instante.
+## Toque e rolagem
 
-Os eventos foram ligados à superfície do modelo, incluindo as chuteiras,
-na pose correspondente de cada animação. O cálculo nativo de aproximação
-conserva o deslocamento necessário para chegar a essa superfície. Um impulso
-exige encontro entre a esfera e a região do corpo, com tolerância numérica
-máxima de 2,5 mm. A antiga margem de 40 cm não autoriza toques no ar.
+A animação de condução deixa de tocar continuamente quando não é necessária.
+Depois do toque, ela completa o gesto e dá lugar à locomoção original. Outro
+gesto só é escolhido quando a bola está à frente, próxima e alcançável; uma
+bola se afastando continua rolando. Não há um segundo controlador arrastando
+a bola nem uma correção rápida da perna no último instante.
 
-Uma passada que não encontra a bola não aplica força. O ciclo novo completa
-a passada e segue; as outras ações podem ser escolhidas novamente sem
-segurar o jogador. Os vetores nativos de condução, domínio, passe e chute
-continuam calculando o resultado de contatos válidos. A bola não é arrastada
-até um alvo do loop, e a animação não possui um controle paralelo de posse.
+Os eventos de condução têm intervalo mínimo de 420 ms, ou 300 ms durante RB.
+A aproximação nativa confere a superfície da chuteira na altura prevista da
+bola; chutes, passes e cabeçadas usam a mesma conferência da região pertinente.
+O impulso continua exigindo contato físico real no instante de execução.
 
-## Recepção e exercícios
+## Cadência e comandos
 
-`Chest_Stand` e `Chest_Run` são candidatos adicionais; os domínios nativos
-continuam disponíveis. Sem direção no analógico, a chegada ao peito pode
-selecionar Stand. Com direção para frente, pode selecionar Run. O seletor
-confere a trajetória, a altura e o alcance; o impulso exige contato no tronco.
-Ambos completam sua animação antes de liberar a próxima jogada. Segurar uma
-direção durante o domínio não corta o clip: o movimento retoma ao final.
-Run conserva o deslocamento da fonte e continua para a bola.
-
-`Chest_Run.fbx` tem 28 quadros a 30 Hz, convertido em 91 amostras a 100 Hz.
-A fonte não contém trilha de bola: o marcador do quadro 10 é de integração
-e é ligado à superfície do peito no carregamento, não recuperado do FBX.
+`training_animation_time_scale` vale 1,12. Os quadros e eventos são retimados
+juntos; o percurso horizontal é ajustado para manter suas velocidades. O
+comprimento dos ossos é preservado. A física e os comandos continuam a 100 Hz.
+Os fontes Stand e Run de 151 e 91 amostras passam a 169 e 102 no catálogo.
+O ciclo de condução termina cada metade retimada, sem cortar os quadros finais.
 
 | Tecla | Exercício |
 | --- | --- |
 | F4 | Passe rasteiro recebido |
-| F5 | Bola para domínio no peito |
+| F5, analógico solto | Bola para domínio de peito parado |
+| F5, avanço moderado | Bola para experimentar o domínio avançando |
 | F6 | Cruzamento alto |
 | R3 / Tab | Alternar câmera |
 | R / View | Reiniciar |
 
-RB continua sendo corrida; RT fica reservado. O relógio físico permanece em
-10 ms. As cópias lentas da animação antiga mudam sua cadência, sem colocar a
-partida em câmera lenta.
+RB continua sendo corrida e RT fica reservado. L3/T não alternam a condução.
 
-## Reprodução e validação
+## Validação
 
-`scripts/register_dribble_cycle.py` gera as variantes do ciclo a partir de
-`data/media/training/DefenseJog_LoopF.anim`. Os arquivos gerados acompanham
-tanto o ZIP completo quanto a atualização. O carregamento registra também
-cópias retimadas da condução antiga para o analógico leve.
+`tests/training_upper_body_smoke.py` verifica domínio com pernas livres,
+movimento antes da chegada, erro de trajetória, recepção com os pés e a
+preservação da raiz e das pernas no modelo renderizado. O ponto de entrada
+`training_reception_variants_smoke.py` executa essa especificação atual;
+os antigos testes de bloqueio até o fim foram substituídos pelo novo requisito.
 
-`tests/training_forward_cycle_smoke.py` verifica saída parado, analógico leve,
-entrada na nova condução, continuidade das duas metades, estabilidade com
-variação do analógico e encontro entre bola e chuteira. Ele também compara
-contatos físicos com amostras da malha realmente renderizada.
-`tests/training_reception_variants_smoke.py` verifica os dois domínios,
-seu término com comandos mantidos e a retomada do movimento.
-`tests/training_running_actions_smoke.py` verifica chutes e cruzamentos
-em corrida com mira para frente, lateral e diagonal.
-A resposta ao comando é medida após a confirmação da entrada pelo SDL;
-o teclado dos testes usa XTEST em uma sessão X11 isolada.
-Resultados desta versão: [chest-run-validation.json](chest-run-validation.json).
+`tests/training_forward_cycle_smoke.py` verifica toques separados por locomoção
+normal, avanço pelo campo, conclusão dos gestos, viradas diagonais, intervalo
+entre impulsos, contato na malha e recuperação depois de RB. Os testes de
+ações em corrida e controles conferem passes, chutes, cobertura e cabeçadas.
 
-Os testes renderizados usam Linux e controle Xbox virtual em SDL. A compilação,
-as DLLs e a integridade do pacote Windows são verificadas separadamente;
-a execução no Windows 11 com o controle físico precisa ser conferida nesse PC.
+Resultados: [upper-body-cadence-validation.json](upper-body-cadence-validation.json).
+Os testes renderizados usam Linux e controle Xbox virtual em SDL. O Windows
+é compilado e tem executável, recursos, importações e integridade do ZIP
+conferidos; a execução gráfica com o controle físico depende do computador.

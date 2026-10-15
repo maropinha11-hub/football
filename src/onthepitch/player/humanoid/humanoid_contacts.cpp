@@ -100,6 +100,13 @@ void HumanoidBase::CaptureContactMesh() {
       Quaternion local[13],global[13];Vector3 positions[13],root;Quaternion unused;
       animation->GetKeyFrame("player",entry.first,unused,root);
       SampleContactAnimation(animation,float(entry.first),root,0,false,local,global,positions);
+      if(animation->GetVariable("added_chest")=="true") {
+        // Fold the authored pelvis rotation into the spine, just as the live
+        // upper layer does. Bind against upright locomotion hips, not the
+        // full-body FBX's displaced chest joint.
+        local[1]=(local[0]*local[1]).GetNormalized();local[0]=QUATERNION_IDENTITY;
+        ContactForwardKinematics(local,global,positions);
+      }
       Vector3 probe=entry.second.position;probe.coords[2]*=zMultiplier;
       if(animation->GetVariable("training_dribble")=="true") {
         const unsigned ankle=part=="left_foot"?9:12;
@@ -145,6 +152,78 @@ void HumanoidBase::ContactForwardKinematics(Quaternion *local,Quaternion *global
   }
 }
 
+void HumanoidBase::BlendUpperReception(Animation *clip,float phase,float weight,radian facing,Quaternion *local) const {
+  if(!clip || weight<=0)return;
+  Quaternion source[7],unused;Vector3 position;
+  for(unsigned i=0;i<7;++i) {
+    const int frame=int(phase),next=std::min(frame+1,clip->GetFrameCount()-1);
+    Quaternion a,b;clip->GetKeyFrame(pes3::nativeBoneNames[i],frame,a,position);
+    clip->GetKeyFrame(pes3::nativeBoneNames[i],next,b,position);
+    source[i]=a.GetSlerped(phase-frame,b).GetNormalized();
+  }
+  Quaternion turn;turn.SetAngleAxis(facing,Vector3(0,0,1));
+  source[1]=(local[0].GetInverse()*turn*source[0]*source[1]).GetNormalized();
+  for(unsigned i=1;i<7;++i)local[i]=local[i].GetSlerped(weight,source[i]).GetNormalized();
+}
+
+void HumanoidBase::TickUpperReception() {
+  if(!upperReceptionClip)return;
+  upperReceptionPhase=float(match->GetActualTime_ms()-upperReceptionStarted_ms)*.1f;
+  if(!upperReceptionTouchMade && upperReceptionPhase>upperReceptionContactFrame+7)
+    upperReceptionEndFrame=std::min(upperReceptionEndFrame,upperReceptionContactFrame+19);
+  if(upperReceptionPhase>=upperReceptionEndFrame) {
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("TRAINING_UPPER_END t=%lu touched=%d phase=%.2f\n",match->GetActualTime_ms(),upperReceptionTouchMade?1:0,upperReceptionPhase);
+    upperReceptionClip=nullptr;upperReceptionWeight=0;return;
+  }
+  upperReceptionWeight=ease(upperReceptionPhase/10)*ease((upperReceptionEndFrame-upperReceptionPhase)/12);
+  if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%100==0)
+    printf("TRAINING_UPPER_STATE t=%lu phase=%.3f weight=%.5f touched=%d base_function=%d\n",
+      match->GetActualTime_ms(),upperReceptionPhase,upperReceptionWeight,upperReceptionTouchMade?1:0,int(currentAnim->functionType));
+}
+
+bool HumanoidBase::StartUpperReception(Animation *clip,int contactFrame) {
+  if(UpperReceptionActive() || contactFrame<1)return false;
+  Quaternion local[13],global[13];Vector3 positions[13];
+  const Vector3 root=spatialState.position+spatialState.movement*(contactFrame*.01f);
+  SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,spatialState.angle,false,local,global,positions);
+  BlendUpperReception(clip,float(contactFrame),1,spatialState.angle,local);
+  ContactForwardKinematics(local,global,positions);
+  const Vector3 target=match->GetBall()->Predict(contactFrame*10);
+  const float gap=ContactSurface(target,"chest",global,positions);
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_UPPER_PLAN t=%lu gap=%.5f accepted=%d mode=%s\n",match->GetActualTime_ms(),gap,gap<=.025f?1:0,clip->GetVariable("reception_mode").c_str());
+  if(gap>.025f)return false;
+  upperReceptionClip=clip;upperReceptionContactFrame=contactFrame;upperReceptionEndFrame=clip->GetFrameCount()-1;
+  upperReceptionStarted_ms=match->GetActualTime_ms();upperReceptionPhase=0;upperReceptionWeight=0;upperReceptionTouchMade=false;
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_UPPER_START t=%lu mode=%s contact_frame=%d frames=%d legs_free=1\n",match->GetActualTime_ms(),
+      clip->GetVariable("reception_mode").c_str(),contactFrame,clip->GetFrameCount());
+  return true;
+}
+
+void HumanoidBase::PutUpperReception() {
+  const auto &buffer=fetchedbuf_animApplyBuffer;
+  if(!buffer.upperReception || buffer.upperWeight<=0)return;
+  humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  Vector3 legs[6];for(unsigned i=0;i<6;++i)legs[i]=nodeMap.at(pes3::nativeBoneNames[i+7])->GetDerivedPosition();
+  const Vector3 root=nodeMap.at("body")->GetDerivedPosition();
+  const Quaternion spine=nodeMap.at("middle")->GetRotation();
+  Quaternion local[13];
+  for(unsigned i=0;i<13;++i)local[i]=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation();
+  local[0]=nodeMap.at("body")->GetDerivedRotation();
+  BlendUpperReception(buffer.upperReception,buffer.upperPhase,buffer.upperWeight,buffer.orientation,local);
+  for(unsigned i=1;i<7;++i)nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(local[i],false);
+  humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+  if(GetConfiguration()->GetBool("training_telemetry",false)) {
+    float legError=0,spineDelta=0;
+    for(unsigned i=0;i<6;++i)legError=std::max(legError,(legs[i]-nodeMap.at(pes3::nativeBoneNames[i+7])->GetDerivedPosition()).GetLength());
+    for(unsigned i=0;i<4;++i)spineDelta+=std::fabs(spine.elements[i]-local[1].elements[i]);
+    printf("TRAINING_UPPER_MASK t=%lu phase=%.3f legs_error=%.8f root_error=%.8f spine_delta=%.6f\n",buffer.snapshotTime_ms,
+      buffer.upperPhase,legError,(root-nodeMap.at("body")->GetDerivedPosition()).GetLength(),spineDelta);
+  }
+}
+
 void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase,const Vector3 &root,
     radian facing,bool source,Quaternion *local,Quaternion *global,Vector3 *positions) const {
   phase=clamp(phase,0.0f,float(animation->GetEffectiveFrameCount()));
@@ -165,6 +244,8 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
     }
     if(i==0){Quaternion turn;turn.SetAngleAxis(facing,Vector3(0,0,1));local[i]=turn*local[i];}
   }
+  if(!source && animation->GetVariable("added_chest")!="true")
+    BlendUpperReception(upperReceptionClip,upperReceptionPhase,upperReceptionWeight,facing,local);
   ContactForwardKinematics(local,global,positions);
   if(TrainingEnabled() && player->GetExternalController()) {
     const Quaternion authored=local[2];
@@ -183,9 +264,12 @@ float HumanoidBase::ContactSurface(const Vector3 &point,const std::string &reque
   for(const auto &triangle:contactTriangles) {
     if(!part.empty() && triangle.part!=(part=="chest"?"middle":part))continue;
     if(part=="chest") {
-      float bindHeight=0;
-      for(unsigned c=0;c<3;++c)bindHeight+=uniqueFullbodyMesh[triangle.mesh].data[triangle.vertices[c]*3+2]/(3*zMultiplier);
-      if(bindHeight<1.23f || bindHeight>1.52f)continue;
+      float bindHeight=0,bindForward=0;
+      for(unsigned c=0;c<3;++c) {
+        bindHeight+=uniqueFullbodyMesh[triangle.mesh].data[triangle.vertices[c]*3+2]/(3*zMultiplier);
+        bindForward-=uniqueFullbodyMesh[triangle.mesh].data[triangle.vertices[c]*3+1]/(3*zMultiplier);
+      }
+      if(bindHeight<1.23f || bindHeight>1.52f || bindForward<.015f)continue;
     }
     Vector3 points[3];
     for(unsigned c=0;c<3;++c) {
@@ -226,13 +310,13 @@ void HumanoidBase::FitContactLeg(unsigned side,const Vector3 &offset,Quaternion 
 
 Vector3 HumanoidBase::GetStandingChestTarget() const {
   if(!chestAnimation)return spatialState.position+spatialState.bodyDirectionVec*.22f+Vector3(0,0,1.4f);
-  const Animation *animation=chestAnimation.get();float phase=chestContactFrame;bool source=true;
+  Animation *animation=chestAnimation.get();float phase=chestContactFrame;bool source=true;
   bool forward=false;
   if(player->GetExternalController()) {
     const Vector3 stick=static_cast<HumanController*>(player->GetExternalController())->GetHIDevice()->GetDirection();
     forward=stick.coords[1]>.15f && std::fabs(stick.coords[0])<.35f;
   }
-  for(const Animation *candidate:anims->GetAnimations())
+  for(Animation *candidate:anims->GetAnimations())
     if(candidate->GetVariable("added_chest")=="true" &&
         (candidate->GetVariable("reception_mode")=="forward")==forward) {
       animation=candidate;phase=std::atof(candidate->GetVariable("touchframe").c_str());source=false;break;
@@ -240,7 +324,10 @@ Vector3 HumanoidBase::GetStandingChestTarget() const {
   Quaternion local[13],global[13];Vector3 positions[13];
   const float angle=spatialState.angle;
   const Vector3 root=spatialState.position;
-  SampleContactAnimation(animation,phase,root,angle,source,local,global,positions);
+  if(!source) {
+    SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,false,local,global,positions);
+    BlendUpperReception(animation,phase,1,angle,local);ContactForwardKinematics(local,global,positions);
+  } else SampleContactAnimation(animation,phase,root,angle,true,local,global,positions);
   Quaternion facing;facing.SetAngleAxis(angle,Vector3(0,0,1));
   const Vector3 probe=positions[1]+global[1]*Vector3(0,-.4f,.30f)*zMultiplier;
   Vector3 surface;ContactSurface(probe,"chest",global,positions,&surface);

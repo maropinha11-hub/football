@@ -322,7 +322,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // Keep small reception adjustments small, and do not let that fallback
       // sprint after every forward-loop touch while RB is released.
       const Vector3 stick=hid->GetDirection();
-      if(actionMode==0 && match->TrainingReceivingBall())
+      if(actionMode==0 && match->TrainingReceivingBall() && !player->GetHumanoid()->UpperReceptionActive())
         command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,1.4f);
       else if(actionMode==0 && match->TrainingHasBall() && !hid->GetButton(e_ButtonFunction_Sprint) &&
           player->GetHumanoid()->GetCurrentAnim()->anim->GetVariable("training_dribble")=="true" &&
@@ -330,6 +330,12 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
           (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f &&
           stick.coords[1]>.72f && std::fabs(stick.coords[0])<.20f)
         command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,inputVelocityFloat);
+      // Leave the incoming trajectory freely; after an actual chest touch,
+      // use native approach assistance so walking does not overrun the drop.
+      if(actionMode==0 && player->GetHumanoid()->UpperReceptionActive() && match->TrainingReceivingBall()) {
+        command.desiredDirection=inputDirection;command.desiredVelocityFloat=inputVelocityFloat;
+        command.desiredLookAt=player->GetPosition()+inputDirection*10;
+      }
       // Dribbling still needs the original movement assistance between touches,
       // especially when a turn cannot immediately use a ball-control animation.
       // Solo training always designates this player, so disable the match AI's
@@ -572,7 +578,7 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
         hid->GetButton(e_ButtonFunction_Sprint)?"training_sprint_speed_scale":"training_walk_speed_scale",
         hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
-    if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0)
+    if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0 && !player->GetHumanoid()->UpperReceptionActive())
       rawInputVelocityFloat=std::min(rawInputVelocityFloat,1.4f);
     // The native solver quantizes speeds below this boundary as idle. Keep
     // a light on-ball stick in its slow native gait instead of holding still.
