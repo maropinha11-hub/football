@@ -71,7 +71,7 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
   playerNode->SetName("player");
   playerNode->SetLocalMode(e_LocalMode_Absolute);
 
-  activePlayerCount = TrainingEnabled() ? (id == 0 ? 1 : 0) : playerNum;
+  activePlayerCount = (TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 ? 1 : 0) : playerNum;
 
   Log(e_Notice, "Team", "Team", "Creating players");
 
@@ -81,7 +81,7 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
     Player *player = new Player(this, playerData);
     players.push_back(player);
 
-    if (TrainingEnabled() ? (id == 0 && i == playerNum - 1) : i < activePlayerCount) {
+    if ((TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 && i == playerNum - 1) : i < activePlayerCount) {
       // activate playerCount players (the starting eleven, usually)
       std::string kitFilename;
       //printf("%i player id\n", player->GetID());
@@ -92,11 +92,12 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
         kitFilename = "media/objects/players/textures/goalie_kit.png";
       }
       kit = ResourceManagerPool::GetInstance().GetManager<Surface>(e_ResourceType_Surface)->Fetch(kitFilename);
+      if(TrainingEnabled() && id==0 && i==playerNum-1)match->SetTrainingPlayer(player);
       player->Activate(playerNode, fullbodyNode, colorCoords, kit, match->GetAnimCollection());
     }
   }
 
-  designatedTeamPossessionPlayer = TrainingEnabled() ? (id == 0 ? players.at(playerNum - 1) : nullptr) : players.at(0);
+  designatedTeamPossessionPlayer = (TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 ? players.at(playerNum - 1) : nullptr) : players.at(0);
 
 }
 
@@ -262,7 +263,7 @@ void Team::ResetSituation(const Vector3 &focusPos) {
   lastTouchPlayer = 0;
   lastTouchType = e_TouchType_None;
 
-  designatedTeamPossessionPlayer = TrainingEnabled() ? GetBestPossessionPlayer() : players.at(0);
+  designatedTeamPossessionPlayer = (TrainingEnabled() && !PlayerMatchEnabled()) ? GetBestPossessionPlayer() : players.at(0);
 
   for (unsigned int i = 0; i < players.size(); i++) {
     if (players.at(i)->IsActive()) {
@@ -321,7 +322,7 @@ void Team::RelaxFatigue(float howMuch) {
 
 void Team::Process() {
 
-  if (TrainingEnabled()) {
+  if (TrainingEnabled() && !PlayerMatchEnabled()) {
     if (!match->GetPause()) {
       teamPossessionAmount = fadingTeamPossessionAmount = id == 0 ? 1.5f : 0.5f;
       for (auto *player : players) if (player->IsActive()) player->Process();
@@ -516,6 +517,7 @@ void Team::UpdatePossessionStats() {
 }
 
 void Team::UpdateSwitch() {
+  if(PlayerMatchEnabled())return;
 
   // lose turn on ball possession
 

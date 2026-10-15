@@ -144,7 +144,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   Log(e_Notice, "Match", "Match", "Creating referee/linesmen models");
 
   officials = nullptr;
-  if (!TrainingEnabled()) {
+  if (!TrainingEnabled() || PlayerMatchEnabled()) {
     std::string kitFilename = "media/objects/players/textures/referee_kit.png";
     boost::intrusive_ptr < Resource<Surface> > kit = ResourceManagerPool::GetInstance().GetManager<Surface>(e_ResourceType_Surface)->Fetch(kitFilename);
     officials = new Officials(this, fullbodyNode, colorCoords, kit, anims);
@@ -338,7 +338,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   scoreboard = new Gui2ScoreBoard(menuTask->GetWindowManager(), this);
   root->AddView(scoreboard);
   scoreboard->Show();
-  if (TrainingEnabled()) {
+  if (TrainingEnabled() && !PlayerMatchEnabled()) {
     scoreboard->Hide();
     radar->Hide();
   }
@@ -377,8 +377,14 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   possessionSideHistory = new ValueHistory<float>(6000);
   if (TrainingEnabled()) {
     trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
-    SetMatchPhase(e_MatchPhase_1stHalf);
-    ResetTraining(0);
+    if(PlayerMatchEnabled()) {
+      matchDurationFactor=clamp(GetConfiguration()->GetReal("player_match_half_seconds",180),2.0f,900.0f)/2700.0f;
+      trainingView.reset(0);trainingReceptionFacing=Vector3(1,0,0);
+      SpamMessage("Partida 11 x 11 | RT/E: pedir passe | R: reiniciar | R3/Tab: camera",8000);
+      printf("PLAYER_MATCH_START locked_id=%d home=%d away=%d half_seconds=%.2f\n",trainingPlayer->GetID(),teams[0]->GetActivePlayerCount(),teams[1]->GetActivePlayerCount(),matchDurationFactor*2700);
+    } else {
+      SetMatchPhase(e_MatchPhase_1stHalf);ResetTraining(0);
+    }
     pes3Preview.reset(new PES3Preview(dynamicNode));
     if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);
   }
@@ -689,6 +695,12 @@ void Match::ResetSituation(const Vector3 &focusPos) {
   ball->ResetSituation(focusPos);
   teams[0]->ResetSituation(focusPos);
   teams[1]->ResetSituation(focusPos);
+  if(PlayerMatchEnabled()) {
+    const Vector3 facing=trainingPlayer->GetBodyDirectionVec();
+    trainingView.reset(std::atan2(facing.coords[1],facing.coords[0]));
+    trainingReceptionFacing=facing;trainingReceiving=false;trainingEyeInitialized=false;playerMatchPassUntil_ms=0;
+  }
+
 
   // reset temporalsmoother vars
   // todo: not sure if we may access buf_ vars here
@@ -720,6 +732,11 @@ signed int Match::GetBestPossessionTeamID() {
 
 void Match::GameOver() {
   gameOver = true;
+  if(PlayerMatchEnabled()) {
+    playerMatchPassUntil_ms=0;
+    SpamMessage("Fim de jogo: "+int_to_str(GetScore(0))+" x "+int_to_str(GetScore(1))+" | R/View: nova partida",3600000);
+    printf("PLAYER_MATCH_END t=%lu home=%d away=%d\n",actualTime_ms,GetScore(0),GetScore(1));fflush(stdout);
+  }
 }
 
 void Match::GetCameraParams(float &zoom, float &height, float &fov, float &angleFactor) {
@@ -851,7 +868,7 @@ void Match::UpdateIngameCamera() {
     cameraNearCap = 1;
     cameraFarCap = 220;
 
-    if (goalScoredTimer == 6000) {
+    if (goalScoredTimer == 6000 && !PlayerMatchEnabled()) {
       pause = true;
       sig_OnExtendedReplayMoment(this);
     }
@@ -869,7 +886,7 @@ void Match::Process() {
   unsigned long time_ms = EnvironmentManager::GetInstance().GetTime_ms() - gameSequenceInfo.startTime_ms;
   timeSincePreviousProcess_ms = time_ms - GetPreviousProcessTime_ms();
   previousProcessTime_ms = time_ms;
-  if (TrainingEnabled()) {
+  if (TrainingEnabled() && !PlayerMatchEnabled()) {
     ProcessTraining();
     return;
   }
@@ -879,6 +896,15 @@ void Match::Process() {
     UserEventManager::GetInstance().SetKeyboardState(SDLK_F1, false);
   }
 
+  if(PlayerMatchEnabled()) {
+    ProcessPlayerMatchInput();
+    if(gameOver) {
+      UpdatePlayerMatchCamera();
+      if(GetConfiguration()->GetBool("training_telemetry",false))WriteTrainingTelemetry(controllers[trainingController]);
+      WritePlayerMatchTelemetry();return;
+    }
+    if(!pause)UpdateTrainingView(controllers[trainingController]);
+  }
   if (gameOver) {
     // todonow: just once ^
     sig_OnGameOver(this);
@@ -900,7 +926,7 @@ void Match::Process() {
 
     previousBallPos = ball->Predict(0);
     ball->Process();
-
+    if(PlayerMatchEnabled())ball->CalculatePrediction();
 
     // create mental images for the AI to use
 
@@ -1095,6 +1121,12 @@ void Match::Process() {
   } // end if !pause
 
 
+  if(PlayerMatchEnabled()) {
+    UpdatePlayerMatchCamera();
+    if(GetConfiguration()->GetBool("training_telemetry",false) && actualTime_ms%100==0)WriteTrainingTelemetry(controllers[trainingController]);
+    WritePlayerMatchTelemetry();
+  }
+
   // tactics debug
 
   if (tacticsDebug && actualTime_ms % 1000 == 0) {
@@ -1155,7 +1187,7 @@ void Match::Process() {
 
 bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                             pes3::NativePose& out) const {
-  return pes3Preview && actor==designatedPossessionPlayer && pes3Preview->bodyPose(reference,out);
+  return pes3Preview && actor==trainingPlayer && pes3Preview->bodyPose(reference,out);
 }
 
 void Match::PreparePutBuffers() {
@@ -1301,14 +1333,14 @@ void Match::Put() {
   if (TrainingEnabled() && IsFirstPerson()) {
     // Match the camera to the interpolated body, so it cannot drift into the head
     // when simulation and rendering run at different rates.
-    const Vector3 root = designatedPossessionPlayer->GetGeomPosition().Get2D();
-    const float nominal = designatedPossessionPlayer->GetPlayerData()->GetHeight() - 0.10f;
+    const Vector3 root = trainingPlayer->GetGeomPosition().Get2D();
+    const float nominal = trainingPlayer->GetPlayerData()->GetHeight() - 0.10f;
     Vector3 eyeOffset(0, 0, nominal);
-    const auto &nodes = designatedPossessionPlayer->GetNodeMap();
+    const auto &nodes = trainingPlayer->GetNodeMap();
     const auto neck = nodes.find("neck");
     if (neck != nodes.end()) {
       // The skin scales joint offsets by player height; the camera must use the same transform.
-      const float scale = designatedPossessionPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
+      const float scale = trainingPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
       eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + Vector3(0, 0, 0.14f);
       eyeOffset.coords[2] = clamp(eyeOffset.coords[2], 0.55f, nominal + 0.12f);
     }

@@ -7,7 +7,7 @@
 
 void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingExercise = clamp(exercise, 0, 5);
-  Player *player = designatedPossessionPlayer;
+  Player *player = trainingPlayer;
   Vector3 position = ballAtPlayer ? player->GetPosition().Get2D() : Vector3(0, 0, 0);
   if (!ballAtPlayer && exercise == 2) position = Vector3(30, 0, 0);
   if (!ballAtPlayer && exercise == 4) position = Vector3(28, -8, 0);
@@ -65,7 +65,7 @@ void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
 }
 
 void Match::LaunchTrainingBall(int delivery) {
-  Player *player=designatedPossessionPlayer;
+  Player *player=trainingPlayer;
   const Vector3 root=player->GetPosition().Get2D();
   const Vector3 forward=player->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
   // Reset only this attempt, retaining the player's current field position and facing.
@@ -96,7 +96,7 @@ void Match::LaunchTrainingBall(int delivery) {
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
-  if(trainingReceiving || (designatedPossessionPlayer && designatedPossessionPlayer->GetHumanoid()->UpperReceptionActive() && ball->Predict(0).coords[2]>.45f)) {
+  if(trainingReceiving || (trainingPlayer && trainingPlayer->GetHumanoid()->UpperReceptionActive() && ball->Predict(0).coords[2]>.45f)) {
     // Only approach/retreat is authored for these chest receptions. In third
     // person project world input onto that same reception axis; in first
     // person the vertical stick already represents approach/retreat.
@@ -116,23 +116,27 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   }
   look.coords[0] += (events.GetKeyboardState(SDLK_RIGHT) ? 1.0f : 0.0f) - (events.GetKeyboardState(SDLK_LEFT) ? 1.0f : 0.0f);
   look.coords[1] += (events.GetKeyboardState(SDLK_DOWN) ? 1.0f : 0.0f) - (events.GetKeyboardState(SDLK_UP) ? 1.0f : 0.0f);
-  const Vector3 delta = ball->Predict(0) - designatedPossessionPlayer->GetPosition();
+  const Vector3 delta = ball->Predict(0) - trainingPlayer->GetPosition();
   // Keep the original interception assistance for an approaching pass, but
   // do not turn every loose ball or the player's own shot into a reception.
   bool receiving=false;
   const Vector3 incoming=ball->GetMovement();
-  if(GetLastTouchPlayer()!=designatedPossessionPlayer && delta.Get2D().GetLength()<14 && incoming.GetLength()>.5f &&
+  if(GetLastTouchPlayer()!=trainingPlayer && delta.Get2D().GetLength()<14 && incoming.GetLength()>.5f &&
       (delta.Get2D().GetDotProduct(incoming.Get2D())<0 ||
        (delta.Get2D().GetLength()<.75f && delta.coords[2]>0 && incoming.coords[2]<-.2f)) &&
-      designatedPossessionPlayer->GetLastTouchBias(350)<.01f) {
+      trainingPlayer->GetLastTouchBias(350)<.01f) {
     for(unsigned ms=100;ms<=1400;ms+=50) {
-      const Vector3 arrival=ball->Predict(ms)-designatedPossessionPlayer->GetPosition();
+      const Vector3 arrival=ball->Predict(ms)-trainingPlayer->GetPosition();
       if(arrival.Get2D().GetLength()<1.25f && arrival.coords[2]<2.5f) {receiving=true;break;}
     }
   }
-  if(receiving && !trainingReceiving)trainingReceptionFacing=designatedPossessionPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+  if(receiving && !trainingReceiving)trainingReceptionFacing=trainingPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+  if(PlayerMatchEnabled() && GetLastTouchPlayer() && GetLastTouchPlayer()!=trainingPlayer &&
+      GetLastTouchPlayer()->HasPossession() && delta.coords[2]<.45f &&
+      ball->GetMovement().GetLength()<GetLastTouchPlayer()->GetMovement().GetLength()+2)
+    receiving=false;
   trainingReceiving=receiving;
-  const float relativeSpeed = (ball->GetMovement() - designatedPossessionPlayer->GetMovement()).GetLength();
+  const float relativeSpeed = (ball->GetMovement() - trainingPlayer->GetMovement()).GetLength();
   // Hysteresis keeps the head/body mode from flickering between individual dribble touches.
   // A sprint is about 8 m/s: allow a small margin when approaching a still
   // ball, so the original reception assistance engages before body contact.
@@ -140,11 +144,12 @@ void Match::UpdateTrainingView(IHIDevice *input) {
       delta.coords[2] < (trainingView.withBall ? 1.65f : 0.9f) && relativeSpeed < (trainingView.withBall ? 12.0f : 10.0f);
   const bool recoveringKnockOn = trainingKnockOnUntil_ms > actualTime_ms &&
       delta.Get2D().GetLength() < 5.0f && delta.coords[2] < 1.4f && relativeSpeed < 12.0f;
-  const bool controlled = closeControl || recoveringKnockOn || trainingReceiving;
+  const bool controlled = trainingReceiving || ((closeControl || recoveringKnockOn) &&
+    (!PlayerMatchEnabled() || trainingPlayer->HasPossession() || GetLastTouchPlayer()==trainingPlayer));
   // Locomotion heading reflects where the feet are actually travelling.
   // A torso can anticipate the next touch while the current step is still
   // moving elsewhere; using that pose here makes forward drift after a turn.
-  const Vector3 body = designatedPossessionPlayer->GetDirectionVec();
+  const Vector3 body = trainingPlayer->GetDirectionVec();
   const Vector3 ballVelocity = ball->GetMovement().Get2D();
   const float ballSpeed = ballVelocity.GetLength();
   // A reversal must finish its real touch, not just reverse the player's
@@ -152,7 +157,7 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   const bool canRepeat = delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
       (ballSpeed > 0.5f ? ballVelocity.GetNormalized(0).GetDotProduct(
           training::forward(trainingView.travelYaw)) > 0.8f :
-          designatedPossessionPlayer->GetMovement().GetLength() < 0.5f);
+          trainingPlayer->GetMovement().GetLength() < 0.5f);
   const bool continuing = controlled && trainingView.withBall && trainingView.moving;
   const float previousTarget = trainingView.travelYaw, previousSteer = trainingView.steeringAngle;
   trainingView.update(controlled, std::atan2(body.coords[1], body.coords[0]),
@@ -263,7 +268,7 @@ void Match::ProcessTraining() {
     teams[1]->UpdatePossessionStats();
     teams[0]->UpdatePossessionStats();
     teams[0]->Process();
-    designatedPossessionPlayer->RelaxFatigue(1.0f);
+    trainingPlayer->RelaxFatigue(1.0f);
     actualTime_ms += 10;
     matchTime_ms = actualTime_ms;
 
@@ -295,9 +300,46 @@ void Match::ProcessTraining() {
         position.coords[2] < 0.3f && ball->GetMovement().GetLength() < 0.5f && !trainingResetAt_ms)
       trainingResetAt_ms = actualTime_ms + 4000;
 
-    if (GetConfiguration()->GetBool("training_telemetry", false) && actualTime_ms % 100 == 0) {
-      const Vector3 p = designatedPossessionPlayer->GetPosition();
-      const Vector3 movement = designatedPossessionPlayer->GetMovement();
+    if (GetConfiguration()->GetBool("training_telemetry",false) && actualTime_ms%100==0)
+      WriteTrainingTelemetry(input);
+  }
+
+  UpdatePlayerMatchCamera();
+  iterations.Lock();
+  iterations.data++;
+  iterations.Unlock();
+}
+
+void Match::UpdatePlayerMatchCamera() {
+  if (IsFirstPerson()) {
+    Quaternion yaw;
+    yaw.SetAngleAxis(trainingView.yaw - 0.5f * pi, Vector3(0, 0, 1));
+    cameraNodeOrientation = yaw;
+    cameraOrientation.SetAngleAxis(0.5f * pi + trainingView.pitch, Vector3(1, 0, 0));
+    cameraNodePosition = trainingPlayer->GetPosition() +
+        training::forward(trainingView.yaw) * 0.10f + Vector3(0, 0, trainingPlayer->GetPlayerData()->GetHeight() - 0.10f);
+    cameraFOV = clamp(GetConfiguration()->GetReal("firstperson_fov", 78.0f), 55.0f, 100.0f);
+    cameraNearCap = 0.055f;
+    cameraFarCap = 250;
+  } else if (trainingCameraMode == 1) {
+    cameraOrientation.SetAngleAxis(0.34f * pi, Vector3(1, 0, 0));
+    cameraNodeOrientation = QUATERNION_IDENTITY;
+    const bool inspectingPose=pes3Preview && pes3Preview->studyingBody();
+    cameraNodePosition = trainingPlayer->GetPosition() +
+        (inspectingPose ? Vector3(0,-4.5f,3.6f) : Vector3(0,-4.5f,2.8f));
+    cameraFOV = 48.0f;
+    cameraNearCap = 0.3f;
+    cameraFarCap = 250.0f;
+  } else {
+    UpdateIngameCamera();
+  }
+}
+
+void Match::WriteTrainingTelemetry(IHIDevice *input) {
+  auto &events=UserEventManager::GetInstance();
+  const Vector3 position=ball->Predict(0);
+      const Vector3 p = trainingPlayer->GetPosition();
+      const Vector3 movement = trainingPlayer->GetMovement();
       const Vector3 ballMovement = ball->GetMovement();
       const Vector3 inputMovement = input->GetDirection();
       const e_ButtonFunction keyboardButtons[] = {e_ButtonFunction_Up, e_ButtonFunction_Down,
@@ -308,8 +350,8 @@ void Match::ProcessTraining() {
       for (unsigned int i = 0; i < 11; ++i)
         if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
       const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t,SDLK_F4,SDLK_F5,SDLK_F6};
-      for (unsigned int i = 0; i < 16; ++i)
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t,SDLK_F4,SDLK_F5,SDLK_F6,SDLK_e};
+      for (unsigned int i = 0; i < 17; ++i)
         if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);
@@ -326,47 +368,103 @@ void Match::ProcessTraining() {
              "\"look_active\":%d,\"move_active\":%d,\"shot_active\":%d,\"charge_ms\":%d,\"action_mode\":%d,\"move\":[%.4f,%.4f],\"keys\":%u,\"player_yaw\":%.4f,\"wall_ms\":%lu}\n",
              actualTime_ms, trainingExercise, p.coords[0], p.coords[1], p.coords[2],
              movement.GetLength(), position.coords[0], position.coords[1], position.coords[2],
-             ballMovement.GetLength(), (int)designatedPossessionPlayer->GetCurrentFunctionType(),
-             designatedPossessionPlayer->GetFrameNum(), trainingController, trainingGoals,
+             ballMovement.GetLength(), (int)trainingPlayer->GetCurrentFunctionType(),
+             trainingPlayer->GetFrameNum(), trainingController, trainingGoals,
              trainingCameraMode.load(), trainingView.withBall ? 1 : 0, trainingView.yaw,
              trainingView.headYaw, trainingView.pitch, trainingContacts, lookActive ? 1 : 0,
              input->GetDirection().GetLength() > 0.001f ? 1 : 0,
              input->GetButton(e_ButtonFunction_Shot) ? 1 : 0,
-             designatedPossessionPlayer->GetExternalController() ?
-               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetCharge_ms() : 0,
-             designatedPossessionPlayer->GetExternalController() ?
-               static_cast<HumanController*>(designatedPossessionPlayer->GetExternalController())->GetActionMode() : 0,
+             trainingPlayer->GetExternalController() ?
+               static_cast<HumanController*>(trainingPlayer->GetExternalController())->GetCharge_ms() : 0,
+             trainingPlayer->GetExternalController() ?
+               static_cast<HumanController*>(trainingPlayer->GetExternalController())->GetActionMode() : 0,
              inputMovement.coords[0], inputMovement.coords[1], keys,
-             std::atan2(designatedPossessionPlayer->GetBodyDirectionVec().coords[1],
-                        designatedPossessionPlayer->GetBodyDirectionVec().coords[0]),
+             std::atan2(trainingPlayer->GetBodyDirectionVec().coords[1],
+                        trainingPlayer->GetBodyDirectionVec().coords[0]),
              EnvironmentManager::GetInstance().GetTime_ms());
       fflush(stdout);
-    }
-  }
+}
 
-  if (IsFirstPerson()) {
-    Quaternion yaw;
-    yaw.SetAngleAxis(trainingView.yaw - 0.5f * pi, Vector3(0, 0, 1));
-    cameraNodeOrientation = yaw;
-    cameraOrientation.SetAngleAxis(0.5f * pi + trainingView.pitch, Vector3(1, 0, 0));
-    cameraNodePosition = designatedPossessionPlayer->GetPosition() +
-        training::forward(trainingView.yaw) * 0.10f + Vector3(0, 0, designatedPossessionPlayer->GetPlayerData()->GetHeight() - 0.10f);
-    cameraFOV = clamp(GetConfiguration()->GetReal("firstperson_fov", 78.0f), 55.0f, 100.0f);
-    cameraNearCap = 0.055f;
-    cameraFarCap = 250;
-  } else if (trainingCameraMode == 1) {
-    cameraOrientation.SetAngleAxis(0.34f * pi, Vector3(1, 0, 0));
-    cameraNodeOrientation = QUATERNION_IDENTITY;
-    const bool inspectingPose=pes3Preview && pes3Preview->studyingBody();
-    cameraNodePosition = designatedPossessionPlayer->GetPosition() +
-        (inspectingPose ? Vector3(0,-4.5f,3.6f) : Vector3(0,-4.5f,2.8f));
-    cameraFOV = 48.0f;
-    cameraNearCap = 0.3f;
-    cameraFarCap = 250.0f;
-  } else {
-    UpdateIngameCamera();
+void Match::ProcessPlayerMatchInput() {
+  auto &events=UserEventManager::GetInstance();
+  if(events.ConsumeKeyPress(SDLK_ESCAPE))EnvironmentManager::GetInstance().SignalQuit();
+  if(events.ConsumeKeyPress(SDLK_p))pause=!pause;
+  if(events.ConsumeKeyPress(SDLK_TAB))trainingCameraMode=(trainingCameraMode+1)%3;
+  const bool restart=events.ConsumeKeyPress(SDLK_r);
+  const bool call=events.ConsumeKeyPress(SDLK_e);
+  int wanted=0;
+  for(unsigned i=1;i<controllers.size();++i)
+    if(events.IsJoystickConnected(static_cast<HIDGamepad*>(controllers[i])->GetGamepadID())) {wanted=i;break;}
+  if(wanted!=trainingController) {
+    trainingController=wanted;teams[0]->DeleteHumanGamers();
+    teams[0]->AddHumanGamer(controllers[wanted],e_PlayerColor_Green);trainingPreviousButtons=0;
+    printf("PLAYER_MATCH_CONTROLLER t=%lu slot=%d locked_id=%d\n",actualTime_ms,wanted,trainingPlayer->GetID());
   }
-  iterations.Lock();
-  iterations.data++;
-  iterations.Unlock();
+  IHIDevice *input=controllers[trainingController];
+  unsigned buttons=(input->GetButton(e_ButtonFunction_Start)?1u:0u)|(input->GetButton(e_ButtonFunction_Select)?2u:0u);
+  if(trainingController>0) {
+    const int slot=static_cast<HIDGamepad*>(input)->GetGamepadID();
+    if(events.GetControllerButton(slot,SDL_CONTROLLER_BUTTON_RIGHTSTICK))buttons|=4u;
+    if(events.GetControllerAxis(slot,SDL_CONTROLLER_AXIS_TRIGGERRIGHT)>.5f)buttons|=8u;
+  }
+  if((buttons&1u)&&!(trainingPreviousButtons&1u))pause=!pause;
+  if((buttons&4u)&&!(trainingPreviousButtons&4u))trainingCameraMode=(trainingCameraMode+1)%3;
+  if(restart || ((buttons&2u)&&!(trainingPreviousButtons&2u)))RestartPlayerMatch();
+  if(call || ((buttons&8u)&&!(trainingPreviousButtons&8u)))RequestPlayerMatchPass();
+  trainingPreviousButtons=buttons;
+}
+
+void Match::RequestPlayerMatchPass() {
+  if(!PlayerMatchEnabled() || pause || gameOver || !IsInPlay() || IsInSetPiece() || trainingPlayer->HasPossession())return;
+  playerMatchPassUntil_ms=actualTime_ms+4500;
+  SpamMessage("Passe pedido! Procure uma linha de passe livre.",2500);
+  printf("PLAYER_MATCH_PASS_REQUEST t=%lu target=%d until=%lu\n",actualTime_ms,trainingPlayer->GetID(),playerMatchPassUntil_ms);fflush(stdout);
+}
+
+Player *Match::RequestedPassTarget(Player *passer) const {
+  if(!PlayerMatchEnabled() || gameOver || pause || playerMatchPassUntil_ms<=actualTime_ms ||
+      !IsInPlay() || IsInSetPiece() || passer==trainingPlayer || passer->GetTeamID()!=0 ||
+      !passer->HasPossession() || trainingPlayer->HasPossession() ||
+      (ball->Predict(0)-passer->GetPosition()).Get2D().GetLength()>1.1f || ball->Predict(0).coords[2]>1.0f)return nullptr;
+  const float range=(passer->GetPosition()-trainingPlayer->GetPosition()).Get2D().GetLength();
+  return range>1.5f && range<45?trainingPlayer:nullptr;
+}
+
+void Match::RecordPlayerMatchAction(Player *actor,e_FunctionType action,Player *target) {
+  if(!PlayerMatchEnabled())return;
+  const bool requested=playerMatchPassUntil_ms>actualTime_ms && actor!=trainingPlayer && actor->GetTeamID()==0 &&
+    target==trainingPlayer && (action==e_FunctionType_ShortPass || action==e_FunctionType_LongPass || action==e_FunctionType_HighPass);
+  if(requested) {playerMatchPassUntil_ms=0;SpamMessage("Passe vindo para voce!",1800);}
+  if(requested || GetConfiguration()->GetBool("training_telemetry",false)) {
+    printf("PLAYER_MATCH_ACTION t=%lu team=%d actor=%d action=%d target=%d requested=%d\n",actualTime_ms,
+      actor->GetTeamID(),actor->GetID(),int(action),target?target->GetID():-1,requested?1:0);fflush(stdout);
+  }
+}
+
+void Match::RestartPlayerMatch() {
+  pause=false;gameOver=false;inPlay=false;inSetPiece=false;goalScoredTimer=0;playerMatchPassUntil_ms=0;trainingKnockOnUntil_ms=0;trainingReceiving=false;
+  SetMatchPhase(e_MatchPhase_PreMatch);matchTime_ms=0;
+  for(int side=0;side<2;++side) {matchData->SetGoalCount(side,0);scoreboard->SetGoalCount(side,0);}
+  ResetSituation(Vector3(0));referee->ResetForKickoff();
+  trainingView.reset(0);trainingReceptionFacing=Vector3(1,0,0);trainingEyeInitialized=false;
+  if(trainingPlayer->GetExternalController())trainingPlayer->GetExternalController()->Reset();
+  SpamMessage("Nova partida | RT/E: pedir passe | R3/Tab: camera",5000);
+  printf("PLAYER_MATCH_RESTART t=%lu locked_id=%d\n",actualTime_ms,trainingPlayer->GetID());fflush(stdout);
+}
+
+void Match::WritePlayerMatchTelemetry() {
+  if(!GetConfiguration()->GetBool("training_telemetry",false) || (!gameOver && actualTime_ms%500!=0))return;
+  unsigned humanCount=0;std::vector<Player*> players;
+  teams[0]->GetActivePlayers(players);teams[1]->GetActivePlayers(players);
+  for(auto *actor:players)if(actor->GetExternalController())++humanCount;
+  printf("PLAYER_MATCH_FRAME {\"t\":%lu,\"clock\":%lu,\"phase\":%d,\"locked_id\":%d,\"selected_id\":%d,\"human_count\":%u,\"home\":%d,\"away\":%d,\"in_play\":%d,\"set_piece\":%d,\"over\":%d,\"last_touch_team\":%d,\"pass_pending\":%d,\"players\":[",
+    actualTime_ms,matchTime_ms,int(matchPhase),trainingPlayer->GetID(),trainingPlayer->GetExternalController()?trainingPlayer->GetID():-1,
+    humanCount,GetScore(0),GetScore(1),IsInPlay()?1:0,IsInSetPiece()?1:0,gameOver?1:0,GetLastTouchTeamID(),playerMatchPassUntil_ms>actualTime_ms?1:0);
+  bool first=true;
+  for(auto *actor:players) {
+    const Vector3 point=actor->GetPosition();
+    printf("%s{\"id\":%d,\"team\":%d,\"human\":%d,\"p\":[%.3f,%.3f,%.3f],\"speed\":%.3f,\"action\":%d}",first?"":",",actor->GetID(),actor->GetTeamID(),actor->GetExternalController()?1:0,
+      point.coords[0],point.coords[1],point.coords[2],actor->GetMovement().GetLength(),int(actor->GetCurrentFunctionType()));first=false;
+  }
+  printf("]}\n");fflush(stdout);
 }

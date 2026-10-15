@@ -37,7 +37,11 @@ try:
   check('side input cannot turn or displace the player before chest contact',travel<.12 and all(abs(x['yaw']-before['yaw'])<.12 for x in f),{'maximum_displacement_m':travel,'samples':len(f)})
   g.advance(2100);s=g.log.read_text()[start:]
   check('ignored lateral input still permits an actual chest reception',len([x for x in events(s,'TRAINING_ACTION_TOUCH')if x.get('upper_layer')=='1'])==1,events(s,'TRAINING_UPPER_START'))
-  g.reset();start=len(g.log.read_text());g.pad(0,-.55);delivery(g);f=g.advance(2400);s=g.log.read_text()[start:]
+  g.reset();g.pad(0,-.55)
+  # F5 chooses its delivery pose from the currently sampled HID direction.
+  # Wait for SDL to acknowledge forward input before asking for that fixture.
+  g.wait(lambda:g.frames()[-1]['move'][1]>.4 and abs(g.frames()[-1]['move'][0])<.1)
+  start=len(g.log.read_text());delivery(g);f=g.advance(2400);s=g.log.read_text()[start:]
   starts=events(s,'TRAINING_UPPER_START');hits=[x for x in events(s,'TRAINING_ACTION_TOUCH')if x.get('upper_layer')=='1']
   check('moderate forward input selects the running chest gesture',bool(starts)and starts[0]['mode']=='forward',starts)
   check('running gesture makes a real chest contact with native legs',len(hits)==1 and max(x['speed']for x in f)>.5,hits)

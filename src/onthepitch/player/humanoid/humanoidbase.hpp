@@ -242,6 +242,7 @@ class HumanoidBase {
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
     void UpdateTrainingContactPose();
+    bool UsesTrainingContacts() const;
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);

@@ -39,6 +39,8 @@ int HumanGamer::GetSelectedPlayerID() const {
 }
 
 void HumanGamer::SetSelectedPlayerID(int id) {
+  if(PlayerMatchEnabled() && team->GetID()==0 && team->GetMatch()->GetTrainingPlayer())
+    id=team->GetMatch()->GetTrainingPlayer()->GetID();
   if (selectedPlayer) {
     if (selectedPlayer->GetID() == id) return;
     selectedPlayer->SetExternalController(0);

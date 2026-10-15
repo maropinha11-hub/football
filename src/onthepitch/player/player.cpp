@@ -314,7 +314,7 @@ void Player::Process() {
         //if (GetDebug()) printf("average velo (5): %f, (50): %f\n", GetAverageVelocity(5), GetAverageVelocity(50));
       }
       if (hasPossession) possessionDuration_ms += 10; else possessionDuration_ms = 0;
-      if (!TrainingEnabled() && (match->GetActualTime_ms() + GetID() * 10) % 100 == 0) {
+      if ((!TrainingEnabled() || PlayerMatchEnabled()) && (match->GetActualTime_ms() + GetID() * 10) % 100 == 0) {
         _CalculateTacticalSituation();
       }
     }
@@ -447,7 +447,7 @@ void Player::Put2D() {
   }
 
   if (fetchedbuf_nameCaptionShowCondition &&
-      !(TrainingEnabled() && match->IsFirstPerson() && match->GetDesignatedPossessionPlayer() == this)) {
+      !(TrainingEnabled() && match->IsFirstPerson() && match->GetTrainingPlayer() == this)) {
     //Vector3 captionPos3D = fetchedbuf_nameCaptionPos;
     //Vector3 captionPos2D = GetProjectedCoord(captionPos3D, match->GetCamera());
     Vector3 captionPos3D = GetProjectedCoord(GetGeomPosition() + Vector3(0, 0.5f, 2.4f), match->GetCamera()); // geom pos because in Put2D, we cannot access normal class vars (because multithreading)

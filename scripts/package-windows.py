@@ -108,6 +108,11 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         encoding="ascii",
         newline="",
     )
+    (stage / "jogar-partida.bat").write_text(
+        '@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
+        'gameplayfootball.exe --config training.config --player-match %*\r\n'
+        'if errorlevel 1 pause\r\n', encoding="ascii", newline="",
+    )
     (stage / "run-controller-test.bat").write_text(
         "@echo off\r\n"
         "setlocal\r\n"
@@ -119,7 +124,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     )
     (stage / "LEIA-ME.txt").write_text(
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
-        "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
+        "Extraia este ZIP para uma pasta nova. jogar-partida.bat: partida 11 x 11.\n"
+        "run-training.bat: treino aprovado. RT/E sem bola: pedir passe. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
         "Conducao nativa em todas as direcoes, preferindo o pe direito.\n"
         "A conducao frontal DefenseJog foi retirada da selecao.\n"
@@ -214,6 +220,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")
         output.write(stage / "training.config", "training.config")
+        output.write(stage / "jogar-partida.bat", "jogar-partida.bat")
         if approved_binary is None:
             for path in sorted((stage / "media" / "training").glob("*.*")):
                 output.write(path, path.relative_to(stage))

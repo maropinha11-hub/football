@@ -158,6 +158,10 @@ Properties *GetConfiguration() {
   return config;
 }
 
+bool PlayerMatchEnabled() {
+  return TrainingEnabled() && config->GetBool("player_match",false);
+}
+
 bool TrainingEnabled() {
   return config && config->GetBool("training_mode", false);
 }
@@ -296,6 +300,7 @@ int main(int argc, const char** argv) {
 
   config = new Properties();
   int trainingOverride = -1;
+  bool playerMatch = false;
   bool controllerTest = false;
   bool telemetry = false;
   bool pes3Preview = false;
@@ -305,6 +310,7 @@ int main(int argc, const char** argv) {
       printf("Football Training (original Gameplay Football engine)\n"
              "  --config FILE     Configuration file (run from the staged build directory)\n"
              "  --training        Solo training, original player/field/animations\n"
+             "  --player-match    11 vs 11, fixed player and first-person controls\n"
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
              "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
@@ -313,6 +319,7 @@ int main(int argc, const char** argv) {
       return 0;
     } else if (arg == "--config" && i + 1 < argc) configFile = argv[++i];
     else if (arg == "--training") trainingOverride = 1;
+    else if (arg == "--player-match") { trainingOverride = 1; playerMatch = true; }
     else if (arg == "--match") trainingOverride = 0;
     else if (arg == "--telemetry") telemetry = true;
     else if (arg == "--pes3-preview") pes3Preview = true;
@@ -333,11 +340,12 @@ int main(int argc, const char** argv) {
   config->LoadFile(configFile.c_str());
   if (trainingOverride >= 0) config->SetBool("training_mode", trainingOverride == 1);
   if (telemetry) config->SetBool("training_telemetry", true);
+  if (playerMatch) config->SetBool("player_match",true);
   if (pes3Preview) { config->SetBool("pes3_preview",true); config->SetBool("training_mode",true); }
 
   Initialize(*config);
 
-  srand(time(NULL));
+  srand(config->GetInt("simulation_seed",int(time(NULL))));
   rand(); // mingw32? buggy compiler? first value seems bogus
   randomseed(); // for the boost random
   fastrandomseed();

@@ -44,6 +44,7 @@ class Referee {
     virtual ~Referee();
 
     void Process();
+    void ResetForKickoff();
 
     void PrepareSetPiece(e_SetPiece setPiece);
 

@@ -507,7 +507,7 @@ void HumanoidBase::UpdateFullbodyNodes() {
   hairStyle->SetPosition(joints[2].position * zMultiplier + fullbodyOffset, false);
   hairStyle->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
 
-  if (TrainingEnabled() && match->IsFirstPerson() && match->GetDesignatedPossessionPlayer() == player)
+  if (TrainingEnabled() && match->IsFirstPerson() && match->GetTrainingPlayer() == player)
     hairStyle->Disable();
   else hairStyle->Enable();
 
@@ -527,7 +527,7 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
   unsigned studyVertexCount=0,studyInvalidCount=0;
 
   const bool hideHead = !updateSrc && TrainingEnabled() && match->IsFirstPerson() &&
-                        match->GetDesignatedPossessionPlayer() == player;
+                        match->GetTrainingPlayer() == player;
 
   int uploadVertices = true;
   int uploadNormals = true;

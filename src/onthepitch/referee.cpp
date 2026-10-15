@@ -65,6 +65,14 @@ Referee::~Referee() {
   if (Verbose()) printf("done\n");
 }
 
+void Referee::ResetForKickoff() {
+  offsidePlayers.clear();foul.foulType=0;foul.foulPlayer=nullptr;foul.advantage=false;foul.hasBeenProcessed=true;
+  afterSetPieceRelaxTime_ms=0;
+  buffer.desiredSetPiece=e_SetPiece_KickOff;buffer.teamID=0;
+  buffer.stopTime=buffer.prepareTime=match->GetActualTime_ms();buffer.startTime=buffer.prepareTime+2000;
+  buffer.restartPos=Vector3(0);buffer.taker=nullptr;buffer.endPhase=true;buffer.active=true;
+}
+
 void Referee::Process() {
   //printf("%i", match->GetMatchState());
 
@@ -79,7 +87,7 @@ void Referee::Process() {
          (match->GetMatchPhase() == e_MatchPhase_2ndHalf && match->GetMatchTime_ms() > 5400000) ||
          (match->GetMatchPhase() == e_MatchPhase_1stExtraTime && match->GetMatchTime_ms() > 6300000) ||
          (match->GetMatchPhase() == e_MatchPhase_2ndExtraTime && match->GetMatchTime_ms() > 7200000)) &&
-        ballPos.coords[0] < 10 && ballPos.coords[0] > -10) {
+        (PlayerMatchEnabled() || (ballPos.coords[0] < 10 && ballPos.coords[0] > -10))) {
 
       foul.advantage = false;
       if (!CheckFoul()) {
@@ -99,6 +107,10 @@ void Referee::Process() {
           buffer.teamID = 1;
         } else {
           buffer.teamID = 0;
+        }
+
+        if(PlayerMatchEnabled() && match->GetMatchPhase()==e_MatchPhase_2ndHalf) {
+          buffer.active=false;match->GameOver();return;
         }
 
         e_MatchPhase nextPhase;

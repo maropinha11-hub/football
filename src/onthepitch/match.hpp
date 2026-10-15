@@ -115,6 +115,16 @@ class Match {
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void LaunchTrainingBall(int delivery);
     void ProcessTraining();
+    Player *GetTrainingPlayer() const { return trainingPlayer; }
+    void SetTrainingPlayer(Player *value) { trainingPlayer=value; }
+    void ProcessPlayerMatchInput();
+    void UpdatePlayerMatchCamera();
+    void WriteTrainingTelemetry(IHIDevice *input);
+    void WritePlayerMatchTelemetry();
+    void RequestPlayerMatchPass();
+    Player *RequestedPassTarget(Player *passer) const;
+    void RecordPlayerMatchAction(Player *actor,e_FunctionType action,Player *target);
+    void RestartPlayerMatch();
     void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingReceptionFacing() const { return trainingReceptionFacing; }
@@ -272,6 +282,8 @@ class Match {
     Team *teams[2];
 
     Officials *officials;
+    Player *trainingPlayer = nullptr;
+    unsigned long playerMatchPassUntil_ms = 0;
     int trainingExercise = 0;
     int trainingController = 0;
     unsigned int trainingPreviousButtons = 0;

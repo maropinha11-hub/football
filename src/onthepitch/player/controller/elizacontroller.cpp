@@ -58,6 +58,11 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
   _CalculateSituation();
 
   _Preprocess(); // calculate some variables
+  if(Player *receiver=match->RequestedPassTarget(CastPlayer())) {
+    const float range=(receiver->GetPosition()-player->GetPosition()).Get2D().GetLength();
+    _AddPass(commandQueue,receiver,range>25?e_FunctionType_HighPass:e_FunctionType_ShortPass);
+  }
+
 
 
   FormationEntry entry = CastPlayer()->GetDynamicFormationEntry();

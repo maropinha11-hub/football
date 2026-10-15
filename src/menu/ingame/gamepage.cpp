@@ -29,7 +29,7 @@ GamePage::GamePage(Gui2WindowManager *windowManager, const Gui2PageData &pageDat
   betaSign->Show();
   if (TrainingEnabled()) {
     Gui2Caption *shortcuts = new Gui2Caption(windowManager, "training_shortcuts", 0, 0, 0, 2.5f,
-      "Direito: olhar | LB+D-pad baixo: falta | View: reiniciar | Menu: pausa | R3: camera");
+      PlayerMatchEnabled()?"RT/E: pedir passe | View/R: nova partida | Menu/P: pausa | R3/Tab: camera":"Direito: olhar | LB+D-pad baixo: falta | View: reiniciar | Menu: pausa | R3: camera");
     shortcuts->SetColor(Vector3(220, 225, 235));
     shortcuts->SetTransparency(0.3f);
     this->AddView(shortcuts);
@@ -74,10 +74,12 @@ void GamePage::Process() {
 
       if (Verbose()) printf("connecting signals\n");
 
+      if(!PlayerMatchEnabled()) {
       match->sig_OnMatchPhaseChange.connect(boost::bind(&GamePage::GoMatchPhasePage, this));
       match->sig_OnShortReplayMoment.connect(boost::bind(&GamePage::GoShortReplayPage, this));
       match->sig_OnExtendedReplayMoment.connect(boost::bind(&GamePage::GoExtendedReplayPage, this));
       match->sig_OnGameOver.connect(boost::bind(&GamePage::GoGameOverPage, this));
+      }
 
     }
     GetGameTask()->matchLifetimeMutex.unlock();

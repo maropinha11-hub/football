@@ -8,6 +8,14 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no
+[pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
+Você controla o mesmo jogador do treino; os outros dez companheiros e os
+onze adversários usam a CPU original do jogo. **RT**, sem bola, pede passe;
+**E** faz o mesmo no teclado. A partida tem dois tempos de três minutos,
+placar, goleiros e reposições. O treino continua em `run-training.bat`.
+Consulte [os comandos e detalhes da partida](docs/PARTIDA-JOGADOR-FIXO.md).
+
 O [pacote Windows completo](artifacts/football-training-windows-x86_64.zip)
 usa a condução nativa em todas as direções, priorizando o pé direito. A
 condução frontal importada `DefenseJog_LoopF` foi retirada da seleção.

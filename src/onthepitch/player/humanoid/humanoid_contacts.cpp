@@ -50,7 +50,12 @@ Vector3 triangleClosest(const Vector3 &p,const Vector3 *t) {
 }
 }
 
+bool HumanoidBase::UsesTrainingContacts() const {
+  return TrainingEnabled() && (!PlayerMatchEnabled() || match->GetTrainingPlayer()==player);
+}
+
 void HumanoidBase::CaptureContactMesh() {
+  if(PlayerMatchEnabled() && !UsesTrainingContacts())return;
   contactJointBone.fill(-1);
   for(unsigned j=0;j<joints.size();++j)for(unsigned i=0;i<13;++i)
     if(joints[j].node->GetName()==pes3::nativeBoneNames[i])contactJointBone[j]=int(i);
@@ -70,7 +75,7 @@ void HumanoidBase::CaptureContactMesh() {
     }
   }
   geometry->resourceMutex.unlock();
-  if(TrainingEnabled())for(Animation *animation:anims->GetAnimations()) {
+  if(UsesTrainingContacts())for(Animation *animation:anims->GetAnimations()) {
     if(animation->GetVariable("training_dribble")!="true")continue;
     for(int frame=0;frame<animation->GetFrameCount();++frame) {
       Quaternion local[13],global[13],unused;Vector3 positions[13],root;
@@ -92,7 +97,7 @@ void HumanoidBase::CaptureContactMesh() {
 
   // Bind each event to this player's weighted skin. The old markers describe
   // proxy body parts; the native approach solver can now aim at the real mesh.
-  if(TrainingEnabled())for(Animation *animation:anims->GetAnimations()) {
+  if(UsesTrainingContacts())for(Animation *animation:anims->GetAnimations()) {
     auto extension=boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"));
     const std::string part=animation->GetVariable("touch_bodypart");
     if(!extension || part.empty() || extension->GetTouchCount()==0)continue;
@@ -265,7 +270,7 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
   if(!source && animation->GetVariable("added_chest")!="true")
     BlendUpperReception(upperReceptionClip,upperReceptionPhase,upperReceptionWeight,facing,local,upperReceptionArmWeight);
   ContactForwardKinematics(local,global,positions);
-  if(TrainingEnabled() && player->GetExternalController()) {
+  if(UsesTrainingContacts() && player->GetExternalController()) {
     const Quaternion authored=local[2];
     AimTrainingHead(local,global,positions,match->GetTrainingLookDirection());
     if(source && animation==chestAnimation.get()) {
@@ -365,7 +370,7 @@ void HumanoidBase::AimTrainingHead(Quaternion *local,Quaternion *global,Vector3 
 }
 
 void HumanoidBase::PutTrainingHeadLook() {
-  if(!TrainingEnabled() || !player->GetExternalController() || fetchedChestPhase>=0)return;
+  if(!UsesTrainingContacts() || !player->GetExternalController() || fetchedChestPhase>=0)return;
   Quaternion local[13],global[13];Vector3 positions[13];
   for(unsigned i=0;i<13;++i) {
     auto node=nodeMap.at(pes3::nativeBoneNames[i]);local[i]=node->GetRotation();global[i]=node->GetDerivedRotation();
@@ -383,7 +388,7 @@ void HumanoidBase::PutTrainingHeadLook() {
 }
 
 void HumanoidBase::ProcessTrainingBodyContact() {
-  if(!TrainingEnabled())return;
+  if(!UsesTrainingContacts())return;
   Ball *ball=match->GetBall();ball->CalculatePrediction();
   const Vector3 current=ball->Predict(0),incoming=ball->GetMovement();
   const Vector3 previous=contactPreviousBallValid?contactPreviousBall:current;
@@ -424,7 +429,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
 
 void HumanoidBase::UpdateTrainingContactPose() {
   contactPoseBlend=0;
-  if(!TrainingEnabled())return;
+  if(!UsesTrainingContacts())return;
   const unsigned frame=std::min<unsigned>(currentAnim->frameNum,currentAnim->positions.size()-1);
   Vector3 approach=currentAnim->actionSmuggleOffset;
   if(currentAnim->touchFrame>0 && currentAnim->frameNum<=currentAnim->touchFrame) {
@@ -469,7 +474,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
 }
 
 void HumanoidBase::PutTrainingContactPose() {
-  if(!TrainingEnabled() || fetchedContactBlend<=0)return;
+  if(!UsesTrainingContacts() || fetchedContactBlend<=0)return;
   const float amount=fetchedContactBlend;
   // A native touch must remain visible while the previous dribble fades out.
   // Remove its visual support lift before applying the physical contact pose.
