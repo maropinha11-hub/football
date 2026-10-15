@@ -96,9 +96,13 @@ void Match::LaunchTrainingBall(int delivery) {
 }
 
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
-  if(IsFirstPerson() && trainingReceiving)
-    return trainingReceptionFacing*stick.coords[1]+
-      Vector3(-trainingReceptionFacing.coords[1],trainingReceptionFacing.coords[0],0)*stick.coords[0];
+  if(trainingReceiving || (designatedPossessionPlayer && designatedPossessionPlayer->GetHumanoid()->UpperReceptionActive() && ball->Predict(0).coords[2]>.45f)) {
+    // Only approach/retreat is authored for these chest receptions. In third
+    // person project world input onto that same reception axis; in first
+    // person the vertical stick already represents approach/retreat.
+    const float along=IsFirstPerson()?stick.coords[1]:stick.GetDotProduct(trainingReceptionFacing);
+    return trainingReceptionFacing*along;
+  }
   return IsFirstPerson() ? trainingView.movement(stick) : stick;
 }
 

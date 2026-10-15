@@ -9,25 +9,23 @@ da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
 O [pacote Windows completo](artifacts/football-training-windows-x86_64.zip)
-inclui a condução `DefenseJog_LoopF` e os domínios `Chest_Stand` e `Chest_Run`.
+usa a condução nativa em todas as direções, priorizando o pé direito. A
+condução frontal importada `DefenseJog_LoopF` foi retirada da seleção.
 Extraia em uma pasta nova e execute `run-training.bat`.
 Use **F4** para receber um passe rasteiro, **F5** para uma bola no peito e
 **F6** para um cruzamento alto. R3/Tab alterna a câmera para ver o corpo.
 
-O domínio adicional usa uma camada para tronco, braços e cabeça. As pernas
-e a posição do jogador continuam sob a locomoção normal; é possível andar
-antes e depois do contato sem esperar o gesto terminar. A trajetória prevista
-precisa encontrar a região frontal do peito, e a força só é aplicada quando
-a bola alcança essa superfície real. Sair da trajetória pode fazer o domínio
-falhar; as recepções nativas com os pés continuam disponíveis.
+Os domínios adicionais `Chest_Stand` e `Chest_Run` usam tronco, cabeça e
+braços durante o domínio. Depois da queda da bola, os braços voltam suavemente
+à locomoção nativa; as pernas permanecem livres. Durante a chegada e a queda
+após o contato, o ajuste é para frente ou para trás no eixo da recepção,
+sem virar para os lados. O domínio exige contato na superfície frontal do
+peito; as recepções nativas com os pés continuam disponíveis.
 
-Na condução forte para frente, o jogador faz o gesto de toque, volta à
-locomoção nativa enquanto a bola rola e faz outro toque quando se aproxima
-dela. O analógico leve mantém a condução antiga. L3 e T não alternam o modo.
 As animações têm duração cerca de 12% maior, preservando as velocidades dos
 percursos e o passo físico de 10 ms. Os toques de condução são espaçados para
-evitar repiques rápidos nas diagonais. RB continua sendo corrida e RT fica
-reservado. A cabeça acompanha a câmera e o tronco mantém a inclinação aprovada.
+evitar repiques rápidos nas diagonais. L3/T não alternam a condução.
+RB continua sendo corrida e RT fica reservado. A cabeça acompanha a câmera.
 
 O quique continua ajustável em `training_ground_bounce`. X atinge carga máxima
 em 0,52 s e LB+X faz cobertura. Chutes, passes e cabeçadas conferem a superfície

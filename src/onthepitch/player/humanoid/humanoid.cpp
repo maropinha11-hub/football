@@ -400,7 +400,11 @@ void Humanoid::Process() {
       const unsigned interval=human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint)?300:420;
       cadence=match->GetActualTime_ms()>=CastPlayer()->GetLastTouchTime_ms()+interval;
     }
-    const bool accepted=gap<=.0025f && (part=="chest" || cadence);
+    const Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
+    const bool chestApproach=part!="chest" ||
+      (normal.GetDotProduct(match->GetTrainingReceptionFacing())>.15f &&
+       (ball->GetMovement()-spatialState.movement).GetDotProduct(normal)<-.05f);
+    const bool accepted=gap<=.0025f && chestApproach && (part=="chest" || cadence);
     if(accepted && gap<0) {
       const Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
       ball->ResolveBodyContact(surface+normal*.1105f,ball->GetMovement());
@@ -1476,32 +1480,23 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head") dataSet.push_back(id);
   }
   //if (command.desiredFunctionType == e_FunctionType_Special) printf("size: %i\n", dataSet.size());
-  bool preferSlowGait=false,preferNewGait=false;
+  bool preferSlowGait=false,preferRightFoot=false;
   if(TrainingEnabled() && player->GetExternalController()) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
     const float strength=human->GetHIDevice()->GetDirection().GetLength();
     const bool locomotion=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
       match->TrainingHasBall() && !match->TrainingReceivingBall();
     preferSlowGait=locomotion && strength>.01f && strength<=.72f;
-    preferNewGait=locomotion && strength>.72f && dribbleTrialPhase>.5f &&
-      (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.1f &&
-      (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetDotProduct(spatialState.directionVec)>.10f &&
-      (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f &&
-      human->GetHIDevice()->GetDirection().coords[1]>.72f && std::fabs(human->GetHIDevice()->GetDirection().coords[0])<.20f &&
-      GetConfiguration()->GetBool("training_fbx_dribble",true);
+    preferRightFoot=locomotion;
     const Vector3 stick=human->GetHIDevice()->GetDirection();
-    const bool forwardReception=stick.coords[1]>.15f && std::fabs(stick.coords[0])<.35f;
-    const bool stillReception=strength<.10f;
-    const Vector3 ballDelta=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D();
-    const bool coasting=ballDelta.GetDotProduct((match->GetBall()->GetMovement()-player->GetMovement()).Get2D())>.03f;
+    const float receptionInput=match->GetTrainingMovement(stick).GetDotProduct(match->GetTrainingReceptionFacing());
+    const bool forwardReception=receptionInput>.15f;
+    const bool stillReception=receptionInput<=.15f;
     dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id) {
       Animation *anim=anims->GetAnim(id);
-      return (preferNewGait && coasting && command.desiredFunctionType==e_FunctionType_BallControl) ||
+      return anim->GetVariable("training_dribble")=="true" ||
         (command.desiredFunctionType==e_FunctionType_Trap && anim->GetVariable("added_chest")!="true" &&
           anim->GetVariable("touch_bodypart")=="trunk") ||
-        (preferNewGait && command.desiredFunctionType==e_FunctionType_BallControl &&
-          anim->GetVariable("training_dribble")!="true") ||
-        (anim->GetVariable("training_dribble")=="true" && (!preferNewGait || command.desiredFunctionType==e_FunctionType_Movement)) ||
         (anim->GetVariable("training_slow_dribble")=="true" && !preferSlowGait) ||
         (anim->GetVariable("added_chest")=="true" &&
           (UpperReceptionActive() || !(anim->GetVariable("reception_mode")=="forward"?forwardReception:stillReception)));
@@ -1816,24 +1811,24 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     }
   }
 
+  // Bias the original selector toward the right-foot version of the same
+  // native gait seen in third person. Keep every valid fallback: a turn or
+  // interception must still pass the original direction/reach tests.
+  if(preferRightFoot && command.desiredFunctionType==e_FunctionType_BallControl)
+    std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("touch_bodypart")=="right_foot";});
   if(preferSlowGait)
     std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("training_slow_dribble")=="true";});
   if(TrainingEnabled() && command.desiredFunctionType==e_FunctionType_Trap)
     std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("added_chest")=="true";});
-  if(preferNewGait &&
-      command.desiredFunctionType==e_FunctionType_BallControl) {
-    const bool continuing=currentAnim->anim->GetVariable("training_dribble")=="true";
-    const float phase=continuing ? std::fmod(std::atof(currentAnim->anim->GetVariable("source_phase_start").c_str())+
-      currentAnim->frameNum*std::atof(currentAnim->anim->GetVariable("source_phase_scale").c_str()),70.0f) : -1;
-    auto cost=[&](int id) {
-      Animation *anim=anims->GetAnim(id);
-      if(anim->GetVariable("training_dribble")!="true")return 1000.0f;
-      if(!continuing)return 0.0f;
-      const float start=std::atof(anim->GetVariable("source_phase_start").c_str());
-      const float delta=std::fabs(start-phase);
-      return std::min(delta,70-delta)+.01f*std::fabs(anim->GetIncomingVelocity()-spatialState.floatVelocity);
-    };
-    std::stable_sort(dataSet.begin(),dataSet.end(),[&](int a,int b){return cost(a)<cost(b);});
+  if(TrainingEnabled() && command.desiredFunctionType==e_FunctionType_Trap) {
+    for(int id:dataSet) {
+      Animation *candidate=anims->GetAnim(id);
+      if(candidate->GetVariable("added_chest")=="true" &&
+          StartUpperReception(candidate,std::atoi(candidate->GetVariable("touchframe").c_str())))return false;
+    }
+    // Native full-body reach equations still own the remaining receptions.
+    // Added upper clips were assessed on the composed chest surface above.
+    dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("added_chest")=="true";}),dataSet.end());
   }
 
   int selectedAnimID = -1;

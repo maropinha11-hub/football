@@ -117,6 +117,7 @@ class Match {
     void ProcessTraining();
     void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
+    Vector3 GetTrainingReceptionFacing() const { return trainingReceptionFacing; }
     Vector3 GetTrainingFacing() const { return training::forward(trainingView.bodyYaw); }
     bool TrainingHasBall() const { return trainingView.withBall; }
     bool TrainingReceivingBall() const { return trainingReceiving; }

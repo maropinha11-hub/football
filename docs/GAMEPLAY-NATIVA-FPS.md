@@ -1,24 +1,20 @@
 # Gameplay nativa com camada superior
 
-A locomoção, a assistência, a escolha das ações e os impulsos continuam
-baseados no Gameplay Football. O gesto adicional de peito é uma camada sobre
-tronco, braços e cabeça; as pernas e a raiz permanecem na animação nativa.
-Ele não bloqueia comandos até o fim nem desloca o jogador para um alvo fixo.
+A condução usa a seleção nativa em todas as direções e câmeras, priorizando
+o pé direito entre candidatos válidos. A condução frontal DefenseJog foi
+retirada da seleção. Os gestos adicionais de peito usam tronco, cabeça e
+braços; após a queda, os braços voltam suavemente à locomoção. Pernas e raiz
+mantêm a locomoção nativa. A recepção permite
+ajustes para frente e para trás, sem domínio virando para os lados.
 
-Na condução para frente, o gesto de toque é intercalado com a locomoção
-original enquanto a bola rola. Os intervalos entre toques evitam repiques
-nas diagonais. As animações são retimadas com seus eventos, mantendo o
-relógio físico de 10 ms e as velocidades dos percursos.
-
-A previsão e o contato usam a superfície do modelo. O domínio superior
-exige o peito frontal; sair da trajetória permite perder a bola. As demais
-recepções nativas continuam disponíveis. Não há reposicionamento instantâneo
-de pernas para alcançar a bola. A câmera, os comandos Xbox, RB e RT reservado
-continuam presentes.
+A previsão e o contato usam a superfície do modelo. O domínio exige contato
+frontal no peito; as demais recepções nativas continuam disponíveis. Não há
+reposicionamento instantâneo de pernas para alcançar a bola. Câmera, comandos
+Xbox, RB e RT reservado permanecem.
 
 Consulte [a integração](ANIMACAO-FBX-TESTE.md) e os
-[resultados](upper-body-cadence-validation.json). Os relatórios anteriores
-registram versões substituídas, inclusive o antigo bloqueio de recepção.
+[resultados](native-right-foot-reception-validation.json). Os relatórios
+anteriores registram versões substituídas.
 
 ```bash
 source scripts/native-env.sh

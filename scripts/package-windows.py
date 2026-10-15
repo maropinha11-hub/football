@@ -121,9 +121,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta nova e execute run-training.bat. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n\n"
-        "Ao sair parado ou usar o analogico leve, joga com a conducao antiga.\n"
-        "Com analogico forte para frente, transita para DefenseJog_LoopF.\n"
-        "Depois do toque, volta a passada nativa enquanto a bola rola.\n"
+        "Conducao nativa em todas as direcoes, preferindo o pe direito.\n"
+        "A conducao frontal DefenseJog foi retirada da selecao.\n"
+        "A selecao original conserva as viradas e a corrida com RB.\n"
         "A troca e automatica; L3/T nao alternam a animacao.\n"
         "Os impulsos exigem contato entre a bola e a regiao do corpo.\n"
         "RB usa a corrida nativa. RT continua reservado.\n"
@@ -136,9 +136,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Chest_Stand e Chest_Run sao dominios adicionais no seletor original.\n"
         "Os dominios anteriores continuam disponiveis. Solte o analogico e\n"
         "aperte F5 para Stand; avanco moderado e F5 para Run.\n"
-        "O peito usa tronco, bracos e cabeca; as pernas ficam livres.\n"
-        "Voce pode andar antes/depois do contato, sem esperar o fim.\n"
-        "Se sair da trajetoria do peito, a recepcao pode falhar.\n\n"
+        "Bracos fazem o dominio; apos a queda, voltam a locomocao suavemente.\n"
+        "Antes do contato e na queda, ajuste apenas para frente ou tras.\n"
+        "O dominio exige contato real na parte frontal do peito.\n\n"
         "Primeira pessoa: sem bola, direito vira e esquerdo move como FPS.\n"
         "Com bola, esquerdo conduz; direito olha com a cabeça e retorna lentamente.\n"
         "Frente segue a nova frente; direita vira para a nova direita.\n"
@@ -197,7 +197,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
-            ("Windows x64 — teste de conducao DefenseJog_LoopF\r\n\r\n" if approved_binary is None else
+            ("Windows x64 — conducao nativa com pe direito\r\n\r\n" if approved_binary is None else
              "Windows x64 — gameplay original com primeira pessoa\r\n\r\n") +
             "1. Feche o jogo.\r\n"
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
@@ -209,7 +209,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
              "R3 alterna as cameras para ver o corpo completo.\r\n"
              "F4: passe recebido; F5: dominio de peito parado/avancando; F6: cruzamento.\r\n"
              "F5 sem direcao: Stand; F5 com avanco moderado: Run.\r\n"
-             "Dominio usa so a parte superior; as pernas ficam livres.\r\n"
+             "Bracos fazem o dominio e voltam a corrida apos a bola cair; ajuste frente/tras.\r\n"
              "RB permite correr. RT continua reservado.\r\n") +
             "O ZIP inclui training.config e o novo clip em media/training.\r\n"
             "Nao precisa importar ou copiar a pasta pes3 para jogar.\r\n")

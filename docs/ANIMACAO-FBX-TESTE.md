@@ -1,82 +1,64 @@
-# Domínio superior e condução com intervalos
+# Condução nativa e domínio de peito
 
 Extraia o ZIP completo em uma pasta nova e abra `run-training.bat`.
 
-| Situação | Comportamento |
-| --- | --- |
-| Saída parado / analógico leve | Condução nativa |
-| Frente forte, bola próxima e alcançável | Gesto de toque DefenseJog_LoopF |
-| Bola se afastando depois do toque | Locomoção nativa enquanto a bola rola |
-| Virada ou RB | Seleção e recuperação nativas |
-| Bola na trajetória do peito | Camada Chest_Stand ou Chest_Run sobre pernas livres |
-| Jogador sai da trajetória | Sem domínio forçado; recepções nativas continuam disponíveis |
+A condução frontal importada DefenseJog não entra mais no catálogo de
+candidatos. Todas as direções usam a seleção nativa que já aparecia nas
+outras direções em terceira pessoa. O rastreamento identificou principalmente
+`ballcontrol/walk/000.anim` e sua versão espelhada; o nome “diagonal” descreve
+como o corpo aparece na câmera, não um deslocamento obrigatório de 45 graus.
+A versão de pé direito tem preferência entre os candidatos válidos. O teste
+de alcance continua podendo escolher outro pé quando necessário numa virada.
+O analógico leve conserva a passada nativa lenta; RB conserva a corrida.
 
-## Camada do peito
+As transições passam pela suavização nativa, preservando a pose e os
+comprimentos dos ossos, sem reposicionar uma perna instantaneamente até a bola.
+Os intervalos mínimos de condução continuam em 420 ms, ou 300 ms com RB.
+O relógio físico continua a 100 Hz. O fator de duração das animações é 1,12;
+quadros e eventos são retimados juntos, conservando a velocidade do percurso.
 
-A camada altera `middle`, `neck`, ombros e cotovelos. Ela não altera a raiz,
-a orientação da pelve nem os ossos das pernas. A rotação do tronco das fontes
-é adaptada à referência da pelve atual. O deslocamento de raiz e as passadas
-dos FBX não são aplicados nesse experimento.
+## Domínio adicional
 
-A pose composta é usada tanto pelo renderizador quanto pelas colisões. A
-previsão confere a parte frontal do peito; o evento real depende de a esfera
-alcançar a pele nessa região, com margem numérica de 2,5 mm. A cabeça, as
-costas e um alvo distante do corpo não autorizam o domínio. A camada não
-prende o jogador ao ponto previsto de recepção. Um gesto que perde a bola
-se desfaz suavemente; um gesto com contato pode continuar com as pernas andando.
+`Chest_Stand` e `Chest_Run` continuam disponíveis como camadas adicionais.
+Durante o domínio a máscara inclui `middle`, `neck`, ombros e cotovelos. Após
+a queda da bola, ombros e cotovelos voltam gradualmente à locomoção nativa.
+Pelve, pernas e raiz preservam a locomoção nativa. A inclinação da fonte é composta com a
+pelve atual. O deslocamento da raiz dos FBX não é aplicado.
 
-`Chest_Stand` e `Chest_Run` continuam sendo fontes adicionais. Com o analógico
-solto, a seleção pode usar Stand; com avanço moderado, pode usar Run. Movimento
-mais forte pode alterar o encontro com a bola e exigir outra recepção.
-As fontes FBX não têm trilha de bola: os marcadores de integração são ligados
-à superfície do modelo durante o carregamento.
+Durante a chegada e a queda após o domínio, o movimento permitido é avançar
+ou recuar no eixo fixo da recepção. A entrada lateral não vira o peito para
+uma direção sem animação correspondente. Com o analógico solto, a assistência
+não deve fazer o jogador caminhar contra a bola ainda alta. Após a queda,
+a assistência nativa volta a acompanhar a bola no solo.
 
-## Toque e rolagem
-
-A animação de condução deixa de tocar continuamente quando não é necessária.
-Depois do toque, ela completa o gesto e dá lugar à locomoção original. Outro
-gesto só é escolhido quando a bola está à frente, próxima e alcançável; uma
-bola se afastando continua rolando. Não há um segundo controlador arrastando
-a bola nem uma correção rápida da perna no último instante.
-
-Os eventos de condução têm intervalo mínimo de 420 ms, ou 300 ms durante RB.
-A aproximação nativa confere a superfície da chuteira na altura prevista da
-bola; chutes, passes e cabeçadas usam a mesma conferência da região pertinente.
-O impulso continua exigindo contato físico real no instante de execução.
-
-## Cadência e comandos
-
-`training_animation_time_scale` vale 1,12. Os quadros e eventos são retimados
-juntos; o percurso horizontal é ajustado para manter suas velocidades. O
-comprimento dos ossos é preservado. A física e os comandos continuam a 100 Hz.
-Os fontes Stand e Run de 151 e 91 amostras passam a 169 e 102 no catálogo.
-O ciclo de condução termina cada metade retimada, sem cortar os quadros finais.
+A previsão seleciona o gesto; ela não autoriza o impulso sozinha. O evento
+exige contato da esfera com a pele na região frontal do peito, dentro da
+margem numérica de 2,5 mm, vindo da frente. Cabeça e costas não autorizam esse
+evento. Uma trajetória que não encontra o peito conserva as recepções nativas.
+A proteção passiva usa a superfície ponderada do modelo e a trajetória
+varrida da bola, incluindo o período depois do domínio.
 
 | Tecla | Exercício |
 | --- | --- |
 | F4 | Passe rasteiro recebido |
 | F5, analógico solto | Bola para domínio de peito parado |
-| F5, avanço moderado | Bola para experimentar o domínio avançando |
+| F5, avanço moderado | Domínio avançando |
 | F6 | Cruzamento alto |
 | R3 / Tab | Alternar câmera |
 | R / View | Reiniciar |
 
-RB continua sendo corrida e RT fica reservado. L3/T não alternam a condução.
+RT continua reservado. Os arquivos DefenseJog permanecem arquivados para
+rastreabilidade, sem serem carregados como candidatos de gameplay.
 
 ## Validação
 
-`tests/training_upper_body_smoke.py` verifica domínio com pernas livres,
-movimento antes da chegada, erro de trajetória, recepção com os pés e a
-preservação da raiz e das pernas no modelo renderizado. O ponto de entrada
-`training_reception_variants_smoke.py` executa essa especificação atual;
-os antigos testes de bloqueio até o fim foram substituídos pelo novo requisito.
+`training_forward_cycle_smoke.py` verifica cinco direções em terceira pessoa,
+pé direito, viradas, cadência e recuperação após RB. `training_upper_body_smoke.py`
+verifica máscara de peito, retorno dos braços, preservação das pernas/raiz, ajuste
+frente/trás, bloqueio lateral e contato real. Os testes de controles, ações
+correndo e regressões completam a conferência. Consulte o relatório
+[native-right-foot-reception-validation.json](native-right-foot-reception-validation.json).
 
-`tests/training_forward_cycle_smoke.py` verifica toques separados por locomoção
-normal, avanço pelo campo, conclusão dos gestos, viradas diagonais, intervalo
-entre impulsos, contato na malha e recuperação depois de RB. Os testes de
-ações em corrida e controles conferem passes, chutes, cobertura e cabeçadas.
-
-Resultados: [upper-body-cadence-validation.json](upper-body-cadence-validation.json).
-Os testes renderizados usam Linux e controle Xbox virtual em SDL. O Windows
-é compilado e tem executável, recursos, importações e integridade do ZIP
-conferidos; a execução gráfica com o controle físico depende do computador.
+Os testes renderizados rodam no Linux com controle Xbox virtual. O pacote
+Windows x64 passa por compilação cruzada e verificação de código, DLLs,
+recursos e integridade; o teste com Windows 11 e controle físico é local.

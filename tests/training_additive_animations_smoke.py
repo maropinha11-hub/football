@@ -14,7 +14,7 @@ p.add_argument('--output',type=Path,required=True)
 p.add_argument('--display',default=':132')
 p.add_argument('--native-only',action='store_true')
 a=p.parse_args()
-report={'result':'running','fbx_visual':not a.native_only,'checks':[],'cases':[]}
+report={'result':'running','fbx_visual':False,'checks':[],'cases':[]}
 def check(name,ok,evidence):
     row={'check':name,'result':'passed'if ok else'failed','evidence':evidence}
     report['checks'].append(row);print(json.dumps(row),flush=True)
@@ -30,7 +30,7 @@ def retained(name,frames):
 try:
     report['executable_sha256']=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()
     with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,
-            config_overrides={'context_x':'320','context_y':'180','training_fbx_dribble':'false'if a.native_only else'true'})as g:
+            config_overrides={'context_x':'320','context_y':'180','training_fbx_dribble':'false'})as g:
         check('standing chest is added without removing native receptions',
               'TRAINING_CHEST_CANDIDATE'in g.log.read_text()and'native_preserved=1'in g.log.read_text(),
               [l for l in g.log.read_text().splitlines()if 'CHEST_CANDIDATE'in l])
@@ -79,7 +79,7 @@ try:
             retained('completed chest with input after '+str(delay)+' ms keeps the ball',frames)
         # Held lateral/back input turns relative to each new front. Judge
         # response and travelled path; a turn can naturally brake at the last sample.
-        for name,stick in [('forward',(0,-1)),('backward',(0,1)),('lateral',(1,0))]:
+        for name,stick in [('forward',(0,-1)),('backward',(0,1))]:
             g.reset();start=len(g.log.read_text());g.keys(['F5'],True);g.keys(['F5'],False);g.advance(350)
             g.pad(*stick);frames=g.advance(1800)
             check('input during incoming chest ball: '+name+' moves freely under the upper layer',
@@ -89,8 +89,8 @@ try:
         log=g.log.read_text();poses=events(log,'TRAINING_NATIVE_DRIBBLE_POSE')
         if not a.native_only:
             check('additional chest clip is selected as a free upper-body layer',bool(events(log,'TRAINING_UPPER_START')),events(log,'TRAINING_NATIVE_START')[-12:])
-        check('imported forward gait uses native animation selection and actions',
-              (bool(poses)if not a.native_only else not poses)and
+        check('native forward gait replaces the imported animation and keeps native actions',
+              not poses and
               'TRAINING_FBX_TOUCH'not in log and 'TRAINING_CHEST_START'not in log,
               {'rendered_imported_samples':len(poses),'native_contacts':len(events(log,'TRAINING_ACTION_TOUCH'))})
         g.keys(['Escape'],True);g.game.wait(timeout=15)

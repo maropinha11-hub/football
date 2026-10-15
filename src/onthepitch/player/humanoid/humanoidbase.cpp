@@ -942,6 +942,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_animApplyBuffer.upperReception=upperReceptionClip;
   buf_animApplyBuffer.upperPhase=upperReceptionPhase;
   buf_animApplyBuffer.upperWeight=upperReceptionWeight;
+  buf_animApplyBuffer.upperArmWeight=upperReceptionArmWeight;
   // The phase advances at physics frequency, independently of native requeues.
   // Fetch it at the same historical render time as the ball and player root.
   for(unsigned side=0;side<2;++side)buf_dribbleFootOffsets[side].SetValue(dribbleFootOffsets[side],snapshotTime_ms);
@@ -1055,7 +1056,6 @@ void HumanoidBase::Put() {
     fetchedbuf_animApplyBuffer.smooth && !restoreNative, fetchedbuf_animApplyBuffer.smoothFactor,
     fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets,
     &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false,TrainingEnabled()?12.0f:8.0f);
-  if(!studyApplied)PutUpperReception();
   pes3StudyWasApplied=studyApplied;
   if (studyApplied) {
     Quaternion facing;
@@ -1127,6 +1127,8 @@ void HumanoidBase::Put() {
     }
   }
 
+  if(!studyApplied)PutUpperReception();
+
   if(!studyApplied && TrainingEnabled()) {
     auto neck=nodeMap.at("neck");Quaternion lean;lean.SetAngleAxis(.12f,Vector3(1,0,0));
     neck->SetRotation((lean*neck->GetRotation()).GetNormalized(),false);
@@ -1141,6 +1143,18 @@ void HumanoidBase::Put() {
       int(fetchedbuf_animApplyBuffer.dribbleTrialFunction));
   // All contacts and transitions use the selected animation directly.
   if(!studyApplied)PutTrainingHeadLook();
+  if(!studyApplied && TrainingEnabled() && fetchedbuf_animApplyBuffer.upperReception &&
+      GetConfiguration()->GetBool("training_telemetry",false)) {
+    Quaternion rotations[13];Vector3 positions[13];const Vector3 origin=humanoidNode->GetPosition().Get2D();
+    for(unsigned i=0;i<13;++i) {
+      const auto node=nodeMap.at(pes3::nativeBoneNames[i]);rotations[i]=node->GetDerivedRotation();
+      positions[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;
+    }
+    const Vector3 sphere=match->GetBall()->GetBallGeom()->GetPosition();
+    printf("TRAINING_RENDER_CHEST t=%lu phase=%.3f gap=%.5f\n",match->GetPreviousPutTime_ms(),
+      fetchedbuf_animApplyBuffer.upperPhase,ContactSurface(sphere,"chest",rotations,positions));
+  }
+
   if(TrainingEnabled() && player->GetExternalController() && GetConfiguration()->GetBool("training_telemetry",false)) {
     const auto anim=fetchedbuf_animApplyBuffer.anim;
     const int marker=std::atoi(anim->GetVariable("touchframe").c_str());

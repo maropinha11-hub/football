@@ -323,18 +323,21 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // sprint after every forward-loop touch while RB is released.
       const Vector3 stick=hid->GetDirection();
       if(actionMode==0 && match->TrainingReceivingBall() && !player->GetHumanoid()->UpperReceptionActive())
-        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,1.4f);
+        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,idleDribbleSwitch+.05f);
       else if(actionMode==0 && match->TrainingHasBall() && !hid->GetButton(e_ButtonFunction_Sprint) &&
           player->GetHumanoid()->GetCurrentAnim()->anim->GetVariable("training_dribble")=="true" &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.1f &&
           (match->GetBall()->GetMovement()-player->GetMovement()).Get2D().GetLength()<3.0f &&
           stick.coords[1]>.72f && std::fabs(stick.coords[0])<.20f)
         command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,inputVelocityFloat);
-      // Leave the incoming trajectory freely; after an actual chest touch,
-      // use native approach assistance so walking does not overrun the drop.
-      if(actionMode==0 && player->GetHumanoid()->UpperReceptionActive() && match->TrainingReceivingBall()) {
-        command.desiredDirection=inputDirection;command.desiredVelocityFloat=inputVelocityFloat;
-        command.desiredLookAt=player->GetPosition()+inputDirection*10;
+      // The incoming-ball axis stays fixed. Forward/backward can adjust the
+      // meeting point, but sideways input cannot turn the torso mid-reception.
+      // Once the ball touches, native assistance follows the controlled drop.
+      if(actionMode==0 && (match->TrainingReceivingBall() ||
+          (player->GetHumanoid()->UpperReceptionActive() && match->GetBall()->Predict(0).coords[2]>.45f))) {
+        command.desiredDirection=inputDirection;
+        command.desiredVelocityFloat=(inputVelocityFloat>.05f?idleDribbleSwitch+.05f:0);
+        command.desiredLookAt=player->GetPosition()+match->GetTrainingReceptionFacing()*10;
       }
       // Dribbling still needs the original movement assistance between touches,
       // especially when a turn cannot immediately use a ball-control animation.
@@ -561,8 +564,8 @@ void HumanController::Reset() {
 
 void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVelocityFloat) {
   rawInputDirection = hid->GetDirection();
-  const float magnitude = rawInputDirection.GetLength();
   if (TrainingEnabled()) rawInputDirection = match->GetTrainingMovement(rawInputDirection);
+  const float magnitude = rawInputDirection.GetLength();
 
   if (rawInputDirection.GetLength() < (TrainingEnabled() ? 0.001f : analogStickDeadzone)) {
     rawInputDirection = CastPlayer()->GetDirectionVec();
@@ -579,7 +582,7 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
         hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
     if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
     if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0 && !player->GetHumanoid()->UpperReceptionActive())
-      rawInputVelocityFloat=std::min(rawInputVelocityFloat,1.4f);
+      rawInputVelocityFloat=std::min(rawInputVelocityFloat,idleDribbleSwitch+.05f);
     // The native solver quantizes speeds below this boundary as idle. Keep
     // a light on-ball stick in its slow native gait instead of holding still.
     if(TrainingEnabled() && match->TrainingHasBall() && !match->TrainingReceivingBall() &&

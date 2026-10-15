@@ -162,7 +162,7 @@ struct AnimApplyBuffer {
     dribbleTrialLegBlend = src.dribbleTrialLegBlend;
     dribbleTrialFunction = src.dribbleTrialFunction;
     dribbleTrialFacing = src.dribbleTrialFacing;
-    upperReception = src.upperReception; upperPhase=src.upperPhase; upperWeight=src.upperWeight;
+    upperReception = src.upperReception; upperPhase=src.upperPhase; upperWeight=src.upperWeight; upperArmWeight=src.upperArmWeight;
   }
   Animation *anim;
   int frameNum;
@@ -174,7 +174,7 @@ struct AnimApplyBuffer {
   radian orientation;
   std::map < std::string, BiasedOffset > offsets;
   Animation *upperReception=nullptr;
-  float upperPhase=0,upperWeight=0;
+  float upperPhase=0,upperWeight=0,upperArmWeight=0;
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
@@ -245,7 +245,7 @@ class HumanoidBase {
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);
-    void BlendUpperReception(Animation *clip,float phase,float weight,radian facing,Quaternion *local) const;
+    void BlendUpperReception(Animation *clip,float phase,float weight,radian facing,Quaternion *local,float armWeight=-1) const;
     void PutUpperReception();
     Vector3 GetStandingChestTarget() const;
     void CaptureContactMesh();
@@ -386,7 +386,7 @@ class HumanoidBase {
     Vector3 contactPreviousBall;
     Animation *upperReceptionClip=nullptr;
     unsigned long upperReceptionStarted_ms=0;
-    float upperReceptionPhase=0,upperReceptionWeight=0;
+    float upperReceptionPhase=0,upperReceptionWeight=0,upperReceptionArmWeight=0,upperReceptionArmRelease=-1;
     int upperReceptionContactFrame=0,upperReceptionEndFrame=0;
     bool upperReceptionTouchMade=false;
     bool contactPreviousBallValid=false;

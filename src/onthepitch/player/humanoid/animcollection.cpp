@@ -503,15 +503,8 @@ void AnimCollection::Load(boost::filesystem::path directory) {
     }
   }
 
-  if(TrainingEnabled())for(const std::string kind:{"movement","movement_walk","ballcontrol"})for(int half=0;half<2;++half) {
-    const std::string path="media/training/DefenseJog_native_"+kind+"_"+int_to_str(half)+".anim";
-    if(!boost::filesystem::exists(path))continue;
-    Animation *animation=new Animation();
-    boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
-    animation->AddExtension("football",extension);animation->Load(path);
-    _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
-    if(kind=="ballcontrol")animation->SetVariable("touch_bodypart",half?"left_foot":"right_foot");
-  }
+  // The training player uses native dribbling in every camera/direction.
+  // DefenseJog imports remain archived, but are not gameplay candidates.
 
   // Additional reception candidate: the existing native chest clips remain
   // in the collection, and the original trajectory/approach selector owns it.
