@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <memory>
 
 namespace football_physics {
 using Vec=pes3::Point;
@@ -40,11 +41,15 @@ struct Input {
 };
 struct Metrics {
   float lean=0,turnRate=0,supportMargin=0,effort=0,reach=0,penetration=0;
+  float angularSpeed=0,kineticEnergy=0,jointError=0;
   unsigned groundContacts=0;
 };
 
+class ArticulatedBody;
 class PhysicalRig {
  public:
+  PhysicalRig();
+  ~PhysicalRig();
   void configure(const pes3::NativeBind &bind,float heightScale);
   void reset();
   void impulse(Vec newtonSeconds,Vec lever={{0,0,.35f}});
@@ -58,6 +63,8 @@ class PhysicalRig {
   Mode mode()const{return state;}
   const Metrics &metrics()const{return debug;}
   bool initialized()const{return ready;}
+  const Pose &additivePose()const{return additive;}
+  float renderWeight()const{return state==Mode::Active?0.f:1.f;}
   float age()const{return stateAge;}
   static constexpr float mass=75.f;
  private:
@@ -68,11 +75,17 @@ class PhysicalRig {
   void drive(const Pose &target,float dt,float frequency,float accelerationLimit);
   pes3::NativeBind reference{};
   Pose local{},world{};
+  Pose additive{};
+  std::unique_ptr<ArticulatedBody> articulated;
+  Pose recoveryPose{};
+  Pose physicalUpper{};
+  bool physicalUpperValid=false;
   Points positions{};
   std::array<Vec,13> angularVelocity{};
   Vec root{{0,0,.96f}},rootVelocity{{0,0,0}},previousVelocity{{0,0,0}};
   Vec filteredAcceleration{{0,0,0}},lastForward{{0,-1,0}},sway{{0,0,0}},swayVelocity{{0,0,0}};
   Vec pendingImpulse{{0,0,0}},pendingTorque{{0,0,0}},reachOffset{{0,0,0}};
+  std::array<Vec,13> reachOffsets{};
   Vec recoveryStart{{0,0,0}};
   float scale=1,stateAge=0,filteredTurn=0,settled=0,unstableTime=0;
   bool ready=false;

@@ -71,6 +71,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "config" / "training.config", stage / "training.config")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
+    shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
     shutil.copy2(project / "scripts/import-pes3.ps1", stage / "import-pes3.ps1")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -121,7 +122,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             'if errorlevel 1 pause\r\n', encoding="ascii", newline="",
         )
     (stage / "LEIA-FISICA.txt").write_text(
-        "Teste de animacao e fisica corporal — FPSoccer\n\n"
+        "Teste de fisica corporal Bullet e busca de movimento — FPSoccer\n\n"
         "1. Extraia este ZIP completo em uma pasta nova.\n"
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
@@ -137,7 +138,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "A locomocao continua guiada pelas animacoes existentes, com ajustes\n"
         "de equilibrio, bracos e alcance gradual. Nas quedas, articulacoes,\n"
         "gravidade e contatos com o chao controlam o corpo. A recuperacao\n"
-        "e assistida. Os 270 contextos de teste sao variacoes de parametros,\n"
+        "e assistida. Tronco e bracos acompanham animacoes por motores fisicos.\n"
+        "A busca compara pose, velocidade e trajetoria de animacoes elegiveis.\n"
+        "Camera: sensibilidade aumentada de 2.6 para 3.8.\n"
+        "Os 270 contextos de teste sao variacoes de parametros,\n"
         "nao 270 capturas de movimento novas. Os limites completos da\n"
         "pesquisa e da simulacao constam em docs/FISICA-CORPORAL.md no GitHub.\n",
         encoding="utf-8",
@@ -235,7 +239,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt"):
             output.write(stage/filename,filename)
-        for filename in ("LICENSE","NOTICE"):
+        for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
             ("Windows x64 — conducao nativa com pe direito\r\n\r\n" if approved_binary is None else

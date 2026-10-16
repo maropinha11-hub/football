@@ -18,3 +18,9 @@ are recorded beside the clips in data/media/training.
 The training packages contain no proprietary PES executable or animation
 bank. Optional local research tools are separate from the native training
 gameplay; Gameplay Football fidelity is not a claim of PES equivalence.
+
+Bullet Physics 3.25 (CPU LinearMath, BulletCollision, BulletDynamics)
+Copyright (c) 2003-2023 Erwin Coumans and contributors.
+Statically linked, unmodified upstream source under the zlib license.
+The complete license is included as BULLET-LICENSE.txt in the portable package
+and third_party/bullet/LICENSE.txt in the source tree.

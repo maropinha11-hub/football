@@ -41,6 +41,11 @@ def main():
             check('packaged executable implements physical CLI and solver telemetry', all(token in exe
                   for token in [b'--physical-rig', b'PHYSICAL_RIG_STATE', b'PHYSICAL_RIG_RECOVERED', b'PHYSICAL_RIG_FRAME']))
             check('full and update use the same executable', exe == patch.read('gameplayfootball.exe'))
+            license_text=full.read(prefix+'BULLET-LICENSE.txt')
+            check('Bullet license accompanies the complete and update packages', license_text==patch.read('BULLET-LICENSE.txt')
+                  and b'zlib license' in license_text)
+            check('camera uses the approved increased sensitivity', b'"firstperson_look_speed" "3.8"' in config)
+            check('packaged code implements constrained motion matching', b'MOTION_MATCH t=' in exe)
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),
                           bytes=archive.stat().st_size, executable_sha256=hashlib.sha256(exe).hexdigest())
         report['result'] = 'passed' if all(c['result'] == 'passed' for c in report['checks']) else 'failed'

@@ -22,6 +22,7 @@ bool HumanoidBase::PhysicalRigBusy()const {
 void HumanoidBase::ResetPhysicalRig(){
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();fetchedPhysicalRig=false;
+  for(auto &buffer:buf_physicalAdditive)buffer.Clear();
 }
 void HumanoidBase::PhysicalCollision(const Vector3 &change){
   if(!PhysicalRigEnabled() || match->GetActualTime_ms()<physicalCollisionTime || change.GetLength()<.5f)return;
@@ -97,9 +98,9 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       printf("PHYSICAL_RIG_RECOVERED t=%lu\n",match->GetActualTime_ms());fflush(stdout);return;
     }
     if(GetConfiguration()->GetBool("training_telemetry",false) && physicalRigTime%50==0) {
-      const auto &d=physicalRig->metrics();const auto root=physicalRig->points()[0];
-      printf("PHYSICAL_RIG_FRAME {\"t\":%lu,\"mode\":%d,\"root\":[%.5f,%.5f,%.5f],\"lean\":%.5f,\"turn\":%.5f,\"reach\":%.5f,\"support_margin\":%.5f,\"effort\":%.5f,\"ground_contacts\":%u,\"ground_correction\":%.6f}\n",
-        physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration);
+      const auto &d=physicalRig->metrics();const auto root=physicalRig->points()[0];const auto q=physicalRig->worldRotations()[0];
+      printf("PHYSICAL_RIG_FRAME {\"t\":%lu,\"mode\":%d,\"root\":[%.5f,%.5f,%.5f],\"lean\":%.5f,\"turn\":%.5f,\"reach\":%.5f,\"support_margin\":%.5f,\"effort\":%.5f,\"ground_contacts\":%u,\"ground_correction\":%.6f,\"angular_speed\":%.5f,\"energy\":%.5f,\"joint_error\":%.6f,\"root_q\":[%.6f,%.6f,%.6f,%.6f]}\n",
+        physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration,d.angularSpeed,d.kineticEnergy,d.jointError,q[0],q[1],q[2],q[3]);
     }
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
@@ -120,6 +121,17 @@ void HumanoidBase::ProcessPhysicalMotion(){
 
 void HumanoidBase::PutPhysicalRig(){
   if(!fetchedPhysicalRig)return;
+  if(!fetchedPhysicalRagdoll){
+    PutTrainingContactPose();
+    for(unsigned i:{1u,3u,4u,5u,6u,7u,8u,9u,10u,11u,12u}){
+      auto node=nodeMap.at(pes3::nativeBoneNames[i]);
+      const Quaternion delta=Quaternion(QUATERNION_IDENTITY).GetSlerped(1-fetchedContactBlend,fetchedPhysicalAdditive[i]);
+      node->SetRotation((delta*node->GetRotation()).GetNormalized(),false);
+    }
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    PutTrainingHeadLook();
+    return;
+  }
   auto body=nodeMap.at("body");const auto &bind=pes3NativeReference.offsets[0];
   body->SetPosition(Vector3(bind[0],bind[1],bind[2]),false);
   humanoidNode->SetPosition(fetchedContactRoot+Vector3(0,0,fetchedContactHeight/zMultiplier-bind[2]),false);

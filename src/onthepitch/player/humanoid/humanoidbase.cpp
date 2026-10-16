@@ -952,7 +952,11 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
-  buf_physicalRig.SetValue(PhysicalRigEnabled()?1.f:0.f,snapshotTime_ms);
+  buf_physicalRig.SetValue(PhysicalRigEnabled()?(PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
+  for(unsigned i=0;i<13;++i){
+    const auto q=physicalRig && physicalRig->initialized()?physicalRig->additivePose()[i]:football_physics::Quat{{0,0,0,1}};
+    buf_physicalAdditive[i].SetValue(Quaternion(q[0],q[1],q[2],q[3]),snapshotTime_ms);
+  }
   buf_chestPhase.SetValue(-1.0f,snapshotTime_ms);
   buf_trainingLook.SetValue(match->GetTrainingLookDirection(),snapshotTime_ms);
   buf_dribblePhase.SetValue(dribbleTrialPhase,snapshotTime_ms);
@@ -1002,6 +1006,8 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
   fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
+  fetchedPhysicalRagdoll=buf_physicalRig.GetValue(putTime_ms)>1.5f;
+  for(unsigned i=0;i<13;++i)fetchedPhysicalAdditive[i]=buf_physicalAdditive[i].GetValue(putTime_ms);
   fetchedChestPhase=buf_chestPhase.GetValue(putTime_ms);
   fetchedTrainingLook=buf_trainingLook.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialPhase=buf_dribblePhase.GetValue(putTime_ms);

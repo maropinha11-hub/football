@@ -418,6 +418,10 @@ class HumanoidBase {
     unsigned long physicalCollisionTime=0;
     TemporalSmoother<float> buf_physicalRig;
     bool fetchedPhysicalRig=false;
+    TemporalSmoother<Quaternion> buf_physicalAdditive[13];
+    Quaternion fetchedPhysicalAdditive[13];
+    bool fetchedPhysicalRagdoll=false;
+    void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
 
     AnimApplyBuffer animApplyBuffer;
 

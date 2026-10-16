@@ -1,0 +1,8 @@
+{
+  "project": "Bullet Physics",
+  "version": "3.25",
+  "revision": "2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5",
+  "url": "https://github.com/bulletphysics/bullet3",
+  "license": "zlib",
+  "scope": "Unmodified CPU LinearMath, BulletCollision and BulletDynamics source; statically linked."
+}

@@ -10,8 +10,9 @@ Carreira e partidas online ficam para etapas posteriores.
 
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
-Há equilíbrio procedural, alcance gradual, queda articulada e recuperação
-assistida sobre as animações existentes. **F7** compara ligado/desligado,
+A revisão usa **Bullet 3.25**, motores físicos no tronco e braços, busca por
+pose/velocidade/trajetória, alcance gradual, queda articulada e recuperação
+assistida sobre as animações existentes. A câmera está mais sensível. **F7** compara ligado/desligado,
 **F8** aplica um impacto leve e **F9** um forte. R3/Tab mostra o corpo.
 `partida-fisica.bat` permite testar contatos com jogadores da CPU.
 Consulte [a pesquisa, os cálculos e os limites do experimento](docs/FISICA-CORPORAL.md).

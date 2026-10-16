@@ -1,0 +1,189 @@
+{
+  "research_date": "2026-10-16",
+  "scope": "Open-source physics and constrained motion-feature matching; two short real kicking sequences, not full-match rotoscoping.",
+  "footage": [
+    {
+      "name": "SoccerKicks overview",
+      "frames": 57,
+      "duration_s": 2.85,
+      "views": "one real kick plus monocular 2D/3D reconstructions, not distinct match clips"
+    },
+    {
+      "name": "FilteredSoccerPose 12_penalty",
+      "frames": 121,
+      "duration_s": 3.63,
+      "access": "previous research corpus"
+    }
+  ],
+  "requests": [
+    {
+      "name": "bullet_ragdoll",
+      "url": "https://raw.githubusercontent.com/bulletphysics/bullet3/3.25/examples/MultiThreading/MultiThreadingDemo.cpp",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "bullet_constraints",
+      "url": "https://raw.githubusercontent.com/bulletphysics/bullet3/3.25/examples/Constraints/ConstraintDemo.cpp",
+      "status": 200,
+      "bytes": 29326,
+      "sha256": "c291952587199c364d20af9638eaee30a2fc22d9bfc2392ed2aa5fdb53047dd5"
+    },
+    {
+      "name": "jolt_ragdoll",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/Samples/Tests/Rig/PoweredRagdollTest.cpp",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "jolt_readme",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/README.md",
+      "status": 200,
+      "bytes": 12043,
+      "sha256": "ad1bc97a1bd81f5f0cda9975684dd175ddb22b721dd34d5d26f42443e5fe859d"
+    },
+    {
+      "name": "motion_matching_readme",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/README.md",
+      "status": 200,
+      "bytes": 3419,
+      "sha256": "4d27d6d8269e5afd5226829a9e0c1de6df9ec236fd8efd0e0d3ffbe8a5fd9a8c"
+    },
+    {
+      "name": "motion_matching_code",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/motion_matching.cpp",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "motion_matching_database",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/database.h",
+      "status": 200,
+      "bytes": 25369,
+      "sha256": "64426aa10c813048b88cde40184be9f9e3d4b5e33b60cc663af6e48a42530394"
+    },
+    {
+      "name": "inertialization",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/spring.h",
+      "status": 200,
+      "bytes": 5374,
+      "sha256": "b514bf7c80c49280c784ead654b6dfa1ce709a5c944754f9da6b997e6e906e19"
+    },
+    {
+      "name": "soccer_tree",
+      "url": "https://api.github.com/repos/Jacopogr/FilteredSoccerPose/git/trees/main?recursive=1",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "soccerkicks_tree",
+      "url": "https://api.github.com/repos/nayariml/SoccerKicks/git/trees/master?recursive=1",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "humanfall",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/SimCharacter.cpp",
+      "status": 200,
+      "bytes": 38720,
+      "sha256": "67a2c37cc87d6e70c2c3b9ebc9ff44530bdba1af28b2436b64b88d80b1f59178"
+    },
+    {
+      "name": "LICENSE.txt",
+      "repository": "https://github.com/bulletphysics/bullet3",
+      "revision": "2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5",
+      "bytes": 1022,
+      "sha256": "885cd516a8420acb7c3e0b1a7119913b686495001ae564e3229740460e8cff59",
+      "url": "https://github.com/bulletphysics/bullet3/blob/2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5/LICENSE.txt"
+    },
+    {
+      "name": "examples/Constraints/ConstraintDemo.cpp",
+      "repository": "https://github.com/bulletphysics/bullet3",
+      "revision": "2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5",
+      "bytes": 29326,
+      "sha256": "c291952587199c364d20af9638eaee30a2fc22d9bfc2392ed2aa5fdb53047dd5",
+      "url": "https://github.com/bulletphysics/bullet3/blob/2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5/examples/Constraints/ConstraintDemo.cpp"
+    },
+    {
+      "name": "README.md",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 3419,
+      "sha256": "4d27d6d8269e5afd5226829a9e0c1de6df9ec236fd8efd0e0d3ffbe8a5fd9a8c",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/README.md"
+    },
+    {
+      "name": "LICENSE",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 1070,
+      "sha256": "b365a56d8b82ef890d1934e1e5ec9d60880b0a8f21819a7cd136bde99d24dae0",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/LICENSE"
+    },
+    {
+      "name": "database.h",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 25369,
+      "sha256": "64426aa10c813048b88cde40184be9f9e3d4b5e33b60cc663af6e48a42530394",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/database.h"
+    },
+    {
+      "name": "controller.cpp",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 90602,
+      "sha256": "e52bb8998210d7fa8cc5807f42a358cfe202d62097ac605b6f6120e6d655a8a8",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/controller.cpp"
+    },
+    {
+      "name": "character.h",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 3873,
+      "sha256": "7e4729caec282068106f3fadd8719105d36f0a00caa6ae1df3db83e198d39b26",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/character.h"
+    },
+    {
+      "name": "spring.h",
+      "repository": "https://github.com/orangeduck/Motion-Matching",
+      "revision": "57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "bytes": 5374,
+      "sha256": "b514bf7c80c49280c784ead654b6dfa1ce709a5c944754f9da6b997e6e906e19",
+      "url": "https://github.com/orangeduck/Motion-Matching/blob/57b7250e0d34a4e456a34d47e24c2f05fdcc711e/spring.h"
+    },
+    {
+      "name": "README.md",
+      "repository": "https://github.com/nayariml/SoccerKicks",
+      "revision": "ba737850324430c6274acf214abccd0615f0bb86",
+      "bytes": 5273,
+      "sha256": "47330c8a1c38fe7af097b279c0e778f92ece0ab675cc7c0b20437bd0ff29cb78",
+      "url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/README.md"
+    },
+    {
+      "name": "LICENSE",
+      "repository": "https://github.com/nayariml/SoccerKicks",
+      "revision": "ba737850324430c6274acf214abccd0615f0bb86",
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/LICENSE"
+    },
+    {
+      "name": "overview/gif_over.gif",
+      "repository": "https://github.com/nayariml/SoccerKicks",
+      "revision": "ba737850324430c6274acf214abccd0615f0bb86",
+      "bytes": 24040281,
+      "sha256": "261f833bfa7231231736ebb82eed8d1c32b28f74ce00f6f6757603e82515e755",
+      "url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/overview/gif_over.gif"
+    },
+    {
+      "name": "tools/annotation.py",
+      "repository": "https://github.com/nayariml/SoccerKicks",
+      "revision": "ba737850324430c6274acf214abccd0615f0bb86",
+      "bytes": 14905,
+      "sha256": "920cd7f94fc1e64faa96cd9430586d46c46b9274e3a19ca76058e21f87249fe3",
+      "url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/tools/annotation.py"
+    }
+  ],
+  "implementation": {
+    "vendored": "Bullet 3.25 CPU core, unmodified, zlib",
+    "motion_matching": "own feature-cost implementation informed by original code; entry-constrained native clip search",
+    "imported_external_motions": false,
+    "trained_policy": false
+  }
+}

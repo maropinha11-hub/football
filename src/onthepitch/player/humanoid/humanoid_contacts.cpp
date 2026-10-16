@@ -393,8 +393,10 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   const Vector3 current=ball->Predict(0),incoming=ball->GetMovement();
   const Vector3 previous=contactPreviousBallValid?contactPreviousBall:current;
   contactPreviousBall=current;contactPreviousBallValid=true;
-  if(match->GetActualTime_ms()<bodyContactUntil_ms || current.coords[2]<.45f || incoming.GetLength()<2 ||
-      (current-spatialState.position-Vector3(0,0,1)).GetLength()>1.25f ||
+  float bodyRange=(current-spatialState.position-Vector3(0,0,1)).GetLength();
+  if(PhysicalRigBusy())for(auto &position:contactPositions)bodyRange=std::min(bodyRange,(current-position).GetLength());
+  if(match->GetActualTime_ms()<bodyContactUntil_ms || current.coords[2]<(PhysicalRigBusy()?.09f:.45f) || incoming.GetLength()<2 ||
+      bodyRange>1.25f ||
       static_cast<Player*>(player)->GetLastTouchTime_ms()==match->GetActualTime_ms())return;
   Quaternion local[13],global[13];Vector3 positions[13];
   std::copy(contactLocal,contactLocal+13,local);std::copy(contactPositions,contactPositions+13,positions);
@@ -455,6 +457,8 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?
       ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;
+  if(PhysicalRigEnabled() && currentAnim->functionType!=e_FunctionType_BallControl &&
+      currentAnim->functionType!=e_FunctionType_Movement)contactPoseBlend=nativeBlend;
   if(GetConfiguration()->GetBool("training_telemetry",false) && currentAnim->touchFrame>=0 && match->GetActualTime_ms()%20==0) {
     const Vector3 point=match->GetBall()->Predict(0),next=match->GetBall()->Predict(10);
     printf("TRAINING_NATIVE_GEOMETRY t=%lu frame=%d contact_frame=%d left=%.5f right=%.5f next_left=%.5f next_right=%.5f touched=%d\n",
@@ -468,7 +472,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
     return;
   }
   if(remaining>20 || remaining< -14)return;
-  contactPoseBlend=0;
+  if(!PhysicalRigEnabled())contactPoseBlend=0;
   // Authored joint rotations stay intact. Contact is planned with the
   // native whole-player approach, never a late per-leg reach adjustment.
 

@@ -11,7 +11,7 @@ void physicalLabInput(Player *actor) {
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
   const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D(.5f*pi);
   if(events.ConsumeKeyPress(SDLK_F8))body->AddPhysicalImpulse(side*65.f);
-  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*230.f,Vector3(0,0,.55f));
+  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f));
 }
 }
 

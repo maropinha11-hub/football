@@ -1842,6 +1842,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   }
 
   int selectedAnimID = -1;
+  RankMotionMatches(dataSet,command);
   std::vector<Vector3> positions_tmp;
   int touchFrame_tmp = -1;
   float radiusOffset_tmp = 0.0f;
