@@ -1,0 +1,229 @@
+{
+  "scope": "Research retrieval ledger; no external papers or videos redistributed in the game",
+  "footage_observed": {
+    "source": "FilteredSoccerPose/data/gif/12_penalty.gif",
+    "frames": 121,
+    "nominal_duration_s": 3.63,
+    "interpretation": "qualitative monocular dead-ball kick, not calibrated 3D motion capture"
+  },
+  "native_bank": {
+    "files": 293,
+    "types": {
+      "special": 4,
+      "movement": 75,
+      "trip": 19,
+      "highpass": 15,
+      "trap": 40,
+      "ballcontrol": 45,
+      "interfere": 7,
+      "sliding": 6,
+      "shot": 17,
+      "deflect": 28,
+      "shortpass": 37
+    }
+  },
+  "requests": [
+    {
+      "name": "kicking",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3786235/",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "pubmed",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/?term=soccer+kicking+biomechanics",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "fifa",
+      "url": "https://www.fifatrainingcentre.com/en/practice/elite-sessions/in-possession/receiving-and-turning.php",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "xpbd",
+      "url": "https://matthias-research.github.io/pages/publications/XPBD.pdf",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "deepmimic",
+      "url": "https://xbpeng.github.io/projects/DeepMimic/index.html",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "deepmimic_readme",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/README.md",
+      "status": 200,
+      "bytes": 8318,
+      "sha256": "a9f216f33fae935e017e03de379f2773452206ca8ff56e8cbb51a95715dec0d7",
+      "local_research_copy": "deepmimic_readme.txt"
+    },
+    {
+      "name": "xpbd_raw",
+      "url": "https://raw.githubusercontent.com/matthias-research/pages/master/publications/XPBD.pdf",
+      "status": 200,
+      "bytes": 2033540,
+      "sha256": "cd96241fe2cce7816c3fa1cb2b9e862e5a610263fd38cc8560bb51b7f6ecd502",
+      "local_research_copy": "xpbd_raw.pdf"
+    },
+    {
+      "name": "arxiv",
+      "url": "https://arxiv.org/abs/1804.02717",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "wiki",
+      "url": "https://en.wikipedia.org/wiki/Skeletal_animation",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "search",
+      "url": "https://www.google.com/search?q=football+kicking+biomechanics+support+foot+trunk+rotation",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "deepmimic_site",
+      "url": "https://raw.githubusercontent.com/xbpeng/xbpeng.github.io/master/projects/DeepMimic/index.html",
+      "status": 200,
+      "bytes": 3239,
+      "sha256": "d76841cd497dc500b018814163beb1507193f76533ac09d4e3e1e924088d07b5",
+      "local_research_copy": "deepmimic_site.txt"
+    },
+    {
+      "name": "deepmimic_controller",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/CtPDController.cpp",
+      "status": 200,
+      "bytes": 3936,
+      "sha256": "87219ca8644799b0a0286b40a3ad1a5bfff7091ed13716b0d83af6ca1d71d102",
+      "local_research_copy": "deepmimic_controller.txt"
+    },
+    {
+      "name": "deepmimic_kick",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/data/motions/humanoid3d_kick.txt",
+      "status": 200,
+      "bytes": 43601,
+      "sha256": "177cfb399466309ba7f4a8a987c3b6f6edde1cbe8b2d476e53dc6061ec5d4bac",
+      "local_research_copy": "deepmimic_kick.txt"
+    },
+    {
+      "name": "github_search",
+      "url": "https://github.com/search?q=soccer%20biomechanics%20kicking&type=repositories",
+      "status": 200,
+      "bytes": 200017,
+      "sha256": "afff085f2a9874c4f6f4be1b3560ddc6cb178e84613d10e8b92d52de8b6ec0e1",
+      "local_research_copy": "github_search.txt"
+    },
+    {
+      "name": "opensim",
+      "url": "https://raw.githubusercontent.com/opensim-org/opensim-models/master/README.md",
+      "status": 200,
+      "bytes": 386,
+      "sha256": "2c7701e3c18e20f2a76ade487a55d40b9dbcf2b7eb8a473b6a572d6e1277d012",
+      "local_research_copy": "opensim.txt"
+    },
+    {
+      "name": "opensim_gait",
+      "url": "https://raw.githubusercontent.com/opensim-org/opensim-models/master/Models/Gait10dof18musc/subject01.osim",
+      "status": 200,
+      "bytes": 237183,
+      "sha256": "6b8c9773752f772c944ddc7cd42b974f1de9c7e4c4ac57aec2d736d73a23aaa9",
+      "local_research_copy": "opensim_gait.txt"
+    },
+    {
+      "name": "physx",
+      "url": "https://raw.githubusercontent.com/NVIDIA-Omniverse/PhysX/main/physx/documentation/PhysXGuide/Manual/Articulations.rst",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "simon",
+      "url": "https://raw.githubusercontent.com/sebastianstarke/AI4Animation/master/README.md",
+      "status": 200,
+      "bytes": 21509,
+      "sha256": "0aef5aef6a0ad406c0baf85c44c8fea2c9cfc13a07acf273a7bf15b4a6260be3",
+      "local_research_copy": "simon.txt"
+    },
+    {
+      "name": "mocap",
+      "url": "https://raw.githubusercontent.com/CMU-Perceptual-Computing-Lab/openpose/master/README.md",
+      "status": 200,
+      "bytes": 11570,
+      "sha256": "d9215860916775164dfbe2714cb6d3874f24a68ed3af662b4d1535f3224555d3",
+      "local_research_copy": "mocap.txt"
+    },
+    {
+      "name": "filtered_soccer_pose",
+      "url": "https://raw.githubusercontent.com/Jacopogr/FilteredSoccerPose/main/README.md",
+      "status": 200,
+      "bytes": 12988,
+      "sha256": "c2b61d01793f0c69da0ec28e76ec3a9449352c8eb27f71bb723131f9c5460b34",
+      "local_research_copy": "filtered_soccer_pose.txt"
+    },
+    {
+      "name": "deepmimic_paper",
+      "url": "https://raw.githubusercontent.com/xbpeng/xbpeng.github.io/master/projects/DeepMimic/2018_TOG_DeepMimic.pdf",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "deeppd",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/ImpPDController.cpp",
+      "status": 200,
+      "bytes": 6641,
+      "sha256": "222bda44fa418316705fecd7a1af28bd6fff70c37cc8caef0f9dcbbc276ac29f",
+      "local_research_copy": "deeppd.txt"
+    },
+    {
+      "name": "soccerpose2",
+      "url": "https://raw.githubusercontent.com/Jacopogr/FilteredSoccerPose/master/README.md",
+      "status": 200,
+      "bytes": 12988,
+      "sha256": "c2b61d01793f0c69da0ec28e76ec3a9449352c8eb27f71bb723131f9c5460b34",
+      "local_research_copy": "soccerpose2.txt"
+    },
+    {
+      "name": "soccerengine",
+      "url": "https://raw.githubusercontent.com/deepakdeo/soccer-physics-engine/main/README.md",
+      "status": 200,
+      "bytes": 7151,
+      "sha256": "8b02a8c7815923f6339c216341f8dc68f4438a427cf310039c468947780f7b28",
+      "local_research_copy": "soccerengine.txt"
+    },
+    {
+      "name": "soccer_engine_master",
+      "url": "https://raw.githubusercontent.com/deepakdeo/soccer-physics-engine/master/README.md",
+      "status": 200,
+      "bytes": 7151,
+      "sha256": "8b02a8c7815923f6339c216341f8dc68f4438a427cf310039c468947780f7b28",
+      "local_research_copy": "soccer_engine_master.txt"
+    },
+    {
+      "name": "deepmimic_paper",
+      "url": "https://raw.githubusercontent.com/xbpeng/xbpeng.github.io/master/projects/DeepMimic/DeepMimic_2018.pdf",
+      "status": 200,
+      "bytes": 7850692,
+      "sha256": "c57cdd325b4bb921d95a5feb2742bdf016d48412ed969ea5f4ee2fe05e22db30",
+      "local_research_copy": "deepmimic_paper.pdf"
+    },
+    {
+      "name": "penalty_gif",
+      "url": "https://raw.githubusercontent.com/Jacopogr/FilteredSoccerPose/main/data/gif/12_penalty.gif",
+      "status": 200,
+      "bytes": 2426944,
+      "sha256": "08cea96132a1474c4453bb854377791769942b69acb06205116aa0b930f1b4df",
+      "local_research_copy": "penalty_gif.gif"
+    },
+    {
+      "name": "penalty_pose_gif",
+      "url": "https://raw.githubusercontent.com/Jacopogr/FilteredSoccerPose/main/data/gif/original_alphapose.gif",
+      "status": 200,
+      "bytes": 2931749,
+      "sha256": "6cc67d8bd60d0efac10b89dd7a674bcd077320ac52857ff23c0648c3d77f4fe1",
+      "local_research_copy": "penalty_pose_gif.gif"
+    },
+    {
+      "name": "soccer_kicks",
+      "url": "https://raw.githubusercontent.com/nayariml/SoccerKicks/master/README.md",
+      "status": 200,
+      "bytes": 5273,
+      "sha256": "47330c8a1c38fe7af097b279c0e778f92ece0ab675cc7c0b20437bd0ff29cb78",
+      "local_research_copy": "soccer_kicks.txt"
+    }
+  ]
+}

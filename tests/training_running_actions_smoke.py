@@ -3,13 +3,13 @@
 import argparse,hashlib,json,re
 from pathlib import Path
 from native_training_harness import NativeTraining
-p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':138');a=p.parse_args()
-r={'result':'running','checks':[],'executable_sha256':hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()}
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':138');p.add_argument('--physical',action='store_true');a=p.parse_args()
+r={'result':'running','physical_profile':a.physical,'checks':[],'executable_sha256':hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()}
 def events(s,prefix):return [dict(re.findall(r'(\w+)=([^\s]+)',line))for line in s.splitlines()if line.startswith(prefix+' ')]
 def check(name,ok,evidence):
  row={'check':name,'result':'passed'if ok else'failed','evidence':evidence};r['checks'].append(row);print(json.dumps(row),flush=True)
 try:
- with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,config_overrides={'context_x':320,'context_y':180})as g:
+ with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,config_overrides={'context_x':320,'context_y':180,'training_physical_rig':'true'if a.physical else'false'})as g:
   for phase in (900,1450):
    for action,button,kind in [('shot',4,8),('cross',2,6)]:
     for direction,stick in [('forward',(0,-1)),('right',(1,0)),('diagonal',(.7071,-.7071))]:

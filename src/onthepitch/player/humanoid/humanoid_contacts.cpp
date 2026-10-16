@@ -451,6 +451,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const float angle=startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*end;
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
+  UpdatePhysicalRigPose();
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?
       ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;

@@ -21,6 +21,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
+namespace football_physics {class PhysicalRig;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -243,6 +244,15 @@ class HumanoidBase {
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
     void UpdateTrainingContactPose();
     bool UsesTrainingContacts() const;
+    bool PhysicalRigEnabled() const;
+    bool PhysicalRigBusy() const;
+    void TogglePhysicalRig();
+    void AddPhysicalImpulse(const Vector3 &impulse, const Vector3 &lever=Vector3(0,0,.35f));
+    void PhysicalCollision(const Vector3 &velocityChange);
+    void ResetPhysicalRig();
+    void UpdatePhysicalRigPose();
+    void ProcessPhysicalMotion();
+    void PutPhysicalRig();
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);
@@ -403,6 +413,11 @@ class HumanoidBase {
     Quaternion fetchedContactLocal[13];
     Vector3 fetchedContactRoot;
     float fetchedContactHeight = 0, fetchedChestPhase = -1;
+    std::unique_ptr<football_physics::PhysicalRig> physicalRig;
+    unsigned long physicalRigTime=~0ul;
+    unsigned long physicalCollisionTime=0;
+    TemporalSmoother<float> buf_physicalRig;
+    bool fetchedPhysicalRig=false;
 
     AnimApplyBuffer animApplyBuffer;
 

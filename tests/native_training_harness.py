@@ -7,7 +7,7 @@ import time
 
 KEY_BITS={key:1<<i for i,key in enumerate([
     'w','s','a','d','j','i','l','k','Shift_L','space','q',
-    'Left','Right','Up','Down','r','1','2','3','4','5','Tab','6','t','F4','F5','F6','e'])}
+    'Left','Right','Up','Down','r','1','2','3','4','5','Tab','6','t','F4','F5','F6','e','F7','F8','F9'])}
 
 class NativeTraining:
     def __init__(self,build,output,display=':94',analog_pad=False,camera=2,config_overrides=None):

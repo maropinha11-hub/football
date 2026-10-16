@@ -8,6 +8,15 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+O **teste de física corporal** abre por `treino-fisico.bat`, no
+[pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
+Há equilíbrio procedural, alcance gradual, queda articulada e recuperação
+assistida sobre as animações existentes. **F7** compara ligado/desligado,
+**F8** aplica um impacto leve e **F9** um forte. R3/Tab mostra o corpo.
+`partida-fisica.bat` permite testar contatos com jogadores da CPU.
+Consulte [a pesquisa, os cálculos e os limites do experimento](docs/FISICA-CORPORAL.md).
+O treino e a partida aprovados continuam nos atalhos anteriores.
+
 A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
 Você controla o mesmo jogador do treino; os outros dez companheiros e os

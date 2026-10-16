@@ -113,6 +113,35 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         'gameplayfootball.exe --config training.config --player-match %*\r\n'
         'if errorlevel 1 pause\r\n', encoding="ascii", newline="",
     )
+    for filename, mode in [("treino-fisico.bat", "--training"),
+                           ("partida-fisica.bat", "--player-match")]:
+        (stage / filename).write_text(
+            '@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
+            'gameplayfootball.exe --config training.config ' + mode + ' --physical-rig %*\r\n'
+            'if errorlevel 1 pause\r\n', encoding="ascii", newline="",
+        )
+    (stage / "LEIA-FISICA.txt").write_text(
+        "Teste de animacao e fisica corporal — FPSoccer\n\n"
+        "1. Extraia este ZIP completo em uma pasta nova.\n"
+        "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
+        "3. R3/Tab: camera externa para observar o corpo.\n\n"
+        "F7: comparar fisica ligada/desligada.\n"
+        "F8: impacto lateral leve, com recuperacao de equilibrio.\n"
+        "F9: impacto forte, queda fisica e retorno assistido.\n"
+        "R/View: reiniciar, inclusive durante uma queda.\n"
+        "F4: passe rasteiro; F5: bola para o peito; F6: bola alta.\n"
+        "Xbox: controles anteriores; RB corre; direito olha.\n\n"
+        "partida-fisica.bat: o mesmo experimento contra os times da CPU.\n"
+        "Impactos entre jogadores tambem perturbam o corpo controlado.\n"
+        "run-training.bat e jogar-partida.bat abrem as versoes aprovadas.\n\n"
+        "A locomocao continua guiada pelas animacoes existentes, com ajustes\n"
+        "de equilibrio, bracos e alcance gradual. Nas quedas, articulacoes,\n"
+        "gravidade e contatos com o chao controlam o corpo. A recuperacao\n"
+        "e assistida. Os 270 contextos de teste sao variacoes de parametros,\n"
+        "nao 270 capturas de movimento novas. Os limites completos da\n"
+        "pesquisa e da simulacao constam em docs/FISICA-CORPORAL.md no GitHub.\n",
+        encoding="utf-8",
+    )
     (stage / "run-controller-test.bat").write_text(
         "@echo off\r\n"
         "setlocal\r\n"
@@ -127,6 +156,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Extraia este ZIP para uma pasta nova. jogar-partida.bat: partida 11 x 11.\n"
         "run-training.bat: treino aprovado. RT/E sem bola: pedir passe. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n"
+        "treino-fisico.bat abre o teste de ragdoll e poses; leia LEIA-FISICA.txt.\n"
         "Partida: IA nativa no nivel maximo, com formacao, marcacao, apoios e\n"
         "decisoes com bola autonomas tambem nos companheiros. Pedidos de passe\n"
         "avaliam risco e impedimento; se nao houver opcao, a CPU segue a jogada.\n\n"
@@ -203,6 +233,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
+        for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt"):
+            output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",

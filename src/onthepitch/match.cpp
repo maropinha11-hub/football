@@ -1342,7 +1342,7 @@ void Match::Put() {
       // The skin scales joint offsets by player height; the camera must use the same transform.
       const float scale = trainingPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
       eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + Vector3(0, 0, 0.14f);
-      eyeOffset.coords[2] = clamp(eyeOffset.coords[2], 0.55f, nominal + 0.12f);
+      eyeOffset.coords[2] = clamp(eyeOffset.coords[2], trainingPlayer->GetHumanoid()->PhysicalRigEnabled()?.18f:.55f, nominal + .12f);
     }
     if (!trainingEyeInitialized) { trainingEyePosition = eyeOffset; trainingEyeInitialized = true; }
     const float eyeBlend = 1 - std::exp(-12.0f * clamp(GetTimeSincePreviousPut_ms(), 1, 100) * 0.001f);
@@ -1624,6 +1624,7 @@ void Match::CheckHumanoidCollisions() {
       //if (playerBounces.at(i1).size() > 0) printf("\n");
       // okay, accumulated all, now distribute them in normalized fashion
       players.at(i1)->OffsetPosition(bounceVec * 0.01f * 1.0f);
+      players.at(i1)->GetHumanoid()->PhysicalCollision(bounceVec);
       //printf("moving player %i\n", i1);
     }
 

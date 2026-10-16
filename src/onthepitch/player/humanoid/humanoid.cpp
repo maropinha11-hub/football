@@ -91,6 +91,7 @@ bool _PassFiddlingEnabled() {
 }
 
 void Humanoid::Process() {
+  if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);
   _cache_AccelerationFactor = GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor);
@@ -121,6 +122,7 @@ void Humanoid::Process() {
   TickUpperReception();
   CalculateSpatialState();
   UpdateTrainingContactPose();
+  if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
   spatialState.positionOffsetMovement = Vector3(0);
 
   currentAnim->frameNum++;
@@ -893,6 +895,7 @@ void Humanoid::Process() {
 }
 
 void Humanoid::CalculateGeomOffsets() {
+  if(PhysicalRigBusy()){offsets.clear();return;}
   SetOffset("middle", 0.0, QUATERNION_IDENTITY);
   SetOffset("neck", 0.0, QUATERNION_IDENTITY);
   SetOffset("left_thigh", 0.0, QUATERNION_IDENTITY);

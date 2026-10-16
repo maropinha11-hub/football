@@ -5,6 +5,16 @@
 #include <cmath>
 #include <cstdio>
 
+namespace {
+void physicalLabInput(Player *actor) {
+  auto &events=UserEventManager::GetInstance();auto *body=actor->GetHumanoid();
+  if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
+  const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D(.5f*pi);
+  if(events.ConsumeKeyPress(SDLK_F8))body->AddPhysicalImpulse(side*65.f);
+  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*230.f,Vector3(0,0,.55f));
+}
+}
+
 void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingExercise = clamp(exercise, 0, 5);
   Player *player = trainingPlayer;
@@ -51,7 +61,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingView.reset(std::atan2(direction.coords[1], direction.coords[0]));
   trainingEyeInitialized = false;
   const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta", "Passe recebido"};
-  SpamMessage(std::string("Treino: ") + names[exercise] + " | View/R: reiniciar | F2: trazer bola", 4000);
+  SpamMessage(std::string("Treino: ") + names[exercise] + (GetConfiguration()->GetBool("training_physical_lab",false)?" | F7: comparar | F8: impacto | F9: queda | R: reiniciar":" | View/R: reiniciar | F2: trazer bola"), 5000);
   printf("TRAINING_RESET exercise=%d\n", exercise);
   fflush(stdout);
 }
@@ -180,7 +190,9 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
-  if (pes3Preview) {
+  if(GetConfiguration()->GetBool("training_physical_lab",false)) {
+    physicalLabInput(trainingPlayer);
+  }else if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
     if (keyOnce(SDLK_F8)) SpamMessage(pes3Preview->select(1),7000);
@@ -350,8 +362,8 @@ void Match::WriteTrainingTelemetry(IHIDevice *input) {
       for (unsigned int i = 0; i < 11; ++i)
         if (controllers[0]->GetButton(keyboardButtons[i])) keys |= 1u << i;
       const SDL_Keycode directKeys[] = {SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t,SDLK_F4,SDLK_F5,SDLK_F6,SDLK_e};
-      for (unsigned int i = 0; i < 17; ++i)
+          SDLK_r, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_TAB, SDLK_6, SDLK_t,SDLK_F4,SDLK_F5,SDLK_F6,SDLK_e,SDLK_F7,SDLK_F8,SDLK_F9};
+      for (unsigned int i = 0; i < 20; ++i)
         if (events.GetKeyboardState(directKeys[i])) keys |= 1u << (i + 11);
       bool lookActive = events.GetKeyboardState(SDLK_RIGHT) || events.GetKeyboardState(SDLK_LEFT) ||
                         events.GetKeyboardState(SDLK_UP) || events.GetKeyboardState(SDLK_DOWN);
@@ -387,6 +399,7 @@ void Match::WriteTrainingTelemetry(IHIDevice *input) {
 
 void Match::ProcessPlayerMatchInput() {
   auto &events=UserEventManager::GetInstance();
+  if(GetConfiguration()->GetBool("training_physical_lab",false))physicalLabInput(trainingPlayer);
   if(events.ConsumeKeyPress(SDLK_ESCAPE))EnvironmentManager::GetInstance().SignalQuit();
   if(events.ConsumeKeyPress(SDLK_p))pause=!pause;
   if(events.ConsumeKeyPress(SDLK_TAB))trainingCameraMode=(trainingCameraMode+1)%3;

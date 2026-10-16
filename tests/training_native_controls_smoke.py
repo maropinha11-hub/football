@@ -3,13 +3,13 @@
 import argparse,json,hashlib,math,re,statistics
 from pathlib import Path
 from native_training_harness import NativeTraining
-p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':134');a=p.parse_args()
-r={'result':'running','checks':[],'executable_sha256':hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()}
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':134');p.add_argument('--physical',action='store_true');a=p.parse_args()
+r={'result':'running','physical_profile':a.physical,'checks':[],'executable_sha256':hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()}
 def check(name,ok,evidence):
  row={'check':name,'result':'passed'if ok else'failed','evidence':evidence};r['checks'].append(row);print(json.dumps(row),flush=True)
 def touches(s):return [(int(t),part,int(kind))for t,part,kind in re.findall(r'TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+)',s)]
 try:
- with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,config_overrides={'context_x':'320','context_y':'180'})as g:
+ with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,config_overrides={'context_x':'320','context_y':'180','training_physical_rig':'true'if a.physical else'false'})as g:
   for sprint in [False,True]:
    speeds=[]
    for rt in [False,True]:

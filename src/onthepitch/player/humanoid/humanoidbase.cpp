@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "humanoid.hpp"
+#include "physical_rig.hpp"
 
 #include "humanoid_utils.hpp"
 
@@ -951,6 +952,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
+  buf_physicalRig.SetValue(PhysicalRigEnabled()?1.f:0.f,snapshotTime_ms);
   buf_chestPhase.SetValue(-1.0f,snapshotTime_ms);
   buf_trainingLook.SetValue(match->GetTrainingLookDirection(),snapshotTime_ms);
   buf_dribblePhase.SetValue(dribbleTrialPhase,snapshotTime_ms);
@@ -999,6 +1001,7 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactRoot=buf_contactRoot.GetValue(putTime_ms);
   fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
+  fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
   fetchedChestPhase=buf_chestPhase.GetValue(putTime_ms);
   fetchedTrainingLook=buf_trainingLook.GetValue(putTime_ms);
   fetchedbuf_animApplyBuffer.dribbleTrialPhase=buf_dribblePhase.GetValue(putTime_ms);
@@ -1143,6 +1146,7 @@ void HumanoidBase::Put() {
       int(fetchedbuf_animApplyBuffer.dribbleTrialFunction));
   // All contacts and transitions use the selected animation directly.
   if(!studyApplied)PutTrainingHeadLook();
+  if(!studyApplied)PutPhysicalRig();
   if(!studyApplied && TrainingEnabled() && fetchedbuf_animApplyBuffer.upperReception &&
       GetConfiguration()->GetBool("training_telemetry",false)) {
     Quaternion rotations[13];Vector3 positions[13];const Vector3 origin=humanoidNode->GetPosition().Get2D();
@@ -1310,6 +1314,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
 }
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
+  ResetPhysicalRig();
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
   contactPoseBlend=0;fetchedContactBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
   buf_trainingLook.Clear();
@@ -1435,6 +1440,12 @@ void HumanoidBase::OffsetPosition(const Vector3 &offset) {
 }
 
 void HumanoidBase::TripMe(const Vector3 &tripVector, int tripType) {
+  if(PhysicalRigEnabled()) {
+    if(match->GetActualTime_ms()<physicalCollisionTime)return;
+    physicalCollisionTime=match->GetActualTime_ms()+240;
+    AddPhysicalImpulse(tripVector.GetNormalized(Vector3(1,0,0))*(tripType>1?210.f:65.f));
+    return;
+  }
   if (match->GetBallRetainer() == player) return;
   if (currentAnim->anim->GetVariable("incoming_special_state").compare("") == 0 && currentAnim->anim->GetVariable("outgoing_special_state").compare("") == 0) {
     if (this->interruptAnim == e_InterruptAnim_None && (currentAnim->functionType != e_FunctionType_Trip || (currentAnim->anim->GetVariable("triptype").compare("1") == 0 && tripType > 1))
