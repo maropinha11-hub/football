@@ -376,7 +376,7 @@ void Team::Process() {
         selectedPlayer = GetPlayer(selectedPlayerID);
         assert(selectedPlayer);
 
-        if (humanGamers.at(i)->GetHIDevice()->GetButton(e_ButtonFunction_Switch) &&
+        if (!PlayerMatchEnabled() && humanGamers.at(i)->GetHIDevice()->GetButton(e_ButtonFunction_Switch) &&
             !humanGamers.at(i)->GetHIDevice()->GetPreviousButtonState(e_ButtonFunction_Switch) &&
             // don't switch if we are both best AND designated possession player. unless opponent team has ball.
             (!(selectedPlayerID == GetBestPossessionPlayerID() && selectedPlayerID == designatedTeamPossessionPlayer->GetID()) || GetTeamPossessionAmount() < 1.0f) &&

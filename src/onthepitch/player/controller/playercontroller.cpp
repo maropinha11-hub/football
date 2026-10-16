@@ -389,7 +389,7 @@ void PlayerController::_InterfereCommand(PlayerCommandQueue &commandQueue, bool 
 }
 
 void PlayerController::_SlidingCommand(PlayerCommandQueue &commandQueue) {
-  if (team->GetHumanGamerCount() != 0) return;
+  if (team->GetHumanGamerCount() != 0 && !PlayerMatchEnabled()) return;
   if (match->GetBallRetainer() != 0) return;
   if (CouldWinABallDuelLikeliness() < 0.7f) return;
 

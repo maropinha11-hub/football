@@ -1,30 +1,620 @@
 {
-  "result": "passed",
-  "validation_date": "2026-10-15",
-  "scope": "11v11 local match, fixed training player, original CPU teams/referee, pass request, complete halves and full-time restart; approved solo regressions",
-  "platform": "Linux rendered software OpenGL, real SDL input from a virtual Xbox controller",
-  "windows_validation": "Windows x64 crosscompile and PE/DLL/assets/ZIP checks. Windows GUI and a physical Xbox controller were not run here.",
-  "native_executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
-  "fixture_sync_note": "The running F5 test now waits for SDL to acknowledge forward stick input before dispatching the delivery. An earlier asynchronous fixture missed the chest; three focused synchronized trials and the full chest suite validate the intended setup without changing gameplay.",
-  "rendered_checks": 122,
-  "invariants": {
-    "active_players": 22,
-    "human_players": 1,
-    "locked_roster_slot": 10,
-    "camera_actor_independent_of_designated_possession_player": true,
-    "pass_request": "RT or E, off ball, edge triggered, 4.5 s request, native pass animation/force; interceptions remain possible",
-    "default_half_real_seconds": 180,
-    "full_time": "two halves, draws allowed, no extra time or replay menus",
-    "training_launcher": "unchanged",
-    "match_launcher": "jogar-partida.bat",
-    "CPU_gameplay": "native team/player strategies and shared approved native animation bank/cadence; reachable right-foot bias",
-    "controlled_actor": "approved first-person controls, layered chest, head look and contact corrections"
+  "result": "passed_with_known_solo_reception_failure",
+  "validation_date": "2026-10-16",
+  "scope": "Restore autonomous CPU teammates in fixed-player matches; maximum native difficulty, original CPU foot selection, safe preference for requested passes; keep approved human controls/camera and native team tactics.",
+  "platform": "Linux rendered software OpenGL with real SDL virtual Xbox input",
+  "windows_validation": "Windows x64 crosscompiled and PE/DLL/media/ZIP checked. Windows GUI and physical Xbox controller were not run here.",
+  "native_executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
+  "root_cause": "Native ElizaController disables on-ball decisions for every player on a team with human gamers, assuming possession will switch human control onto the carrier. Fixed-player mode must allow autonomous CPU decisions on that team.",
+  "changes": [
+    "Enable original carry/pass/shot decisions on both teams in fixed-player mode.",
+    "Restore native CPU foot ranking; preserve human right-foot preference.",
+    "Set native difficulty to 1.0; keep formation, dynamic roles, man marking, supporting movement and attacking runs.",
+    "Allow native CPU goal-kick variation and sliding challenges on the human team.",
+    "Pass calls evaluate native interception risk/type and offside before getting priority; unsafe calls do not suspend normal play.",
+    "Do not let the human switch button alter possession assignments in fixed-player mode."
+  ],
+  "regression_baseline": {
+    "revision": "5553a2b828cda36cc5eb1381c3ebafebd2a6baef",
+    "native_executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
+    "fixture": "previous 60 s halves unattended seed 9 rendered fixture",
+    "longest_cpu_stationary_low_ball_ms": 13500,
+    "longest_spans": [
+      {
+        "actor": 1,
+        "team": 0,
+        "start": 127500,
+        "end": 141000
+      },
+      {
+        "actor": 9,
+        "team": 0,
+        "start": 107500,
+        "end": 110500
+      },
+      {
+        "actor": 3,
+        "team": 0,
+        "start": 42500,
+        "end": 45000
+      },
+      {
+        "actor": 7,
+        "team": 0,
+        "start": 3000,
+        "end": 5000
+      },
+      {
+        "actor": 3,
+        "team": 0,
+        "start": 53000,
+        "end": 54500
+      }
+    ]
   },
+  "supplementary_solo_reception": {
+    "current": {
+      "result": "failed",
+      "checks": [
+        {
+          "check": "both source receptions remain available at the approved cadence",
+          "result": "passed",
+          "evidence": [
+            {
+              "frames": "169",
+              "contact": "37",
+              "part": "trunk",
+              "native_preserved": "1",
+              "mode": "Stand"
+            },
+            {
+              "frames": "102",
+              "contact": "34",
+              "part": "trunk",
+              "native_preserved": "1",
+              "mode": "Run"
+            }
+          ]
+        },
+        {
+          "check": "chest delivery makes one real upper-layer contact: forward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1800",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2871",
+              "upper_layer": "1"
+            }
+          ]
+        },
+        {
+          "check": "forward/back adjustment remains responsive during the gesture: forward",
+          "result": "passed",
+          "evidence": {
+            "path_m": 0.22483888199556396,
+            "maximum_speed_mps": 1.8534
+          }
+        },
+        {
+          "check": "chest layer preserves native pelvis and legs: forward",
+          "result": "passed",
+          "evidence": {
+            "samples": 15,
+            "maximum_arm_error": 0.45354643
+          }
+        },
+        {
+          "check": "arms use reception first and smoothly return to native locomotion: forward",
+          "result": "passed",
+          "evidence": {
+            "samples": 29,
+            "peak_arm_gesture_weight": 1.0,
+            "minimum_late_arm_weight": 0.0
+          }
+        },
+        {
+          "check": "upper gesture fades without a full-body lock: forward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "3100",
+              "touched": "1",
+              "phase": "168.00"
+            }
+          ]
+        },
+        {
+          "check": "chest delivery makes one real upper-layer contact: backward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "5400",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2871",
+              "upper_layer": "1"
+            }
+          ]
+        },
+        {
+          "check": "forward/back adjustment remains responsive during the gesture: backward",
+          "result": "passed",
+          "evidence": {
+            "path_m": 0.2884024279239839,
+            "maximum_speed_mps": 1.8485
+          }
+        },
+        {
+          "check": "chest layer preserves native pelvis and legs: backward",
+          "result": "passed",
+          "evidence": {
+            "samples": 15,
+            "maximum_arm_error": 0.42820513
+          }
+        },
+        {
+          "check": "arms use reception first and smoothly return to native locomotion: backward",
+          "result": "passed",
+          "evidence": {
+            "samples": 29,
+            "peak_arm_gesture_weight": 1.0,
+            "minimum_late_arm_weight": 0.0
+          }
+        },
+        {
+          "check": "upper gesture fades without a full-body lock: backward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "6700",
+              "touched": "1",
+              "phase": "168.00"
+            }
+          ]
+        },
+        {
+          "check": "side input cannot turn or displace the player before chest contact",
+          "result": "passed",
+          "evidence": {
+            "maximum_displacement_m": 0.0,
+            "samples": 3
+          }
+        },
+        {
+          "check": "ignored lateral input still permits an actual chest reception",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "8620",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            }
+          ]
+        },
+        {
+          "check": "moderate forward input selects the running chest gesture",
+          "result": "failed",
+          "evidence": []
+        },
+        {
+          "check": "running gesture makes a real chest contact with native legs",
+          "result": "failed",
+          "evidence": []
+        },
+        {
+          "check": "released stick keeps reception stationary rather than walking through the ball",
+          "result": "passed",
+          "evidence": {
+            "aerial_peak_speed_mps": 0.0
+          }
+        },
+        {
+          "check": "third-person lateral world input cannot turn a pending reception",
+          "result": "passed",
+          "evidence": {
+            "camera": 1,
+            "samples": 4
+          }
+        },
+        {
+          "check": "low delivery retains native foot reception",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "23130",
+              "part": "right_foot",
+              "function": "3",
+              "z": "0.1078"
+            }
+          ]
+        },
+        {
+          "check": "all authored impulses require real skin contact, upper contacts specifically require chest skin",
+          "result": "passed",
+          "evidence": {
+            "impulses": 15,
+            "upper_impulses": 5
+          }
+        },
+        {
+          "check": "rendered chest and physical skin agree on the incoming trajectory",
+          "result": "passed",
+          "evidence": {
+            "paired_samples": 11,
+            "maximum_gap_difference_m": 0.04778
+          }
+        },
+        {
+          "check": "added full-body clips never replace native locomotion",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1420",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "5020",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "8620",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "15630",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "19420",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            }
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed"
+    },
+    "previous_binary": {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "both source receptions remain available at the approved cadence",
+          "result": "passed",
+          "evidence": [
+            {
+              "frames": "169",
+              "contact": "37",
+              "part": "trunk",
+              "native_preserved": "1",
+              "mode": "Stand"
+            },
+            {
+              "frames": "102",
+              "contact": "34",
+              "part": "trunk",
+              "native_preserved": "1",
+              "mode": "Run"
+            }
+          ]
+        },
+        {
+          "check": "chest delivery makes one real upper-layer contact: forward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1800",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2871",
+              "upper_layer": "1"
+            }
+          ]
+        },
+        {
+          "check": "forward/back adjustment remains responsive during the gesture: forward",
+          "result": "passed",
+          "evidence": {
+            "path_m": 0.4018014940878859,
+            "maximum_speed_mps": 3.0105
+          }
+        },
+        {
+          "check": "chest layer preserves native pelvis and legs: forward",
+          "result": "passed",
+          "evidence": {
+            "samples": 14,
+            "maximum_arm_error": 0.44970524
+          }
+        },
+        {
+          "check": "arms use reception first and smoothly return to native locomotion: forward",
+          "result": "passed",
+          "evidence": {
+            "samples": 28,
+            "peak_arm_gesture_weight": 1.0,
+            "minimum_late_arm_weight": 0.0
+          }
+        },
+        {
+          "check": "upper gesture fades without a full-body lock: forward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "3100",
+              "touched": "1",
+              "phase": "168.00"
+            }
+          ]
+        },
+        {
+          "check": "chest delivery makes one real upper-layer contact: backward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "5420",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2871",
+              "upper_layer": "1"
+            }
+          ]
+        },
+        {
+          "check": "forward/back adjustment remains responsive during the gesture: backward",
+          "result": "passed",
+          "evidence": {
+            "path_m": 0.21966740447312355,
+            "maximum_speed_mps": 2.1266
+          }
+        },
+        {
+          "check": "chest layer preserves native pelvis and legs: backward",
+          "result": "passed",
+          "evidence": {
+            "samples": 14,
+            "maximum_arm_error": 0.42107856
+          }
+        },
+        {
+          "check": "arms use reception first and smoothly return to native locomotion: backward",
+          "result": "passed",
+          "evidence": {
+            "samples": 28,
+            "peak_arm_gesture_weight": 1.0,
+            "minimum_late_arm_weight": 0.0
+          }
+        },
+        {
+          "check": "upper gesture fades without a full-body lock: backward",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "6720",
+              "touched": "1",
+              "phase": "168.00"
+            }
+          ]
+        },
+        {
+          "check": "side input cannot turn or displace the player before chest contact",
+          "result": "passed",
+          "evidence": {
+            "maximum_displacement_m": 0.0,
+            "samples": 2
+          }
+        },
+        {
+          "check": "ignored lateral input still permits an actual chest reception",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "8620",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            }
+          ]
+        },
+        {
+          "check": "moderate forward input selects the running chest gesture",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "12160",
+              "mode": "forward",
+              "contact_frame": "34",
+              "frames": "102",
+              "legs_free": "1"
+            }
+          ]
+        },
+        {
+          "check": "running gesture makes a real chest contact with native legs",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "12480",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.1972",
+              "upper_layer": "1"
+            }
+          ]
+        },
+        {
+          "check": "released stick keeps reception stationary rather than walking through the ball",
+          "result": "passed",
+          "evidence": {
+            "aerial_peak_speed_mps": 0.0
+          }
+        },
+        {
+          "check": "third-person lateral world input cannot turn a pending reception",
+          "result": "passed",
+          "evidence": {
+            "camera": 1,
+            "samples": 3
+          }
+        },
+        {
+          "check": "low delivery retains native foot reception",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "22800",
+              "part": "right_foot",
+              "function": "3",
+              "z": "0.1078"
+            }
+          ]
+        },
+        {
+          "check": "all authored impulses require real skin contact, upper contacts specifically require chest skin",
+          "result": "passed",
+          "evidence": {
+            "impulses": 17,
+            "upper_impulses": 6
+          }
+        },
+        {
+          "check": "rendered chest and physical skin agree on the incoming trajectory",
+          "result": "passed",
+          "evidence": {
+            "paired_samples": 12,
+            "maximum_gap_difference_m": 0.04634000000000005
+          }
+        },
+        {
+          "check": "added full-body clips never replace native locomotion",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1420",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "5040",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "8620",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "12160",
+              "mode": "forward",
+              "contact_frame": "34",
+              "frames": "102",
+              "legs_free": "1"
+            },
+            {
+              "t": "15500",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            },
+            {
+              "t": "19320",
+              "mode": "stand",
+              "contact_frame": "37",
+              "frames": "169",
+              "legs_free": "1"
+            }
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0"
+    },
+    "note": "The running-chest regression is reported as observed rather than counted as passing. This AI patch does not change reception code or source clips."
+  },
+  "observed_requested_pass": {
+    "check": "CPU physically executes the requested native pass to the locked player",
+    "result": "passed",
+    "evidence": [
+      {
+        "t": "3310",
+        "team": "0",
+        "actor": "7",
+        "action": "4",
+        "target": "10",
+        "requested": "1"
+      }
+    ]
+  },
+  "CPU_shot_coverage": [
+    {
+      "seed": 9,
+      "native_shots": [
+        {
+          "t": "124790",
+          "team": "0",
+          "actor": "7",
+          "action": "8",
+          "target": "-1",
+          "requested": "0"
+        }
+      ],
+      "note": null
+    },
+    {
+      "seed": 7,
+      "native_shots": [],
+      "note": "No CPU entered the native central shooting zone; actual shots are covered by the other match fixture."
+    }
+  ],
+  "fixture_notes": [
+    "The movement check waits for SDL acknowledgement and allows native reception time before measuring travel.",
+    "A pass call may expire when the CPU loses possession or has no viable lane. Match tests accept normal autonomous continuation instead of forcing a pass.",
+    "An initial AI test mislabeled enum 7 as a shot (it is a header); corrected to enum 8 and reran both complete fixtures. No gameplay code changed for this test correction.",
+    "The second fixture never entered the native central shooting zone (0 samples), so shot coverage comes from the first fixture. Both saved fixture logs were reevaluated with --validate-existing after correcting that expectation, retaining their original executable SHA and successful exit evidence.",
+    "The supplementary solo chest suites missed a running chest reception; full observations for both the current and previous binaries are recorded separately instead of claiming all animation regressions passed.",
+    "Finite fixtures check observed behavior; they do not establish flawless decisions in every match."
+  ],
+  "rendered_checks": 87,
   "suites": {
     "match_11v11": {
       "result": "passed",
       "runner": "tests/player_match_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
       "checks": [
         {
           "check": "native CPU kickoff starts normal play",
@@ -49,11 +639,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -52.553,
-                  -0.288,
+                  -52.963,
+                  0.045,
                   0.0
                 ],
-                "speed": 4.76,
+                "speed": 4.009,
                 "action": 1
               },
               {
@@ -61,11 +651,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -21.451,
-                  18.147,
+                  -21.226,
+                  16.223,
                   0.0
                 ],
-                "speed": 4.992,
+                "speed": 5.242,
                 "action": 1
               },
               {
@@ -73,11 +663,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -26.318,
-                  6.094,
+                  -25.727,
+                  3.913,
                   0.0
                 ],
-                "speed": 4.443,
+                "speed": 4.983,
                 "action": 1
               },
               {
@@ -85,11 +675,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -26.615,
-                  -6.871,
+                  -26.448,
+                  -6.281,
                   0.0
                 ],
-                "speed": 3.92,
+                "speed": 4.232,
                 "action": 1
               },
               {
@@ -97,11 +687,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -21.33,
-                  -16.914,
+                  -22.334,
+                  -15.351,
                   0.0
                 ],
-                "speed": 5.122,
+                "speed": 4.117,
                 "action": 1
               },
               {
@@ -109,11 +699,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  0.336,
-                  0.477,
+                  0.333,
+                  0.49,
                   0.0
                 ],
-                "speed": 2.656,
+                "speed": 2.66,
                 "action": 1
               },
               {
@@ -121,11 +711,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -0.071,
-                  -3.264,
+                  -12.694,
+                  0.041,
                   0.0
                 ],
-                "speed": 0.0,
+                "speed": 5.101,
                 "action": 1
               },
               {
@@ -133,20 +723,20 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -9.268,
-                  -10.712,
+                  -0.003,
+                  -1.333,
                   0.0
                 ],
-                "speed": 4.067,
-                "action": 1
+                "speed": 5.0,
+                "action": 2
               },
               {
                 "id": 8,
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -4.009,
-                  18.502,
+                  -4.008,
+                  18.576,
                   0.0
                 ],
                 "speed": 4.394,
@@ -157,11 +747,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -5.616,
-                  6.529,
+                  -4.714,
+                  -6.853,
                   0.0
                 ],
-                "speed": 4.454,
+                "speed": 5.387,
                 "action": 1
               },
               {
@@ -170,7 +760,7 @@
                 "human": 1,
                 "p": [
                   -5.06,
-                  -19.56,
+                  -18.369,
                   0.0
                 ],
                 "speed": 0.0,
@@ -181,11 +771,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  52.766,
+                  52.528,
                   0.0,
                   0.0
                 ],
-                "speed": 4.342,
+                "speed": 4.72,
                 "action": 1
               },
               {
@@ -193,11 +783,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  21.886,
-                  -15.142,
+                  21.523,
+                  -15.583,
                   0.0
                 ],
-                "speed": 4.866,
+                "speed": 4.992,
                 "action": 1
               },
               {
@@ -205,11 +795,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  25.692,
-                  -3.991,
+                  25.666,
+                  -7.068,
                   0.0
                 ],
-                "speed": 5.012,
+                "speed": 5.024,
                 "action": 1
               },
               {
@@ -217,11 +807,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  25.467,
-                  5.75,
+                  26.087,
+                  4.682,
                   0.0
                 ],
-                "speed": 5.103,
+                "speed": 4.777,
                 "action": 1
               },
               {
@@ -229,11 +819,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  21.475,
-                  17.455,
+                  22.107,
+                  16.367,
                   0.0
                 ],
-                "speed": 4.992,
+                "speed": 4.502,
                 "action": 1
               },
               {
@@ -241,11 +831,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  11.692,
-                  -5.363,
+                  11.15,
+                  -5.063,
                   0.0
                 ],
-                "speed": 4.966,
+                "speed": 5.102,
                 "action": 1
               },
               {
@@ -253,11 +843,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  11.194,
-                  5.264,
+                  11.988,
+                  5.327,
                   0.0
                 ],
-                "speed": 5.123,
+                "speed": 4.614,
                 "action": 1
               },
               {
@@ -265,8 +855,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  2.838,
-                  -21.215,
+                  3.023,
+                  -21.224,
                   0.0
                 ],
                 "speed": 3.5,
@@ -277,11 +867,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  7.19,
-                  -2.03,
+                  7.703,
+                  0.81,
                   0.0
                 ],
-                "speed": 5.059,
+                "speed": 5.1,
                 "action": 1
               },
               {
@@ -289,8 +879,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  3.493,
-                  20.103,
+                  2.966,
+                  21.149,
                   0.0
                 ],
                 "speed": 3.5,
@@ -301,14 +891,22 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  2.835,
-                  7.97,
+                  4.485,
+                  -7.013,
                   0.0
                 ],
-                "speed": 4.089,
+                "speed": 5.101,
                 "action": 1
               }
-            ]
+            ],
+            "difficulty": 1.0,
+            "designated_id": 7,
+            "ball": [
+              -0.063,
+              -0.604,
+              0.103
+            ],
+            "ball_speed": 4.153
           }
         },
         {
@@ -316,9 +914,9 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "3050",
+              "t": "3000",
               "target": "10",
-              "until": "7550"
+              "until": "7500"
             }
           ]
         },
@@ -328,24 +926,39 @@
           "evidence": {}
         },
         {
-          "check": "CPU physically executes the requested native pass to the locked player",
+          "check": "pass request preserves native decisions and only promotes viable passes",
           "result": "passed",
-          "evidence": [
-            {
-              "t": "3500",
-              "team": "0",
-              "actor": "6",
-              "action": "4",
-              "target": "10",
-              "requested": "1"
-            }
-          ]
+          "evidence": {
+            "executed_passes": [],
+            "evaluated_requests": [
+              {
+                "t": "3730",
+                "actor": "7",
+                "team": "0",
+                "desired_speed": "8.000",
+                "choices": "0",
+                "request_target": "10",
+                "request_odds": "0.000",
+                "request_pass": "-1"
+              },
+              {
+                "t": "5430",
+                "actor": "7",
+                "team": "0",
+                "desired_speed": "3.500",
+                "choices": "1",
+                "request_target": "10",
+                "request_odds": "0.000",
+                "request_pass": "-1"
+              }
+            ]
+          }
         },
         {
           "check": "locked player still responds to the approved movement input",
           "result": "passed",
           "evidence": {
-            "travel_m": 1.7270758668917814
+            "travel_m": 2.3635634537705994
           }
         },
         {
@@ -357,7 +970,7 @@
           "check": "all match frames contain two teams of eleven",
           "result": "passed",
           "evidence": {
-            "frames": 50
+            "frames": 51
           }
         },
         {
@@ -365,23 +978,23 @@
           "result": "passed",
           "evidence": {
             "locked_id": 10,
-            "frames": 50
+            "frames": 51
           }
         },
         {
           "check": "team 0 uses active CPU movement and ball actions",
           "result": "passed",
           "evidence": {
-            "peak_speed_mps": 7.877,
-            "actions": 6
+            "peak_speed_mps": 7.927,
+            "actions": 8
           }
         },
         {
           "check": "team 1 uses active CPU movement and ball actions",
           "result": "passed",
           "evidence": {
-            "peak_speed_mps": 7.811,
-            "actions": 22
+            "peak_speed_mps": 7.875,
+            "actions": 19
           }
         },
         {
@@ -443,7 +1056,7 @@
                 "human": 0,
                 "p": [
                   -23.21,
-                  17.045,
+                  17.305,
                   0.0
                 ],
                 "speed": 0.0,
@@ -455,7 +1068,7 @@
                 "human": 0,
                 "p": [
                   -27.5,
-                  6.48,
+                  7.265,
                   0.0
                 ],
                 "speed": 0.0,
@@ -467,7 +1080,7 @@
                 "human": 0,
                 "p": [
                   -27.5,
-                  -5.969,
+                  -3.961,
                   0.0
                 ],
                 "speed": 0.0,
@@ -479,7 +1092,7 @@
                 "human": 0,
                 "p": [
                   -23.21,
-                  -17.272,
+                  -14.965,
                   0.0
                 ],
                 "speed": 0.0,
@@ -503,7 +1116,7 @@
                 "human": 0,
                 "p": [
                   -14.717,
-                  0.031,
+                  1.347,
                   0.0
                 ],
                 "speed": 0.0,
@@ -511,30 +1124,6 @@
               },
               {
                 "id": 7,
-                "team": 0,
-                "human": 0,
-                "p": [
-                  -10.132,
-                  -8.728,
-                  0.0
-                ],
-                "speed": 0.0,
-                "action": 1
-              },
-              {
-                "id": 8,
-                "team": 0,
-                "human": 0,
-                "p": [
-                  -5.06,
-                  18.362,
-                  0.0
-                ],
-                "speed": 0.0,
-                "action": 1
-              },
-              {
-                "id": 9,
                 "team": 0,
                 "human": 0,
                 "p": [
@@ -546,12 +1135,36 @@
                 "action": 1
               },
               {
+                "id": 8,
+                "team": 0,
+                "human": 0,
+                "p": [
+                  -5.06,
+                  19.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "action": 1
+              },
+              {
+                "id": 9,
+                "team": 0,
+                "human": 0,
+                "p": [
+                  -2.54,
+                  -9.05,
+                  0.0
+                ],
+                "speed": 0.0,
+                "action": 1
+              },
+              {
                 "id": 10,
                 "team": 0,
                 "human": 1,
                 "p": [
                   -5.06,
-                  -17.294,
+                  -17.983,
                   0.0
                 ],
                 "speed": 0.0,
@@ -575,7 +1188,7 @@
                 "human": 0,
                 "p": [
                   23.21,
-                  -14.811,
+                  -17.257,
                   0.0
                 ],
                 "speed": 0.0,
@@ -587,7 +1200,7 @@
                 "human": 0,
                 "p": [
                   27.5,
-                  -5.98,
+                  -4.013,
                   0.0
                 ],
                 "speed": 0.0,
@@ -599,7 +1212,7 @@
                 "human": 0,
                 "p": [
                   27.5,
-                  4.894,
+                  6.055,
                   0.0
                 ],
                 "speed": 0.0,
@@ -611,7 +1224,7 @@
                 "human": 0,
                 "p": [
                   23.21,
-                  17.143,
+                  14.809,
                   0.0
                 ],
                 "speed": 0.0,
@@ -623,7 +1236,7 @@
                 "human": 0,
                 "p": [
                   13.168,
-                  -4.159,
+                  -6.302,
                   0.0
                 ],
                 "speed": 0.0,
@@ -635,7 +1248,7 @@
                 "human": 0,
                 "p": [
                   13.168,
-                  5.517,
+                  4.833,
                   0.0
                 ],
                 "speed": 0.0,
@@ -647,7 +1260,7 @@
                 "human": 0,
                 "p": [
                   4.07,
-                  -21.046,
+                  -18.566,
                   0.0
                 ],
                 "speed": 0.0,
@@ -658,8 +1271,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  9.396,
-                  -0.286,
+                  8.42,
+                  -4.51,
                   0.0
                 ],
                 "speed": 0.0,
@@ -671,7 +1284,7 @@
                 "human": 0,
                 "p": [
                   4.07,
-                  21.294,
+                  19.286,
                   0.0
                 ],
                 "speed": 0.0,
@@ -682,14 +1295,22 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  2.583,
-                  -9.038,
+                  9.177,
+                  -1.247,
                   0.0
                 ],
-                "speed": 0.0,
+                "speed": 0.138,
                 "action": 1
               }
-            ]
+            ],
+            "difficulty": 1.0,
+            "designated_id": 5,
+            "ball": [
+              0.0,
+              0.0,
+              0.11
+            ],
+            "ball_speed": 0.11
           }
         },
         {
@@ -697,9 +1318,9 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "26890",
+              "t": "26860",
               "target": "10",
-              "until": "31390"
+              "until": "31360"
             }
           ]
         },
@@ -710,269 +1331,876 @@
         }
       ]
     },
-    "solo_chest": {
+    "autonomous_cpu_seed_9": {
       "result": "passed",
-      "runner": "tests/training_upper_body_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
+      "runner": "tests/player_match_ai_smoke.py",
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
       "checks": [
         {
-          "check": "both source receptions remain available at the approved cadence",
+          "check": "maximum original difficulty",
+          "result": "passed",
+          "evidence": [
+            1.0
+          ]
+        },
+        {
+          "check": "both complete teams keep one fixed human",
+          "result": "passed",
+          "evidence": {
+            "frames": 278,
+            "locked": 10
+          }
+        },
+        {
+          "check": "native kickoff formation retains width, depth and a goalkeeper at each goal",
+          "result": "passed",
+          "evidence": {
+            "0": {
+              "width_m": 36.897999999999996,
+              "depth_m": 53.9,
+              "keeper_position": [
+                -53.9,
+                0.0,
+                0.0
+              ]
+            },
+            "1": {
+              "width_m": 38.948,
+              "depth_m": 50.421,
+              "keeper_position": [
+                53.9,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        {
+          "check": "team 0 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 90,
+            "actors": [
+              "1",
+              "2",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ]
+          }
+        },
+        {
+          "check": "team 0 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 90
+          }
+        },
+        {
+          "check": "team 0 executes native passes without human requests",
           "result": "passed",
           "evidence": [
             {
-              "frames": "169",
-              "contact": "37",
-              "part": "trunk",
-              "native_preserved": "1",
-              "mode": "Stand"
+              "t": "2390",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
             },
             {
-              "frames": "102",
-              "contact": "34",
-              "part": "trunk",
-              "native_preserved": "1",
-              "mode": "Run"
-            }
-          ]
-        },
-        {
-          "check": "chest delivery makes one real upper-layer contact: forward",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "1800",
-              "part": "trunk",
-              "function": "3",
-              "z": "1.2835",
-              "upper_layer": "1"
-            }
-          ]
-        },
-        {
-          "check": "forward/back adjustment remains responsive during the gesture: forward",
-          "result": "passed",
-          "evidence": {
-            "path_m": 0.46497396379551614,
-            "maximum_speed_mps": 3.0545
-          }
-        },
-        {
-          "check": "chest layer preserves native pelvis and legs: forward",
-          "result": "passed",
-          "evidence": {
-            "samples": 14,
-            "maximum_arm_error": 0.46048513
-          }
-        },
-        {
-          "check": "arms use reception first and smoothly return to native locomotion: forward",
-          "result": "passed",
-          "evidence": {
-            "samples": 29,
-            "peak_arm_gesture_weight": 1.0,
-            "minimum_late_arm_weight": 0.0
-          }
-        },
-        {
-          "check": "upper gesture fades without a full-body lock: forward",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "3120",
-              "touched": "1",
-              "phase": "168.00"
-            }
-          ]
-        },
-        {
-          "check": "chest delivery makes one real upper-layer contact: backward",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "5410",
-              "part": "trunk",
-              "function": "3",
-              "z": "1.2847",
-              "upper_layer": "1"
-            }
-          ]
-        },
-        {
-          "check": "forward/back adjustment remains responsive during the gesture: backward",
-          "result": "passed",
-          "evidence": {
-            "path_m": 0.4752012643641199,
-            "maximum_speed_mps": 2.1251
-          }
-        },
-        {
-          "check": "chest layer preserves native pelvis and legs: backward",
-          "result": "passed",
-          "evidence": {
-            "samples": 15,
-            "maximum_arm_error": 0.45186269
-          }
-        },
-        {
-          "check": "arms use reception first and smoothly return to native locomotion: backward",
-          "result": "passed",
-          "evidence": {
-            "samples": 30,
-            "peak_arm_gesture_weight": 1.0,
-            "minimum_late_arm_weight": 0.0
-          }
-        },
-        {
-          "check": "upper gesture fades without a full-body lock: backward",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "6720",
-              "touched": "1",
-              "phase": "168.00"
-            }
-          ]
-        },
-        {
-          "check": "side input cannot turn or displace the player before chest contact",
-          "result": "passed",
-          "evidence": {
-            "maximum_displacement_m": 0.0,
-            "samples": 2
-          }
-        },
-        {
-          "check": "ignored lateral input still permits an actual chest reception",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "8600",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
-            }
-          ]
-        },
-        {
-          "check": "moderate forward input selects the running chest gesture",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "12180",
-              "mode": "forward",
-              "contact_frame": "34",
-              "frames": "102",
-              "legs_free": "1"
-            }
-          ]
-        },
-        {
-          "check": "running gesture makes a real chest contact with native legs",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "12510",
-              "part": "trunk",
-              "function": "3",
-              "z": "1.1633",
-              "upper_layer": "1"
-            }
-          ]
-        },
-        {
-          "check": "released stick keeps reception stationary rather than walking through the ball",
-          "result": "passed",
-          "evidence": {
-            "aerial_peak_speed_mps": 0.0
-          }
-        },
-        {
-          "check": "third-person lateral world input cannot turn a pending reception",
-          "result": "passed",
-          "evidence": {
-            "camera": 1,
-            "samples": 4
-          }
-        },
-        {
-          "check": "low delivery retains native foot reception",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "23090",
-              "part": "right_foot",
-              "function": "3",
-              "z": "0.1078"
-            }
-          ]
-        },
-        {
-          "check": "all authored impulses require real skin contact, upper contacts specifically require chest skin",
-          "result": "passed",
-          "evidence": {
-            "impulses": 18,
-            "upper_impulses": 6
-          }
-        },
-        {
-          "check": "rendered chest and physical skin agree on the incoming trajectory",
-          "result": "passed",
-          "evidence": {
-            "paired_samples": 12,
-            "maximum_gap_difference_m": 0.047799999999999995
-          }
-        },
-        {
-          "check": "added full-body clips never replace native locomotion",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": "1440",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
+              "t": "7540",
+              "team": "0",
+              "actor": "7",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
             },
             {
-              "t": "5040",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
+              "t": "22280",
+              "team": "0",
+              "actor": "4",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
             },
             {
-              "t": "8600",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
+              "t": "24100",
+              "team": "0",
+              "actor": "7",
+              "action": "5",
+              "target": "6",
+              "requested": "0"
             },
             {
-              "t": "12180",
-              "mode": "forward",
-              "contact_frame": "34",
-              "frames": "102",
-              "legs_free": "1"
+              "t": "24650",
+              "team": "0",
+              "actor": "6",
+              "action": "5",
+              "target": "5",
+              "requested": "0"
             },
             {
-              "t": "15540",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
+              "t": "25770",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "10",
+              "requested": "0"
             },
             {
-              "t": "19420",
-              "mode": "stand",
-              "contact_frame": "37",
-              "frames": "169",
-              "legs_free": "1"
+              "t": "53640",
+              "team": "0",
+              "actor": "1",
+              "action": "6",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "56910",
+              "team": "0",
+              "actor": "8",
+              "action": "5",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "64880",
+              "team": "0",
+              "actor": "5",
+              "action": "6",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "78830",
+              "team": "0",
+              "actor": "1",
+              "action": "4",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "90720",
+              "team": "0",
+              "actor": "2",
+              "action": "4",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "93970",
+              "team": "0",
+              "actor": "2",
+              "action": "4",
+              "target": "3",
+              "requested": "0"
+            },
+            {
+              "t": "103660",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "2",
+              "requested": "0"
+            },
+            {
+              "t": "110830",
+              "team": "0",
+              "actor": "2",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "119530",
+              "team": "0",
+              "actor": "9",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "132300",
+              "team": "0",
+              "actor": "5",
+              "action": "5",
+              "target": "7",
+              "requested": "0"
             }
           ]
         },
         {
-          "check": "clean exit",
+          "check": "team 0 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "1",
+            "2",
+            "4",
+            "5",
+            "7",
+            "9"
+          ]
+        },
+        {
+          "check": "team 1 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 136,
+            "actors": [
+              "19",
+              "20",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28"
+            ]
+          }
+        },
+        {
+          "check": "team 1 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 135
+          }
+        },
+        {
+          "check": "team 1 executes native passes without human requests",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "10350",
+              "team": "1",
+              "actor": "25",
+              "action": "4",
+              "target": "19",
+              "requested": "0"
+            },
+            {
+              "t": "11120",
+              "team": "1",
+              "actor": "23",
+              "action": "4",
+              "target": "19",
+              "requested": "0"
+            },
+            {
+              "t": "14950",
+              "team": "1",
+              "actor": "19",
+              "action": "5",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "19750",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "32590",
+              "team": "1",
+              "actor": "25",
+              "action": "6",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "35160",
+              "team": "1",
+              "actor": "24",
+              "action": "5",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "39210",
+              "team": "1",
+              "actor": "26",
+              "action": "6",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "50590",
+              "team": "1",
+              "actor": "25",
+              "action": "6",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "72520",
+              "team": "1",
+              "actor": "24",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "75570",
+              "team": "1",
+              "actor": "28",
+              "action": "6",
+              "target": "27",
+              "requested": "0"
+            },
+            {
+              "t": "87060",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "100640",
+              "team": "1",
+              "actor": "26",
+              "action": "6",
+              "target": "27",
+              "requested": "0"
+            },
+            {
+              "t": "106280",
+              "team": "1",
+              "actor": "28",
+              "action": "4",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "127070",
+              "team": "1",
+              "actor": "20",
+              "action": "5",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "129620",
+              "team": "1",
+              "actor": "26",
+              "action": "6",
+              "target": "23",
+              "requested": "0"
+            }
+          ]
+        },
+        {
+          "check": "team 1 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "19",
+            "20",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"
+          ]
+        },
+        {
+          "check": "no CPU remains parked beside a stationary ball for five seconds",
+          "result": "passed",
+          "evidence": {
+            "longest_ms": 0,
+            "longest_spans": [
+              {
+                "actor": 2,
+                "team": 0,
+                "start": 93500,
+                "end": 93500
+              }
+            ]
+          }
+        },
+        {
+          "check": "native attacking decisions produce actual shots in a shooting-zone fixture",
+          "result": "passed",
+          "evidence": {
+            "shots": [
+              {
+                "t": "124790",
+                "team": "0",
+                "actor": "7",
+                "action": "8",
+                "target": "-1",
+                "requested": "0"
+              }
+            ],
+            "shooting_zone_samples": 11
+          }
+        },
+        {
+          "check": "two halves finish with the human idle",
+          "result": "passed",
+          "evidence": {
+            "last_t": 132550,
+            "score": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "check": "simulation retains real time pace",
+          "result": "passed",
+          "evidence": 0.9990872815321601
+        },
+        {
+          "check": "clean rendered game exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    "autonomous_cpu_seed_7": {
+      "result": "passed",
+      "runner": "tests/player_match_ai_smoke.py",
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
+      "checks": [
+        {
+          "check": "maximum original difficulty",
+          "result": "passed",
+          "evidence": [
+            1.0
+          ]
+        },
+        {
+          "check": "both complete teams keep one fixed human",
+          "result": "passed",
+          "evidence": {
+            "frames": 267,
+            "locked": 10
+          }
+        },
+        {
+          "check": "native kickoff formation retains width, depth and a goalkeeper at each goal",
+          "result": "passed",
+          "evidence": {
+            "0": {
+              "width_m": 35.633,
+              "depth_m": 53.9,
+              "keeper_position": [
+                -53.9,
+                0.0,
+                0.0
+              ]
+            },
+            "1": {
+              "width_m": 42.772999999999996,
+              "depth_m": 49.83,
+              "keeper_position": [
+                53.9,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        {
+          "check": "team 0 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 128,
+            "actors": [
+              "2",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ]
+          }
+        },
+        {
+          "check": "team 0 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 122
+          }
+        },
+        {
+          "check": "team 0 executes native passes without human requests",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "2390",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "7480",
+              "team": "0",
+              "actor": "7",
+              "action": "4",
+              "target": "6",
+              "requested": "0"
+            },
+            {
+              "t": "11410",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "15060",
+              "team": "0",
+              "actor": "8",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "37450",
+              "team": "0",
+              "actor": "9",
+              "action": "4",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "38860",
+              "team": "0",
+              "actor": "9",
+              "action": "5",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "40720",
+              "team": "0",
+              "actor": "7",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "48760",
+              "team": "0",
+              "actor": "9",
+              "action": "4",
+              "target": "6",
+              "requested": "0"
+            },
+            {
+              "t": "53360",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "6",
+              "requested": "0"
+            },
+            {
+              "t": "61010",
+              "team": "0",
+              "actor": "6",
+              "action": "5",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "74030",
+              "team": "0",
+              "actor": "4",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "75370",
+              "team": "0",
+              "actor": "7",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "77760",
+              "team": "0",
+              "actor": "9",
+              "action": "5",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "82600",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "92250",
+              "team": "0",
+              "actor": "2",
+              "action": "6",
+              "target": "4",
+              "requested": "0"
+            },
+            {
+              "t": "94140",
+              "team": "0",
+              "actor": "4",
+              "action": "5",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "102540",
+              "team": "0",
+              "actor": "4",
+              "action": "6",
+              "target": "9",
+              "requested": "0"
+            }
+          ]
+        },
+        {
+          "check": "team 0 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ]
+        },
+        {
+          "check": "team 1 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 219,
+            "actors": [
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28"
+            ]
+          }
+        },
+        {
+          "check": "team 1 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 215
+          }
+        },
+        {
+          "check": "team 1 executes native passes without human requests",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "25420",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "22",
+              "requested": "0"
+            },
+            {
+              "t": "28510",
+              "team": "1",
+              "actor": "22",
+              "action": "5",
+              "target": "27",
+              "requested": "0"
+            },
+            {
+              "t": "30890",
+              "team": "1",
+              "actor": "27",
+              "action": "5",
+              "target": "21",
+              "requested": "0"
+            },
+            {
+              "t": "35410",
+              "team": "1",
+              "actor": "21",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "62150",
+              "team": "1",
+              "actor": "20",
+              "action": "6",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "67800",
+              "team": "1",
+              "actor": "23",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "70790",
+              "team": "1",
+              "actor": "28",
+              "action": "6",
+              "target": "25",
+              "requested": "0"
+            },
+            {
+              "t": "83430",
+              "team": "1",
+              "actor": "22",
+              "action": "4",
+              "target": "27",
+              "requested": "0"
+            },
+            {
+              "t": "86010",
+              "team": "1",
+              "actor": "27",
+              "action": "5",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "87350",
+              "team": "1",
+              "actor": "24",
+              "action": "6",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "97950",
+              "team": "1",
+              "actor": "19",
+              "action": "6",
+              "target": "25",
+              "requested": "0"
+            },
+            {
+              "t": "100250",
+              "team": "1",
+              "actor": "19",
+              "action": "4",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "105070",
+              "team": "1",
+              "actor": "20",
+              "action": "4",
+              "target": "22",
+              "requested": "0"
+            },
+            {
+              "t": "106700",
+              "team": "1",
+              "actor": "22",
+              "action": "6",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "108400",
+              "team": "1",
+              "actor": "24",
+              "action": "5",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "112610",
+              "team": "1",
+              "actor": "23",
+              "action": "5",
+              "target": "25",
+              "requested": "0"
+            }
+          ]
+        },
+        {
+          "check": "team 1 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"
+          ]
+        },
+        {
+          "check": "no CPU remains parked beside a stationary ball for five seconds",
+          "result": "passed",
+          "evidence": {
+            "longest_ms": 0,
+            "longest_spans": [
+              {
+                "actor": 5,
+                "team": 0,
+                "start": 82500,
+                "end": 82500
+              },
+              {
+                "actor": 22,
+                "team": 1,
+                "start": 106500,
+                "end": 106500
+              }
+            ]
+          }
+        },
+        {
+          "check": "two halves finish with the human idle",
+          "result": "passed",
+          "evidence": {
+            "last_t": 127830,
+            "score": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "check": "simulation retains real time pace",
+          "result": "passed",
+          "evidence": 0.9991473650450958
+        },
+        {
+          "check": "clean rendered game exit",
           "result": "passed",
           "evidence": 0
         }
@@ -981,14 +2209,14 @@
     "solo_dribble": {
       "result": "passed",
       "runner": "tests/training_forward_cycle_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
       "checks": [
         {
           "check": "up uses the native third-person gait instead of DefenseJog",
           "result": "passed",
           "evidence": [
             {
-              "t": "1400",
+              "t": "1300",
               "function": "2",
               "contact_frame": "9",
               "added_chest": "0",
@@ -998,7 +2226,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "2020",
+              "t": "1920",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -1008,7 +2236,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "2440",
+              "t": "2340",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1018,7 +2246,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "2900",
+              "t": "2800",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1028,7 +2256,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "3360",
+              "t": "3260",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1038,7 +2266,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "3820",
+              "t": "3720",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1048,7 +2276,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "4280",
+              "t": "4180",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1058,7 +2286,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "4740",
+              "t": "4640",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1068,7 +2296,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "5200",
+              "t": "5100",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1078,7 +2306,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "5660",
+              "t": "5560",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1118,7 +2346,7 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "6720",
+              "t": "6620",
               "function": "2",
               "contact_frame": "8",
               "added_chest": "0",
@@ -1128,7 +2356,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "7240",
+              "t": "7140",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1138,7 +2366,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "7700",
+              "t": "7600",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1148,7 +2376,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "8160",
+              "t": "8060",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1158,7 +2386,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "8620",
+              "t": "8520",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1168,7 +2396,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "9080",
+              "t": "8980",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1178,7 +2406,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "9540",
+              "t": "9440",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1188,7 +2416,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "10000",
+              "t": "9900",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1198,7 +2426,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "10460",
+              "t": "10360",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1208,7 +2436,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "10920",
+              "t": "10820",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1231,16 +2459,16 @@
           "check": "right keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.701838457196526,
-            "ending_range_m": 0.5562032452260564
+            "maximum_range_m": 0.7035896033910676,
+            "ending_range_m": 0.5562032452260599
           }
         },
         {
           "check": "right advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 16.18662387281548,
-            "ending_speed_mps": 3.8401
+            "travel_m": 16.197923174592475,
+            "ending_speed_mps": 3.8399
           }
         },
         {
@@ -1248,17 +2476,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "12000",
+              "t": "11900",
               "function": "2",
               "contact_frame": "9",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/090_accel.anim",
               "frames": "36",
-              "previous_frame": "14",
+              "previous_frame": "11",
               "previous_frames": "28"
             },
             {
-              "t": "12620",
+              "t": "12520",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -1268,7 +2496,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "13040",
+              "t": "12940",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1278,7 +2506,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "13500",
+              "t": "13400",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1288,7 +2516,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "13960",
+              "t": "13860",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1298,7 +2526,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "14420",
+              "t": "14320",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1308,7 +2536,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "14880",
+              "t": "14780",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1318,7 +2546,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "15340",
+              "t": "15240",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1328,7 +2556,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "15800",
+              "t": "15700",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1338,7 +2566,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "16260",
+              "t": "16160",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1378,27 +2606,37 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "17320",
+              "t": "17200",
               "function": "2",
               "contact_frame": "15",
               "added_chest": "0",
-              "name": "media/animations/ballcontrol/idle/135_accel.anim",
+              "name": "media/animations/ballcontrol/idle/180_accel.anim",
               "frames": "61",
-              "previous_frame": "24",
+              "previous_frame": "25",
               "previous_frames": "28"
             },
             {
-              "t": "17920",
+              "t": "17800",
               "function": "2",
-              "contact_frame": "13",
+              "contact_frame": "10",
               "added_chest": "0",
-              "name": "media/animations/ballcontrol/walk/020_left.anim_mirror",
+              "name": "media/animations/ballcontrol/walk/000_close.anim",
               "frames": "29",
               "previous_frame": "60",
               "previous_frames": "61"
             },
             {
-              "t": "18380",
+              "t": "18220",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "14",
+              "previous_frames": "28"
+            },
+            {
+              "t": "18680",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1408,7 +2646,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "18840",
+              "t": "19140",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1418,7 +2656,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "19300",
+              "t": "19600",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1428,7 +2666,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "19760",
+              "t": "20060",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1438,7 +2676,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "20220",
+              "t": "20520",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1448,7 +2686,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "20680",
+              "t": "20980",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1458,17 +2696,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "21140",
-              "function": "2",
-              "contact_frame": "13",
-              "added_chest": "0",
-              "name": "media/animations/ballcontrol/walk/000.anim",
-              "frames": "29",
-              "previous_frame": "18",
-              "previous_frames": "28"
-            },
-            {
-              "t": "21600",
+              "t": "21440",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1483,7 +2711,7 @@
           "check": "left prefers actual right-foot contacts",
           "result": "passed",
           "evidence": {
-            "right_foot": 9,
+            "right_foot": 10,
             "total": 10
           }
         },
@@ -1491,16 +2719,16 @@
           "check": "left keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5722025253352178,
-            "ending_range_m": 0.5370049254895144
+            "maximum_range_m": 0.5721022373667147,
+            "ending_range_m": 0.5528036179331693
           }
         },
         {
           "check": "left advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 15.110148401984674,
-            "ending_speed_mps": 3.84
+            "travel_m": 15.413101500022634,
+            "ending_speed_mps": 3.8401
           }
         },
         {
@@ -1508,17 +2736,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "22600",
+              "t": "22520",
               "function": "2",
               "contact_frame": "8",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/045_accel.anim_mirror",
               "frames": "40",
-              "previous_frame": "26",
+              "previous_frame": "15",
               "previous_frames": "28"
             },
             {
-              "t": "23260",
+              "t": "23180",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -1528,7 +2756,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "23680",
+              "t": "23600",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1538,7 +2766,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "24140",
+              "t": "24060",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1548,7 +2776,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "24600",
+              "t": "24520",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1558,7 +2786,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "25060",
+              "t": "24980",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1568,7 +2796,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "25520",
+              "t": "25440",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1578,7 +2806,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "25980",
+              "t": "25900",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1588,7 +2816,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "26440",
+              "t": "26360",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1598,7 +2826,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "26900",
+              "t": "26820",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1621,15 +2849,15 @@
           "check": "diagonal keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.6562886636229519,
-            "ending_range_m": 0.5369816570423993
+            "maximum_range_m": 0.6511843364209554,
+            "ending_range_m": 0.5300526954935714
           }
         },
         {
           "check": "diagonal advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 16.262501465949203,
+            "travel_m": 16.1851424476277,
             "ending_speed_mps": 3.84
           }
         },
@@ -1637,16 +2865,16 @@
           "check": "light stick retains the slow native gait and ball",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5986001336451572,
-            "ending_range_m": 0.5270041840441119
+            "maximum_range_m": 0.6002008330550701,
+            "ending_range_m": 0.5722022369757038
           }
         },
         {
           "check": "right turn and return keeps native ball control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5713019691896737,
-            "ending_range_m": 0.556203595817212
+            "maximum_range_m": 0.5722642484027809,
+            "ending_range_m": 0.5527036185877579
           }
         },
         {
@@ -1654,14 +2882,14 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              32130,
-              32590,
-              33060,
-              33510,
-              33970,
-              34440,
-              34890,
-              35350
+              32050,
+              32510,
+              32980,
+              33430,
+              33890,
+              34360,
+              34810,
+              35270
             ],
             "intervals_ms": [
               460,
@@ -1687,14 +2915,14 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              37950,
-              38410,
-              38880,
-              39330,
-              39790,
-              40260,
-              40710,
-              41170
+              37850,
+              38310,
+              38780,
+              39230,
+              39690,
+              40160,
+              40610,
+              41070
             ],
             "intervals_ms": [
               460,
@@ -1711,8 +2939,8 @@
           "check": "reverse turn and return keeps native ball control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.6845004674943618,
-            "ending_range_m": 0.562403209450302
+            "maximum_range_m": 0.6830018740823481,
+            "ending_range_m": 0.5055009891187163
           }
         },
         {
@@ -1720,22 +2948,20 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              43730,
-              44150,
-              44630,
-              45090,
-              45510,
-              46010,
-              46470,
-              46930
+              43890,
+              44370,
+              44830,
+              45290,
+              45710,
+              46190,
+              46650
             ],
             "intervals_ms": [
-              420,
               480,
               460,
-              420,
-              500,
               460,
+              420,
+              480,
               460
             ]
           }
@@ -1744,15 +2970,15 @@
           "check": "three RB bursts/releases retain the native recovery",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.899814453095747,
-            "ending_range_m": 0.5202011630129278
+            "maximum_range_m": 0.8982150522007514,
+            "ending_range_m": 0.5202009611678959
           }
         },
         {
           "check": "every authored impulse requires real skin contact",
           "result": "passed",
           "evidence": {
-            "impulses": 101,
+            "impulses": 102,
             "maximum_gap_m": 0.00075
           }
         },
@@ -1760,7 +2986,7 @@
           "check": "imported forward gait is never selected in any direction",
           "result": "passed",
           "evidence": {
-            "changes": 223
+            "changes": 225
           }
         },
         {
@@ -1773,13 +2999,13 @@
     "solo_controls": {
       "result": "passed",
       "runner": "tests/training_native_controls_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
+      "executable_sha256": "ff28783b94730b2b2b166ec0bd82fa55f1cca2d0c14a1598767be6828759faed",
       "checks": [
         {
           "check": "RT remains reserved with RB False",
           "result": "passed",
           "evidence": [
-            4.02485,
+            4.09565,
             4.09565
           ]
         },
@@ -1798,13 +3024,13 @@
             "t": 17300,
             "exercise": 0,
             "player": [
-              3.6835,
+              3.6806,
               0.0049,
               0.0
             ],
             "speed": 3.84,
             "ball": [
-              4.2205,
+              4.2176,
               0.0026,
               0.1207
             ],
@@ -1830,26 +3056,26 @@
             ],
             "keys": 4096,
             "player_yaw": -0.0001,
-            "wall_ms": 27655
+            "wall_ms": 25401
           }
         },
         {
           "check": "head recenters gradually",
           "result": "passed",
-          "evidence": -0.1204
+          "evidence": -0.1302
         },
         {
           "check": "full shot retains charge/elevation modifier",
           "result": "passed",
           "evidence": [
-            "TRAINING_SHOT t=21320 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[0.00029,0.00966,-4.97881] lever=[-0.10177,0.02203,-0.03697] low_spin=0"
+            "TRAINING_SHOT t=21320 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[0.00373,0.12069,-4.99446] lever=[-0.10179,0.02214,-0.03686] low_spin=0"
           ]
         },
         {
           "check": "lob retains charge/elevation modifier",
           "result": "passed",
           "evidence": [
-            "TRAINING_SHOT t=24420 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[-0.23327,-3.99319,-2.25934] lever=[-0.10096,0.02550,-0.03697] low_spin=0"
+            "TRAINING_SHOT t=24400 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[-0.12366,-3.99809,-2.19179] lever=[-0.10179,0.02214,-0.03686] low_spin=0"
           ]
         },
         {
@@ -1857,12 +3083,12 @@
           "result": "passed",
           "evidence": [
             [
-              28870,
+              28850,
               "right_foot",
               2
             ],
             [
-              29530,
+              29300,
               "right_foot",
               4
             ]
@@ -1873,7 +3099,7 @@
           "result": "passed",
           "evidence": [
             [
-              32840,
+              32720,
               "right_foot",
               4
             ]
@@ -1884,7 +3110,7 @@
           "result": "passed",
           "evidence": [
             [
-              36930,
+              36800,
               "head",
               8
             ]
@@ -1896,1194 +3122,14 @@
           "evidence": 0
         }
       ]
-    },
-    "solo_running_actions": {
-      "result": "passed",
-      "runner": "tests/training_running_actions_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
-      "checks": [
-        {
-          "check": "900 ms running shot toward forward makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "2870",
-                "part": "right_foot",
-                "function": "8",
-                "z": "0.1097"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "2680",
-                "function": "8",
-                "contact_frame": "19",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/030.anim_mirror",
-                "frames": "61",
-                "previous_frame": "21",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 26.687
-          }
-        },
-        {
-          "check": "900 ms running shot toward right makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "6940",
-                "part": "left_foot",
-                "function": "8",
-                "z": "0.1116"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "6620",
-                "function": "8",
-                "contact_frame": "32",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/090_2step.anim",
-                "frames": "102",
-                "previous_frame": "19",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 26.3424
-          }
-        },
-        {
-          "check": "900 ms running shot toward diagonal makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "10940",
-                "part": "left_foot",
-                "function": "8",
-                "z": "0.1116"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "10620",
-                "function": "8",
-                "contact_frame": "32",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/090_2step.anim",
-                "frames": "102",
-                "previous_frame": "19",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 26.3439
-          }
-        },
-        {
-          "check": "900 ms running cross toward forward makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "14770",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1140"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "14640",
-                "function": "6",
-                "contact_frame": "13",
-                "added_chest": "0",
-                "name": "media/animations/highpass/walk/000.anim_mirror",
-                "frames": "44",
-                "previous_frame": "19",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 24.6133
-          }
-        },
-        {
-          "check": "900 ms running cross toward right makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "18800",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1088"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "18620",
-                "function": "6",
-                "contact_frame": "18",
-                "added_chest": "0",
-                "name": "media/animations/highpass/sprint/090_slide.anim_mirror",
-                "frames": "39",
-                "previous_frame": "17",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 23.7059
-          }
-        },
-        {
-          "check": "900 ms running cross toward diagonal makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "22800",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1129"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "22620",
-                "function": "6",
-                "contact_frame": "18",
-                "added_chest": "0",
-                "name": "media/animations/highpass/sprint/090_slide.anim_mirror",
-                "frames": "39",
-                "previous_frame": "19",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 24.1684
-          }
-        },
-        {
-          "check": "1450 ms running shot toward forward makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "27390",
-                "part": "right_foot",
-                "function": "8",
-                "z": "0.1119"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "27200",
-                "function": "8",
-                "contact_frame": "19",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/030.anim_mirror",
-                "frames": "61",
-                "previous_frame": "25",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 27.1115
-          }
-        },
-        {
-          "check": "1450 ms running shot toward right makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "32120",
-                "part": "left_foot",
-                "function": "8",
-                "z": "0.1132"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "31800",
-                "function": "8",
-                "contact_frame": "32",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/090_2step.anim",
-                "frames": "102",
-                "previous_frame": "8",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 25.7635
-          }
-        },
-        {
-          "check": "1450 ms running shot toward diagonal makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "36610",
-                "part": "left_foot",
-                "function": "8",
-                "z": "0.1136"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "36420",
-                "function": "8",
-                "contact_frame": "19",
-                "added_chest": "0",
-                "name": "media/animations/shot/sprint/030.anim",
-                "frames": "61",
-                "previous_frame": "6",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 26.0161
-          }
-        },
-        {
-          "check": "1450 ms running cross toward forward makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "41150",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1154"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "41020",
-                "function": "6",
-                "contact_frame": "13",
-                "added_chest": "0",
-                "name": "media/animations/highpass/walk/000.anim_mirror",
-                "frames": "44",
-                "previous_frame": "27",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 24.8208
-          }
-        },
-        {
-          "check": "1450 ms running cross toward right makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "45940",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1087"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "45600",
-                "function": "6",
-                "contact_frame": "34",
-                "added_chest": "0",
-                "name": "media/animations/highpass/sprint/090.anim",
-                "frames": "57",
-                "previous_frame": "8",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 24.185
-          }
-        },
-        {
-          "check": "1450 ms running cross toward diagonal makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "50400",
-                "part": "left_foot",
-                "function": "6",
-                "z": "0.1106"
-              }
-            ],
-            "native_selections": [
-              {
-                "t": "50220",
-                "function": "6",
-                "contact_frame": "18",
-                "added_chest": "0",
-                "name": "media/animations/highpass/sprint/090_slide.anim_mirror",
-                "frames": "39",
-                "previous_frame": "8",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 24.1394
-          }
-        },
-        {
-          "check": "every impulse has same-tick skin contact without enlarging the contact tolerance",
-          "result": "passed",
-          "evidence": {
-            "authored_impulses": 42,
-            "maximum_accepted_gap_m": 0.0005
-          }
-        },
-        {
-          "check": "clean exit",
-          "result": "passed",
-          "evidence": 0
-        }
-      ]
-    },
-    "solo_regressions": {
-      "result": "passed",
-      "runner": "tests/training_additive_animations_smoke.py",
-      "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
-      "checks": [
-        {
-          "check": "standing chest is added without removing native receptions",
-          "result": "passed",
-          "evidence": [
-            "TRAINING_CHEST_CANDIDATE frames=169 contact=37 part=trunk native_preserved=1 mode=Stand",
-            "TRAINING_CHEST_CANDIDATE frames=102 contact=34 part=trunk native_preserved=1 mode=Run"
-          ]
-        },
-        {
-          "check": "start from resting ball after 0 ms",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.63620007073247,
-            "ending_distance_m": 0.4955017053452002,
-            "ending_speed_mps": 4.6458,
-            "controlled_samples": 23,
-            "samples": 23
-          }
-        },
-        {
-          "check": "resting start 0 responds and uses native touches",
-          "result": "passed",
-          "evidence": {
-            "travel_m": 8.126205207844556,
-            "native_touches": [
-              {
-                "t": 1390.0,
-                "function": 2.0,
-                "z": 0.1096
-              },
-              {
-                "t": 1850.0,
-                "function": 2.0,
-                "z": 0.1116
-              },
-              {
-                "t": 2310.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 2770.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 3230.0,
-                "function": 2.0,
-                "z": 0.1115
-              }
-            ]
-          }
-        },
-        {
-          "check": "start from resting ball after 400 ms",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.6421011213196874,
-            "ending_distance_m": 0.5056011965966865,
-            "ending_speed_mps": 4.8574,
-            "controlled_samples": 23,
-            "samples": 23
-          }
-        },
-        {
-          "check": "resting start 400 responds and uses native touches",
-          "result": "passed",
-          "evidence": {
-            "travel_m": 8.007803996102801,
-            "native_touches": [
-              {
-                "t": 4910.0,
-                "function": 2.0,
-                "z": 0.1113
-              },
-              {
-                "t": 5370.0,
-                "function": 2.0,
-                "z": 0.1116
-              },
-              {
-                "t": 5830.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 6290.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 6750.0,
-                "function": 2.0,
-                "z": 0.1115
-              }
-            ]
-          }
-        },
-        {
-          "check": "start from resting ball after 1400 ms",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.6363000314317137,
-            "ending_distance_m": 0.4956017050011023,
-            "ending_speed_mps": 4.6461,
-            "controlled_samples": 23,
-            "samples": 23
-          }
-        },
-        {
-          "check": "resting start 1400 responds and uses native touches",
-          "result": "passed",
-          "evidence": {
-            "travel_m": 8.128905206114782,
-            "native_touches": [
-              {
-                "t": 9390.0,
-                "function": 2.0,
-                "z": 0.1109
-              },
-              {
-                "t": 9850.0,
-                "function": 2.0,
-                "z": 0.1116
-              },
-              {
-                "t": 10310.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 10770.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 11230.0,
-                "function": 2.0,
-                "z": 0.1115
-              }
-            ]
-          }
-        },
-        {
-          "check": "right then forward retains native ball control",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.5711551890686092,
-            "ending_distance_m": 0.5201690686690231,
-            "ending_speed_mps": 4.9558,
-            "controlled_samples": 24,
-            "samples": 24
-          }
-        },
-        {
-          "check": "right resumes movement without ownership wait",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 4.9558
-          }
-        },
-        {
-          "check": "reverse then forward retains native ball control",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.635400125904929,
-            "ending_distance_m": 0.5561512114524244,
-            "ending_speed_mps": 3.84,
-            "controlled_samples": 23,
-            "samples": 23
-          }
-        },
-        {
-          "check": "reverse resumes movement without ownership wait",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 3.84
-          }
-        },
-        {
-          "check": "long reverse then forward retains native ball control",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.6812010569574893,
-            "ending_distance_m": 0.5691784957287132,
-            "ending_speed_mps": 4.0678,
-            "controlled_samples": 27,
-            "samples": 27
-          }
-        },
-        {
-          "check": "long reverse resumes movement without ownership wait",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 4.0678
-          }
-        },
-        {
-          "check": "stop then forward retains native ball control",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.6662001200840488,
-            "ending_distance_m": 0.5299054349598611,
-            "ending_speed_mps": 3.8401,
-            "controlled_samples": 26,
-            "samples": 26
-          }
-        },
-        {
-          "check": "stop resumes movement without ownership wait",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 3.8401
-          }
-        },
-        {
-          "check": "three RB bursts and releases",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.8907157683571107,
-            "ending_distance_m": 0.5027048139813308,
-            "ending_speed_mps": 3.8402,
-            "controlled_samples": 69,
-            "samples": 69
-          }
-        },
-        {
-          "check": "running pass touches ball once",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": 40370.0,
-                "function": 4.0,
-                "z": 0.1183
-              }
-            ],
-            "peak_ball_speed_mps": 27.8224
-          }
-        },
-        {
-          "check": "running cross touches ball once",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": 44710.0,
-                "function": 6.0,
-                "z": 0.1134
-              }
-            ],
-            "peak_ball_speed_mps": 23.8734
-          }
-        },
-        {
-          "check": "running shot touches ball once",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": 48890.0,
-                "function": 8.0,
-                "z": 0.1104
-              }
-            ],
-            "peak_ball_speed_mps": 27.1115
-          }
-        },
-        {
-          "check": "chest layer with input after 0 ms allows immediate locomotion",
-          "result": "passed",
-          "evidence": {
-            "touch": {
-              "t": 52240.0,
-              "function": 3.0,
-              "z": 1.2871,
-              "upper_layer": 1.0
-            },
-            "input_ack_t": 52400,
-            "travel_in_500ms_m": 0.8103458829413523,
-            "last_500ms_peak_speed_mps": 4.6472,
-            "ending_speed_mps": 4.2394
-          }
-        },
-        {
-          "check": "completed chest with input after 0 ms keeps the ball",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.5721025257766311,
-            "ending_distance_m": 0.5721025257766311,
-            "ending_speed_mps": 4.2394,
-            "controlled_samples": 24,
-            "samples": 24
-          }
-        },
-        {
-          "check": "chest layer with input after 200 ms allows immediate locomotion",
-          "result": "passed",
-          "evidence": {
-            "touch": {
-              "t": 56140.0,
-              "function": 3.0,
-              "z": 1.2871,
-              "upper_layer": 1.0
-            },
-            "input_ack_t": 56500,
-            "travel_in_500ms_m": 0.9594375435639361,
-            "last_500ms_peak_speed_mps": 4.8573,
-            "ending_speed_mps": 4.0677
-          }
-        },
-        {
-          "check": "completed chest with input after 200 ms keeps the ball",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.7841686043192496,
-            "ending_distance_m": 0.5692028460926741,
-            "ending_speed_mps": 4.0677,
-            "controlled_samples": 24,
-            "samples": 24
-          }
-        },
-        {
-          "check": "chest layer with input after 500 ms allows immediate locomotion",
-          "result": "passed",
-          "evidence": {
-            "touch": {
-              "t": 60170.0,
-              "function": 3.0,
-              "z": 1.2847,
-              "upper_layer": 1.0
-            },
-            "input_ack_t": 60800,
-            "travel_in_500ms_m": 1.021453474221905,
-            "last_500ms_peak_speed_mps": 4.6472,
-            "ending_speed_mps": 3.84
-          }
-        },
-        {
-          "check": "completed chest with input after 500 ms keeps the ball",
-          "result": "passed",
-          "evidence": {
-            "maximum_distance_m": 0.6724123883451285,
-            "ending_distance_m": 0.506142272488675,
-            "ending_speed_mps": 3.84,
-            "controlled_samples": 24,
-            "samples": 24
-          }
-        },
-        {
-          "check": "input during incoming chest ball: forward moves freely under the upper layer",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 3.84,
-            "ending_function": 2,
-            "initial_peak_speed_mps": 3.9262,
-            "path_length_m": 5.512731119876674,
-            "touches": [
-              {
-                "t": 64520.0,
-                "function": 3.0,
-                "z": 1.2871,
-                "upper_layer": 1.0
-              },
-              {
-                "t": 65030.0,
-                "function": 2.0,
-                "z": 0.0905
-              },
-              {
-                "t": 65490.0,
-                "function": 2.0,
-                "z": 0.1115
-              },
-              {
-                "t": 65950.0,
-                "function": 2.0,
-                "z": 0.1115
-              }
-            ],
-            "body_contacts": []
-          }
-        },
-        {
-          "check": "input during incoming chest ball: backward moves freely under the upper layer",
-          "result": "passed",
-          "evidence": {
-            "ending_speed_mps": 3.5235,
-            "ending_function": 1,
-            "initial_peak_speed_mps": 1.85,
-            "path_length_m": 3.5763816587579154,
-            "touches": [
-              {
-                "t": 67690.0,
-                "function": 3.0,
-                "z": 1.2847,
-                "upper_layer": 1.0
-              }
-            ],
-            "body_contacts": []
-          }
-        },
-        {
-          "check": "additional chest clip is selected as a free upper-body layer",
-          "result": "passed",
-          "evidence": [
-            {
-              "t": 57660.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 58120.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 58580.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 61220.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 22.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 61680.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 62140.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 62600.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 63060.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 64900.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 20.0,
-              "previous_frames": 30.0
-            },
-            {
-              "t": 65360.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 65820.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            },
-            {
-              "t": 66280.0,
-              "function": 2.0,
-              "contact_frame": 13.0,
-              "added_chest": 0.0,
-              "frames": 29.0,
-              "previous_frame": 18.0,
-              "previous_frames": 28.0
-            }
-          ]
-        },
-        {
-          "check": "native forward gait replaces the imported animation and keeps native actions",
-          "result": "passed",
-          "evidence": {
-            "rendered_imported_samples": 0,
-            "native_contacts": 98
-          }
-        },
-        {
-          "check": "clean exit",
-          "result": "passed",
-          "evidence": 0
-        }
-      ]
     }
-  },
-  "longer_match": {
-    "result": "passed",
-    "executable_sha256": "4886a5912e0b108a3c49d7c8640fad8367057a06732b6f4a81e09feae773d9e0",
-    "frames": 285,
-    "maximum_goals": [
-      0,
-      0
-    ],
-    "phases": [
-      1,
-      2
-    ],
-    "last": {
-      "t": 141490,
-      "clock": 5400450,
-      "phase": 2,
-      "locked_id": 10,
-      "selected_id": 10,
-      "human_count": 1,
-      "home": 0,
-      "away": 0,
-      "in_play": 0,
-      "set_piece": 0,
-      "over": 1,
-      "last_touch_team": 0,
-      "pass_pending": 0,
-      "players": [
-        {
-          "id": 0,
-          "team": 0,
-          "human": 0,
-          "p": [
-            46.367,
-            -5.704,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 1,
-          "team": 0,
-          "human": 0,
-          "p": [
-            26.751,
-            -18.162,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 2,
-          "team": 0,
-          "human": 0,
-          "p": [
-            31.218,
-            -13.357,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 3,
-          "team": 0,
-          "human": 0,
-          "p": [
-            32.564,
-            -3.878,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 4,
-          "team": 0,
-          "human": 0,
-          "p": [
-            25.313,
-            16.024,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 5,
-          "team": 0,
-          "human": 0,
-          "p": [
-            15.2,
-            -18.097,
-            0.0
-          ],
-          "speed": 4.001,
-          "action": 1
-        },
-        {
-          "id": 6,
-          "team": 0,
-          "human": 0,
-          "p": [
-            20.768,
-            -11.047,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 7,
-          "team": 0,
-          "human": 0,
-          "p": [
-            9.086,
-            2.096,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 8,
-          "team": 0,
-          "human": 0,
-          "p": [
-            0.463,
-            -24.434,
-            0.0
-          ],
-          "speed": 5.0,
-          "action": 1
-        },
-        {
-          "id": 9,
-          "team": 0,
-          "human": 0,
-          "p": [
-            -12.747,
-            -7.817,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 10,
-          "team": 0,
-          "human": 1,
-          "p": [
-            1.527,
-            21.365,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 18,
-          "team": 1,
-          "human": 0,
-          "p": [
-            -44.976,
-            0.024,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 19,
-          "team": 1,
-          "human": 0,
-          "p": [
-            -8.73,
-            13.038,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 20,
-          "team": 1,
-          "human": 0,
-          "p": [
-            -12.491,
-            -1.56,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 21,
-          "team": 1,
-          "human": 0,
-          "p": [
-            -14.43,
-            -7.745,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 22,
-          "team": 1,
-          "human": 0,
-          "p": [
-            -7.728,
-            -25.249,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 23,
-          "team": 1,
-          "human": 0,
-          "p": [
-            2.97,
-            -1.391,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 24,
-          "team": 1,
-          "human": 0,
-          "p": [
-            3.227,
-            -13.622,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 25,
-          "team": 1,
-          "human": 0,
-          "p": [
-            9.944,
-            17.05,
-            0.0
-          ],
-          "speed": 2.907,
-          "action": 1
-        },
-        {
-          "id": 26,
-          "team": 1,
-          "human": 0,
-          "p": [
-            11.097,
-            -8.081,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 27,
-          "team": 1,
-          "human": 0,
-          "p": [
-            10.667,
-            -28.177,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        },
-        {
-          "id": 28,
-          "team": 1,
-          "human": 0,
-          "p": [
-            21.864,
-            -8.035,
-            0.0
-          ],
-          "speed": 0.0,
-          "action": 1
-        }
-      ]
-    },
-    "native_actions": 126,
-    "fixed_control": true,
-    "exit_code": 0,
-    "dead_ball_samples": 41,
-    "goal_scoring_observation": "No goals occurred in this unattended fixture; native goal scoring/restart paths were preserved and the automatic replay pause is disabled in fixed-player mode.",
-    "simulation_to_wall_rate": 0.9995970222061974
   },
   "ctest": {
     "passed": 4,
-    "output": "Internal ctest changing into directory: /workspace/football/build\nTest project /workspace/football/build\n    Start 1: xbox_controller\n1/4 Test #1: xbox_controller ..................   Passed    0.02 sec\n    Start 2: pes3_motion_runtime\n2/4 Test #2: pes3_motion_runtime ..............   Passed    1.71 sec\n    Start 3: pes3_native_pose\n3/4 Test #3: pes3_native_pose .................   Passed    0.30 sec\n    Start 4: pes3_native_retarget\n4/4 Test #4: pes3_native_retarget .............   Passed    0.54 sec\n\n100% tests passed, 0 tests failed out of 4\n\nTotal Test time (real) =   2.58 sec\n"
+    "output": "Internal ctest changing into directory: /workspace/football/build\nTest project /workspace/football/build\n    Start 1: xbox_controller\n1/4 Test #1: xbox_controller ..................   Passed    0.03 sec\n    Start 2: pes3_motion_runtime\n2/4 Test #2: pes3_motion_runtime ..............   Passed    2.07 sec\n    Start 3: pes3_native_pose\n3/4 Test #3: pes3_native_pose .................   Passed    0.29 sec\n    Start 4: pes3_native_retarget\n4/4 Test #4: pes3_native_retarget .............   Passed    0.50 sec\n\n100% tests passed, 0 tests failed out of 4\n\nTotal Test time (real) =   2.89 sec\n"
   },
   "package": {
-    "archive_sha256": "da74323b5e8d25577a21a2094443f93e32e5ccd4d7c0a6320a01ca73200871b8",
+    "archive_sha256": "bb75de5208c8fa1c6cc42c15637a4b684bdaed70369803c7e8353bb60960fe43",
     "checks": [
       {
         "check": "CRC",
@@ -3158,7 +3204,7 @@
       {
         "check": "training.config matches tested resource",
         "result": "passed",
-        "evidence": "982d03cbe69255bc2e93b6cefd914534c07f85eb73231aa35747942c36b2cf9d"
+        "evidence": "9956c696f3f34250e2cc42d63cc165e964c7cdc9e2f3562db9d17b03a0c4b2b7"
       },
       {
         "check": "media/training/DefenseJog_LoopF.anim matches tested resource",
@@ -3189,8 +3235,8 @@
         "check": "packaged code matches final link",
         "result": "passed",
         "evidence": {
-          "exe_sha256": "7ca5108f49c1ba1a105073579d1aaa39b29f21e848e8b411be3e833e0bb75186",
-          "normalized_code_sha256": "a5ca619c5f18133ae2d3e6d8da654a2f28b7968fb01da832ad36e6bfd688dbf9"
+          "exe_sha256": "5b6b17bd9fdeddef820a9263d29a75e0c72fbc3d4319b47b4fee0590911d0a61",
+          "normalized_code_sha256": "588779b78f6042ee8fc4f34100bafa0c1e16b0d0a577a2be4a670a277381b1d1"
         }
       },
       {
@@ -3618,32 +3664,37 @@
         "evidence": true
       },
       {
-        "check": "new match launcher uses dedicated mode",
+        "check": "match launcher selects fixed-player mode",
         "result": "passed",
         "evidence": true
       },
       {
-        "check": "new launcher is identical in both archives",
+        "check": "match launcher is identical in both archives",
         "result": "passed",
         "evidence": true
       },
       {
-        "check": "solo remains the default config",
+        "check": "maximum AI difficulty shipped",
         "result": "passed",
         "evidence": true
       },
       {
-        "check": "default half lasts three minutes",
+        "check": "solo remains default config",
         "result": "passed",
         "evidence": true
       },
       {
-        "check": "linked code contains match mode",
+        "check": "three-minute halves preserved",
+        "result": "passed",
+        "evidence": true
+      },
+      {
+        "check": "new CPU diagnostics present in linked code",
         "result": "passed",
         "evidence": true
       }
     ],
-    "exe_sha256": "7ca5108f49c1ba1a105073579d1aaa39b29f21e848e8b411be3e833e0bb75186",
+    "exe_sha256": "5b6b17bd9fdeddef820a9263d29a75e0c72fbc3d4319b47b4fee0590911d0a61",
     "imports": {
       "OpenAL32.dll": [
         "AVRT.dll",

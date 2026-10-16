@@ -58,10 +58,6 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
   _CalculateSituation();
 
   _Preprocess(); // calculate some variables
-  if(Player *receiver=match->RequestedPassTarget(CastPlayer())) {
-    const float range=(receiver->GetPosition()-player->GetPosition()).Get2D().GetLength();
-    _AddPass(commandQueue,receiver,range>25?e_FunctionType_HighPass:e_FunctionType_ShortPass);
-  }
 
 
 
@@ -166,7 +162,7 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
       bool doCommand = true;
 
       if (team->GetController()->GetSetPieceType() == e_SetPiece_GoalKick) {
-        if (random(0.0f, 1.0f) > 0.4f && team->GetHumanGamerCount() == 0) {
+        if (random(0.0f, 1.0f) > 0.4f && (team->GetHumanGamerCount() == 0 || PlayerMatchEnabled())) {
           actionCommand.desiredFunctionType = e_FunctionType_HighPass;
           desiredTargetPosition = Vector3((pitchHalfW * -team->GetSide()) * 0.2f, random(-pitchHalfH, pitchHalfH), 0.0f);
         } else {
@@ -279,7 +275,9 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
   }
 
   // dribble, pass, etcetera
-  else if (match->IsInPlay() && !match->IsInSetPiece() && match->GetDesignatedPossessionPlayer() == player && team->GetHumanGamerCount() == 0 && CastPlayer()->GetFormationEntry().role != e_PlayerRole_GK) {
+  // In fixed-player matches, possession no longer switches the human onto
+  // the ball carrier. CPU teammates must make the same decisions as opponents.
+  else if (match->IsInPlay() && !match->IsInSetPiece() && match->GetDesignatedPossessionPlayer() == player && (team->GetHumanGamerCount() == 0 || PlayerMatchEnabled()) && CastPlayer()->GetFormationEntry().role != e_PlayerRole_GK) {
     if (CastPlayer()->GetTimeNeededToGetToBall_ms() < 1000) {
       GetOnTheBallCommands(commandQueue, rawInputDirection, rawInputVelocityFloat);
     }
@@ -820,6 +818,26 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
   std::vector<PlayerImage> opponentPlayerImages;
   _mentalImage->GetTeamPlayerImages(abs(team->GetID() - 1), -1, opponentPlayerImages);
 
+  // A call for the ball is a preferred option, subject to the native lane
+  // evaluation. Keep playing normally while the receiver is marked/offside.
+  Player *requestedReceiver=match->RequestedPassTarget(CastPlayer());
+  float requestOdds=0;
+  int requestedPass=-1;
+  if(requestedReceiver) {
+    const float attackingSide=-team->GetSide();
+    const float offside=AI_GetOffsideLine(match,_mentalImage,abs(team->GetID()-1))*attackingSide;
+    const bool onside=requestedReceiver->GetPosition().coords[0]*attackingSide<=std::max(0.0f,offside);
+    e_FunctionType bestType=e_FunctionType_ShortPass;
+    for(auto type:{e_FunctionType_ShortPass,e_FunctionType_LongPass,e_FunctionType_HighPass}) {
+      const float odds=_GetPassingOdds(requestedReceiver,type,opponentPlayerImages);
+      if(odds>requestOdds) {requestOdds=odds;bestType=type;}
+    }
+    if(onside && requestOdds>=0.35f) {
+      _AddPass(commandQueue,requestedReceiver,bestType);
+      requestedPass=int(bestType);
+    }
+  }
+
 
   // DECIDE WHAT TO DO
 
@@ -979,6 +997,12 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
 
   e_Velocity enumVelocity = e_Velocity_Idle;
   AI_GetBestDribbleMovement(match, player->GetID(), _mentalImage, rawInputDirection, rawInputVelocityFloat, team->GetTeamData()->GetTactics());
+  if(PlayerMatchEnabled() && GetConfiguration()->GetBool("training_telemetry",false) &&
+      (match->GetActualTime_ms()+player->GetID()*10)%100==0) {
+    printf("PLAYER_MATCH_AI t=%lu actor=%d team=%d desired_speed=%.3f choices=%zu request_target=%d request_odds=%.3f request_pass=%d\n",
+      match->GetActualTime_ms(),player->GetID(),team->GetID(),rawInputVelocityFloat,commandQueue.size(),
+      requestedReceiver?requestedReceiver->GetID():-1,requestOdds,requestedPass);
+  }
 }
 
 void ElizaController::_AddPass(std::vector<PlayerCommand> &commandQueue, Player *target, e_FunctionType passType) {

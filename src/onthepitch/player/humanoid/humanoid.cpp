@@ -1487,7 +1487,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       Animation *anim=anims->GetAnim(id);
       return anim->GetVariable("added_chest")=="true" || anim->GetVariable("training_slow_dribble")=="true";
     }),dataSet.end());
-  bool preferSlowGait=false,preferRightFoot=PlayerMatchEnabled() && !UsesTrainingContacts();
+  bool preferSlowGait=false,preferRightFoot=false;
   if(UsesTrainingContacts() && player->GetExternalController()) {
     auto *human=static_cast<HumanController*>(player->GetExternalController());
     const float strength=human->GetHIDevice()->GetDirection().GetLength();

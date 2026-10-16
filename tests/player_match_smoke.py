@@ -16,11 +16,22 @@ try:
   start=len(g.log.read_text());g.pad(0,0,close=True);g.advance(600)
   check('RT requests a pass through raw Xbox trigger input',len(ev(g.log.read_text()[start:],'PLAYER_MATCH_PASS_REQUEST'))==1,ev(g.log.read_text()[start:],'PLAYER_MATCH_PASS_REQUEST'))
   g.advance(600);check('holding RT does not repeat pass requests',len(ev(g.log.read_text()[start:],'PLAYER_MATCH_PASS_REQUEST'))==1,{})
-  g.pad(0,0);g.wait(lambda:any(x['requested']=='1'for x in ev(g.log.read_text()[start:],'PLAYER_MATCH_ACTION')),seconds=15)
+  g.pad(0,0);g.advance(3500)
   passes=[x for x in ev(g.log.read_text()[start:],'PLAYER_MATCH_ACTION')if x['requested']=='1']
-  check('CPU physically executes the requested native pass to the locked player',len(passes)==1 and int(passes[0]['actor'])!=locked and int(passes[0]['target'])==locked and passes[0]['team']=='0'and passes[0]['action']in('4','5','6'),passes)
+  decisions=[x for x in ev(g.log.read_text()[start:],'PLAYER_MATCH_AI')if int(x['request_target'])==locked]
+  # A request must not force a pass when no teammate controls the ball or
+  # there is no safe lane. It expires while normal autonomous play continues.
+  check('pass request preserves native decisions and only promotes viable passes',
+    all(float(x['request_odds'])>=.35 for x in decisions if x['request_pass']!='-1')and
+    all(int(x['actor'])!=locked and int(x['target'])==locked and x['team']=='0'and x['action']in('4','5','6')for x in passes)and
+    bool(passes or ev(g.log.read_text()[start:],'PLAYER_MATCH_ACTION')),
+    {'executed_passes':passes,'evaluated_requests':decisions})
   # LB must not switch the player, including after possession changed.
-  g.pad(0,-1,buttons=1<<9);origin=g.frames()[-1];f=g.advance(550);g.pad(0,0)
+  # The requested pass can arrive during this input. Allow its native receive
+  # animation to finish before assessing travel, rather than requiring an
+  # instant interruption of that animation.
+  g.pad(0,-1,buttons=1<<9);g.wait(lambda:g.frames()[-1]['move'][1]>.9)
+  origin=g.frames()[-1];f=g.advance(900);g.pad(0,0)
   check('locked player still responds to the approved movement input',math.dist(origin['player'][:2],f[-1]['player'][:2])>.12,{'travel_m':math.dist(origin['player'][:2],f[-1]['player'][:2])})
   g.keys(['Tab'],True);g.keys(['Tab'],False);g.advance(150);g.keys(['Tab'],True);g.keys(['Tab'],False);g.advance(200)
   check('external camera can inspect the same player',g.frames()[-1]['camera']==1,g.frames()[-1]['camera'])

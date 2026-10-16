@@ -466,5 +466,7 @@ void Match::WritePlayerMatchTelemetry() {
     printf("%s{\"id\":%d,\"team\":%d,\"human\":%d,\"p\":[%.3f,%.3f,%.3f],\"speed\":%.3f,\"action\":%d}",first?"":",",actor->GetID(),actor->GetTeamID(),actor->GetExternalController()?1:0,
       point.coords[0],point.coords[1],point.coords[2],actor->GetMovement().GetLength(),int(actor->GetCurrentFunctionType()));first=false;
   }
-  printf("]}\n");fflush(stdout);
+  const Vector3 ballPoint=ball->Predict(0);
+  printf("],\"difficulty\":%.2f,\"designated_id\":%d,\"ball\":[%.3f,%.3f,%.3f],\"ball_speed\":%.3f}\n",
+    matchDifficulty,GetDesignatedPossessionPlayer()->GetID(),ballPoint.coords[0],ballPoint.coords[1],ballPoint.coords[2],ball->GetMovement().GetLength());fflush(stdout);
 }

@@ -5,8 +5,8 @@ Extraia o ZIP completo numa pasta nova e abra **jogar-partida.bat**.
 
 São onze jogadores contra onze. Você controla o mesmo jogador do treino;
 os outros dez companheiros, os onze adversários e os goleiros usam a IA
-original. A seleção não troca automaticamente quando a posse muda. A câmera
-em primeira pessoa e os controles aprovados acompanham seu jogador.
+original no nível máximo. A seleção não troca automaticamente quando a posse
+muda. A câmera em primeira pessoa e os controles aprovados acompanham seu jogador.
 
 | Comando | Ação |
 | --- | --- |
@@ -23,7 +23,9 @@ em primeira pessoa e os controles aprovados acompanham seu jogador.
 | Esc | Fechar |
 
 O pedido dura até 4,5 segundos. Um companheiro com a posse tenta executar um
-passe pela animação e pelo cálculo originais; procure uma linha livre.
+passe pela animação e pelo cálculo originais, avaliando os riscos da linha
+e o impedimento antes de dar prioridade ao pedido; procure uma linha livre.
+Quando não há uma opção viável, a CPU continua sua jogada.
 O adversário pode interceptar. Segurar RT não dispara pedidos repetidos.
 Com a bola, RT não altera a condução.
 
@@ -43,12 +45,26 @@ separadamente o ator fixo; `designatedPossessionPlayer` continua disponível à
 IA para acompanhar a disputa pela bola. A atribuição do controle humano é
 fixa, inclusive durante reposições e reconexão do controle.
 
-O banco nativo e a cadência aprovada são compartilhados. A seleção de
-condução prioriza candidatos alcançáveis de pé direito. A CPU conserva seus
-cálculos originais de aproximação e domínio. A camada adicional do peito,
+O banco nativo e a cadência aprovada são compartilhados. Somente o jogador
+humano prioriza candidatos alcançáveis de pé direito. A CPU usa a seleção
+original dos pés e conserva seus cálculos de aproximação e domínio. A camada
+adicional do peito,
 a cabeça seguindo a câmera e os contatos ajustados do protótipo continuam
 no jogador controlado. A captura de contato não é repetida por outros atores
 sobre os marcadores compartilhados do banco de animações.
+
+No jogo original, ter um humano no time desativa as decisões com bola
+dos companheiros, porque o controle acompanha o portador. Nesse modo fixo,
+os companheiros precisam continuar decidindo: conduzir, passar, finalizar,
+cobrar tiro de meta e disputar com carrinho. Essas restrições de time humano
+foram retiradas apenas da partida com jogador fixo. A formação da base,
+as funções dinâmicas, a marcação, os apoios e as corridas de ataque continuam
+sendo calculados pelo controlador original. O botão de troca não altera
+o disputante da bola nem a atribuição fixa de controle.
+
+`match_difficulty` vale `1.0` no pacote (máximo nativo). Isso mantém os atributos
+e a reação da CPU no limite previsto pelo jogo, sem elevar artificialmente
+a velocidade da simulação ou fazer a bola seguir os jogadores.
 
 RT é lido diretamente para o pedido, mantendo desativado o antigo modificador
 de condução. A solicitação adiciona uma opção de passe ao controlador da CPU;
@@ -64,7 +80,14 @@ Os testes usam tempos curtos para atravessar os dois períodos e o apito final.
 `tests/player_match_smoke.py` executa a partida renderizada com um Xbox virtual:
 22 jogadores, controle fixo, movimentos da CPU nos dois times, pedido por
 RT/E, execução de passe, câmeras, dois tempos, fim do relógio e reinício.
-Os testes do treino continuam verificando a base aprovada. O relatório
+`tests/player_match_ai_smoke.py` deixa o humano sem comandos durante dois
+tempos: confere decisões autônomas com bola dos dois times, conduções, passes,
+coleta da bola e ausência do travamento prolongado com a bola ao lado.
+Os testes de condução e controles do treino passaram. A verificação adicional
+de peito em corrida apresentou uma falha intermitente de seleção/contato
+em duas execuções; uma execução com o binário anterior passou. O código e os
+clips do domínio não foram alterados nesta correção de IA. Essa limitação
+fica registrada separadamente, sem contar o teste como aprovado. O relatório
 [player-match-validation.json](player-match-validation.json) registra os resultados.
 
 A execução gráfica é verificada no Linux. O Windows x64 é compilado e o pacote
