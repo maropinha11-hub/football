@@ -48,6 +48,7 @@ class HumanController : public PlayerController {
     int actionBufferTime_ms;
     int gauge_ms;
     bool shotChip=false;
+    bool actionCommitted=false;
     bool turningPass=false;
     Vector3 turningPassDirection{0};
     unsigned long turningPassUntil=0;

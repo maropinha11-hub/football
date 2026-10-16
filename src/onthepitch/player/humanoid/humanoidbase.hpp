@@ -257,6 +257,8 @@ class HumanoidBase {
     void ConfigurePhysicalRig();
     void SetPhysicalGrip(const Vector3 &point,const Vector3 &force);
     Vector3 PhysicalBalanceVelocity()const;
+    Vector3 PhysicalContactVelocity(const Vector3 &desired)const;
+    void SetPhysicalTraction(const Vector3 &force) {physicalTraction=force;}
     Vector3 SafeFirstPersonEye(const Vector3 &eye)const;
     void SetPhysicalShield(bool active) {physicalShield=active;}
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
@@ -433,6 +435,7 @@ class HumanoidBase {
     Quaternion fetchedPhysicalAdditive[13];
     bool fetchedPhysicalRagdoll=false;
     Vector3 physicalGripPoint{0},physicalGripForce{0};
+    Vector3 physicalTraction{0};
     TemporalSmoother<Vector3> buf_physicalGripPoint,buf_physicalGripForce;
     Vector3 fetchedPhysicalGripPoint,fetchedPhysicalGripForce;
     std::vector<std::shared_ptr<football_physics::ShirtCloth>> shirtCloth;

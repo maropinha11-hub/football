@@ -1,5 +1,8 @@
 # Equilíbrio e contato: revisão do laboratório
 
+Revisão posterior: [braços, ações de primeira e impactos graduais](BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
+Os números abaixo documentam esta revisão anterior.
+
 Extraia o ZIP Windows completo em uma **pasta nova** e execute
 **treino-fisico.bat**. R3/Tab alterna a câmera. O treino aprovado permanece em
 `run-training.bat`.

@@ -13,11 +13,16 @@ O **teste de física corporal** abre por `treino-fisico.bat`, no
 A revisão usa **Bullet 3.25**, motores físicos no tronco e braços, busca por
 pose/velocidade/trajetória, alcance gradual, queda articulada e recuperação
 assistida sobre as animações existentes. A câmera está mais sensível. **F7** compara ligado/desligado,
-**F8** aplica um empurrão recuperável e **F9** inicia uma queda de teste. R3/Tab mostra o corpo.
+**F8** aplica um impacto médio, **Shift+F8** um forte e **Ctrl+F8** uma
+sobrecarga com tentativa de equilíbrio antes da queda. **F9** inicia uma
+queda deliberada de teste. R3/Tab mostra o corpo.
 No laboratório, **LT/L2 protege com a bola e tenta agarrar sem ela**; L3 não
 aciona a camisa. **F10** ativa o parceiro e **F11** alterna a posse de teste.
 `partida-fisica.bat` permite testar contatos com jogadores da CPU.
-Consulte [os controles, a pesquisa e os limites desta revisão](docs/EQUILIBRIO-E-CONTATO.md).
+A revisão limita ombros/cotovelos também após a mistura gráfica, mantém
+pedidos de passe/cabeçada durante apertos repetidos e faz a tração da camisa
+reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
+os limites desta revisão](docs/BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
 O treino e a partida aprovados continuam nos atalhos anteriores.
 
 A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no

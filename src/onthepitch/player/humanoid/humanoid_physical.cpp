@@ -1,5 +1,7 @@
 #include "humanoidbase.hpp"
 #include "physical_rig.hpp"
+#include "contact_resistance.hpp"
+#include "anatomical_arms.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
@@ -78,7 +80,7 @@ void HumanoidBase::ResetPhysicalRig(){
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();fetchedPhysicalRig=false;
   for(auto &buffer:buf_physicalAdditive)buffer.Clear();
-  physicalGripForce=Vector3(0);physicalActionTime=0;physicalPartnerPhase=0;physicalShield=false;physicalHandTargetActive=false;
+  physicalGripForce=Vector3(0);physicalTraction=Vector3(0);physicalActionTime=0;physicalPartnerPhase=0;physicalShield=false;physicalHandTargetActive=false;
 }
 void HumanoidBase::PhysicalCollision(const Vector3 &change){
   if(!PhysicalRigEnabled() || match->GetActualTime_ms()<physicalCollisionTime || change.GetLength()<.5f)return;
@@ -98,6 +100,9 @@ void HumanoidBase::TogglePhysicalRig(){
   printf("PHYSICAL_RIG_TOGGLE enabled=%d\n",enabled?1:0);fflush(stdout);
 }
 Vector3 HumanoidBase::PhysicalBalanceVelocity()const{return PhysicalRigEnabled() && physicalRig?vector(physicalRig->balanceVelocity()):Vector3(0);}
+Vector3 HumanoidBase::PhysicalContactVelocity(const Vector3 &desired)const{
+  return PhysicalRigEnabled()?vector(football_physics::contactVelocity(point(desired),point(physicalTraction),physicalShield)):desired;
+}
 Vector3 HumanoidBase::SafeFirstPersonEye(const Vector3 &requested)const{
   Quaternion q[13];Vector3 p[13];
   const Vector3 origin=player->GetGeomPosition().Get2D();
@@ -205,6 +210,9 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       if(player->GetExternalController())printf("PHYSICAL_RIG_FRAME {\"t\":%lu,\"mode\":%d,\"root\":[%.5f,%.5f,%.5f],\"lean\":%.5f,\"turn\":%.5f,\"reach\":%.5f,\"support_margin\":%.5f,\"effort\":%.5f,\"ground_contacts\":%u,\"ground_correction\":%.6f,\"angular_speed\":%.5f,\"energy\":%.5f,\"joint_error\":%.6f,\"self_penetration\":%.6f,\"brace\":%.2f,\"recovery_phase\":%.4f,\"root_q\":[%.6f,%.6f,%.6f,%.6f]}\n",
         physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration,d.angularSpeed,d.kineticEnergy,d.jointError,d.selfPenetration,d.brace,d.recoveryPhase,q[0],q[1],q[2],q[3]);
       printf("PHYSICAL_BALANCE t=%lu actor=%d phase=%d risk=%.5f step=%.5f choice=%d arm_speed=%.5f elbow=%.5f\n",physicalRigTime,player->GetID(),d.balancePhase,d.balanceRisk,d.stepDemand,d.balanceChoice,d.armSpeed,d.elbowAngle);
+      printf("PHYSICAL_ARM_LIMITS t=%lu actor=%d error=%.7f penetration=%.6f left=[%.5f,%.5f,%.5f,%.5f] right=[%.5f,%.5f,%.5f,%.5f]\n",physicalRigTime,player->GetID(),d.armLimitError,d.armPenetration,
+        physicalRig->pose()[4][0],physicalRig->pose()[4][1],physicalRig->pose()[4][2],physicalRig->pose()[4][3],
+        physicalRig->pose()[6][0],physicalRig->pose()[6][1],physicalRig->pose()[6][2],physicalRig->pose()[6][3]);
     }
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
@@ -268,6 +276,17 @@ void HumanoidBase::ProcessPhysicalPartner(){
 
 void HumanoidBase::PutPhysicalRig(){
   if(!fetchedPhysicalRig)return;
+  auto limitRenderedArms=[&](){
+    football_physics::Pose pose;for(unsigned i=0;i<13;++i)pose[i]=rotation(nodeMap.at(pes3::nativeBoneNames[i])->GetRotation());
+    football_physics::Metrics metrics;
+    // The renderer interpolates native tracks and additive deltas separately.
+    // Re-project this final blend as well: limiting the 100 Hz simulation
+    // alone does not constrain the actual pose shown between its samples.
+    football_physics::constrainArmPose(pes3NativeReference,1.f,pose,{{0,0,.96f}},metrics);
+    for(unsigned i:{3u,4u,5u,6u})nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(quaternion(pose[i]),false);
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("PHYSICAL_ARM_RENDER t=%lu error=%.7f penetration=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,metrics.armLimitError,metrics.armPenetration);
+  };
   if(!fetchedPhysicalRagdoll){
     PutTrainingContactPose();
     for(unsigned i:{1u,3u,4u,5u,6u,7u,8u,9u,10u,11u,12u}){
@@ -275,6 +294,7 @@ void HumanoidBase::PutPhysicalRig(){
       const Quaternion delta=Quaternion(QUATERNION_IDENTITY).GetSlerped(1-fetchedContactBlend,fetchedPhysicalAdditive[i]);
       node->SetRotation((delta*node->GetRotation()).GetNormalized(),false);
     }
+    limitRenderedArms();
     humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
     PutTrainingHeadLook();
     return;
@@ -283,6 +303,7 @@ void HumanoidBase::PutPhysicalRig(){
   body->SetPosition(Vector3(bind[0],bind[1],bind[2]),false);
   humanoidNode->SetPosition(fetchedContactRoot+Vector3(0,0,fetchedContactHeight/zMultiplier-bind[2]),false);
   for(unsigned i=0;i<13;++i)nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(fetchedContactLocal[i],false);
+  limitRenderedArms();
   humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
   if(GetConfiguration()->GetBool("training_telemetry",false)) {
     float maximumError=0;

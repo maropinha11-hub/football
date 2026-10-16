@@ -6,11 +6,17 @@
 #include <cstdio>
 
 namespace {
-void physicalLabInput(Player *actor) {
+void physicalLabInput(Player *actor,unsigned long time) {
   auto &events=UserEventManager::GetInstance();auto *body=actor->GetHumanoid();
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
   const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D(.5f*pi);
-  if(events.ConsumeKeyPress(SDLK_F8))body->AddPhysicalImpulse(side*65.f);
+  if(events.ConsumeKeyPress(SDLK_F8)){
+    const bool control=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);
+    const bool shift=events.GetKeyboardState(SDLK_LSHIFT)||events.GetKeyboardState(SDLK_RSHIFT);
+    const float impulse=control?350.f:shift?190.f:125.f;
+    body->AddPhysicalImpulse(side*impulse,Vector3(0,0,.18f));
+    printf("PHYSICAL_IMPACT_TEST t=%lu impulse=%.1f level=%s forced=0\n",time,impulse,control?"overload":shift?"strong":"medium");
+  }
   if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f),true);
 }
 }
@@ -201,7 +207,7 @@ void Match::ProcessTraining() {
   if (keyOnce(SDLK_p)) pause = !pause;
   if (keyOnce(SDLK_TAB)) trainingCameraMode = (trainingCameraMode + 1) % 3;
   if(GetConfiguration()->GetBool("training_physical_lab",false)) {
-    physicalLabInput(trainingPlayer);
+    physicalLabInput(trainingPlayer,actualTime_ms);
   }else if (pes3Preview) {
     if (keyOnce(SDLK_v)) SpamMessage(pes3Preview->toggleBody(),7000);
     if (keyOnce(SDLK_F7)) SpamMessage(pes3Preview->toggle(),7000);
@@ -411,7 +417,7 @@ void Match::WriteTrainingTelemetry(IHIDevice *input) {
 
 void Match::ProcessPlayerMatchInput() {
   auto &events=UserEventManager::GetInstance();
-  if(GetConfiguration()->GetBool("training_physical_lab",false))physicalLabInput(trainingPlayer);
+  if(GetConfiguration()->GetBool("training_physical_lab",false))physicalLabInput(trainingPlayer,actualTime_ms);
   if(events.ConsumeKeyPress(SDLK_ESCAPE))EnvironmentManager::GetInstance().SignalQuit();
   if(events.ConsumeKeyPress(SDLK_p))pause=!pause;
   if(events.ConsumeKeyPress(SDLK_TAB))trainingCameraMode=(trainingCameraMode+1)%3;

@@ -16,6 +16,9 @@ class BalanceController {
   int phase=0;
  private:
   Vec disturbance{{0,0,0}},angular{{0,0,0}},correction{{0,0,0}};
+  Vec committedStep{{0,0,0}};
+  float stepRemaining=0;
+  bool stepArmed=true;
   float failureTime=0;
 };
 }

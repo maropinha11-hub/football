@@ -184,6 +184,15 @@ void Humanoid::Process() {
 
     }
 
+    if(UsesTrainingContacts() && player->GetExternalController() &&
+       static_cast<HumanController*>(player->GetExternalController())->GetActionMode()==2 &&
+       match->TrainingReceivingBall() && match->GetBall()->Predict(0).coords[2]>1.2f){
+      // A falling ball can cross the authored head-height band in 10–20 ms.
+      // The ordinary 20–80 ms AI scheduling can skip that entire interval.
+      // Search every fixed tick while a human's aerial action is queued;
+      // retain the exact trajectory, reach and actual skin-contact gates.
+      frameNumPredicate=true;
+    }
     if (!frameNumPredicate) mayReQueue = false;
     //if (CastPlayer()->GetDebug()) printf("frameNumPredicate: %s\n", frameNumPredicate ? "true" : "false");
   }
@@ -1472,7 +1481,9 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
   if (UsesTrainingContacts() && (command.desiredFunctionType == e_FunctionType_Shot ||
-                           command.desiredFunctionType == e_FunctionType_HighPass) &&
+                           command.desiredFunctionType == e_FunctionType_HighPass ||
+                           command.desiredFunctionType == e_FunctionType_ShortPass ||
+                           command.desiredFunctionType == e_FunctionType_LongPass) &&
       (match->GetBall()->Predict(0).coords[2] > 1.2f || match->GetBall()->Predict(200).coords[2] > 1.2f)) {
     // The original shot collection has running headers, but no standing
     // headers; the passing collection has the missing standing/jumping
@@ -1492,7 +1503,8 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     anims->CrudeSelection(headers, headerQuery);
     for (int id : headers)
       if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head" &&
-          (!settlingHeader || anims->GetAnim(id)->GetIncomingVelocity()<1.5f))dataSet.push_back(id);
+          (!settlingHeader || anims->GetAnim(id)->GetIncomingVelocity()<1.5f) &&
+          std::find(dataSet.begin(),dataSet.end(),id)==dataSet.end())dataSet.push_back(id);
   }
   //if (command.desiredFunctionType == e_FunctionType_Special) printf("size: %i\n", dataSet.size());
   if(PlayerMatchEnabled() && !UsesTrainingContacts())
@@ -2485,6 +2497,10 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
               actionSmuggleVec2D.GetRotated2D(spatialState.angle);
             const Vector3 target=spatialState.position+ballPos.GetRotated2D(spatialState.angle);
             const Vector3 initialRoot=root;
+            // A header may need a modest whole-body step to meet the ball.
+            // Distribute it over the native preparation, at <= 0.45 m/s.
+            // The foot allowance and exact final skin-contact gate stay.
+            const float approachAllowance=part=="head"?std::min(.18f,animTouchFrame*.01f*.45f):.08f;
             float gap=100;
             for(unsigned iteration=0;iteration<8;++iteration) {
               SampleContactAnimation(anim,float(animTouchFrame),root,spatialState.angle,false,local,global,joints);
@@ -2495,13 +2511,13 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
               const Vector3 horizontal=(target-surface).Get2D();
               const float desired=std::sqrt(.1105f*.1105f-dz*dz);
               root+=horizontal.GetNormalized(0)*(horizontal.GetLength()-desired);
-              if((root-initialRoot).GetLength()>.08f)break;
+              if((root-initialRoot).GetLength()>approachAllowance)break;
             }
             if(GetConfiguration()->GetBool("training_telemetry",false))
               printf("TRAINING_KICK_PLAN t=%lu function=%d frame=%d gap=%.5f correction=%.5f accepted=%d name=%s\n",
                 match->GetActualTime_ms(),int(functionType),animTouchFrame,gap,(root-initialRoot).GetLength(),
                 gap<=.001f?1:0,anim->GetName().c_str());
-            if(gap>.001f || (root-initialRoot).GetLength()>.08f){touchNum++;continue;}
+            if(gap>.001f || (root-initialRoot).GetLength()>approachAllowance){touchNum++;continue;}
             actionSmuggleVec2D+=(root-initialRoot).GetRotated2D(-spatialState.angle);
           }
 

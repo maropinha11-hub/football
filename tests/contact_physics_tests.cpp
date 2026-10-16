@@ -1,5 +1,7 @@
 #include "onthepitch/player/humanoid/physical_rig.hpp"
 #include "onthepitch/player/humanoid/shirt_cloth.hpp"
+#include "onthepitch/player/humanoid/anatomical_arms.hpp"
+#include "onthepitch/player/humanoid/contact_resistance.hpp"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -69,6 +71,34 @@ int main(int argc,char **argv){
  check(minimumGap<.10f,"protective hand can reach a shirt within anatomical arm length");
  check(peakHandStep<.05f,"protective arm reaches gradually rather than snapping to its target");
  check(rig.metrics().elbowAngle>=.14f && rig.metrics().elbowAngle<=2.41f && rig.metrics().armSpeed<=3.81f,"shirt reach respects elbow flexion and angular-speed limits");
+ float maximumArmError=0,maximumArmOverlap=0,maximumElbowSwing=0;
+ bool elbowForward=true;
+ for(Vec target:std::vector<Vec>{{{.52f,0,1.30f}},{{-.52f,0,1.3f}},{{0,.6f,1.2f}},{{0,-.5f,1.8f}},{{0,0,.9f}}}){
+  rig.configure(bind,1);in=standing();in.handTargetActive=in.protect=true;in.handTarget=target;
+  for(unsigned tick=0;tick<180;++tick){
+   if(tick==40)rig.impulse({{125,0,0}},{{0,0,.18f}});
+   rig.step(in);
+   for(unsigned bone:{3u,4u,5u,6u})maximumArmError=std::max(maximumArmError,armLimitError(bone,rig.pose()[bone]));
+   for(unsigned bone:{4u,6u}){const auto q=rig.pose()[bone];const Quat hinge=normalized({{q[0],0,0,q[3]}});
+    elbowForward &=2*std::atan2(hinge[0],hinge[3])<=-.024f;
+    maximumElbowSwing=std::max(maximumElbowSwing,length(logarithm(productRotation(q,inverseRotation(hinge)))));
+   }
+   maximumArmOverlap=std::max(maximumArmOverlap,rig.metrics().armPenetration);
+  }
+ }
+ check(maximumArmError<1e-5f,"final mixed shoulders and elbows respect swing/twist limits during impact and unreachable shirt targets");
+ check(elbowForward && maximumElbowSwing<=.1001f,"final visible elbows never hyperextend or bend sideways like a broken arm");
+ check(maximumArmOverlap<.001f,"final reaching forearms stay outside the torso proxy during cross-body and behind-back targets");
+ bool projectionStable=true;
+ for(unsigned bone:{3u,4u,5u,6u})for(unsigned i=0;i<100;++i){
+  const auto q=anatomicalArm(bone,exponential({{std::sin(float(i))*3,std::cos(float(i))*3,std::sin(i*.7f)*3}}));
+  projectionStable &=armLimitError(bone,q)<1e-5f;
+ }
+ check(projectionStable,"anatomical projection remains finite and idempotent over extreme rotations");
+ const Vec freeVelocity=contactVelocity({{0,-1,0}},{{0,200,0}},false);
+ const Vec protectedVelocity=contactVelocity({{0,-1,0}},{{0,200,0}},true);
+ check(length(freeVelocity)<.10f && length(protectedVelocity)>.9f,"shirt traction slows intended locomotion while a planted shield resists ordinary pulling force");
+ check(length(subtractPoint(contactVelocity({{0,-1,0}},{{0,-200,0}},false),{{0,-1,0}}))<1e-6f,"shirt resistance cannot accelerate a player when its force points along travel");
  bool stayedUp=true,usedStep=false;float peakRisk=0;
  for(unsigned direction=0;direction<8;++direction){
   rig.configure(bind,1);in=standing();rig.step(in);const float angle=direction*3.14159265f/4;
@@ -76,6 +106,10 @@ int main(int argc,char **argv){
   for(unsigned tick=0;tick<200;++tick){rig.step(in);stayedUp&=rig.mode()==Mode::Active;usedStep|=length(rig.balanceVelocity())>.1f;peakRisk=std::max(peakRisk,rig.metrics().balanceRisk);}
  }
  check(stayedUp && usedStep,"ordinary running contact attempts corrective steps in eight directions without automatically falling");
+ rig.configure(bind,1);in=standing();rig.step(in);rig.impulse({{190,0,0}},{{0,0,.18f}});
+ float committedSpeed=0;
+ for(unsigned tick=0;tick<36;++tick){rig.step(in);if(tick==34)committedSpeed=length(rig.balanceVelocity());}
+ check(committedSpeed>.10f,"support step persists long enough to cross a native idle-animation transition");
  rig.configure(bind,1);in=standing();rig.step(in);rig.impulse({{350,0,0}},{{0,0,.28f}});
  unsigned fallTick=0;
  for(unsigned tick=1;tick<100;++tick){rig.step(in);if(rig.mode()==Mode::Falling){fallTick=tick;break;}}
@@ -133,6 +167,6 @@ int main(int argc,char **argv){
  const float beforeZeroDt=cloth.displacement();for(auto &point:rest)point[0]+=.1f;
  cloth.step(rest,normals,0,{{0,0,0}},{{0,0,0}});
  check(std::fabs(cloth.displacement()-beforeZeroDt)<1e-5f,"interpolated render with no new simulation tick transports the shirt without injecting inertia");
- std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<",\"recovery_samples\":"<<recoverySamples<<",\"recovery_pelvis_step_m\":"<<peakStep<<",\"forearm_trunk_clearance_ratio\":"<<clearance<<",\"hand_gap_m\":"<<minimumGap<<",\"hand_step_m\":"<<peakHandStep<<",\"cloth_deformation_m\":"<<deformation<<",\"cloth_stretch_ratio\":"<<stretch<<",\"running_cloth_jitter_m\":"<<peakRunningJitter<<",\"cloth_fps_spread_m\":"<<frameRateSpread<<",\"ordinary_contact_peak_risk\":"<<peakRisk<<",\"unrecoverable_fall_tick\":"<<fallTick<<",\"sprint_joint_error_m\":"<<transportError<<"}\n";
+ std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<",\"recovery_samples\":"<<recoverySamples<<",\"recovery_pelvis_step_m\":"<<peakStep<<",\"forearm_trunk_clearance_ratio\":"<<clearance<<",\"hand_gap_m\":"<<minimumGap<<",\"hand_step_m\":"<<peakHandStep<<",\"cloth_deformation_m\":"<<deformation<<",\"cloth_stretch_ratio\":"<<stretch<<",\"running_cloth_jitter_m\":"<<peakRunningJitter<<",\"cloth_fps_spread_m\":"<<frameRateSpread<<",\"ordinary_contact_peak_risk\":"<<peakRisk<<",\"unrecoverable_fall_tick\":"<<fallTick<<",\"sprint_joint_error_m\":"<<transportError<<",\"maximum_arm_limit_error_rad\":"<<maximumArmError<<",\"maximum_arm_overlap_m\":"<<maximumArmOverlap<<",\"maximum_elbow_side_bend_rad\":"<<maximumElbowSwing<<"}\n";
  return failures?1:0;
 }

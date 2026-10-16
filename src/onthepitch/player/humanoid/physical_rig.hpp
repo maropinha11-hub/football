@@ -47,6 +47,7 @@ struct Metrics {
   unsigned groundContacts=0;
   float selfPenetration=0,brace=0,recoveryPhase=0;
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
+  float armLimitError=0,armPenetration=0;
   int balancePhase=0,balanceChoice=-1;
 };
 struct RecoveryKey { Pose pose{}; Vec pelvis{{0,0,0}}; };

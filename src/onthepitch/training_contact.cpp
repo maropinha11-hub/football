@@ -24,7 +24,7 @@ void Match::ProcessTrainingContact(){
     SpamMessage(trainingPartnerBall?"Bola no parceiro: LT tenta agarrar":"Bola no jogador: LT protege",4000);
     printf("PHYSICAL_LAB_POSSESSION t=%lu partner=%d\n",actualTime_ms,trainingPartnerBall?1:0);
   }
-  trainingPartnerVelocity=Vector3(0);human->SetPhysicalShield(false);human->SetPhysicalHandTarget(Vector3(0),false);partner->SetPhysicalGrip(Vector3(0),Vector3(0));
+  trainingPartnerVelocity=Vector3(0);human->SetPhysicalTraction(Vector3(0));partner->SetPhysicalTraction(Vector3(0));human->SetPhysicalShield(false);human->SetPhysicalHandTarget(Vector3(0),false);partner->SetPhysicalGrip(Vector3(0),Vector3(0));
   if(!human->PhysicalRigEnabled()){trainingGrip=false;return;}
   if(!trainingContactExercise){trainingGrip=false;return;}
   const Vector3 separation=trainingPartner->GetPosition()-trainingPlayer->GetPosition();
@@ -69,8 +69,11 @@ void Match::ProcessTrainingContact(){
   // to the ball; native weighted-skin contacts still own ball interactions.
   if(!busy && distance<.52f){
     const float penetration=.52f-distance;
-    const Vector3 correction=normal*std::min(.025f,penetration*.5f);
-    human->OffsetPosition(-correction);partner->OffsetPosition(correction);
+    const Vector3 correction=normal*std::min(.05f,penetration);
+    // A planted shield directs more separation into the pressuring actor.
+    // The residual comes from the ground, not an extra opposing ball impulse.
+    human->OffsetPosition(-correction*(shield?.20f:.50f));partner->OffsetPosition(correction*(shield?.80f:.50f));
+    human->SetPhysicalTraction(-normal*(80.f+65.f*trainingPartnerVelocity.GetLength()));
     if(actualTime_ms>=trainingContactUntil){
       const float closing=std::max(.4f,(trainingPlayer->GetMovement()-trainingPartnerVelocity).GetDotProduct(normal));
       const Vector3 impulse=normal*clamp(closing*41.25f,20.f,190.f);
@@ -104,11 +107,14 @@ void Match::ProcessTrainingContact(){
     const float age=(actualTime_ms-trainingGripStarted)*.001f;
     if(age>.6f)trainingGripEscape+=.01f*(.25f+.35f*std::min(1.f,force.GetLength()/200.f));
     partner->SetPhysicalGrip(shirtPoint,-force);
+    human->SetPhysicalTraction(force);partner->SetPhysicalTraction(-force);
+    const Vector3 intended=trainingPartnerVelocity;
+    trainingPartnerVelocity=partner->PhysicalContactVelocity(intended);
+    partner->OffsetPosition((trainingPartnerVelocity-intended)*.01f);
     // A force integrated for 10 ms, with an equal reaction; never an impulse
     // repeated at its full force magnitude every simulation step.
     human->AddPhysicalImpulse(force*.01f,Vector3(0,0,.24f));partner->AddPhysicalImpulse(-force*.01f,Vector3(0,0,.24f));
-    human->OffsetPosition(force*(.01f/(84.f*6.f)));partner->OffsetPosition(-force*(.01f/(84.f*6.f)));
-    if(actualTime_ms%100==0)printf("PHYSICAL_GRIP_FORCE t=%lu force=%.5f reaction=%.5f distance=%.5f escape=%.5f\n",actualTime_ms,force.GetLength(),force.GetLength(),distance,trainingGripEscape);
+    if(actualTime_ms%100==0)printf("PHYSICAL_GRIP_FORCE t=%lu force=%.5f reaction=%.5f distance=%.5f escape=%.5f intended_speed=%.5f actual_speed=%.5f\n",actualTime_ms,force.GetLength(),force.GetLength(),distance,trainingGripEscape,intended.GetLength(),trainingPartnerVelocity.GetLength());
   }
   if(actualTime_ms%100==0 && GetConfiguration()->GetBool("training_telemetry",false))
     printf("PHYSICAL_PARTNER t=%lu exercise=%d distance=%.5f speed=%.4f grip=%d shield=%d hand_gap=%.5f reaching=%d with_ball=%d trigger=%d\n",actualTime_ms,trainingContactExercise,distance,trainingPartnerVelocity.GetLength(),trainingGrip?1:0,shield?1:0,handDistance,gripKey?1:0,withBall?1:0,trigger?1:0);

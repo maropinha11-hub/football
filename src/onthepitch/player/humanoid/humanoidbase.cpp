@@ -1194,12 +1194,13 @@ void HumanoidBase::Put() {
     }
   }
   if(TrainingEnabled() && player->GetExternalController() && GetConfiguration()->GetBool("training_telemetry",false)) {
-    printf("TRAINING_CONTACT_JOINTS t=%lu",fetchedbuf_animApplyBuffer.snapshotTime_ms);
+    char chunk[180];std::snprintf(chunk,sizeof(chunk),"TRAINING_CONTACT_JOINTS t=%lu",fetchedbuf_animApplyBuffer.snapshotTime_ms);
+    std::string row(chunk);
     for(const unsigned i:{1u,7u,8u,9u,10u,11u,12u}) {
       const auto q=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation().GetNormalized();
-      printf(" j%u=[%.6f,%.6f,%.6f,%.6f]",i,q.elements[0],q.elements[1],q.elements[2],q.elements[3]);
+      std::snprintf(chunk,sizeof(chunk)," j%u=[%.6f,%.6f,%.6f,%.6f]",i,q.elements[0],q.elements[1],q.elements[2],q.elements[3]);row+=chunk;
     }
-    printf("\n");
+    row+='\n';printf("%s",row.c_str());
   }
   UpdateFullbodyNodes();
 }

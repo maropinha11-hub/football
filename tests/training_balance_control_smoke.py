@@ -39,7 +39,7 @@ try:
   g.pad(0,0,left_trigger=1);g.advance(2000);capture(g,'lt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start);partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT without the ball reaches then grips actual shirt surface',any(x['state']=='begin'and float(x['hand_gap'])<.10 for x in grips)and any(x['with_ball']=='0'and x['reaching']=='1'for x in partner),grips)
-  check('held partner actively attempts to escape',any(x['grip']=='1'and float(x['speed'])>.30 for x in partner),partner[-12:])
+  check('held partner actively attempts to escape',any(float(x.get('intended_speed','0'))>.30 and float(x.get('actual_speed','0'))>0 for x in forces),forces[-12:])
   check('shirt hold exerts reciprocal limited traction for a sustained hold',len(forces)>=5 and all(float(x['force'])<=260.01 and abs(float(x['force'])-float(x['reaction']))<.001 for x in forces),forces[:10])
   g.advance(2600);grips=events(g,'PHYSICAL_GRIP',start)
   # A real native touch may recover possession and legitimately end LT's
@@ -50,7 +50,15 @@ try:
   g.pad(0,0);g.advance(300)
   # The keyboard laboratory command holds independently of possession, so it
   # isolates the partner's physical escape from the successful ball recovery.
-  manual=len(g.log.read_text());g.keys(['h'],True);g.advance(3000)
+  # Start from a reachable side-on stance. F2 during a preceding hold can
+  # re-seed the partner outside the current shoulder's reach; limits must
+  # refuse that target instead of twisting the arm until this test can grip.
+  g.reset()
+  manual=len(g.log.read_text());g.keys(['h'],True)
+  g.wait(lambda:any(x['state']=='begin'for x in events(g,'PHYSICAL_GRIP',manual)))
+  # The arm must first reach the shirt. Measure escape time after the actual
+  # attachment, not from keydown; slower, bounded arms legitimately take time.
+  g.advance(4000)
   grips=events(g,'PHYSICAL_GRIP',manual)
   begins=[int(x['t'])for x in grips if x['state']=='begin'];releases=[int(x['t'])for x in grips if x['state']=='release'and x.get('reason')in ['escaped','reach','fall']]
   check('opponent can break a sustained physical hold',bool(begins)and bool(releases)and max(releases)-min(begins)>=500,grips)

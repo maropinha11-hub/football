@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-16",
+  "sources": [
+    {
+      "file": "jolt_swing_twist.cpp",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/Jolt/Physics/Constraints/SwingTwistConstraint.cpp",
+      "status": 200,
+      "bytes": 21339,
+      "sha256": "21c9cc737b8b3df63a55ae51ef8c3fdd555a21326b183ebe04df21dd2837e469",
+      "application": "Reviewed torque/motor/limit separation. Active arms retain authored muscle tone and only a small bounded physical tracking residual."
+    },
+    {
+      "file": "jolt_swing_limit.h",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/Jolt/Physics/Constraints/ConstraintPart/SwingTwistConstraintPart.h",
+      "status": 200,
+      "bytes": 23341,
+      "sha256": "0a96a8cf3e7656b51849fb19e9f171fda6995df093b470e2e7176932ab5cf28a",
+      "application": "Inspected quaternion swing/twist decomposition and separate angular limits. Implemented an independent joint-local projection for the native skeleton, also after rendered crossfades. No Jolt library or source was imported."
+    },
+    {
+      "file": "jolt_license",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/LICENSE",
+      "status": 200,
+      "bytes": 1052,
+      "sha256": "800abe35d64ad9defd636ff1ee8c961e06f0ebca3ef8d10083e8aa0e8ef86ac3",
+      "application": "MIT license inspected; reference only."
+    },
+    {
+      "file": "deepmimic_pd.py",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/learning/pd_controller.py",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "file": "soccerkicks_readme",
+      "url": "https://raw.githubusercontent.com/nayariml/SoccerKicks/master/README.md",
+      "status": 200,
+      "bytes": 5273,
+      "sha256": "47330c8a1c38fe7af097b279c0e778f92ece0ab675cc7c0b20437bd0ff29cb78",
+      "application": "Verified 38-video dataset description and 3D annotation layout. Complete dataset resides on Google Drive, previously unavailable; no new 3D clips obtained."
+    },
+    {
+      "file": "opensim_arm26.osim",
+      "url": "https://raw.githubusercontent.com/opensim-org/opensim-models/master/Arm26/arm26.osim",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "file": "motionmatching_readme",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/master/README.md",
+      "status": 200,
+      "bytes": 3419,
+      "sha256": "4d27d6d8269e5afd5226829a9e0c1de6df9ec236fd8efd0e0d3ffbe8a5fd9a8c",
+      "application": "Reviewed feature-search and dataset requirements. Original native animation search and source accounting are retained; no unlicensed motion database was imported."
+    },
+    {
+      "file": "cmu_subjects.html",
+      "url": "https://mocap.cs.cmu.edu/subjects.php",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "file": "cmu_search.html",
+      "url": "https://mocap.cs.cmu.edu/search.php?subjectnumber=49&motion=all",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "file": "opensim_tree.json",
+      "url": "https://api.github.com/repos/opensim-org/opensim-models/git/trees/master?recursive=1",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "file": "deepmimic_pd.cpp",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/CtPDController.cpp",
+      "status": 200,
+      "bytes": 3936,
+      "sha256": "87219ca8644799b0a0286b40a3ad1a5bfff7091ed13716b0d83af6ca1d71d102",
+      "application": "Reviewed target-pose conversion, bounded exponential maps and PD control interface. No trained controller, weights or motion clips imported."
+    }
+  ],
+  "previous_research": [
+    "docs/balance-physics-research.json",
+    "docs/physical-rig-v2-research.json"
+  ],
+  "visual_reference": {
+    "annotations": "docs/research/soccerkicks-keyposes.json",
+    "panel": "docs/images/balance-kick-reference.jpg",
+    "poses": 8,
+    "dimensions": 2,
+    "status": "Previously digitized approximate projected keyposes; no new 3D inference performed."
+  },
+  "motion_inventory": {
+    "native_sources_including_mirrors": 18,
+    "procedural_variants": 288,
+    "new_captured_3d_sequences": 0,
+    "description": "Procedural references are not independent filmed performances."
+  },
+  "anatomical_limits": {
+    "units": "radians",
+    "shoulder_forward_swing": 2.7,
+    "shoulder_back_swing": 1.1,
+    "shoulder_outward_swing": 2.7,
+    "shoulder_inward_swing": 0.85,
+    "shoulder_axial_twist": [
+      -1.55,
+      1.55
+    ],
+    "elbow_flexion": [
+      -2.55,
+      -0.025
+    ],
+    "elbow_lateral_swing": 0.1,
+    "status": "Prototype constraints for this specific native skeleton, including scapular allowance; not clinical measurements."
+  },
+  "limits": [
+    "Native locomotion and foot contact selection remain authored; this is not a learned whole-body muscle policy.",
+    "Body collisions use capsule/elliptic proxies; no global triangle-pair nonintersection proof.",
+    "No claim of hundreds of thousands of independently captured or reconstructed animations.",
+    "Windows is cross-compiled; rendered regression tests execute in Linux with a virtual Xbox device."
+  ]
+}

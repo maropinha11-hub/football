@@ -1,6 +1,7 @@
 #include "physical_rig.hpp"
 #include "articulated_body.hpp"
 #include "balance_controller.hpp"
+#include "anatomical_arms.hpp"
 
 namespace football_physics {
 namespace {
@@ -116,7 +117,7 @@ void PhysicalRig::step(const Input &input,float dt){
     physicalUpperValid=true;evaluate(input);
   }else if(state==Mode::Falling){
     for(unsigned sub=0;sub<2;++sub)articulated->step(dt*.5f,local,root,debug);
-    forwardKinematics();
+    forwardKinematics();separateArms();
     // Rest is measured from kinetic energy, not from a root whose velocity
     // was zeroed by a penetration correction.
     if(stateAge>1.2f && debug.kineticEnergy<8.f)settled+=dt;else settled=0;
@@ -190,8 +191,12 @@ void PhysicalRig::evaluate(const Input &input){
   }
   if(physicalUpperValid && !input.action && !input.upperReception){
     for(unsigned i=1;i<=6;++i){
-      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),i==1?.22f:.55f);
-      local[i]=normalized(productRotation(exponential(scalePoint(error,.65f)),local[i]));
+      // Arms keep their authored muscle tone while upright. Applying 65% of
+      // a freely lagging forearm made the elbow look dislocated even when
+      // Bullet's own constraint was valid. Free falls still use full dynamics.
+      const bool arm=i>=3;
+      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.14f:i==1?.22f:.20f);
+      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.20f:.65f)),local[i]));
     }
     forwardKinematics();
   }
@@ -233,12 +238,13 @@ void PhysicalRig::reachHand(unsigned shoulder,Vec target,float weight){
   const float twist=std::atan2(dotPoint(upperDirection,crossPoint(currentAxis,hinge)),dotPoint(currentAxis,hinge));
   arm=normalized(productRotation(exponential(scalePoint(upperDirection,twist)),arm));
   Quat wanted[2]={normalized(productRotation(inverseRotation(world[1]),arm)),exponential({{-std::acos(bounded(dotPoint(upperDirection,lowerDirection),-1,1)),0,0}})};
+  for(unsigned i=0;i<2;++i)wanted[i]=anatomicalArm(shoulder+i,wanted[i]);
   if(handUpdatePending)for(unsigned i=0;i<2;++i){
     const Vec error=logarithm(productRotation(wanted[i],inverseRotation(handPose[i])));
     const Vec speed=capped(scalePoint(error,12.f),3.8f);
     handVelocity[i]=addPoint(handVelocity[i],capped(subtractPoint(speed,handVelocity[i]),24.f*handDt));
     const Vec change=capped(scalePoint(handVelocity[i],handDt),length(error));
-    handPose[i]=normalized(productRotation(exponential(change),handPose[i]));
+    handPose[i]=anatomicalArm(shoulder+i,productRotation(exponential(change),handPose[i]));
   }
   local[shoulder]=blended(local[shoulder],handPose[0],weight);
   local[elbow]=blended(local[elbow],handPose[1],weight);
@@ -247,33 +253,80 @@ void PhysicalRig::reachHand(unsigned shoulder,Vec target,float weight){
   forwardKinematics();
 }
 
-void PhysicalRig::separateArms(){
+void constrainArmPose(const pes3::NativeBind &reference,float scale,Pose &local,Vec root,Metrics &debug){
+  Points positions{};Pose world{};
+  auto forwardKinematics=[&](){positions[0]=root;for(unsigned i=0;i<13;++i){
+    const int parent=pes3::nativeParents[i];world[i]=parent<0?local[i]:normalized(productRotation(world[parent],local[i]));
+    if(parent>=0)positions[i]=addPoint(positions[parent],rotatePoint(world[parent],scalePoint(reference.offsets[i],scale)));
+  }};
   // A small analytic collision pass also protects the displayed, smoothed
   // skeleton. Bullet's proxies alone do not constrain the final blended pose.
-  // Only shoulder swing changes; bone lengths and the native elbow bend stay.
-  for(unsigned shoulder:{3u,5u})for(unsigned iteration=0;iteration<14;++iteration){
+  // Clamp the final pose, not merely the IK target. This also constrains the
+  // native/physical crossfade and recovery samples. Re-project each collision
+  // correction so separating an arm cannot twist its shoulder out of range.
+  for(unsigned i:{3u,4u,5u,6u})local[i]=anatomicalArm(i,local[i]);
+  forwardKinematics();
+  auto closest=[](Vec p,Vec a,Vec b){const Vec ab=subtractPoint(b,a);return addPoint(a,scalePoint(ab,bounded(dotPoint(subtractPoint(p,a),ab)/std::max(1e-8f,dotPoint(ab,ab)),0,1)));};
+  for(unsigned shoulder:{3u,5u})for(unsigned iteration=0;iteration<22;++iteration){
     const unsigned elbow=shoulder+1;
     const Vec hand=addPoint(positions[elbow],rotatePoint(world[elbow],{{0,0,-.24f*scale}}));
     Vec correction{{0,0,0}},contact=hand;
-    for(unsigned sample=0;sample<=6;++sample){
-      const Vec point=addPoint(positions[elbow],scalePoint(subtractPoint(hand,positions[elbow]),sample/6.f));
+    for(unsigned sample=0;sample<=12;++sample){
+      // Include the upper arm away from its deliberately overlapping socket.
+      const Vec point=sample<=6?addPoint(positions[elbow],scalePoint(subtractPoint(hand,positions[elbow]),sample/6.f)):
+        addPoint(positions[shoulder],scalePoint(subtractPoint(positions[elbow],positions[shoulder]),(sample-5)/7.f));
       const Vec localPoint=rotatePoint(inverseRotation(world[1]),subtractPoint(point,positions[1]));
-      if(localPoint[2]<-.10f*scale || localPoint[2]>.45f*scale)continue;
-      // Elliptical torso with allowance for the arm radius and shirt.
-      const float rx=.185f*scale,ry=.135f*scale;
-      const float ellipse=std::sqrt(localPoint[0]*localPoint[0]/(rx*rx)+localPoint[1]*localPoint[1]/(ry*ry));
-      if(ellipse>=1)continue;
       const float side=shoulder==3?1.f:-1.f;
+      Vec displacement{{0,0,0}};
+      if(localPoint[2]>=-.10f*scale && localPoint[2]<=.45f*scale){
+      // Elliptical torso with allowance for the arm radius and shirt.
+      const float rx=.195f*scale,ry=.145f*scale;
+      const float ellipse=std::sqrt(localPoint[0]*localPoint[0]/(rx*rx)+localPoint[1]*localPoint[1]/(ry*ry));
+      if(ellipse<1){
       const float boundary=side*rx*std::sqrt(std::max(0.f,1-localPoint[1]*localPoint[1]/(ry*ry)));
-      const Vec displacement=rotatePoint(world[1],{{side*std::max(0.f,side*(boundary-localPoint[0]))+.002f*side,0,0}});
+      displacement=rotatePoint(world[1],{{side*std::max(0.f,side*(boundary-localPoint[0]))+.002f*side,0,0}});
+      }}
+      // Forearm/hand against head and thighs, and against the other arm.
+      // The socket samples are exempt from the head/shoulder overlap.
+      if(sample<=6){
+        for(unsigned other:{2u,7u,10u,shoulder==3?5u:3u,shoulder==3?6u:4u}){
+          const Vec a=positions[other];
+          Vec b=other==2?addPoint(a,rotatePoint(world[2],{{0,0,.12f*scale}})):
+            other==4||other==6?addPoint(a,rotatePoint(world[other],{{0,0,-.25f*scale}})):positions[other+1];
+          const float radius=(other==2?.145f:other==7||other==10?.115f:.09f)*scale;
+          const Vec nearest=closest(point,a,b),delta=subtractPoint(point,nearest);
+          const float overlap=radius-length(delta);
+          if(overlap>0){
+            const Vec away=rotatePoint(world[1],{{side,0,0}});
+            const Vec push=scalePoint(unit(addPoint(delta,scalePoint(away,.04f)),away),overlap+.002f);
+            if(length(push)>length(displacement))displacement=push;
+          }
+        }
+      }
       if(length(displacement)>length(correction)){correction=displacement;contact=point;}
     }
     if(length(correction)<.0001f)break;
     const Vec arm=subtractPoint(contact,positions[shoulder]);
     const Quat swing=pes3::swingRotation(unit(arm),unit(addPoint(arm,capped(correction,.045f))));
-    local[shoulder]=normalized(productRotation(productRotation(inverseRotation(world[1]),swing),world[shoulder]));
+    local[shoulder]=anatomicalArm(shoulder,productRotation(productRotation(inverseRotation(world[1]),swing),world[shoulder]));
     forwardKinematics();
   }
+  debug.armLimitError=0;debug.armPenetration=0;
+  for(unsigned i:{3u,4u,5u,6u})debug.armLimitError=std::max(debug.armLimitError,armLimitError(i,local[i]));
+  // Signed geometric diagnostics refer to the resulting displayed skeleton,
+  // rather than the hand solver's unconstrained requested angles.
+  for(unsigned elbow:{4u,6u})for(unsigned sample=0;sample<=8;++sample){
+    Vec p=addPoint(positions[elbow],rotatePoint(world[elbow],{{0,0,-.25f*scale*sample/8.f}}));
+    p=rotatePoint(inverseRotation(world[1]),subtractPoint(p,positions[1]));
+    if(p[2]>=-.10f*scale && p[2]<=.45f*scale){
+      const float ellipse=std::sqrt(p[0]*p[0]/(.185f*.185f*scale*scale)+p[1]*p[1]/(.135f*.135f*scale*scale));
+      debug.armPenetration=std::max(debug.armPenetration,std::max(0.f,1-ellipse)*.135f*scale);
+    }
+  }
+}
+
+void PhysicalRig::separateArms(){
+  constrainArmPose(reference,scale,local,root,debug);forwardKinematics();
 }
 
 void PhysicalRig::groundRecovery(){

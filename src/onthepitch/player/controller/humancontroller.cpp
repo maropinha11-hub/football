@@ -95,9 +95,14 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
   // execute buffer?
 
+  if(actionMode!=2)actionCommitted=false;
   if (actionMode == 2) {
 
-    if (!hid->GetButton(actionButton) ||
+    if(!hid->GetButton(actionButton) ||
+       (TrainingEnabled() && match->TrainingReceivingBall() && !CastPlayer()->HasPossession()))
+      actionCommitted=true;
+
+    if (actionCommitted || !hid->GetButton(actionButton) ||
         (hid->GetButton(actionButton) && gauge_ms >= (TrainingEnabled()?
           (actionButton==e_ButtonFunction_Shot?520:1000):500)) ||
         (!CastPlayer()->HasPossession() && !match->IsInSetPiece() && actionBufferTime_ms > 0)) {
@@ -393,6 +398,25 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         const Vector3 velocity=movement.desiredDirection*movement.desiredVelocityFloat+step;
         movement.desiredDirection=velocity.GetNormalized(movement.desiredDirection);
         movement.desiredVelocityFloat=std::min(sprintVelocity,velocity.GetLength());
+        // The authored locomotion quantizes speeds below 1.8 m/s to idle.
+        // A corrective request of e.g. 0.4 m/s was therefore never a step.
+        // Briefly select its slowest stepping gait, then brake as the
+        // disturbance settles; never teleport the pelvis or either foot.
+        if(hid->GetDirection().GetLength()<.05f && step.GetLength()>.10f){
+          movement.desiredVelocityFloat=std::max(movement.desiredVelocityFloat,idleDribbleSwitch+.05f);
+          movement.useDesiredLookAt=true;
+          movement.desiredLookAt=player->GetPosition()+step.GetNormalized(movement.desiredDirection)*10.f;
+        }
+        if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%50==0)
+          printf("PHYSICAL_STEP_COMMAND t=%lu demand=%.5f velocity=%.5f direction=[%.4f,%.4f] look=%d\n",match->GetActualTime_ms(),step.GetLength(),movement.desiredVelocityFloat,movement.desiredDirection.coords[0],movement.desiredDirection.coords[1],movement.useDesiredLookAt?1:0);
+      }
+    }
+    if(!commandQueue.empty()){
+      auto &movement=commandQueue.back();
+      if(movement.desiredFunctionType==e_FunctionType_Movement){
+        const Vector3 velocity=player->GetHumanoid()->PhysicalContactVelocity(movement.desiredDirection*movement.desiredVelocityFloat);
+        movement.desiredVelocityFloat=velocity.GetLength();
+        movement.desiredDirection=velocity.GetNormalized(movement.desiredDirection);
       }
     }
     if(actionMode!=2)turningPass=false;
@@ -560,7 +584,7 @@ void HumanController::Process() {
   }
 
   if (actionMode == 2) {
-    if (hid->GetButton(actionButton)) {
+    if (hid->GetButton(actionButton) && !actionCommitted) {
       if(actionButton==e_ButtonFunction_Shot && hid->GetButton(e_ButtonFunction_Switch))shotChip=true;
       gauge_ms += 10;
       gauge_ms = clamp(gauge_ms, 10, 1000);
@@ -594,6 +618,7 @@ int HumanController::GetReactionTime_ms() {
 
 void HumanController::Reset() {
   actionMode = 0;
+  actionCommitted=false;
   turningPass=false;turningPassUntil=0;
   shotChip=false;
   gauge_ms = 0;

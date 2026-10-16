@@ -2,6 +2,7 @@
 
 namespace football_physics {
 void BalanceController::addImpulse(Vec impulse,Vec torque){
+  if(length(impulse)>25.f)stepArmed=true;
   impulse[2]=0;
   disturbance=capped(addPoint(disturbance,scalePoint(impulse,1/PhysicalRig::mass)),5.f);
   // Most of a torso impact is transmitted through the planted lower body.
@@ -21,7 +22,19 @@ bool BalanceController::step(float dt,float height,float stance,float speed,bool
   // A failed recovery is accumulated over time. Crossing a force threshold
   // for one tick no longer switches a standing player straight to ragdoll.
   if(risk>1.f)failureTime+=dt;else failureTime=std::max(0.f,failureTime-dt*2.f);
-  const Vec wanted=scalePoint(unit(capture,{{0,0,0}}),std::min(1.15f,stepDemand*3.5f));
+  if(stepDemand>.08f && stepArmed){
+    committedStep=unit(capture,{{0,0,0}});
+    stepRemaining=held?.20f:braced?.44f:.52f;stepArmed=false;
+  }
+  if(risk<.05f && stepRemaining<=0)stepArmed=true;
+  Vec wanted=scalePoint(unit(capture,{{0,0,0}}),std::min(1.15f,stepDemand*3.5f));
+  // Finish one support step instead of abandoning it when the initial upper
+  // body sway decays. The native gait may be up to 270 ms from its next
+  // transition. This commitment contains no position/foot teleport.
+  if(stepRemaining>0){
+    stepRemaining=std::max(0.f,stepRemaining-dt);
+    if(dotPoint(wanted,committedStep)<.20f)wanted=scalePoint(committedStep,.20f);
+  }
   correction=addPoint(correction,capped(subtractPoint(wanted,correction),4.f*dt));
   const float damping=risk>1.f?.75f:braced?4.2f:3.5f;
   disturbance=scalePoint(disturbance,std::exp(-damping*dt));
