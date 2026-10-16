@@ -116,6 +116,10 @@ class Match {
     void LaunchTrainingBall(int delivery);
     void ProcessTraining();
     Player *GetTrainingPlayer() const { return trainingPlayer; }
+    Player *GetTrainingPartner() const { return trainingPartner; }
+    void SetTrainingPartner(Player *value) { trainingPartner=value; }
+    Vector3 GetTrainingPartnerVelocity() const {return trainingPartnerVelocity;}
+    void ProcessTrainingContact();
     void SetTrainingPlayer(Player *value) { trainingPlayer=value; }
     void ProcessPlayerMatchInput();
     void UpdatePlayerMatchCamera();
@@ -283,6 +287,12 @@ class Match {
 
     Officials *officials;
     Player *trainingPlayer = nullptr;
+    Player *trainingPartner = nullptr;
+    Vector3 trainingPartnerVelocity{0},trainingGripOffset{0};
+    int trainingContactExercise=0;
+    bool trainingGrip=false;
+    bool trainingGripBlocked=false;
+    unsigned long trainingContactUntil=0,trainingTackleUntil=0;
     unsigned long playerMatchPassUntil_ms = 0;
     int trainingExercise = 0;
     int trainingController = 0;

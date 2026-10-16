@@ -373,6 +373,32 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     }
   }
 
+  if(player->GetHumanoid()->PhysicalRigEnabled()){
+    if(actionMode!=2)turningPass=false;
+    for(unsigned i=0;i+1<commandQueue.size();++i){
+      auto &pass=commandQueue[i];
+      if(pass.desiredFunctionType!=e_FunctionType_ShortPass && pass.desiredFunctionType!=e_FunctionType_LongPass)continue;
+      const Vector3 direction=pass.touchInfo.desiredDirection.Get2D().GetNormalized(player->GetBodyDirectionVec());
+      const bool close=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.25f && match->GetBall()->Predict(0).coords[2]<.45f;
+      if(!turningPass && close && direction.GetDotProduct(player->GetBodyDirectionVec())<-.20f){
+        turningPass=true;turningPassDirection=direction;turningPassUntil=match->GetActualTime_ms()+1400;
+        if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_PASS_TURN t=%lu state=begin\n",match->GetActualTime_ms());
+      }
+      if(turningPass){
+        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.35f;
+        if(!aligned && close && match->GetActualTime_ms()<turningPassUntil){
+          auto &movement=commandQueue.back();movement.useDesiredLookAt=true;movement.useDesiredMovement=true;
+          movement.desiredLookAt=player->GetPosition()+turningPassDirection*10.f;
+          movement.desiredDirection=turningPassDirection;movement.desiredVelocityFloat=.8f;
+          commandQueue.erase(commandQueue.begin()+i);
+        }else{
+          pass.touchInfo.desiredDirection=turningPassDirection;turningPass=false;
+          if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_PASS_TURN t=%lu state=release aligned=%d\n",match->GetActualTime_ms(),aligned?1:0);
+        }
+      }
+      break;
+    }
+  }
   // reload original input
   inputDirection = inputDirectionSaveNonsteady;
 }
@@ -547,6 +573,7 @@ int HumanController::GetReactionTime_ms() {
 
 void HumanController::Reset() {
   actionMode = 0;
+  turningPass=false;turningPassUntil=0;
   shotChip=false;
   gauge_ms = 0;
   actionButton = e_ButtonFunction_ShortPass;

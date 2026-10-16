@@ -21,7 +21,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
-namespace football_physics {class PhysicalRig;}
+namespace football_physics {class PhysicalRig;class ShirtCloth;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -252,7 +252,16 @@ class HumanoidBase {
     void ResetPhysicalRig();
     void UpdatePhysicalRigPose();
     void ProcessPhysicalMotion();
+    void ProcessPhysicalPartner();
     void PutPhysicalRig();
+    void ConfigurePhysicalRig();
+    void SetPhysicalGrip(const Vector3 &point,const Vector3 &force);
+    void SetPhysicalShield(bool active) {physicalShield=active;}
+    void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
+    float PhysicalHandDistance(const Vector3 &point)const;
+    Vector3 GetPhysicalShirtPoint()const;
+    void PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes);
+    void PhysicalActionContact();
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);
@@ -421,6 +430,15 @@ class HumanoidBase {
     TemporalSmoother<Quaternion> buf_physicalAdditive[13];
     Quaternion fetchedPhysicalAdditive[13];
     bool fetchedPhysicalRagdoll=false;
+    Vector3 physicalGripPoint{0},physicalGripForce{0};
+    TemporalSmoother<Vector3> buf_physicalGripPoint,buf_physicalGripForce;
+    Vector3 fetchedPhysicalGripPoint,fetchedPhysicalGripForce;
+    std::vector<std::shared_ptr<football_physics::ShirtCloth>> shirtCloth;
+    std::vector<unsigned long> shirtClothTime;
+    unsigned long physicalActionTime=0;
+    bool physicalShield=false;
+    Vector3 physicalHandTarget{0};
+    bool physicalHandTargetActive=false;
     void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
 
     AnimApplyBuffer animApplyBuffer;

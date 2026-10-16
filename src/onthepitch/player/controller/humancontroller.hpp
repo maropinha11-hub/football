@@ -48,6 +48,9 @@ class HumanController : public PlayerController {
     int actionBufferTime_ms;
     int gauge_ms;
     bool shotChip=false;
+    bool turningPass=false;
+    Vector3 turningPassDirection{0};
+    unsigned long turningPassUntil=0;
 
     // stuff to keep track of analog stick (or keys even) so that we can use a direction once it's been pointed in for a while, instead of directly
     Vector3 previousDirection;

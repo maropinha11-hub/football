@@ -672,6 +672,13 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
 
   } // subgeom
 
+  if(!updateSrc)for(unsigned subgeom=0;subgeom<fullbodySubgeomCount;++subgeom)PutShirtCloth(subgeom,materializedTriangleMeshes);
+  if(!updateSrc && fetchedPhysicalRagdoll && GetConfiguration()->GetBool("training_telemetry",false)){
+    float minimum=100;
+    for(unsigned mesh=0;mesh<weightedVerticesVec.size();++mesh)for(const auto &vertex:weightedVerticesVec[mesh])
+      minimum=std::min(minimum,materializedTriangleMeshes[mesh].vertices[vertex.vertexID*3+2]);
+    printf("PHYSICAL_RENDER_SUPPORT t=%lu actor=%d minimum_z=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,player->GetID(),minimum);
+  }
   if(studyTelemetry)printf("PES3_BODY_SKIN vertices=%u invalid=%u rigid_error=%.8f foot_min_z=%.6f radius=%.6f\n",
     studyVertexCount,studyInvalidCount,studyRigidError,studyFootMinimum,studyRadius);
   if(fbxTelemetry)printf("TRAINING_FBX_SKIN vertices=%u invalid=%u rigid_error=%.8f foot_min_z=%.6f radius=%.6f\n",
@@ -953,6 +960,8 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
   buf_physicalRig.SetValue(PhysicalRigEnabled()?(PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
+  buf_physicalGripPoint.SetValue(physicalGripPoint,snapshotTime_ms);
+  buf_physicalGripForce.SetValue(physicalGripForce,snapshotTime_ms);
   for(unsigned i=0;i<13;++i){
     const auto q=physicalRig && physicalRig->initialized()?physicalRig->additivePose()[i]:football_physics::Quat{{0,0,0,1}};
     buf_physicalAdditive[i].SetValue(Quaternion(q[0],q[1],q[2],q[3]),snapshotTime_ms);
@@ -1007,6 +1016,8 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
   fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
   fetchedPhysicalRagdoll=buf_physicalRig.GetValue(putTime_ms)>1.5f;
+  fetchedPhysicalGripPoint=buf_physicalGripPoint.GetValue(putTime_ms);
+  fetchedPhysicalGripForce=buf_physicalGripForce.GetValue(putTime_ms);
   for(unsigned i=0;i<13;++i)fetchedPhysicalAdditive[i]=buf_physicalAdditive[i].GetValue(putTime_ms);
   fetchedChestPhase=buf_chestPhase.GetValue(putTime_ms);
   fetchedTrainingLook=buf_trainingLook.GetValue(putTime_ms);

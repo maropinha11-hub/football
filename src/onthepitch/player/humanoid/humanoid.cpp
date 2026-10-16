@@ -497,6 +497,7 @@ void Humanoid::Process() {
 
     if ((UsesTrainingContacts() || (fullBallDistance < touchableDistance && fabs(desiredBallHeight - match->GetBall()->Predict(0).coords[2]) < 1.0f)) && physicalContact(currentAnim->anim->GetVariable("touch_bodypart"))) {
       currentAnim->touchMade=true;
+      PhysicalActionContact();
       // A measured skin contact is not a miss against an old proxy marker.
       if(UsesTrainingContacts())bumpyRideBias=0;
       if(UsesTrainingContacts())match->NotifyTrainingTouch(currentAnim->functionType,(currentAnim->originatingCommand.modifier&e_PlayerCommandModifier_KnockOn)!=0);

@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <vector>
 
 namespace football_physics {
 using Vec=pes3::Point;
@@ -35,15 +36,19 @@ struct Input {
   Pose pose{};
   Vec pelvis{{0,0,.96f}},velocity{{0,0,0}},forward{{0,-1,0}};
   Vec reach{{0,0,0}},opponent{{0,0,0}};
+  Vec handTarget{{0,0,0}};
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
-  bool action=false,upperReception=false;
+  bool action=false,upperReception=false,protect=false,handTargetActive=false;
 };
 struct Metrics {
   float lean=0,turnRate=0,supportMargin=0,effort=0,reach=0,penetration=0;
   float angularSpeed=0,kineticEnergy=0,jointError=0;
   unsigned groundContacts=0;
+  float selfPenetration=0,brace=0,recoveryPhase=0;
 };
+struct RecoveryKey { Pose pose{}; Vec pelvis{{0,0,0}}; };
+using RecoveryMotion=std::vector<RecoveryKey>;
 
 class ArticulatedBody;
 class PhysicalRig {
@@ -51,12 +56,14 @@ class PhysicalRig {
   PhysicalRig();
   ~PhysicalRig();
   void configure(const pes3::NativeBind &bind,float heightScale);
+  void setRecoveryMotions(RecoveryMotion front,RecoveryMotion back);
   void reset();
   void impulse(Vec newtonSeconds,Vec lever={{0,0,.35f}});
   void step(const Input &input,float dt=.01f);
   // Re-sample a native animation phase within the same simulation tick.
   // This never advances momentum, balance filters or the reach envelope.
   void evaluate(const Input &input);
+  void alignRecoverySurface(float minimumHeight){if(state==Mode::Recovering){root[2]+=bounded(.003f-minimumHeight,-.10f,.10f);forwardKinematics();}}
   const Pose &pose()const{return local;}
   const Points &points()const{return positions;}
   const Pose &worldRotations()const{return world;}
@@ -70,14 +77,20 @@ class PhysicalRig {
  private:
   void forwardKinematics();
   void solveLeg(unsigned hip,Vec target);
-  void jointLimits(unsigned joint);
-  void ground(float dt);
-  void drive(const Pose &target,float dt,float frequency,float accelerationLimit);
+  void reachHand(unsigned shoulder,Vec target,float weight);
+  void separateArms();
+  void recover(const Input &input);
+  void groundRecovery();
   pes3::NativeBind reference{};
   Pose local{},world{};
   Pose additive{};
   std::unique_ptr<ArticulatedBody> articulated;
   Pose recoveryPose{};
+  RecoveryMotion recoveryFront,recoveryBack;
+  const RecoveryMotion *recoveryMotion=nullptr;
+  Quat recoveryYaw{{0,0,0,1}};
+  float recoveryDuration=2;
+  float protection=0;
   Pose physicalUpper{};
   bool physicalUpperValid=false;
   Points positions{};

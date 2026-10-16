@@ -71,7 +71,8 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
   playerNode->SetName("player");
   playerNode->SetLocalMode(e_LocalMode_Absolute);
 
-  activePlayerCount = (TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 ? 1 : 0) : playerNum;
+  const bool physicalPartner=TrainingEnabled() && !PlayerMatchEnabled() && GetConfiguration()->GetBool("training_physical_lab",false);
+  activePlayerCount = (TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 || physicalPartner ? 1 : 0) : playerNum;
 
   Log(e_Notice, "Team", "Team", "Creating players");
 
@@ -81,7 +82,7 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
     Player *player = new Player(this, playerData);
     players.push_back(player);
 
-    if ((TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 && i == playerNum - 1) : i < activePlayerCount) {
+    if ((TrainingEnabled() && !PlayerMatchEnabled()) ? ((id == 0 || physicalPartner) && i == playerNum - 1) : i < activePlayerCount) {
       // activate playerCount players (the starting eleven, usually)
       std::string kitFilename;
       //printf("%i player id\n", player->GetID());
@@ -93,11 +94,12 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode, std::map<Vector3
       }
       kit = ResourceManagerPool::GetInstance().GetManager<Surface>(e_ResourceType_Surface)->Fetch(kitFilename);
       if(TrainingEnabled() && id==0 && i==playerNum-1)match->SetTrainingPlayer(player);
+      if(physicalPartner && id==1 && i==playerNum-1)match->SetTrainingPartner(player);
       player->Activate(playerNode, fullbodyNode, colorCoords, kit, match->GetAnimCollection());
     }
   }
 
-  designatedTeamPossessionPlayer = (TrainingEnabled() && !PlayerMatchEnabled()) ? (id == 0 ? players.at(playerNum - 1) : nullptr) : players.at(0);
+  designatedTeamPossessionPlayer = (TrainingEnabled() && !PlayerMatchEnabled()) ? (activePlayerCount ? players.at(playerNum - 1) : nullptr) : players.at(0);
 
 }
 

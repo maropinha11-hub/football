@@ -90,7 +90,8 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
       s.dynamics.addConstraint(&joint,true);
       // The torso and the shoulder's parent overlap at their attachment.
       // Disable only the immediate grandparent pair, not general self-contact.
-      int grand=pes3::nativeParents[parent];if(grand>=0)body.setIgnoreCollisionCheck(s.bodies[grand+1].get(),true);
+      int grand=pes3::nativeParents[parent];
+      if(grand>=0 && i!=4 && i!=6)body.setIgnoreCollisionCheck(s.bodies[grand+1].get(),true);
     }
   }
   // Start without a deeply embedded foot proxy. This correction is bounded
@@ -140,7 +141,18 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
   }
 }
 void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
-  auto &s=*state;s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;
+  auto &s=*state;
+  if(!s.tracking && s.bodies[2]->getCenterOfMassPosition().z()>.5f && s.bodies[1]->getLinearVelocity().z()<-.25f){
+    const Vec velocity=vec(s.bodies[1]->getLinearVelocity());
+    const Vec direction=unit({{velocity[0]*.22f,velocity[1]*.22f,-1.f}});
+    for(unsigned i:{3u,5u}){
+      auto &arm=*s.bodies[i+1];const Quat orientation=quat(arm.getWorldTransform().getRotation());
+      Vec error=logarithm(pes3::swingRotation(rotatePoint(orientation,{{0,0,-1}}),direction));
+      arm.applyTorque(bv(capped(subtractPoint(scalePoint(error,6.f),scalePoint(vec(arm.getAngularVelocity()),.6f)),5.f)));
+    }
+    metrics.brace=1;
+  }
+  s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;
   for(unsigned i=0;i<13;++i){
     auto &body=*s.bodies[i+1];const auto q=quat(body.getWorldTransform().getRotation());
     // Contact impulses on very light feet/forearms can otherwise create
@@ -157,7 +169,11 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
   }
   for(auto &j:s.joints){j->calculateTransforms();metrics.jointError=std::max(metrics.jointError,float((j->getCalculatedTransformA().getOrigin()-j->getCalculatedTransformB().getOrigin()).length()));}
   for(int i=0;i<s.dispatcher.getNumManifolds();++i){auto *m=s.dispatcher.getManifoldByIndexInternal(i);
-    for(int p=0;p<m->getNumContacts();++p)if(m->getContactPoint(p).getDistance()<.003f){++metrics.groundContacts;metrics.penetration=std::max(metrics.penetration,float(-m->getContactPoint(p).getDistance()));}
+    const bool floor=m->getBody0()==s.bodies[0].get() || m->getBody1()==s.bodies[0].get();
+    for(int p=0;p<m->getNumContacts();++p)if(m->getContactPoint(p).getDistance()<.003f){
+      if(floor){++metrics.groundContacts;metrics.penetration=std::max(metrics.penetration,float(-m->getContactPoint(p).getDistance()));}
+      else metrics.selfPenetration=std::max(metrics.selfPenetration,float(-m->getContactPoint(p).getDistance()));
+    }
   }
 }
 }

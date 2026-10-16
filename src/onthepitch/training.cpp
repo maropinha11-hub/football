@@ -32,6 +32,13 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingResetAt_ms = 0;
   trainingKnockOnUntil_ms = 0;
   trainingReceiving=false;trainingReceptionFacing=direction;
+  trainingGrip=false;trainingContactUntil=trainingTackleUntil=0;
+  if(trainingPartner){
+    trainingPartnerVelocity=Vector3(0);
+    const Vector3 partnerPosition=trainingContactExercise?position+direction*.15f+direction.GetRotated2D(.5f*pi)*.72f:Vector3(150,150,0);
+    trainingPartner->ResetPosition(partnerPosition,position+direction*3);
+    trainingPartner->GetHumanoid()->SetPhysicalGrip(Vector3(0),Vector3(0));
+  }
   lastTouchTeamID = -1;
   for (unsigned int i = 0; i < e_TouchType_SIZE; ++i) lastTouchTeamIDs[i] = -1;
   teams[0]->ResetSituation(ballPosition);
@@ -279,7 +286,9 @@ void Match::ProcessTraining() {
 
     teams[1]->UpdatePossessionStats();
     teams[0]->UpdatePossessionStats();
+    ProcessTrainingContact();
     teams[0]->Process();
+    if(trainingPartner)trainingPartner->GetHumanoid()->ProcessPhysicalPartner();
     trainingPlayer->RelaxFatigue(1.0f);
     actualTime_ms += 10;
     matchTime_ms = actualTime_ms;

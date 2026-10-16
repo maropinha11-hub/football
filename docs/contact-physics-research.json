@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-16",
+  "scope": "Ground-supported reuse of original recovery animations, articulated/procedural arm protection, reciprocal training contact and bounded shirt shell. No new full-match rotoscoping corpus.",
+  "new_reference": {
+    "url": "https://raw.githubusercontent.com/matthias-research/pages/master/tenMinutePhysics/14-cloth.html",
+    "http_status": 200,
+    "bytes": 259373,
+    "sha256": "8b375329bead6aeae54f619aa381d87c67849f58e0d2c01276e65f73a64c2376",
+    "studied": "Mesh edge constraints, pinned particles, compliance over dt squared, substeps. Independent game-specific C++ shell implementation."
+  },
+  "recovery_sources": [
+    {
+      "path": "data/media/animations/movement_special/idle/special/000_stand_up_from_front.anim",
+      "sha256": "99180c7a2cd749c38fd57c534f8a48d3c609c9fabb9663781a4c6979963baf68"
+    },
+    {
+      "path": "data/media/animations/movement_special/idle/special/000_stand_up_from_back.anim",
+      "sha256": "13c0a57ee79e192752d75c7f9cf1a0c5c4de1269b0551fa64721ba3cac2d0ec3"
+    }
+  ],
+  "existing_references": "docs/physical-rig-v2-research.json",
+  "limits": [
+    "The two earlier short real-kick sequences were studied; new match video was not reconstructed into 3D motion.",
+    "Procedural variations reuse native poses; they are not hundreds of independently captured animation clips.",
+    "The cloth is a low-resolution bounded shirt shell, not a measured textile model.",
+    "Get-up uses authored animation and skin-ground alignment, not a learned physical policy."
+  ]
+}
