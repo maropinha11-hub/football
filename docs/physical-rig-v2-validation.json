@@ -3,7 +3,7 @@
   "validation_date": "2026-10-16",
   "base_revision": "585c158685642342264c9bf3e45637671331b7c2",
   "scope": "Bullet articulated falling bodies, dynamic upper-body tracking motors, entry-constrained motion-feature matching, gradual per-foot reach and preserved native lower-body animation; increased camera sensitivity.",
-  "native_executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432",
+  "native_executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090",
   "physics_dependency": {
     "name": "Bullet",
     "version": "3.25",
@@ -12,7 +12,7 @@
   },
   "platform": "Rendered Linux software OpenGL, SDL virtual Xbox input; seven suites use the same final game executable.",
   "rendered_checks": {
-    "passed": 103,
+    "passed": 104,
     "failed": 0,
     "suites": 7
   },
@@ -32,10 +32,10 @@
   "ctest": {
     "result": "passed",
     "tests": 5,
-    "output": "Internal ctest changing into directory: /workspace/football/build\nTest project /workspace/football/build\n    Start 1: physical_body_solver\n1/5 Test #1: physical_body_solver .............   Passed    3.17 sec\n    Start 2: xbox_controller\n2/5 Test #2: xbox_controller ..................   Passed    0.04 sec\n    Start 3: pes3_motion_runtime\n3/5 Test #3: pes3_motion_runtime ..............   Passed    1.62 sec\n    Start 4: pes3_native_pose\n4/5 Test #4: pes3_native_pose .................   Passed    0.24 sec\n    Start 5: pes3_native_retarget\n5/5 Test #5: pes3_native_retarget .............   Passed    0.47 sec\n\n100% tests passed, 0 tests failed out of 5\n\nTotal Test time (real) =   5.55 sec\n"
+    "output": "Internal ctest changing into directory: /workspace/football/build\nTest project /workspace/football/build\n    Start 1: physical_body_solver\n1/5 Test #1: physical_body_solver .............   Passed    3.38 sec\n    Start 2: xbox_controller\n2/5 Test #2: xbox_controller ..................   Passed    0.04 sec\n    Start 3: pes3_motion_runtime\n3/5 Test #3: pes3_motion_runtime ..............   Passed    1.62 sec\n    Start 4: pes3_native_pose\n4/5 Test #4: pes3_native_pose .................   Passed    0.29 sec\n    Start 5: pes3_native_retarget\n5/5 Test #5: pes3_native_retarget .............   Passed    0.58 sec\n\n100% tests passed, 0 tests failed out of 5\n\nTotal Test time (real) =   5.92 sec\n"
   },
   "package": {
-    "archive_sha256": "bbecbd984032bab116ba14e78ed89190c8bf038b60b857e96ddaae968f390116",
+    "archive_sha256": "70d63ae85285cdaf4b472bbfead0478543b9b3daa85c995a045132f4261ca3e0",
     "checks": [
       {
         "check": "CRC",
@@ -141,8 +141,8 @@
         "check": "packaged code matches final link",
         "result": "passed",
         "evidence": {
-          "exe_sha256": "92c46e393d4eab388364382e2504f61dffda8a561e36dc9adb7404c894d48411",
-          "normalized_code_sha256": "67bc29b3c86099131ebce13098d056210d45419d69ce6831ac33822534e2373f"
+          "exe_sha256": "49fb4a9b28392a1837491eae32af6428dbd55ddf316c1e48b63e6ede47070f87",
+          "normalized_code_sha256": "a4155e181eb602f26f43b523a5ef0a27a35e3575f6aa862c7edcd702342c83d0"
         }
       },
       {
@@ -570,7 +570,7 @@
         "evidence": true
       }
     ],
-    "exe_sha256": "92c46e393d4eab388364382e2504f61dffda8a561e36dc9adb7404c894d48411",
+    "exe_sha256": "49fb4a9b28392a1837491eae32af6428dbd55ddf316c1e48b63e6ede47070f87",
     "imports": {
       "OpenAL32.dll": [
         "AVRT.dll",
@@ -868,11 +868,11 @@
         "result": "passed"
       }
     ],
-    "archive_sha256": "bbecbd984032bab116ba14e78ed89190c8bf038b60b857e96ddaae968f390116",
+    "archive_sha256": "70d63ae85285cdaf4b472bbfead0478543b9b3daa85c995a045132f4261ca3e0",
     "entries": 573,
     "dlls": 36,
-    "bytes": 33746521,
-    "executable_sha256": "92c46e393d4eab388364382e2504f61dffda8a561e36dc9adb7404c894d48411"
+    "bytes": 33746749,
+    "executable_sha256": "49fb4a9b28392a1837491eae32af6428dbd55ddf316c1e48b63e6ede47070f87"
   },
   "regression_fixes": [
     "Replace the previous approximate root projection and independent joint-gravity fall with Bullet rigid bodies, inertia tensors, contacts and joint constraints.",
@@ -881,7 +881,10 @@
     "Keep independent per-bone reach envelopes, 0.28 m/s and 0.08 m foot cap, including a gradual return after contact ends.",
     "Use a contact-window visual blend for special actions; retain the exact weighted-skin acceptance gate.",
     "Exclude kinematic bodies from finite-inertia energy calculations, avoiding invalid diagnostics.",
-    "Increase camera sensitivity from 2.6 to 3.8."
+    "Increase camera sensitivity from 2.6 to 3.8.",
+    "Retain standing-header candidates while receive assistance makes small sub-1.5 m/s corrections; native reach and skin gates remain required.",
+    "When movement or look commands are absent, motion queries use current velocity and facing rather than an unrelated default world target.",
+    "Preserve explicit queued first-time actions: an anticipatory chest layer cannot start or consume the ball while a pass/shot is requested; verify headers at three input timings."
   ],
   "research": "docs/physical-rig-v2-research.json",
   "limitations": [
@@ -906,7 +909,7 @@
             "t": 450,
             "mode": 0,
             "root": [
-              0.22576,
+              0.20893,
               -0.0,
               0.80979
             ],
@@ -918,8 +921,8 @@
             "ground_contacts": 0,
             "ground_correction": 0.0,
             "angular_speed": 4.5,
-            "energy": 17.0377,
-            "joint_error": 0.004219,
+            "energy": 15.93009,
+            "joint_error": 0.004087,
             "root_q": [
               0.02221,
               0.02221,
@@ -932,14 +935,14 @@
           "check": "native right-foot dribble still advances under the physical layer",
           "result": "passed",
           "evidence": {
-            "travel_m": 12.34299463339428,
-            "maximum_ball_range_m": 0.5828004203841995
+            "travel_m": 12.339622522994777,
+            "maximum_ball_range_m": 0.5828005490731806
           }
         },
         {
           "check": "ordinary physical dribbling retains the ball",
           "result": "passed",
-          "evidence": 0.5828004203841995
+          "evidence": 0.5828005490731806
         },
         {
           "check": "ordinary walking turns remain upright",
@@ -960,17 +963,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "11790",
+              "t": "11370",
               "from": "0",
               "to": "1"
             },
             {
-              "t": "13640",
+              "t": "13220",
               "from": "1",
               "to": "2"
             },
             {
-              "t": "15650",
+              "t": "15230",
               "from": "2",
               "to": "0"
             }
@@ -984,24 +987,24 @@
         {
           "check": "movement resumes after fall 1",
           "result": "passed",
-          "evidence": 55.3017
+          "evidence": 54.0273
         },
         {
           "check": "fall 2 completes falling, get-up and return to control without a crash",
           "result": "passed",
           "evidence": [
             {
-              "t": "17290",
+              "t": "16820",
               "from": "0",
               "to": "1"
             },
             {
-              "t": "19140",
+              "t": "18670",
               "from": "1",
               "to": "2"
             },
             {
-              "t": "21150",
+              "t": "20680",
               "from": "2",
               "to": "0"
             }
@@ -1015,13 +1018,13 @@
         {
           "check": "movement resumes after fall 2",
           "result": "passed",
-          "evidence": 3.2835
+          "evidence": 54.9569
         },
         {
           "check": "pelvis and articulated body actually descend during the fall",
           "result": "passed",
           "evidence": {
-            "minimum_pelvis_m": 0.10564
+            "minimum_pelvis_m": 0.10587
           }
         },
         {
@@ -1029,7 +1032,7 @@
           "result": "passed",
           "evidence": {
             "samples": 65,
-            "maximum_error_m": 1.2e-07
+            "maximum_error_m": 1.8e-07
           }
         },
         {
@@ -1037,7 +1040,7 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "23550",
+              "t": "22950",
               "part": "trunk",
               "function": "3",
               "z": "1.2754",
@@ -1059,23 +1062,23 @@
           "check": "R clears a fall and its momentum immediately",
           "result": "passed",
           "evidence": {
-            "t": 29250,
+            "t": 28550,
             "mode": 0,
             "root": [
-              0.24895,
+              0.24416,
               -0.0,
               0.80979
             ],
-            "lean": 0.00031,
-            "turn": 0.01289,
+            "lean": 0.00041,
+            "turn": 0.0174,
             "reach": 0.0,
             "support_margin": 0.18084,
-            "effort": 0.00179,
+            "effort": 0.00242,
             "ground_contacts": 0,
             "ground_correction": 0.0,
-            "angular_speed": 2.1844,
-            "energy": 1.56299,
-            "joint_error": 0.002724,
+            "angular_speed": 2.48314,
+            "energy": 7.74971,
+            "joint_error": 0.003953,
             "root_q": [
               0.02221,
               0.02221,
@@ -1088,10 +1091,10 @@
           "check": "first-person head look remains responsive",
           "result": "passed",
           "evidence": {
-            "t": 30300,
+            "t": 29600,
             "exercise": 0,
             "player": [
-              0.25,
+              0.2501,
               -0.0,
               0.0
             ],
@@ -1099,11 +1102,11 @@
             "ball": [
               0.65,
               0.0,
-              0.1109
+              0.1107
             ],
-            "ball_speed": 0.0859,
+            "ball_speed": 0.0122,
             "function": 1,
-            "frame": 19,
+            "frame": 3,
             "controller": 1,
             "goals": 0,
             "camera": 2,
@@ -1123,15 +1126,15 @@
             ],
             "keys": 0,
             "player_yaw": 0.0,
-            "wall_ms": 35968
+            "wall_ms": 35728
           }
         },
         {
           "check": "all authored ball impulses retain the real-skin gate",
           "result": "passed",
           "evidence": {
-            "impulses": 18,
-            "accepted_contacts": 18
+            "impulses": 17,
+            "accepted_contacts": 17
           }
         },
         {
@@ -1141,7 +1144,7 @@
         }
       ],
       "scenario": "training",
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     },
     "physical_actions": {
       "result": "passed",
@@ -1153,25 +1156,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "2890",
+                "t": "2710",
                 "part": "left_foot",
                 "function": "8",
-                "z": "0.1315"
+                "z": "0.1269"
               }
             ],
             "native_selections": [
               {
-                "t": "2700",
+                "t": "2520",
                 "function": "8",
                 "contact_frame": "19",
                 "added_chest": "0",
                 "name": "media/animations/shot/sprint/030.anim",
                 "frames": "61",
-                "previous_frame": "21",
+                "previous_frame": "6",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 26.2947
+            "peak_ball_speed_mps": 25.888
           }
         },
         {
@@ -1180,42 +1183,15 @@
           "evidence": {
             "touches": [
               {
-                "t": "7130",
-                "part": "left_foot",
-                "function": "8",
-                "z": "0.1133"
-              }
-            ],
-            "native_selections": [
-              {
                 "t": "6820",
-                "function": "8",
-                "contact_frame": "31",
-                "added_chest": "0",
-                "name": "media/animations/shot/walk/090_2step.anim",
-                "frames": "84",
-                "previous_frame": "8",
-                "previous_frames": "28"
-              }
-            ],
-            "peak_ball_speed_mps": 26.6151
-          }
-        },
-        {
-          "check": "900 ms running shot toward diagonal makes one physical kick",
-          "result": "passed",
-          "evidence": {
-            "touches": [
-              {
-                "t": "11240",
                 "part": "left_foot",
                 "function": "8",
-                "z": "0.1164"
+                "z": "0.1163"
               }
             ],
             "native_selections": [
               {
-                "t": "10920",
+                "t": "6500",
                 "function": "8",
                 "contact_frame": "32",
                 "added_chest": "0",
@@ -1225,7 +1201,34 @@
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 26.7905
+            "peak_ball_speed_mps": 25.8135
+          }
+        },
+        {
+          "check": "900 ms running shot toward diagonal makes one physical kick",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "10690",
+                "part": "left_foot",
+                "function": "8",
+                "z": "0.1342"
+              }
+            ],
+            "native_selections": [
+              {
+                "t": "10500",
+                "function": "8",
+                "contact_frame": "19",
+                "added_chest": "0",
+                "name": "media/animations/shot/sprint/030.anim",
+                "frames": "61",
+                "previous_frame": "4",
+                "previous_frames": "28"
+              }
+            ],
+            "peak_ball_speed_mps": 27.1115
           }
         },
         {
@@ -1234,25 +1237,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "15220",
-                "part": "left_foot",
+                "t": "14980",
+                "part": "right_foot",
                 "function": "6",
-                "z": "0.1376"
+                "z": "0.1318"
               }
             ],
             "native_selections": [
               {
-                "t": "14920",
+                "t": "14520",
                 "function": "6",
-                "contact_frame": "30",
+                "contact_frame": "46",
                 "added_chest": "0",
-                "name": "media/animations/highpass/dribble/000.anim",
-                "frames": "68",
+                "name": "media/animations/highpass/walk/000_long.anim",
+                "frames": "77",
                 "previous_frame": "4",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.384
+            "peak_ball_speed_mps": 25.0316
           }
         },
         {
@@ -1261,25 +1264,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "19240",
+                "t": "18840",
                 "part": "left_foot",
                 "function": "6",
-                "z": "0.1312"
+                "z": "0.1173"
               }
             ],
             "native_selections": [
               {
-                "t": "18920",
+                "t": "18500",
                 "function": "6",
-                "contact_frame": "32",
+                "contact_frame": "34",
                 "added_chest": "0",
-                "name": "media/animations/highpass/walk/090_long.anim",
-                "frames": "100",
-                "previous_frame": "10",
+                "name": "media/animations/highpass/sprint/090.anim",
+                "frames": "57",
+                "previous_frame": "6",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.5111
+            "peak_ball_speed_mps": 23.394
           }
         },
         {
@@ -1288,25 +1291,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "23240",
+                "t": "22860",
                 "part": "left_foot",
                 "function": "6",
-                "z": "0.1303"
+                "z": "0.1161"
               }
             ],
             "native_selections": [
               {
-                "t": "22920",
+                "t": "22520",
                 "function": "6",
-                "contact_frame": "32",
+                "contact_frame": "34",
                 "added_chest": "0",
-                "name": "media/animations/highpass/walk/090_long.anim",
-                "frames": "100",
+                "name": "media/animations/highpass/sprint/090.anim",
+                "frames": "57",
                 "previous_frame": "8",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.9342
+            "peak_ball_speed_mps": 24.5136
           }
         },
         {
@@ -1315,25 +1318,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "27750",
-                "part": "right_foot",
+                "t": "27310",
+                "part": "left_foot",
                 "function": "8",
-                "z": "0.1299"
+                "z": "0.1365"
               }
             ],
             "native_selections": [
               {
-                "t": "27560",
+                "t": "27120",
                 "function": "8",
                 "contact_frame": "19",
                 "added_chest": "0",
-                "name": "media/animations/shot/sprint/030.anim_mirror",
+                "name": "media/animations/shot/sprint/030.anim",
                 "frames": "61",
-                "previous_frame": "27",
+                "previous_frame": "10",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 25.6524
+            "peak_ball_speed_mps": 26.4998
           }
         },
         {
@@ -1342,7 +1345,7 @@
           "evidence": {
             "touches": [
               {
-                "t": "32500",
+                "t": "32080",
                 "part": "left_foot",
                 "function": "8",
                 "z": "0.1137"
@@ -1350,7 +1353,7 @@
             ],
             "native_selections": [
               {
-                "t": "32190",
+                "t": "31770",
                 "function": "8",
                 "contact_frame": "31",
                 "added_chest": "0",
@@ -1360,7 +1363,7 @@
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.4378
+            "peak_ball_speed_mps": 26.4858
           }
         },
         {
@@ -1369,7 +1372,7 @@
           "evidence": {
             "touches": [
               {
-                "t": "37130",
+                "t": "36730",
                 "part": "left_foot",
                 "function": "8",
                 "z": "0.1199"
@@ -1377,7 +1380,7 @@
             ],
             "native_selections": [
               {
-                "t": "36810",
+                "t": "36410",
                 "function": "8",
                 "contact_frame": "32",
                 "added_chest": "0",
@@ -1396,25 +1399,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "41620",
-                "part": "left_foot",
+                "t": "41030",
+                "part": "right_foot",
                 "function": "6",
-                "z": "0.1394"
+                "z": "0.1373"
               }
             ],
             "native_selections": [
               {
-                "t": "41320",
+                "t": "40900",
                 "function": "6",
-                "contact_frame": "30",
+                "contact_frame": "13",
                 "added_chest": "0",
-                "name": "media/animations/highpass/dribble/000.anim",
-                "frames": "68",
-                "previous_frame": "10",
+                "name": "media/animations/highpass/walk/000.anim",
+                "frames": "44",
+                "previous_frame": "8",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.823
+            "peak_ball_speed_mps": 24.507
           }
         },
         {
@@ -1423,25 +1426,25 @@
           "evidence": {
             "touches": [
               {
-                "t": "46310",
+                "t": "45840",
                 "part": "left_foot",
                 "function": "6",
-                "z": "0.1231"
+                "z": "0.1220"
               }
             ],
             "native_selections": [
               {
-                "t": "45990",
+                "t": "45500",
                 "function": "6",
-                "contact_frame": "32",
+                "contact_frame": "34",
                 "added_chest": "0",
-                "name": "media/animations/highpass/walk/090_long.anim",
-                "frames": "100",
-                "previous_frame": "27",
+                "name": "media/animations/highpass/sprint/090.anim",
+                "frames": "57",
+                "previous_frame": "10",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.0011
+            "peak_ball_speed_mps": 24.3476
           }
         },
         {
@@ -1450,33 +1453,33 @@
           "evidence": {
             "touches": [
               {
-                "t": "50910",
+                "t": "50370",
                 "part": "left_foot",
                 "function": "6",
-                "z": "0.1288"
+                "z": "0.1375"
               }
             ],
             "native_selections": [
               {
-                "t": "50590",
+                "t": "50210",
                 "function": "6",
-                "contact_frame": "32",
+                "contact_frame": "16",
                 "added_chest": "0",
-                "name": "media/animations/highpass/walk/090_long.anim",
-                "frames": "100",
+                "name": "media/animations/highpass/walk/080.anim_mirror",
+                "frames": "49",
                 "previous_frame": "27",
                 "previous_frames": "28"
               }
             ],
-            "peak_ball_speed_mps": 24.0976
+            "peak_ball_speed_mps": 24.0862
           }
         },
         {
           "check": "every impulse has same-tick skin contact without enlarging the contact tolerance",
           "result": "passed",
           "evidence": {
-            "authored_impulses": 46,
-            "maximum_accepted_gap_m": 0.00218
+            "authored_impulses": 45,
+            "maximum_accepted_gap_m": 0.00215
           }
         },
         {
@@ -1485,7 +1488,7 @@
           "evidence": 0
         }
       ],
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     },
     "physical_controls": {
       "result": "passed",
@@ -1496,7 +1499,7 @@
           "result": "passed",
           "evidence": [
             3.9970499999999998,
-            4.09745
+            3.997
           ]
         },
         {
@@ -1504,7 +1507,7 @@
           "result": "passed",
           "evidence": [
             7.42805,
-            7.428
+            7.4459
           ]
         },
         {
@@ -1514,17 +1517,17 @@
             "t": 17300,
             "exercise": 0,
             "player": [
-              3.9942,
+              3.9995,
               -0.0007,
               0.0
             ],
-            "speed": 4.0823,
+            "speed": 4.0824,
             "ball": [
-              4.4531,
-              -0.0005,
+              4.4584,
+              -0.0004,
               0.1122
             ],
-            "ball_speed": 3.8115,
+            "ball_speed": 3.8118,
             "function": 2,
             "frame": 7,
             "controller": 1,
@@ -1546,26 +1549,26 @@
             ],
             "keys": 4096,
             "player_yaw": 0.0004,
-            "wall_ms": 22031
+            "wall_ms": 22009
           }
         },
         {
           "check": "head recenters gradually",
           "result": "passed",
-          "evidence": -0.1252
+          "evidence": -0.1268
         },
         {
           "check": "full shot retains charge/elevation modifier",
           "result": "passed",
           "evidence": [
-            "TRAINING_SHOT t=21320 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[-0.01625,0.52529,5.03599] lever=[-0.10215,-0.02231,-0.03576] low_spin=0"
+            "TRAINING_SHOT t=21320 charge=1.00000 chip=0 speed=35.00000 elevation=0.34907 spin=[0.01485,0.48566,-5.10308] lever=[-0.10206,0.02252,-0.03588] low_spin=0"
           ]
         },
         {
           "check": "lob retains charge/elevation modifier",
           "result": "passed",
           "evidence": [
-            "TRAINING_SHOT t=24420 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[-0.12366,-3.99809,-2.24043] lever=[-0.10205,0.02257,-0.03588] low_spin=0"
+            "TRAINING_SHOT t=24520 charge=1.00000 chip=1 speed=22.00000 elevation=0.85521 spin=[0.12366,-3.99809,2.21002] lever=[-0.10215,-0.02231,-0.03576] low_spin=0"
           ]
         },
         {
@@ -1573,12 +1576,12 @@
           "result": "passed",
           "evidence": [
             [
-              28950,
+              29020,
               "right_foot",
               2
             ],
             [
-              29400,
+              29500,
               "right_foot",
               4
             ]
@@ -1589,7 +1592,7 @@
           "result": "passed",
           "evidence": [
             [
-              32800,
+              32920,
               "right_foot",
               4
             ]
@@ -1600,7 +1603,29 @@
           "result": "passed",
           "evidence": [
             [
-              36920,
+              37010,
+              "head",
+              8
+            ]
+          ]
+        },
+        {
+          "check": "header shot after 100 ms uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              40700,
+              "head",
+              8
+            ]
+          ]
+        },
+        {
+          "check": "header shot after 180 ms uses original buffered action",
+          "result": "passed",
+          "evidence": [
+            [
+              44510,
               "head",
               8
             ]
@@ -1612,7 +1637,7 @@
           "evidence": 0
         }
       ],
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     },
     "physical_match": {
       "result": "passed",
@@ -1625,24 +1650,24 @@
             "mode": 0,
             "root": [
               -5.06,
-              -17.00006,
+              -17.8902,
               0.80979
             ],
             "lean": 0.0,
-            "turn": 0.0,
+            "turn": -0.0,
             "reach": 0.0,
             "support_margin": 0.18084,
             "effort": 0.0,
             "ground_contacts": 0,
             "ground_correction": 0.0,
-            "angular_speed": 0.3736,
-            "energy": 0.00356,
-            "joint_error": 0.000285,
+            "angular_speed": 0.36745,
+            "energy": 0.00359,
+            "joint_error": 0.000283,
             "root_q": [
-              0.004528,
-              0.031082,
-              0.989068,
-              0.144073
+              0.004315,
+              0.031112,
+              0.990029,
+              0.137315
             ]
           }
         },
@@ -1651,52 +1676,52 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "4610",
-              "impulse": "[-6.837,4.138,0.000]"
+              "t": "4290",
+              "impulse": "[-7.728,3.005,0.000]"
             },
             {
-              "t": "4830",
-              "impulse": "[-6.723,3.060,0.000]"
+              "t": "4510",
+              "impulse": "[-7.685,1.156,0.000]"
             },
             {
-              "t": "5050",
-              "impulse": "[-7.830,3.265,0.000]"
+              "t": "4730",
+              "impulse": "[-8.722,6.435,0.000]"
             },
             {
-              "t": "7860",
-              "impulse": "[2.251,-17.292,0.000]"
+              "t": "6130",
+              "impulse": "[6.789,-2.273,0.000]"
             },
             {
-              "t": "8080",
-              "impulse": "[2.607,-7.344,0.000]"
+              "t": "6350",
+              "impulse": "[11.917,-1.451,0.000]"
             },
             {
-              "t": "8300",
-              "impulse": "[1.286,-8.953,0.000]"
+              "t": "6570",
+              "impulse": "[8.537,-2.756,0.000]"
             },
             {
-              "t": "8520",
-              "impulse": "[-0.242,-8.336,0.000]"
+              "t": "7750",
+              "impulse": "[-6.556,2.004,0.000]"
             },
             {
-              "t": "11030",
-              "impulse": "[11.814,10.835,0.000]"
+              "t": "7970",
+              "impulse": "[-8.991,-1.989,0.000]"
             },
             {
-              "t": "11250",
-              "impulse": "[13.493,14.425,0.000]"
+              "t": "9580",
+              "impulse": "[6.275,-2.841,0.000]"
             },
             {
-              "t": "11470",
-              "impulse": "[5.265,5.184,0.000]"
+              "t": "9800",
+              "impulse": "[9.871,-0.175,0.000]"
             },
             {
-              "t": "14820",
-              "impulse": "[7.425,-8.536,0.000]"
+              "t": "10020",
+              "impulse": "[10.352,-3.585,0.000]"
             },
             {
-              "t": "15050",
-              "impulse": "[-3.777,-64.890,0.000]"
+              "t": "10240",
+              "impulse": "[8.503,-6.000,0.000]"
             }
           ]
         },
@@ -1708,21 +1733,14 @@
           }
         },
         {
-          "check": "all authored ball impulses retain the real-skin gate",
-          "result": "passed",
-          "evidence": {
-            "impulses": 5,
-            "accepted_contacts": 6
-          }
-        },
-        {
           "check": "clean game exit",
           "result": "passed",
           "evidence": 0
         }
       ],
       "scenario": "contact_match",
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090",
+      "ball_contact_coverage": "Not exercised by this body-collision fixture; checked in the separate solo suite."
     },
     "approved_gait": {
       "result": "passed",
@@ -1732,17 +1750,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "1300",
+              "t": "1500",
               "function": "2",
               "contact_frame": "9",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/090_accel.anim_mirror",
               "frames": "36",
-              "previous_frame": "24",
+              "previous_frame": "18",
               "previous_frames": "28"
             },
             {
-              "t": "1920",
+              "t": "2120",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -1752,7 +1770,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "2340",
+              "t": "2540",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1762,7 +1780,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "2800",
+              "t": "3000",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1772,7 +1790,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "3260",
+              "t": "3460",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1782,7 +1800,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "3720",
+              "t": "3920",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1792,7 +1810,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "4180",
+              "t": "4380",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1802,7 +1820,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "4640",
+              "t": "4840",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1812,7 +1830,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "5100",
+              "t": "5300",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1822,7 +1840,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "5560",
+              "t": "5760",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1862,17 +1880,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "6600",
+              "t": "6800",
               "function": "2",
               "contact_frame": "9",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/000_accel_far.anim",
               "frames": "31",
-              "previous_frame": "8",
+              "previous_frame": "10",
               "previous_frames": "28"
             },
             {
-              "t": "7020",
+              "t": "7220",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1882,7 +1900,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "7480",
+              "t": "7680",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1892,7 +1910,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "7940",
+              "t": "8140",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1902,7 +1920,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "8400",
+              "t": "8600",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1912,7 +1930,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "8860",
+              "t": "9060",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1922,7 +1940,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "9320",
+              "t": "9520",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1932,7 +1950,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "9780",
+              "t": "9980",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1942,7 +1960,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "10240",
+              "t": "10440",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1952,7 +1970,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "10700",
+              "t": "10900",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -1983,8 +2001,8 @@
           "check": "right advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 16.453910854869733,
-            "ending_speed_mps": 4.6474
+            "travel_m": 16.454010854803762,
+            "ending_speed_mps": 4.6472
           }
         },
         {
@@ -1992,17 +2010,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "11920",
+              "t": "12100",
               "function": "2",
               "contact_frame": "9",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/090_accel.anim",
               "frames": "36",
-              "previous_frame": "26",
+              "previous_frame": "7",
               "previous_frames": "28"
             },
             {
-              "t": "12540",
+              "t": "12720",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -2012,7 +2030,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "12960",
+              "t": "13140",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2022,7 +2040,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "13420",
+              "t": "13600",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2032,7 +2050,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "13880",
+              "t": "14060",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2042,7 +2060,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "14340",
+              "t": "14520",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2052,7 +2070,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "14800",
+              "t": "14980",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2062,7 +2080,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "15260",
+              "t": "15440",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2072,7 +2090,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "15720",
+              "t": "15900",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2082,7 +2100,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "16180",
+              "t": "16360",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2105,16 +2123,16 @@
           "check": "down keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5721025257766311,
-            "ending_range_m": 0.5432044550627312
+            "maximum_range_m": 0.5721022373667138,
+            "ending_range_m": 0.5484040207730072
           }
         },
         {
           "check": "down advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 15.983407775878083,
-            "ending_speed_mps": 3.8401
+            "travel_m": 16.059883223112177,
+            "ending_speed_mps": 3.8399
           }
         },
         {
@@ -2122,17 +2140,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "17220",
+              "t": "17400",
               "function": "2",
               "contact_frame": "15",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/180_accel.anim",
               "frames": "61",
-              "previous_frame": "11",
+              "previous_frame": "16",
               "previous_frames": "28"
             },
             {
-              "t": "17820",
+              "t": "18000",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -2142,7 +2160,7 @@
               "previous_frames": "61"
             },
             {
-              "t": "18240",
+              "t": "18420",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2152,7 +2170,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "18700",
+              "t": "18880",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2162,7 +2180,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "19160",
+              "t": "19340",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2172,7 +2190,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "19620",
+              "t": "19800",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2182,7 +2200,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "20080",
+              "t": "20260",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2192,7 +2210,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "20540",
+              "t": "20720",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2202,7 +2220,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "21000",
+              "t": "21180",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2212,7 +2230,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "21460",
+              "t": "21640",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2235,16 +2253,16 @@
           "check": "left keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5721022373667138,
-            "ending_range_m": 0.5484040207730054
+            "maximum_range_m": 0.5721022373667147,
+            "ending_range_m": 0.5527036185877561
           }
         },
         {
           "check": "left advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 15.33750155207816,
-            "ending_speed_mps": 3.8401
+            "travel_m": 15.41400149993505,
+            "ending_speed_mps": 3.84
           }
         },
         {
@@ -2252,17 +2270,17 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "22500",
+              "t": "22720",
               "function": "2",
               "contact_frame": "8",
               "added_chest": "0",
               "name": "media/animations/ballcontrol/idle/045_accel.anim_mirror",
               "frames": "40",
-              "previous_frame": "11",
+              "previous_frame": "17",
               "previous_frames": "28"
             },
             {
-              "t": "23160",
+              "t": "23380",
               "function": "2",
               "contact_frame": "10",
               "added_chest": "0",
@@ -2272,7 +2290,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "23580",
+              "t": "23800",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2282,7 +2300,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "24040",
+              "t": "24260",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2292,7 +2310,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "24500",
+              "t": "24720",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2302,7 +2320,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "24960",
+              "t": "25180",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2312,7 +2330,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "25420",
+              "t": "25640",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2322,7 +2340,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "25880",
+              "t": "26100",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2332,7 +2350,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "26340",
+              "t": "26560",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2342,7 +2360,7 @@
               "previous_frames": "28"
             },
             {
-              "t": "26800",
+              "t": "27020",
               "function": "2",
               "contact_frame": "13",
               "added_chest": "0",
@@ -2365,32 +2383,32 @@
           "check": "diagonal keeps the ball under native control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.6558808809532415,
-            "ending_range_m": 0.5370526696703027
+            "maximum_range_m": 0.6503326917816756,
+            "ending_range_m": 0.5299112755924344
           }
         },
         {
           "check": "diagonal advances without looping in place",
           "result": "passed",
           "evidence": {
-            "travel_m": 16.257974992292244,
-            "ending_speed_mps": 3.84
+            "travel_m": 16.181183694958783,
+            "ending_speed_mps": 3.8399
           }
         },
         {
           "check": "light stick retains the slow native gait and ball",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5986000751754046,
-            "ending_range_m": 0.5271045911391778
+            "maximum_range_m": 0.5991008345846298,
+            "ending_range_m": 0.5166051199901143
           }
         },
         {
           "check": "right turn and return keeps native ball control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5723351815151686,
-            "ending_range_m": 0.5528036179331693
+            "maximum_range_m": 0.5722642484027809,
+            "ending_range_m": 0.5527036185877579
           }
         },
         {
@@ -2398,14 +2416,14 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              32050,
-              32510,
-              32980,
-              33430,
-              33890,
-              34360,
-              34810,
-              35270
+              32250,
+              32710,
+              33180,
+              33630,
+              34090,
+              34560,
+              35010,
+              35470
             ],
             "intervals_ms": [
               460,
@@ -2422,8 +2440,8 @@
           "check": "left turn and return keeps native ball control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.5723028306762061,
-            "ending_range_m": 0.5484040207730072
+            "maximum_range_m": 0.5714022401076151,
+            "ending_range_m": 0.5561032458096256
           }
         },
         {
@@ -2431,14 +2449,14 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              37870,
-              38330,
-              38800,
-              39250,
-              39710,
-              40180,
-              40630,
-              41090
+              38030,
+              38490,
+              38960,
+              39410,
+              39870,
+              40340,
+              40790,
+              41250
             ],
             "intervals_ms": [
               460,
@@ -2455,8 +2473,8 @@
           "check": "reverse turn and return keeps native ball control",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.6845004674943618,
-            "ending_range_m": 0.562403209450302
+            "maximum_range_m": 0.6845004674943627,
+            "ending_range_m": 0.5624028805047137
           }
         },
         {
@@ -2464,14 +2482,14 @@
           "result": "passed",
           "evidence": {
             "touches_ms": [
-              43630,
-              44050,
-              44530,
-              44990,
-              45410,
-              45910,
-              46370,
-              46830
+              43830,
+              44250,
+              44730,
+              45190,
+              45610,
+              46110,
+              46570,
+              47030
             ],
             "intervals_ms": [
               420,
@@ -2488,23 +2506,23 @@
           "check": "three RB bursts/releases retain the native recovery",
           "result": "passed",
           "evidence": {
-            "maximum_range_m": 0.8923247839211907,
-            "ending_range_m": 0.5201009613526967
+            "maximum_range_m": 0.898215636693106,
+            "ending_range_m": 0.505501196833398
           }
         },
         {
           "check": "every authored impulse requires real skin contact",
           "result": "passed",
           "evidence": {
-            "impulses": 100,
-            "maximum_gap_m": 0.00054
+            "impulses": 101,
+            "maximum_gap_m": 0.00075
           }
         },
         {
           "check": "imported forward gait is never selected in any direction",
           "result": "passed",
           "evidence": {
-            "changes": 222
+            "changes": 224
           }
         },
         {
@@ -2513,7 +2531,7 @@
           "evidence": 0
         }
       ],
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     },
     "approved_match": {
       "result": "passed",
@@ -2541,11 +2559,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -52.735,
-                  -0.249,
+                  -52.052,
+                  -0.306,
                   0.0
                 ],
-                "speed": 4.473,
+                "speed": 5.058,
                 "action": 1
               },
               {
@@ -2553,11 +2571,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -21.251,
-                  15.873,
+                  -21.805,
+                  17.339,
                   0.0
                 ],
-                "speed": 5.242,
+                "speed": 4.939,
                 "action": 1
               },
               {
@@ -2565,11 +2583,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -25.954,
-                  6.857,
+                  -25.591,
+                  5.55,
                   0.0
                 ],
-                "speed": 4.984,
+                "speed": 5.0,
                 "action": 1
               },
               {
@@ -2577,11 +2595,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -25.486,
-                  -6.898,
+                  -26.274,
+                  -4.791,
                   0.0
                 ],
-                "speed": 5.103,
+                "speed": 4.527,
                 "action": 1
               },
               {
@@ -2589,8 +2607,8 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -21.428,
-                  -17.0,
+                  -21.447,
+                  -16.093,
                   0.0
                 ],
                 "speed": 5.022,
@@ -2601,11 +2619,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  0.251,
-                  0.697,
+                  0.335,
+                  0.498,
                   0.0
                 ],
-                "speed": 2.719,
+                "speed": 2.664,
                 "action": 1
               },
               {
@@ -2613,11 +2631,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -13.746,
-                  0.939,
+                  -13.251,
+                  0.846,
                   0.0
                 ],
-                "speed": 4.076,
+                "speed": 4.866,
                 "action": 1
               },
               {
@@ -2625,23 +2643,23 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  0.089,
-                  -1.371,
+                  1.254,
+                  -3.05,
                   0.0
                 ],
-                "speed": 5.027,
-                "action": 1
+                "speed": 3.345,
+                "action": 2
               },
               {
                 "id": 8,
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -3.573,
-                  19.932,
+                  -3.969,
+                  17.909,
                   0.0
                 ],
-                "speed": 4.986,
+                "speed": 4.476,
                 "action": 1
               },
               {
@@ -2649,11 +2667,11 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -1.603,
-                  8.496,
+                  -0.221,
+                  -9.669,
                   0.0
                 ],
-                "speed": 4.994,
+                "speed": 5.525,
                 "action": 1
               },
               {
@@ -2662,7 +2680,7 @@
                 "human": 1,
                 "p": [
                   -5.06,
-                  -19.104,
+                  -19.321,
                   0.0
                 ],
                 "speed": 0.0,
@@ -2673,11 +2691,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  52.925,
-                  -0.001,
+                  53.9,
+                  0.0,
                   0.0
                 ],
-                "speed": 0.118,
+                "speed": 0.0,
                 "action": 1
               },
               {
@@ -2685,11 +2703,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  21.489,
-                  -15.41,
+                  21.089,
+                  -17.67,
                   0.0
                 ],
-                "speed": 5.022,
+                "speed": 5.064,
                 "action": 1
               },
               {
@@ -2697,11 +2715,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  26.184,
-                  -5.736,
+                  26.051,
+                  -4.246,
                   0.0
                 ],
-                "speed": 4.637,
+                "speed": 4.835,
                 "action": 1
               },
               {
@@ -2709,11 +2727,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  26.039,
-                  4.701,
+                  26.32,
+                  5.297,
                   0.0
                 ],
-                "speed": 4.843,
+                "speed": 4.435,
                 "action": 1
               },
               {
@@ -2721,11 +2739,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  22.152,
-                  16.314,
+                  21.46,
+                  17.195,
                   0.0
                 ],
-                "speed": 4.424,
+                "speed": 4.993,
                 "action": 1
               },
               {
@@ -2733,11 +2751,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  11.19,
-                  -6.53,
+                  11.35,
+                  -6.696,
                   0.0
                 ],
-                "speed": 5.103,
+                "speed": 5.059,
                 "action": 1
               },
               {
@@ -2745,11 +2763,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  11.407,
-                  5.005,
+                  11.964,
+                  4.014,
                   0.0
                 ],
-                "speed": 5.02,
+                "speed": 4.497,
                 "action": 1
               },
               {
@@ -2757,11 +2775,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  3.295,
-                  -20.083,
+                  3.48,
+                  -19.76,
                   0.0
                 ],
-                "speed": 4.28,
+                "speed": 4.197,
                 "action": 1
               },
               {
@@ -2769,8 +2787,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  7.374,
-                  -1.094,
+                  7.143,
+                  -2.147,
                   0.0
                 ],
                 "speed": 5.059,
@@ -2781,11 +2799,11 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  3.253,
-                  20.916,
+                  3.295,
+                  20.801,
                   0.0
                 ],
-                "speed": 0.0,
+                "speed": 3.5,
                 "action": 1
               },
               {
@@ -2793,22 +2811,22 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  1.643,
-                  -7.351,
+                  7.379,
+                  4.432,
                   0.0
                 ],
-                "speed": 5.101,
+                "speed": 2.296,
                 "action": 1
               }
             ],
             "difficulty": 1.0,
             "designated_id": 7,
             "ball": [
-              0.283,
-              -0.648,
-              0.12
+              1.71,
+              -2.803,
+              0.124
             ],
-            "ball_speed": 4.639
+            "ball_speed": 4.353
           }
         },
         {
@@ -2816,9 +2834,9 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "3020",
+              "t": "3010",
               "target": "10",
-              "until": "7520"
+              "until": "7510"
             }
           ]
         },
@@ -2831,26 +2849,24 @@
           "check": "pass request preserves native decisions and only promotes viable passes",
           "result": "passed",
           "evidence": {
-            "executed_passes": [],
-            "evaluated_requests": [
+            "executed_passes": [
               {
-                "t": "3030",
-                "actor": "7",
+                "t": "3400",
                 "team": "0",
-                "desired_speed": "8.000",
-                "choices": "0",
-                "request_target": "10",
-                "request_odds": "0.000",
-                "request_pass": "-1"
+                "actor": "7",
+                "action": "4",
+                "target": "10",
+                "requested": "1"
               }
-            ]
+            ],
+            "evaluated_requests": []
           }
         },
         {
           "check": "locked player still responds to the approved movement input",
           "result": "passed",
           "evidence": {
-            "travel_m": 2.292854406629431
+            "travel_m": 2.986934816831461
           }
         },
         {
@@ -2877,16 +2893,16 @@
           "check": "team 0 uses active CPU movement and ball actions",
           "result": "passed",
           "evidence": {
-            "peak_speed_mps": 7.889,
-            "actions": 23
+            "peak_speed_mps": 7.946,
+            "actions": 11
           }
         },
         {
           "check": "team 1 uses active CPU movement and ball actions",
           "result": "passed",
           "evidence": {
-            "peak_speed_mps": 7.891,
-            "actions": 5
+            "peak_speed_mps": 7.856,
+            "actions": 9
           }
         },
         {
@@ -2948,7 +2964,7 @@
                 "human": 0,
                 "p": [
                   -23.21,
-                  17.878,
+                  15.314,
                   0.0
                 ],
                 "speed": 0.0,
@@ -2960,7 +2976,7 @@
                 "human": 0,
                 "p": [
                   -27.5,
-                  4.915,
+                  6.273,
                   0.0
                 ],
                 "speed": 0.0,
@@ -2972,7 +2988,7 @@
                 "human": 0,
                 "p": [
                   -27.5,
-                  -7.224,
+                  -5.685,
                   0.0
                 ],
                 "speed": 0.0,
@@ -2984,7 +3000,7 @@
                 "human": 0,
                 "p": [
                   -23.21,
-                  -17.031,
+                  -18.203,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3020,7 +3036,7 @@
                 "human": 0,
                 "p": [
                   -10.132,
-                  -9.016,
+                  -9.434,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3032,7 +3048,7 @@
                 "human": 0,
                 "p": [
                   -5.06,
-                  18.342,
+                  20.222,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3043,8 +3059,8 @@
                 "team": 0,
                 "human": 0,
                 "p": [
-                  -2.317,
-                  -9.11,
+                  -6.008,
+                  7.23,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3056,7 +3072,7 @@
                 "human": 1,
                 "p": [
                   -5.06,
-                  -18.102,
+                  -16.406,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3080,7 +3096,7 @@
                 "human": 0,
                 "p": [
                   23.21,
-                  -17.309,
+                  -18.081,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3092,7 +3108,7 @@
                 "human": 0,
                 "p": [
                   27.5,
-                  -6.372,
+                  -7.088,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3104,7 +3120,7 @@
                 "human": 0,
                 "p": [
                   27.5,
-                  6.192,
+                  4.314,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3116,7 +3132,7 @@
                 "human": 0,
                 "p": [
                   23.21,
-                  17.159,
+                  15.803,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3128,7 +3144,7 @@
                 "human": 0,
                 "p": [
                   13.168,
-                  -4.406,
+                  -4.17,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3140,7 +3156,7 @@
                 "human": 0,
                 "p": [
                   13.168,
-                  4.326,
+                  5.66,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3152,7 +3168,7 @@
                 "human": 0,
                 "p": [
                   4.07,
-                  -21.183,
+                  -21.051,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3163,8 +3179,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  9.219,
-                  -1.837,
+                  9.123,
+                  2.264,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3176,7 +3192,7 @@
                 "human": 0,
                 "p": [
                   4.07,
-                  18.84,
+                  21.892,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3187,8 +3203,8 @@
                 "team": 1,
                 "human": 0,
                 "p": [
-                  4.523,
-                  8.24,
+                  5.501,
+                  -7.622,
                   0.0
                 ],
                 "speed": 0.0,
@@ -3210,9 +3226,9 @@
           "result": "passed",
           "evidence": [
             {
-              "t": "26820",
+              "t": "26860",
               "target": "10",
-              "until": "31320"
+              "until": "31360"
             }
           ]
         },
@@ -3222,7 +3238,7 @@
           "evidence": 0
         }
       ],
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     },
     "physical_quality": {
       "result": "passed",
@@ -3233,11 +3249,11 @@
           "evidence": {
             "speed_mps": [
               4.096500000000001,
-              4.0954
+              4.0249500000000005
             ],
             "travel_m": [
-              10.385358850323854,
-              10.303011887792811
+              10.385354967934413,
+              10.368685418123167
             ]
           }
         },
@@ -3245,15 +3261,15 @@
           "check": "F8 makes the rendered torso visibly react beyond normal idle sway",
           "result": "passed",
           "evidence": {
-            "idle_rotation_rad": 0.08126559378636374,
-            "pushed_rotation_rad": 0.32413559559244703
+            "idle_rotation_rad": 0.07216088030275941,
+            "pushed_rotation_rad": 0.3227819108296175
           }
         },
         {
           "check": "F9 produces one bounded fall rather than repeated somersaults",
           "result": "passed",
           "evidence": {
-            "root_rotation_rad": 2.5025943908998496,
+            "root_rotation_rad": 2.5214584029730887,
             "peak_segment_angular_speed_rad_s": 12.0
           }
         },
@@ -3261,31 +3277,31 @@
           "check": "the body reaches the floor with connected Bullet joints",
           "result": "passed",
           "evidence": {
-            "minimum_pelvis_m": 0.10568,
-            "maximum_joint_anchor_error_m": 0.005611
+            "minimum_pelvis_m": 0.10343,
+            "maximum_joint_anchor_error_m": 0.006514
           }
         },
         {
           "check": "physical diagnostics remain finite for active motors and free falls",
           "result": "passed",
           "evidence": {
-            "samples": 287
+            "samples": 289
           }
         },
         {
           "check": "motion matching searches multiple eligible native animations",
           "result": "passed",
           "evidence": {
-            "queries": 448,
+            "queries": 447,
             "multiple_candidates": 446,
-            "indexed_entries": 23
+            "indexed_entries": 22
           }
         },
         {
           "check": "camera sensitivity is increased from the previous profile",
           "result": "passed",
           "evidence": {
-            "head_yaw_after_250ms": -1.444
+            "head_yaw_after_250ms": -1.254
           }
         },
         {
@@ -3294,7 +3310,7 @@
           "evidence": 0
         }
       ],
-      "executable_sha256": "0f559797ac15fdb72957a480d32d90d62b7705add520acbff5133701fd584432"
+      "executable_sha256": "33bebc27bb2a6f29c1f636c6cbf84edd18c457c9413e02fea563704d4bf3b090"
     }
   },
   "images": [
@@ -3304,5 +3320,22 @@
     "docs/images/physical-v2-fall-450.png",
     "docs/images/physical-v2-fall-1100.png",
     "docs/images/physical-v2-recovered.png"
+  ],
+  "regressions_found_and_fixed": [
+    {
+      "case": "buffered high-ball shot",
+      "observed": "Automatic upper chest reception consumed the incoming ball before the requested header.",
+      "fix": "Do not start or retain an untouched automatic chest layer while a first-time action is explicitly queued."
+    },
+    {
+      "case": "high-ball shot queued 100 ms later",
+      "observed": "Small native receive-assist movement crossed the idle boundary, excluding standing header candidates.",
+      "fix": "Keep standing headers eligible below 1.5 m/s, with the native reach and exact skin-contact gates retained.",
+      "verified_input_delays_ms": [
+        0,
+        100,
+        180
+      ]
+    }
   ]
 }

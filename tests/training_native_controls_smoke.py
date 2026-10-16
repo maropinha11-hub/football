@@ -28,10 +28,11 @@ try:
   g.wait(lambda:any(k==3 for _,_,k in touches(g.log.read_text()[start:])));g.advance(1500)
   start=len(g.log.read_text());g.pad(0,0,buttons=1);g.advance(180);g.pad(0,0);g.advance(2200)
   hits=touches(g.log.read_text()[start:]);check('pass works after the completed chest reception',sum(k==4 for _,_,k in hits)==1,hits)
-  for name,key,button,kind in [('one-touch pass','F4',1,4),('header shot','F6',4,8)]:
+  for name,key,button,kind in [('one-touch pass','F4',1,4),('header shot','F6',4,8),('header shot after 100 ms','F6',4,8),('header shot after 180 ms','F6',4,8)]:
    g.reset();start=len(g.log.read_text());g.keys([key],True);g.keys([key],False)
+   if 'after' in name:g.advance(int(name.split()[-2]))
    g.pad(0,0,buttons=button);g.advance(300);g.pad(0,0);g.advance(2400)
-   hits=touches(g.log.read_text()[start:]);check(name+' uses original buffered action',any(k==kind and (part=='head'if name=='header shot'else True)for _,part,k in hits),hits)
+   hits=touches(g.log.read_text()[start:]);check(name+' uses original buffered action',any(k==kind and (part=='head'if name.startswith('header shot')else True)for _,part,k in hits),hits)
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)
  r['result']='passed'if all(c['result']=='passed'for c in r['checks'])else'failed'
 except BaseException as e:r['result']='failed';r['error']=str(e);raise

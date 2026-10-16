@@ -10,6 +10,7 @@ import subprocess
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
+p.add_argument('--only',nargs='+',choices=['physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
@@ -22,6 +23,7 @@ cases=[('physical_solo','training_physical_rig_smoke.py',[]),
        ('approved_gait','training_forward_cycle_smoke.py',[]),
        ('approved_match','player_match_smoke.py',[]),
        ('physical_quality','training_physical_quality_smoke.py',[])]
+if a.only:cases=[c for c in cases if c[0]in a.only]
 def run(item):
  i,(name,script,extra)=item
  with (a.output/(name+'.log')).open('w')as log:

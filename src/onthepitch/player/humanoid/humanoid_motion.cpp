@@ -37,8 +37,8 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
     return result;
   };
   MotionFeature query=extract(currentAnim->anim,currentAnim->frameNum,startAngle-spatialState.angle);
-  const Vector3 desired=(command.desiredDirection*command.desiredVelocityFloat).GetRotated2D(-spatialState.angle);
-  const Vector3 facing=(command.desiredLookAt-spatialState.position).Get2D().GetRotated2D(-spatialState.angle).GetNormalized(Vector3(0,-1,0));
+  const Vector3 desired=(command.useDesiredMovement?command.desiredDirection*command.desiredVelocityFloat:spatialState.movement).GetRotated2D(-spatialState.angle);
+  const Vector3 facing=(command.useDesiredLookAt?command.desiredLookAt-spatialState.position:spatialState.bodyDirectionVec).Get2D().GetRotated2D(-spatialState.angle).GetNormalized(Vector3(0,-1,0));
   for(unsigned i=0;i<3;++i){const float time=(i+1)*.15f;
     query.trajectory[i]={{desired.coords[0]*time,desired.coords[1]*time,0}};
     query.facing[i]={{facing.coords[0],facing.coords[1],0}};

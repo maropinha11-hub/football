@@ -1479,10 +1479,19 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     // shot/cross impulse and all the original reach/trajectory checks.
     CrudeSelectionQuery headerQuery = query;
     headerQuery.functionType = e_FunctionType_ShortPass;
+    const bool settlingHeader=PhysicalRigEnabled() && spatialState.floatVelocity<1.5f;
+    if(settlingHeader){
+      // Native receive assistance can move a stationary player just past the
+      // idle-speed boundary. Keep standing headers eligible during this small
+      // adjustment; the original reach/trajectory solver still accepts them.
+      headerQuery.byIncomingVelocity=false;
+      headerQuery.byIncomingBodyDirection=false;
+    }
     DataSet headers;
     anims->CrudeSelection(headers, headerQuery);
     for (int id : headers)
-      if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head") dataSet.push_back(id);
+      if (anims->GetAnim(id)->GetVariable("touch_bodypart") == "head" &&
+          (!settlingHeader || anims->GetAnim(id)->GetIncomingVelocity()<1.5f))dataSet.push_back(id);
   }
   //if (command.desiredFunctionType == e_FunctionType_Special) printf("size: %i\n", dataSet.size());
   if(PlayerMatchEnabled() && !UsesTrainingContacts())

@@ -71,12 +71,17 @@ A camada implementa uma **busca de movimento com entradas restritas**.
 Cada candidato contém posições e velocidades dos dois pés, cabeça e dois
 antebraços, além de posição e direção futuras da raiz em três horizontes:
 150, 300 e 450 ms. A consulta combina a pose atual com a trajetória solicitada
-pelo controle. Um custo ponderado compara pose, continuidade de velocidade,
+pelo controle. Quando o comando não solicita movimento ou uma nova direção
+do olhar, a consulta conserva a velocidade ou a frente atual. Um custo ponderado compara pose, continuidade de velocidade,
 trajetória e orientação em unidades físicas explícitas.
 
 O seletor nativo primeiro determina quais animações são elegíveis. A busca
 reordena esses candidatos e o cálculo nativo de alcance, direção e instante
-de contato continua tendo a palavra final. A preferência pelo pé direito
+de contato continua tendo a palavra final. A ação explícita do jogador tem prioridade:
+um domínio antecipado no peito não toma a bola de uma cabeçada ou passe de
+primeira já solicitado. Cabeçadas paradas continuam elegíveis durante pequenos
+ajustes de recepção abaixo de 1,5 m/s, respeitando alcance, trajetória e
+contato na malha. A preferência pelo pé direito
 permanece, com alternativas quando uma jogada exige outro apoio.
 
 O projeto de referência consultado foi
@@ -165,7 +170,7 @@ As verificações gráficas incluem comparação de velocidade com F7, reação
 **do tronco renderizado** ao F8, sequência da queda, câmera mais rápida,
 chutes em corrida, domínios, cabeçadas e preservação dos modos aprovados.
 
-Nesta revisão passaram **103 verificações renderizadas**, 25 verificações do
+Nesta revisão passaram **104 verificações renderizadas**, 25 verificações do
 núcleo e cinco testes CTest. O pacote passou por 110 conferências de
 executável, dependências, recursos, atalhos, licenças e integridade.
 

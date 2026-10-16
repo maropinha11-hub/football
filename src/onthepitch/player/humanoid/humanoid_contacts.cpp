@@ -178,6 +178,12 @@ void HumanoidBase::BlendUpperReception(Animation *clip,float phase,float weight,
 
 void HumanoidBase::TickUpperReception() {
   if(!upperReceptionClip)return;
+  if(PhysicalRigEnabled() && !upperReceptionTouchMade && player->GetExternalController() &&
+      static_cast<HumanController*>(player->GetExternalController())->GetActionMode()!=0){
+    // An explicit one-touch pass/shot owns the incoming ball. Do not let an
+    // anticipatory chest layer consume it before the native action can fit.
+    upperReceptionClip=nullptr;upperReceptionWeight=upperReceptionArmWeight=0;return;
+  }
   upperReceptionPhase=float(match->GetActualTime_ms()-upperReceptionStarted_ms)*.1f;
   if(!upperReceptionTouchMade && upperReceptionPhase>upperReceptionContactFrame+7)
     upperReceptionEndFrame=std::min(upperReceptionEndFrame,upperReceptionContactFrame+19);
@@ -197,6 +203,8 @@ void HumanoidBase::TickUpperReception() {
 
 bool HumanoidBase::StartUpperReception(Animation *clip,int contactFrame) {
   if(UpperReceptionActive() || contactFrame<1)return false;
+  if(PhysicalRigEnabled() && player->GetExternalController() &&
+      static_cast<HumanController*>(player->GetExternalController())->GetActionMode()!=0)return false;
   Quaternion local[13],global[13];Vector3 positions[13];
   // Judge the composed contact pose rather than the full-body FBX path.
   // Start anticipation only when its authored marker meets the trajectory.
