@@ -1341,14 +1341,14 @@ void Match::Put() {
     if (neck != nodes.end()) {
       // The skin scales joint offsets by player height; the camera must use the same transform.
       const float scale = trainingPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
-      eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + Vector3(0, 0, 0.14f);
+      eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + neck->second->GetDerivedRotation()*Vector3(0,-.12f,.14f);
       eyeOffset.coords[2] = clamp(eyeOffset.coords[2], trainingPlayer->GetHumanoid()->PhysicalRigEnabled()?.18f:.55f, nominal + .12f);
     }
     if (!trainingEyeInitialized) { trainingEyePosition = eyeOffset; trainingEyeInitialized = true; }
-    const float eyeBlend = 1 - std::exp(-12.0f * clamp(GetTimeSincePreviousPut_ms(), 1, 100) * 0.001f);
-    trainingEyePosition += (eyeOffset - trainingEyePosition) * eyeBlend;
-    const Vector3 f = fetchedbuf_cameraNodeOrientation * Vector3(0, 1, 0);
-    cameraNode->SetPosition(root + f * 0.12f + trainingEyePosition, false);
+    // The neck already follows the interpolated skeleton. A second position
+    // low-pass makes the eye lag inside the torso during turns and impacts.
+    trainingEyePosition=eyeOffset;
+    cameraNode->SetPosition(trainingPlayer->GetHumanoid()->SafeFirstPersonEye(root+trainingEyePosition), false);
     cameraNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
   }
 

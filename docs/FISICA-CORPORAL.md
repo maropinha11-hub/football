@@ -3,7 +3,7 @@
 **Atualização de contato:** o laboratório agora inclui parceiro de treino,
 proteção, puxão da camisa e recuperação usando as animações originais de
 levantar com apoio no chão. Consulte os comandos e limites atuais em
-[CONTATO-FISICO.md](CONTATO-FISICO.md). A descrição abaixo registra a revisão
+[EQUILIBRIO-E-CONTATO.md](EQUILIBRIO-E-CONTATO.md). A descrição abaixo registra a revisão
 anterior; a recuperação por mistura de dois segundos foi substituída.
 
 Extraia o **pacote Windows completo em uma pasta nova** e abra

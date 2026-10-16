@@ -50,7 +50,7 @@ int main(int argc,char **argv){
  const auto front=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_front.anim");
  const auto back=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_back.anim");
  check(front.size()>50 && back.size()>50,"front and back get-up retain their complete authored tracks");
- PhysicalRig rig;const auto bind=bindPose();Input in=standing();rig.configure(bind,1);rig.setRecoveryMotions(front,back);rig.step(in);rig.impulse({{165,0,0}},{{0,0,.18f}});
+ PhysicalRig rig;const auto bind=bindPose();Input in=standing();rig.configure(bind,1);rig.setRecoveryMotions(front,back);rig.step(in);rig.impulse({{165,0,0}},{{0,0,.18f}},true);
  unsigned recoverySamples=0;bool finite=true,returned=false;float low=10,high=0,peakStep=0;Vec last=rig.points()[0];
  for(unsigned i=0;i<1000;++i){rig.step(in);for(auto point:rig.points())for(float v:point)finite&=std::isfinite(v);
   if(rig.mode()==Mode::Recovering){++recoverySamples;low=std::min(low,rig.points()[0][2]);high=std::max(high,rig.points()[0][2]);peakStep=std::max(peakStep,length(subtractPoint(last,rig.points()[0])));}
@@ -68,6 +68,39 @@ int main(int argc,char **argv){
   minimumGap=std::min(minimumGap,length(subtractPoint(hand,in.handTarget)));if(i)peakHandStep=std::max(peakHandStep,length(subtractPoint(hand,handBefore)));handBefore=hand;}
  check(minimumGap<.10f,"protective hand can reach a shirt within anatomical arm length");
  check(peakHandStep<.05f,"protective arm reaches gradually rather than snapping to its target");
+ check(rig.metrics().elbowAngle>=.14f && rig.metrics().elbowAngle<=2.41f && rig.metrics().armSpeed<=3.81f,"shirt reach respects elbow flexion and angular-speed limits");
+ bool stayedUp=true,usedStep=false;float peakRisk=0;
+ for(unsigned direction=0;direction<8;++direction){
+  rig.configure(bind,1);in=standing();rig.step(in);const float angle=direction*3.14159265f/4;
+  rig.impulse({{190.f*std::cos(angle),190.f*std::sin(angle),0}},{{0,0,.18f}});
+  for(unsigned tick=0;tick<200;++tick){rig.step(in);stayedUp&=rig.mode()==Mode::Active;usedStep|=length(rig.balanceVelocity())>.1f;peakRisk=std::max(peakRisk,rig.metrics().balanceRisk);}
+ }
+ check(stayedUp && usedStep,"ordinary running contact attempts corrective steps in eight directions without automatically falling");
+ rig.configure(bind,1);in=standing();rig.step(in);rig.impulse({{350,0,0}},{{0,0,.28f}});
+ unsigned fallTick=0;
+ for(unsigned tick=1;tick<100;++tick){rig.step(in);if(rig.mode()==Mode::Falling){fallTick=tick;break;}}
+ check(fallTick>=20 && fallTick<60,"an unrecoverable impulse causes a fall only after a recovery attempt");
+ rig.configure(bind,1);in=standing();in.gripped=true;rig.step(in);bool pulledDown=false;
+ for(unsigned tick=0;tick<500;++tick){rig.impulse({{2.6f,0,0}},{{0,0,.24f}});rig.step(in);if(rig.mode()==Mode::Falling){pulledDown=true;break;}}
+ check(pulledDown,"sustained shirt traction can overcome the restricted support step");
+ // Same-tick phase sampling must not accelerate the reaching arm.
+ rig.configure(bind,1);in=standing();in.protect=true;in.handTargetActive=true;in.handTarget={{.52f,0,1.30f}};
+ for(unsigned i=0;i<50;++i)rig.step(in);
+ const Pose handPose=rig.pose();for(unsigned i=0;i<30;++i)rig.evaluate(in);
+ check(length(logarithm(productRotation(handPose[3],inverseRotation(rig.pose()[3]))))<1e-6f,"repeated animation sampling cannot advance hand IK within one tick");
+ rig.configure(bind,1);in=standing();in.velocity={{7,0,0}};float transportError=0;
+ for(unsigned tick=0;tick<400;++tick){in.pelvis[0]=.07f*tick;rig.step(in);if(tick>50)transportError=std::max(transportError,rig.metrics().jointError);}
+ check(transportError<.04f,"kinematic substeps keep sprinting upper-body joint anchors together without alternating double-speed transport");
+ std::vector<BalanceMotion> choices(2);
+ for(unsigned i=0;i<2;++i){choices[i].frames.resize(3);for(auto &key:choices[i].frames)key.pose=standing().pose;choices[i].push={{1,0,0}};choices[i].speed=i?5.f:3.f;choices[i].lateral=0;}
+ rig.configure(bind,1);rig.setBalanceMotions(choices);in=standing();in.velocity={{5,0,0}};rig.step(in);rig.impulse({{65,0,0}});rig.step(in);
+ check(rig.metrics().balanceChoice==1,"reference matching distinguishes the effective playback speed of motion variants");
+ for(unsigned i=0;i<2;++i){choices[i].speed=0;choices[i].lateral=i?.035f:-.035f;}
+ bool matchedSides=true;
+ for(int direction:{-1,1}){rig.configure(bind,1);rig.setBalanceMotions(choices);in=standing();rig.step(in);rig.impulse({{65.f*direction,0,0}});rig.step(in);matchedSides&=rig.metrics().balanceChoice==(direction<0?0:1);}
+ check(matchedSides,"left and right balance variants respond to the incident side rather than tying permanently");
+ choices.resize(1);rig.setBalanceMotions(choices);rig.impulse({{65,0,0}});rig.step(in);
+ check(rig.metrics().balanceChoice==0,"replacing the reference bank clears the previous selection safely");
  std::vector<Vec> rest,normals;std::vector<float> mobility;std::vector<unsigned> triangles;
  for(unsigned y=0;y<7;++y)for(unsigned x=0;x<7;++x){rest.push_back({{(x-3.f)*.05f,0,1.f+y*.05f}});normals.push_back({{0,1,0}});mobility.push_back(x && y && x<6 && y<6?1.f:0.f);}
  for(unsigned y=0;y<6;++y)for(unsigned x=0;x<6;++x){unsigned a=y*7+x;triangles.insert(triangles.end(),{a,a+1,a+7,a+1,a+8,a+7});}
@@ -83,6 +116,23 @@ int main(int argc,char **argv){
  for(auto &point:rest)point[0]+=10;
  cloth.step(rest,normals,.01f,{{0,0,0}},{{0,0,0}});
  check(cloth.displacement()<.01f,"teleport/reset clears cloth inertia instead of creating an explosive stretch");
- std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<",\"recovery_samples\":"<<recoverySamples<<",\"recovery_pelvis_step_m\":"<<peakStep<<",\"forearm_trunk_clearance_ratio\":"<<clearance<<",\"hand_gap_m\":"<<minimumGap<<",\"hand_step_m\":"<<peakHandStep<<",\"cloth_deformation_m\":"<<deformation<<",\"cloth_stretch_ratio\":"<<stretch<<"}\n";
+ float peakRunningJitter=0,frameRateSpread=0,minimumOffset=100,maximumOffset=0;
+ for(float frameDt:{.01f,1.f/60,1.f/30,1.f/15}){
+  ShirtCloth moving;moving.configure(rest,triangles,mobility);std::vector<Vec> target=rest;float lastOffset=0;
+  for(unsigned frame=0;frame<unsigned(5/frameDt);++frame){
+   for(unsigned i=0;i<rest.size();++i)target[i]=addPoint(rest[i],{{7.f*frame*frameDt,0,0}});
+   moving.step(target,normals,frameDt,{{0,0,0}},{{0,0,0}});
+   if(frame*frameDt>3.f)peakRunningJitter=std::max(peakRunningJitter,std::fabs(moving.displacement()-lastOffset));
+   lastOffset=moving.displacement();
+  }
+  minimumOffset=std::min(minimumOffset,moving.displacement());maximumOffset=std::max(maximumOffset,moving.displacement());
+ }
+ frameRateSpread=maximumOffset-minimumOffset;
+ check(peakRunningJitter<.001f,"shirt at constant sprint speed settles without repeated frame-to-frame snapping");
+ check(frameRateSpread<.003f,"shirt response remains close across 15, 30, 60 and 100 FPS");
+ const float beforeZeroDt=cloth.displacement();for(auto &point:rest)point[0]+=.1f;
+ cloth.step(rest,normals,0,{{0,0,0}},{{0,0,0}});
+ check(std::fabs(cloth.displacement()-beforeZeroDt)<1e-5f,"interpolated render with no new simulation tick transports the shirt without injecting inertia");
+ std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<",\"recovery_samples\":"<<recoverySamples<<",\"recovery_pelvis_step_m\":"<<peakStep<<",\"forearm_trunk_clearance_ratio\":"<<clearance<<",\"hand_gap_m\":"<<minimumGap<<",\"hand_step_m\":"<<peakHandStep<<",\"cloth_deformation_m\":"<<deformation<<",\"cloth_stretch_ratio\":"<<stretch<<",\"running_cloth_jitter_m\":"<<peakRunningJitter<<",\"cloth_fps_spread_m\":"<<frameRateSpread<<",\"ordinary_contact_peak_risk\":"<<peakRisk<<",\"unrecoverable_fall_tick\":"<<fallTick<<",\"sprint_joint_error_m\":"<<transportError<<"}\n";
  return failures?1:0;
 }

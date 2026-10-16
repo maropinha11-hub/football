@@ -47,9 +47,9 @@ def main():
             check('camera uses the approved increased sensitivity', b'"firstperson_look_speed" "3.8"' in config)
             check('packaged code implements constrained motion matching', b'MOTION_MATCH t=' in exe)
             check('contact laboratory instructions include partner, grip, protection and contest', all(token in full.read(prefix+'LEIA-FISICA.txt')
-                  for token in [b'F10',b'H ou L3',b'N ou LT',b'M:']))
+                  for token in [b'F10',b'F11',b'LT/L2',b'L3 nao',b'M:']))
             check('Windows code includes the shirt constraint and rendered recovery support', all(token in exe
-                  for token in [b'PHYSICAL_GRIP_FORCE',b'PHYSICAL_CLOTH',b'PHYSICAL_RENDER_SUPPORT',b'PHYSICAL_PASS_TURN']))
+                  for token in [b'PHYSICAL_GRIP_FORCE',b'PHYSICAL_CLOTH',b'PHYSICAL_RENDER_SUPPORT',b'PHYSICAL_PASS_TURN',b'PHYSICAL_BALANCE_BANK',b'PHYSICAL_EYE']))
             recovery_files=['media/animations/movement_special/idle/special/000_stand_up_from_'+side+'.anim'for side in ['front','back']]
             check('both original get-up animations are included unchanged', all(full.read(prefix+path)==(Path('data')/path).read_bytes()for path in recovery_files))
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),

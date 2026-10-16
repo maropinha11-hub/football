@@ -17,7 +17,7 @@ class ShirtCloth {
  private:
   struct Edge {unsigned a,b;float lambda=0;};
   std::vector<unsigned> mapping;
-  std::vector<Vec> x,velocity,displayed,previousTarget;
+  std::vector<Vec> x,velocity,displayed,previousTarget,carrierVelocity,carrierAcceleration,previousNormal;
   std::vector<float> mobility;
   std::vector<Edge> edges;
   bool ready=false;

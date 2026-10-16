@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-16",
+  "sources": [
+    {
+      "name": "icp_controller.java",
+      "url": "https://raw.githubusercontent.com/ihmcrobotics/ihmc-open-robotics-software/develop/ihmc-common-walking-control-modules/src/main/java/us/ihmc/commonWalkingControlModules/capturePoint/controller/ICPController.java",
+      "status": 200,
+      "bytes": 27096,
+      "sha256": "7454a166dc59f7cf31833a15f68ff33d77fdd6ff3e8a3ee08b92e9e38d349b25",
+      "studied": "Separate external momentum from planned gait, estimate capture point and support region; independent reduced game controller, not copied IHMC robot controller."
+    },
+    {
+      "name": "opencv_pose_readme.md",
+      "url": "https://raw.githubusercontent.com/opencv/opencv_zoo/main/models/pose_estimation_mediapipe/README.md",
+      "status": 200,
+      "bytes": 2131,
+      "sha256": "56123a602853755310fa3dbf4d29520eedd9c7885bd5818b50a032e3e8e2a97b"
+    },
+    {
+      "name": "opencv_pose.py",
+      "url": "https://raw.githubusercontent.com/opencv/opencv_zoo/main/models/pose_estimation_mediapipe/mp_pose.py",
+      "status": 200,
+      "bytes": 9521,
+      "sha256": "7e1953d1fb848c64fd3b44277e615e273e7fb2f325f7633eb9c1e32948d45e67",
+      "studied": "Offline 33-landmark estimation and confidence/postprocessing; model access blocked before inference."
+    },
+    {
+      "name": "opencv_pose_license.txt",
+      "url": "https://raw.githubusercontent.com/opencv/opencv_zoo/main/models/pose_estimation_mediapipe/LICENSE",
+      "status": 200,
+      "bytes": 11357,
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    },
+    {
+      "name": "opencv_pose_model_pointer.txt",
+      "url": "https://raw.githubusercontent.com/opencv/opencv_zoo/main/models/pose_estimation_mediapipe/pose_estimation_mediapipe_2023mar.onnx",
+      "status": 200,
+      "bytes": 132,
+      "sha256": "3eb2d70302a12e9b8da41a85edbd8a98e517f90a026507e5cae28561cec570ca"
+    },
+    {
+      "name": "humanoid_standup.py",
+      "url": "https://raw.githubusercontent.com/google/brax/main/brax/envs/humanoidstandup.py",
+      "status": 200,
+      "bytes": 21682,
+      "sha256": "57897b30b801b80c2bbeb91b442f715c5041d1c64c36c5bad70870542e43d441",
+      "studied": "Stand-up height reward and control-effort penalty. External contact forces are excluded from the observation in this environment; no trained Brax policy imported."
+    },
+    {
+      "name": "deepmimic_getup.txt",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/data/motions/humanoid3d_getup_facedown.txt",
+      "status": 200,
+      "bytes": 169673,
+      "sha256": "1bd1a96e9175f65eb66e10f225473b4467bd70c68e283f4006b2ab090e337c0b",
+      "studied": "Inspected open motion data representation and phase timing; no motion or policy embedded in game."
+    }
+  ],
+  "model_access": [
+    {
+      "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/pose_estimation_mediapipe/pose_estimation_mediapipe_2023mar.onnx",
+      "status": 403
+    },
+    {
+      "url": "https://huggingface.co/opencv/pose_estimation_mediapipe/resolve/main/pose_estimation_mediapipe_2023mar.onnx",
+      "status": 403
+    }
+  ],
+  "manual_study": "docs/research/soccerkicks-keyposes.json",
+  "native_balance_sources": [
+    {
+      "path": "data/media/animations/trip/trip_t1/idle/000_protectback.anim",
+      "sha256": "d1056eb8b9ef05099227af502a2aae7ed26e8e8c1005330d54f0d12e2e36cffb"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/idle/000_protectfront.anim",
+      "sha256": "4cad2cd41da15d989716b7f36c574b6e80ed599ce2682a9d83f05134ecd4a6fd"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/idle/000_protectside.anim",
+      "sha256": "fdc18669349cdedeb9c4d985b25653b412b3e7e72f859354c918fe6f41689b08"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/sprint/000_decel.anim",
+      "sha256": "5725ff6098a9eab6a815a447a44baae66c13fe0392516fffc0e4dc5c6fb40a27"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/sprint/000_sidebump.anim",
+      "sha256": "da98be4c0fa48e7291b1e4c22b22f180353657edf406698c83cbd38c1207520e"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/sprint/045_decel.anim",
+      "sha256": "8bc894e76b7275eedd84d9dce8ec11b876aff2a721eaddbc1a3fe48f2d23c31d"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/walk/000_protectback.anim",
+      "sha256": "6f4eb8f91764075841e876e972bcff44dd8b7de47cd0f8cd54c500c9b813ae3b"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/walk/000_protectfront.anim",
+      "sha256": "c2a4910fe435740e6ad96e033b5e9945c960b3ccca509490bacad8880bffba5d"
+    },
+    {
+      "path": "data/media/animations/trip/trip_t1/walk/028_D045_sidebump.anim",
+      "sha256": "02eb1864c2519f94680edac462052d60e16a00336274a4be49f01bc3ea9a65f5"
+    }
+  ],
+  "previous_research": "docs/physical-rig-v2-research.json",
+  "status": "Reduced physical controller and native motion variations implemented; automatic video-to-3D inference not run because model download was denied."
+}

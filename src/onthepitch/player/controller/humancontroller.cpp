@@ -374,6 +374,27 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   }
 
   if(player->GetHumanoid()->PhysicalRigEnabled()){
+    if(actionMode==2 && !commandQueue.empty() && match->TrainingReceivingBall() &&
+       hid->GetDirection().GetLength()<.05f && player->GetMovement().GetLength()<1.5f &&
+       (match->GetBall()->Predict(0).coords[2]>1.2f || match->GetBall()->Predict(200).coords[2]>1.2f)){
+      auto &movement=commandQueue.back();
+      if(movement.desiredFunctionType==e_FunctionType_Movement){
+        // A stationary buffered aerial action waits on its reception axis.
+        // Do not let a provisional interception gait walk backwards and
+        // remove the standing header before its real contact window opens.
+        movement.desiredVelocityFloat=0;movement.desiredDirection=match->GetTrainingReceptionFacing();
+        movement.useDesiredLookAt=true;movement.desiredLookAt=player->GetPosition()+match->GetTrainingReceptionFacing()*10.f;
+      }
+    }
+    if(actionMode==0 && !commandQueue.empty()){
+      auto &movement=commandQueue.back();
+      const Vector3 step=player->GetHumanoid()->PhysicalBalanceVelocity();
+      if(step.GetLength()>.025f && movement.desiredFunctionType==e_FunctionType_Movement){
+        const Vector3 velocity=movement.desiredDirection*movement.desiredVelocityFloat+step;
+        movement.desiredDirection=velocity.GetNormalized(movement.desiredDirection);
+        movement.desiredVelocityFloat=std::min(sprintVelocity,velocity.GetLength());
+      }
+    }
     if(actionMode!=2)turningPass=false;
     for(unsigned i=0;i+1<commandQueue.size();++i){
       auto &pass=commandQueue[i];

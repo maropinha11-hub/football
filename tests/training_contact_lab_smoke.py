@@ -39,7 +39,7 @@ try:
   start=len(g.log.read_text());g.keys(['h'],True);g.advance(1800);screenshot(g,'shirt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start)
   check('shirt grip starts only after the hand reaches the shirt',any(x['state']=='begin' and float(x['hand_gap'])<.10 for x in grips),grips)
-  check('held shirt applies equal and opposite bounded forces',bool(forces)and all(abs(float(x['force'])-float(x['reaction']))<.001 and float(x['force'])<=150.01 for x in forces),forces[:8])
+  check('held shirt applies equal and opposite bounded forces',bool(forces)and all(abs(float(x['force'])-float(x['reaction']))<.001 and float(x['force'])<=260.01 for x in forces),forces[:8])
   cloth=events(g,'PHYSICAL_CLOTH',start)
   pulled=[x for x in cloth if float(x['grip'])>1]
   check('shirt vertices visibly deform under the gameplay grip',bool(pulled)and max(float(x['displacement'])for x in pulled)>.003 and max(float(x['displacement'])for x in pulled)<.121,pulled[:8])

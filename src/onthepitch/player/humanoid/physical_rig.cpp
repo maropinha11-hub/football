@@ -1,5 +1,6 @@
 #include "physical_rig.hpp"
 #include "articulated_body.hpp"
+#include "balance_controller.hpp"
 
 namespace football_physics {
 namespace {
@@ -12,8 +13,10 @@ Vec tip(unsigned i){if(i==2)return {{0,0,.17f}};if(i==4||i==6)return {{0,0,-.27f
 
 void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){reference=bind;scale=bounded(heightScale,.7f,1.3f);reset();}
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
-void PhysicalRig::reset(){ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
-void PhysicalRig::impulse(Vec value,Vec lever){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));}
+void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
+Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
+void PhysicalRig::reset(){ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 void PhysicalRig::forwardKinematics(){
   positions[0]=root;
@@ -44,13 +47,16 @@ void PhysicalRig::solveLeg(unsigned hip,Vec target){
   forwardKinematics();
 }
 
-PhysicalRig::PhysicalRig()=default;
+PhysicalRig::PhysicalRig():balance(new BalanceController){}
 PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &input,float dt){
   dt=bounded(dt,.001f,.02f);
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
   debug={};
+  handDt=dt;handUpdatePending=true;
+  if(input.handTargetActive)lastHandTarget=input.handTarget;
+  handEnvelope+=(float(input.handTargetActive && !input.action && !input.upperReception)-handEnvelope)*(1-std::exp(-8*dt));
   Vec acceleration=scalePoint(subtractPoint(input.velocity,previousVelocity),1/dt);
   filteredAcceleration=addPoint(filteredAcceleration,scalePoint(subtractPoint(capped(acceleration,10),filteredAcceleration),1-std::exp(-6*dt)));
   const float turn=std::atan2(crossPoint(lastForward,input.forward)[2],bounded(dotPoint(lastForward,input.forward),-1,1))/dt;
@@ -58,18 +64,41 @@ void PhysicalRig::step(const Input &input,float dt){
   previousVelocity=input.velocity;lastForward=input.forward;
   debug.turnRate=filteredTurn;debug.effort=bounded(length(filteredAcceleration)/12+std::fabs(filteredTurn)*length(input.velocity)/55,0,1);
   const float impulseSize=length(pendingImpulse);
-  if(state==Mode::Active && impulseSize>=145.f+40.f*protection){
+  bool lostBalance=false;
+  if(state==Mode::Active){
+    balance->addImpulse(pendingImpulse,pendingTorque);
+    const float stance=length(subtractPoint(positions[9],positions[12]));
+    lostBalance=balance->step(dt,input.pelvis[2],stance,length(input.velocity),input.protect,input.gripped);
+    debug.balanceRisk=balance->risk;debug.balancePhase=balance->phase;debug.stepDemand=balance->stepDemand;debug.supportMargin=balance->margin;
+    if(impulseSize>15 && !balanceMotions.empty() && (balanceChoice<0 || balanceMotionTime>.3f)){
+      // Match incident direction, native entry pose and movement speed. The
+      // selected reference remains additive; it never moves a foot to a ball.
+      const Vec incident=rotatePoint(inverseRotation(input.pose[0]),unit(pendingImpulse));
+      float best=1e9f;
+      for(unsigned m=0;m<balanceMotions.size();++m){const auto &candidate=balanceMotions[m];if(candidate.frames.empty())continue;
+        float cost=2.f*(1-dotPoint(incident,candidate.push))+.08f*std::fabs(length(input.velocity)-candidate.speed);
+        for(unsigned bone:{1u,3u,5u})cost+=.10f*length(logarithm(productRotation(candidate.frames.front().pose[bone],inverseRotation(input.pose[bone]))));
+        cost+=.18f*std::fabs(candidate.gain-bounded(impulseSize/100.f,.5f,1.25f));
+        cost+=3.f*std::fabs(candidate.lateral-.035f*incident[0]);
+        if(cost<best){best=cost;balanceChoice=int(m);balanceMotionTime=0;}
+      }
+    }
+    balanceMotionTime+=dt;
+  }
+  if(state==Mode::Active && (forcedFall || lostBalance)){
     state=Mode::Falling;stateAge=settled=0;
     articulated.reset(new ArticulatedBody);
     // Torque is converted to a whole-body angular velocity using the actual
     // assembly inertia, instead of spinning a single pelvis with arbitrary I.
     const Vec lever=impulseSize>0?scalePoint(crossPoint(pendingImpulse,pendingTorque),1/(impulseSize*impulseSize)):Vec{{0,0,0}};
-    articulated->start(reference,scale,local,root,input.velocity,pendingImpulse,lever);
+    const Vec fallImpulse=forcedFall?pendingImpulse:balance->remainingImpulse();
+    articulated->start(reference,scale,local,root,input.velocity,fallImpulse,forcedFall?lever:Vec{{0,0,.28f}});
   }else if(state==Mode::Active && impulseSize>0){
-    swayVelocity=addPoint(swayVelocity,scalePoint(pendingTorque,1/3.f));
+    swayVelocity=addPoint(swayVelocity,scalePoint(pendingTorque,1/14.f));
   }
   const Vec activeImpulse=state==Mode::Active?pendingImpulse:Vec{{0,0,0}};
   pendingImpulse=pendingTorque={{0,0,0}};
+  forcedFall=false;
   stateAge+=dt;
   if(state==Mode::Active){
     for(unsigned sub=0;sub<2;++sub){
@@ -105,12 +134,13 @@ void PhysicalRig::step(const Input &input,float dt){
     }
   }else{
     recover(input);
-    if(stateAge>=recoveryDuration){state=Mode::Active;stateAge=0;reachOffset=sway=swayVelocity={{0,0,0}};reachOffsets={};}
+    if(stateAge>=recoveryDuration){state=Mode::Active;stateAge=0;reachOffset=sway=swayVelocity={{0,0,0}};reachOffsets={};balance.reset(new BalanceController);handInitialized=false;}
   }
   forwardKinematics();
   const Vec midpoint=scalePoint(addPoint(positions[9],positions[12]),.5f);
   Vec xcom=addPoint(root,scalePoint(input.velocity,1/std::sqrt(9.81f/std::max(.4f,root[2]))));xcom[2]=midpoint[2];
-  debug.supportMargin=.22f-length(subtractPoint(xcom,midpoint));
+  if(state!=Mode::Active)debug.supportMargin=.22f-length(subtractPoint(xcom,midpoint));
+  debug.balanceChoice=balanceChoice;
 }
 void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
@@ -118,10 +148,23 @@ void PhysicalRig::evaluate(const Input &input){
   local=input.pose;forwardKinematics();const Vec left=positions[9],right=positions[12];
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
-  leanAxis=capped(addPoint(scalePoint(leanAxis,.14f),sway),.38f);
+  leanAxis=capped(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),.38f);
   const float actionBias=input.upperReception || input.action?0.f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
   Pose target=input.pose;
+  if(balanceChoice>=0 && !input.action && !input.upperReception){
+    const auto &motion=balanceMotions[balanceChoice];
+    const float frame=balanceMotionTime/.016f;
+    if(frame<float(motion.frames.size()-1)){
+      const unsigned a=unsigned(frame),b=std::min(a+1,unsigned(motion.frames.size()-1));
+      const float envelope=smooth(balanceMotionTime/.12f)*smooth((motion.frames.size()-1-frame)/12.f)*.22f*motion.gain;
+      for(unsigned bone:{1u,3u,4u,5u,6u}){
+        const Quat q=blended(motion.frames[a].pose[bone],motion.frames[b].pose[bone],frame-a);
+        const Vec delta=capped(logarithm(productRotation(q,inverseRotation(motion.frames[0].pose[bone]))),.65f);
+        target[bone]=normalized(productRotation(exponential(scalePoint(delta,envelope)),target[bone]));
+      }
+    }
+  }
   // Active movement stays on its native smoothed lower-body animation.
   // Only additive upper-body balance is applied; no absolute-pose overwrite.
   const Quat head=world[2];
@@ -152,10 +195,11 @@ void PhysicalRig::evaluate(const Input &input){
     }
     forwardKinematics();
   }
-  if(input.handTargetActive && !input.upperReception && !input.action){
-    const unsigned shoulder=length(subtractPoint(input.handTarget,positions[3]))<length(subtractPoint(input.handTarget,positions[5]))?3:5;
-    reachHand(shoulder,input.handTarget,protection);
-  }
+  if(handEnvelope>.002f && !input.upperReception && !input.action){
+    if(!handInitialized){handShoulder=length(subtractPoint(input.handTarget,positions[3]))<length(subtractPoint(input.handTarget,positions[5]))?3:5;handPose[0]=local[handShoulder];handPose[1]=local[handShoulder+1];handInitialized=true;}
+    reachHand(unsigned(handShoulder),input.handTargetActive?input.handTarget:lastHandTarget,handEnvelope);
+  }else if(handEnvelope<.002f){handInitialized=false;}
+  handUpdatePending=false;
   separateArms();
   for(unsigned i=0;i<13;++i)additive[i]=normalized(productRotation(local[i],inverseRotation(input.pose[i])));
   debug.lean=length(leanAxis);debug.reach=0;
@@ -168,17 +212,38 @@ void PhysicalRig::reachHand(unsigned shoulder,Vec target,float weight){
   const Vec upper=subtractPoint(positions[elbow],positions[shoulder]),lower=subtractPoint(hand,positions[elbow]);
   const float a=length(upper),b=length(lower);
   if(a<.05f || b<.05f)return;
+  Vec relative=rotatePoint(inverseRotation(world[1]),subtractPoint(target,positions[shoulder]));
+  // Reaching behind the back is not a valid shirt hold. The interaction
+  // releases if its real hand can no longer follow the anchored surface.
+  relative[1]=std::min(.10f*scale,relative[1]);
+  target=addPoint(positions[shoulder],rotatePoint(world[1],relative));
   const Vec direction=unit(subtractPoint(target,positions[shoulder]));
-  const float distance=bounded(length(subtractPoint(target,positions[shoulder])),std::fabs(a-b)+.01f,a+b-.006f);
+  const float maximum=std::sqrt(a*a+b*b+2*a*b*std::cos(.15f));
+  const float minimum=std::sqrt(a*a+b*b+2*a*b*std::cos(2.4f));
+  const float distance=bounded(length(subtractPoint(target,positions[shoulder])),minimum,maximum);
   target=addPoint(positions[shoulder],scalePoint(direction,distance));
-  const Vec outward=rotatePoint(world[1],{{shoulder==3?1.f:-1.f,0,.1f}});
+  const Vec outward=rotatePoint(world[1],{{shoulder==3?.45f:-.45f,.05f,-1.f}});
   const Vec pole=unit(subtractPoint(outward,scalePoint(direction,dotPoint(outward,direction))));
   const float along=(a*a-b*b+distance*distance)/(2*distance);
   const Vec bend=addPoint(addPoint(positions[shoulder],scalePoint(direction,along)),scalePoint(pole,std::sqrt(std::max(0.f,a*a-along*along))));
-  const Quat arm=normalized(productRotation(pes3::swingRotation(unit(upper),unit(subtractPoint(bend,positions[shoulder]))),world[shoulder]));
-  const Quat forearm=normalized(productRotation(pes3::swingRotation(unit(lower),unit(subtractPoint(target,bend))),world[elbow]));
-  local[shoulder]=blended(local[shoulder],normalized(productRotation(inverseRotation(world[1]),arm)),weight);
-  local[elbow]=blended(local[elbow],normalized(productRotation(inverseRotation(arm),forearm)),weight);
+  const Vec upperDirection=unit(subtractPoint(bend,positions[shoulder])),lowerDirection=unit(subtractPoint(target,bend));
+  Quat arm=pes3::swingRotation(unit(reference.offsets[elbow]),upperDirection);
+  const Vec hinge=unit(scalePoint(crossPoint(upperDirection,lowerDirection),-1.f));
+  const Vec currentAxis=unit(rotatePoint(arm,{{1,0,0}}));
+  const float twist=std::atan2(dotPoint(upperDirection,crossPoint(currentAxis,hinge)),dotPoint(currentAxis,hinge));
+  arm=normalized(productRotation(exponential(scalePoint(upperDirection,twist)),arm));
+  Quat wanted[2]={normalized(productRotation(inverseRotation(world[1]),arm)),exponential({{-std::acos(bounded(dotPoint(upperDirection,lowerDirection),-1,1)),0,0}})};
+  if(handUpdatePending)for(unsigned i=0;i<2;++i){
+    const Vec error=logarithm(productRotation(wanted[i],inverseRotation(handPose[i])));
+    const Vec speed=capped(scalePoint(error,12.f),3.8f);
+    handVelocity[i]=addPoint(handVelocity[i],capped(subtractPoint(speed,handVelocity[i]),24.f*handDt));
+    const Vec change=capped(scalePoint(handVelocity[i],handDt),length(error));
+    handPose[i]=normalized(productRotation(exponential(change),handPose[i]));
+  }
+  local[shoulder]=blended(local[shoulder],handPose[0],weight);
+  local[elbow]=blended(local[elbow],handPose[1],weight);
+  debug.armSpeed=std::max(length(handVelocity[0]),length(handVelocity[1]));
+  debug.elbowAngle=length(logarithm(handPose[1]));
   forwardKinematics();
 }
 

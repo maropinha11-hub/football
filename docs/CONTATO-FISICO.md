@@ -1,5 +1,8 @@
 # Laboratório de contato corporal
 
+Esta página registra a primeira revisão. Para os controles e o comportamento
+atuais, consulte [Equilíbrio e contato](EQUILIBRIO-E-CONTATO.md).
+
 Extraia o pacote Windows completo em uma **pasta nova** e abra
 **treino-fisico.bat**. Use **R3/Tab** para observar o corpo por fora.
 O treino normal continua em `run-training.bat`.

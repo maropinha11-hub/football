@@ -119,18 +119,25 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
 }
 void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics){
   if(!state || !state->tracking)start(bind,scale,target,pelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},true);
-  auto &s=*state;std::array<btTransform,13> desired;
+  auto &s=*state;std::array<btTransform,13> desired,previous;
   for(unsigned i=0;i<13;++i){int parent=pes3::nativeParents[i];
     desired[i]=parent<0?btTransform(bq(target[i]),bv(pelvis)):
       desired[parent]*btTransform(bq(target[i]),bv(scalePoint(bind.offsets[i],scale)));
     auto &body=*s.bodies[i+1];
-    if(i==0||i>=7){
-      auto before=body.getWorldTransform();auto next=desired[i]*btTransform(btQuaternion::getIdentity(),s.centers[i]);
-      body.setWorldTransform(next);body.setInterpolationWorldTransform(before);body.activate();
-    }
+    previous[i]=body.getWorldTransform();
   }
   if(length(impulse)>0)s.bodies[2]->applyImpulse(bv(scalePoint(impulse,.35f)),btVector3(0,0,.12f));
   for(unsigned sub=0;sub<2;++sub){
+    for(unsigned i=0;i<13;++i)if(i==0 || i>=7){
+      auto &body=*s.bodies[i+1];const auto final=desired[i]*btTransform(btQuaternion::getIdentity(),s.centers[i]);
+      const float t=(sub+1)*.5f;
+      const btTransform next(previous[i].getRotation().slerp(final.getRotation(),t),previous[i].getOrigin().lerp(final.getOrigin(),t));
+      // Bullet infers kinematic velocity from this pair over the substep.
+      // A full-tick displacement before the first half-step doubled that
+      // velocity, then set it to zero on the second half of every tick.
+      body.setInterpolationWorldTransform(body.getWorldTransform());
+      body.setWorldTransform(next);body.activate();
+    }
     for(unsigned i=1;i<=6;++i){auto &body=*s.bodies[i+1];
       const Vec error=logarithm(quat(desired[i].getRotation()*body.getWorldTransform().getRotation().inverse()));
       const Vec acceleration=capped(subtractPoint(scalePoint(error,625.f),scalePoint(vec(body.getAngularVelocity()),50.f)),140.f);

@@ -31,6 +31,28 @@ void HumanoidBase::ConfigurePhysicalRig(){
     }
   }
   physicalRig->setRecoveryMotions(std::move(motions[0]),std::move(motions[1]));
+  std::vector<football_physics::BalanceMotion> bank;
+  unsigned sources=0;
+  for(auto *clip:anims->GetAnimations())if(clip->GetAnimType()=="trip" && clip->GetVariable("triptype")=="1"){
+    ++sources;
+    const auto push=point(GetVectorFromString(clip->GetVariable("bumpdirection")));
+    for(float gain:{.55f,.75f,1.f,1.25f})for(float cadence:{1.f,1.2f})for(float lateral:{-.035f,.035f}){
+      football_physics::BalanceMotion motion;motion.push=push;motion.speed=clip->GetIncomingVelocity()/cadence;motion.gain=gain;motion.lateral=lateral;
+      const int frames=int((clip->GetFrameCount()-1)*cadence)+1;
+      for(int frame=0;frame<frames;++frame){
+        football_physics::RecoveryKey key;Quaternion q;Vector3 p;
+        const float phase=frame/cadence;const int a=int(phase),b=std::min(a+1,clip->GetFrameCount()-1);Quaternion qb;Vector3 pb;
+        clip->GetKeyFrame("player",a,q,p);clip->GetKeyFrame("player",b,qb,pb);key.pelvis=point(p*(1-(phase-a))+pb*(phase-a));
+        for(unsigned i=0;i<13;++i){clip->GetKeyFrame(pes3::nativeBoneNames[i],a,q,p);clip->GetKeyFrame(pes3::nativeBoneNames[i],b,qb,pb);key.pose[i]=football_physics::blended(rotation(q),rotation(qb),phase-a);}
+        const float envelope=std::sin(pi*float(frame)/std::max(1,frames-1));
+        key.pose[1]=football_physics::normalized(football_physics::productRotation(football_physics::exponential({{0,lateral*envelope,0}}),key.pose[1]));
+        motion.frames.push_back(key);
+      }
+      bank.push_back(std::move(motion));
+    }
+  }
+  printf("PHYSICAL_BALANCE_BANK actor=%d sources=%u variants=%u kind=native_procedural\n",player->GetID(),sources,unsigned(bank.size()));
+  physicalRig->setBalanceMotions(std::move(bank));
 }
 void HumanoidBase::SetPhysicalGrip(const Vector3 &where,const Vector3 &force){physicalGripPoint=where;physicalGripForce=force;}
 Vector3 HumanoidBase::GetPhysicalShirtPoint()const{
@@ -56,7 +78,7 @@ void HumanoidBase::ResetPhysicalRig(){
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();fetchedPhysicalRig=false;
   for(auto &buffer:buf_physicalAdditive)buffer.Clear();
-  physicalGripForce=Vector3(0);physicalActionTime=0;physicalShield=false;physicalHandTargetActive=false;
+  physicalGripForce=Vector3(0);physicalActionTime=0;physicalPartnerPhase=0;physicalShield=false;physicalHandTargetActive=false;
 }
 void HumanoidBase::PhysicalCollision(const Vector3 &change){
   if(!PhysicalRigEnabled() || match->GetActualTime_ms()<physicalCollisionTime || change.GetLength()<.5f)return;
@@ -75,10 +97,36 @@ void HumanoidBase::TogglePhysicalRig(){
   match->SpamMessage(enabled?"Fisica corporal: ligada | F8: impacto | F9: queda":"Fisica corporal: desligada",3500);
   printf("PHYSICAL_RIG_TOGGLE enabled=%d\n",enabled?1:0);fflush(stdout);
 }
-void HumanoidBase::AddPhysicalImpulse(const Vector3 &value,const Vector3 &lever){
+Vector3 HumanoidBase::PhysicalBalanceVelocity()const{return PhysicalRigEnabled() && physicalRig?vector(physicalRig->balanceVelocity()):Vector3(0);}
+Vector3 HumanoidBase::SafeFirstPersonEye(const Vector3 &requested)const{
+  Quaternion q[13];Vector3 p[13];
+  const Vector3 origin=player->GetGeomPosition().Get2D();
+  for(unsigned i=0;i<13;++i){const auto node=nodeMap.at(pes3::nativeBoneNames[i]);q[i]=node->GetDerivedRotation();p[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;}
+  Vector3 eye=requested;
+  // Keep the camera sphere outside the torso and the moving upper arms.
+  // These are rendered joints, not the older simulation snapshot.
+  for(unsigned iteration=0;iteration<4;++iteration)for(unsigned bone:{0u,1u,3u,4u,5u,6u}){
+    Vector3 a=p[bone],b=bone==0?p[1]:bone==1?p[2]:bone==3||bone==5?p[bone+1]:p[bone]+q[bone]*Vector3(0,0,-.25f*zMultiplier);
+    const Vector3 axis=b-a;const float along=clamp((eye-a).GetDotProduct(axis)/std::max(.00001f,axis.GetSquaredLength()),0.f,1.f);
+    const Vector3 closest=a+axis*along;
+    const float radius=(bone<=1?.17f:.055f)*zMultiplier+.065f;
+    if((eye-closest).GetLength()<radius)eye=closest+(eye-closest).GetNormalized(q[1]*Vector3(0,-1,0))*radius;
+  }
+  float gap=100;
+  for(unsigned iteration=0;iteration<3;++iteration){
+    Vector3 surface;gap=ContactSurface(eye,"trunk",q,p,&surface)+.11f;
+    if(gap>=.065f)break;
+    eye=surface+(eye-surface).GetNormalized(q[1]*Vector3(0,-1,0))*.065f;
+  }
+  gap=ContactSurface(eye,"trunk",q,p)+.11f;
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("PHYSICAL_EYE t=%lu clearance=%.6f correction=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,gap,(eye-requested).GetLength());
+  return eye;
+}
+void HumanoidBase::AddPhysicalImpulse(const Vector3 &value,const Vector3 &lever,bool forceFall){
   if(!PhysicalRigEnabled())return;
   ConfigurePhysicalRig();
-  physicalRig->impulse(point(value),point(lever));
+  physicalRig->impulse(point(value),point(lever),forceFall);
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("PHYSICAL_RIG_IMPULSE t=%lu impulse=[%.3f,%.3f,%.3f]\n",match->GetActualTime_ms(),value.coords[0],value.coords[1],value.coords[2]);
 }
@@ -91,6 +139,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     input.pelvis=point(contactPositions[0]);input.velocity=point(spatialState.movement);
     input.forward=point(spatialState.bodyDirectionVec);input.upperReception=UpperReceptionActive();
     input.protect=physicalShield;
+    input.gripped=physicalGripForce.GetLength()>5;
     input.handTargetActive=physicalHandTargetActive;input.handTarget=point(physicalHandTarget);
     input.action=currentAnim->functionType!=e_FunctionType_Movement && currentAnim->functionType!=e_FunctionType_BallControl;
     // Preserve the authored preparation pose while a one-touch action is
@@ -155,6 +204,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       const auto &d=physicalRig->metrics();const auto root=physicalRig->points()[0];const auto q=physicalRig->worldRotations()[0];
       if(player->GetExternalController())printf("PHYSICAL_RIG_FRAME {\"t\":%lu,\"mode\":%d,\"root\":[%.5f,%.5f,%.5f],\"lean\":%.5f,\"turn\":%.5f,\"reach\":%.5f,\"support_margin\":%.5f,\"effort\":%.5f,\"ground_contacts\":%u,\"ground_correction\":%.6f,\"angular_speed\":%.5f,\"energy\":%.5f,\"joint_error\":%.6f,\"self_penetration\":%.6f,\"brace\":%.2f,\"recovery_phase\":%.4f,\"root_q\":[%.6f,%.6f,%.6f,%.6f]}\n",
         physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration,d.angularSpeed,d.kineticEnergy,d.jointError,d.selfPenetration,d.brace,d.recoveryPhase,q[0],q[1],q[2],q[3]);
+      printf("PHYSICAL_BALANCE t=%lu actor=%d phase=%d risk=%.5f step=%.5f choice=%d arm_speed=%.5f elbow=%.5f\n",physicalRigTime,player->GetID(),d.balancePhase,d.balanceRisk,d.stepDemand,d.balanceChoice,d.armSpeed,d.elbowAngle);
     }
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
@@ -195,16 +245,19 @@ void HumanoidBase::ProcessPhysicalPartner(){
   spatialState.movement=match->GetTrainingPartnerVelocity();
   spatialState.floatVelocity=spatialState.movement.GetLength();
   Animation *clip=anims->GetAnim(GetIdleMovementAnimID());
-  if(spatialState.floatVelocity>1.f){
+  if(spatialState.floatVelocity>.2f){
     for(auto *candidate:anims->GetAnimations())if(candidate->GetAnimType()=="movement" && candidate->GetIncomingVelocity()>1.5f && candidate->GetIncomingVelocity()<4.f &&
         std::fabs(candidate->GetOutgoingAngle())<.02f && std::fabs(candidate->GetIncomingBodyAngle())<.05f && candidate->GetVariable("incoming_special_state").empty()) {clip=candidate;break;}
   }
   if(spatialState.floatVelocity>.2f){
     spatialState.directionVec=spatialState.movement.GetNormalized(0);
-    spatialState.bodyDirectionVec=spatialState.directionVec;
-    spatialState.angle=std::atan2(spatialState.directionVec.coords[0],-spatialState.directionVec.coords[1]);
+    const float turn=std::atan2(spatialState.bodyDirectionVec.GetCrossProduct(spatialState.directionVec).coords[2],spatialState.bodyDirectionVec.GetDotProduct(spatialState.directionVec));
+    spatialState.bodyDirectionVec=spatialState.bodyDirectionVec.GetRotated2D(clamp(turn,-.018f,.018f));
+    spatialState.angle=std::atan2(spatialState.bodyDirectionVec.coords[0],-spatialState.bodyDirectionVec.coords[1]);
   }
-  const int frame=(match->GetActualTime_ms()/10)%std::max(1,clip->GetEffectiveFrameCount());
+  const float cadence=spatialState.floatVelocity>.2f?clamp(spatialState.floatVelocity/std::max(.5f,clip->GetIncomingVelocity()),.12f,1.2f):1.f;
+  physicalPartnerPhase=std::fmod(physicalPartnerPhase+cadence,float(std::max(1,clip->GetEffectiveFrameCount())));
+  const int frame=int(physicalPartnerPhase);
   Quaternion ignored;Vector3 translation;clip->GetKeyFrame("player",frame,ignored,translation);
   const Vector3 origin=spatialState.position-translation.Get2D().GetRotated2D(spatialState.angle);
   animApplyBuffer.anim=clip;animApplyBuffer.frameNum=frame;animApplyBuffer.position=origin;

@@ -11,7 +11,7 @@ void physicalLabInput(Player *actor) {
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
   const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D(.5f*pi);
   if(events.ConsumeKeyPress(SDLK_F8))body->AddPhysicalImpulse(side*65.f);
-  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f));
+  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f),true);
 }
 }
 
@@ -32,7 +32,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingResetAt_ms = 0;
   trainingKnockOnUntil_ms = 0;
   trainingReceiving=false;trainingReceptionFacing=direction;
-  trainingGrip=false;trainingContactUntil=trainingTackleUntil=0;
+  trainingGrip=false;trainingGripBlocked=false;trainingPartnerBall=false;trainingGripEscape=0;trainingContactUntil=trainingTackleUntil=0;
   if(trainingPartner){
     trainingPartnerVelocity=Vector3(0);
     const Vector3 partnerPosition=trainingContactExercise?position+direction*.15f+direction.GetRotated2D(.5f*pi)*.72f:Vector3(150,150,0);
@@ -75,6 +75,9 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
 
 void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
   if (!TrainingEnabled()) return;
+  // F11 only seeds the partner's possession exercise. A real accepted touch
+  // by the controlled player immediately restores contextual protection.
+  trainingPartnerBall=false;
   // Only a real knock-on contact starts recovery. Passing/shooting, an
   // ordinary control touch, and resets release it immediately.
   trainingKnockOnUntil_ms = knockOn &&
@@ -479,16 +482,20 @@ void Match::WritePlayerMatchTelemetry() {
   unsigned humanCount=0;std::vector<Player*> players;
   teams[0]->GetActivePlayers(players);teams[1]->GetActivePlayers(players);
   for(auto *actor:players)if(actor->GetExternalController())++humanCount;
-  printf("PLAYER_MATCH_FRAME {\"t\":%lu,\"clock\":%lu,\"phase\":%d,\"locked_id\":%d,\"selected_id\":%d,\"human_count\":%u,\"home\":%d,\"away\":%d,\"in_play\":%d,\"set_piece\":%d,\"over\":%d,\"last_touch_team\":%d,\"pass_pending\":%d,\"players\":[",
+  char chunk[2048];std::string row;
+  std::snprintf(chunk,sizeof(chunk),"PLAYER_MATCH_FRAME {\"t\":%lu,\"clock\":%lu,\"phase\":%d,\"locked_id\":%d,\"selected_id\":%d,\"human_count\":%u,\"home\":%d,\"away\":%d,\"in_play\":%d,\"set_piece\":%d,\"over\":%d,\"last_touch_team\":%d,\"pass_pending\":%d,\"players\":[",
     actualTime_ms,matchTime_ms,int(matchPhase),trainingPlayer->GetID(),trainingPlayer->GetExternalController()?trainingPlayer->GetID():-1,
     humanCount,GetScore(0),GetScore(1),IsInPlay()?1:0,IsInSetPiece()?1:0,gameOver?1:0,GetLastTouchTeamID(),playerMatchPassUntil_ms>actualTime_ms?1:0);
+  row+=chunk;
   bool first=true;
   for(auto *actor:players) {
     const Vector3 point=actor->GetPosition();
-    printf("%s{\"id\":%d,\"team\":%d,\"human\":%d,\"p\":[%.3f,%.3f,%.3f],\"speed\":%.3f,\"action\":%d}",first?"":",",actor->GetID(),actor->GetTeamID(),actor->GetExternalController()?1:0,
-      point.coords[0],point.coords[1],point.coords[2],actor->GetMovement().GetLength(),int(actor->GetCurrentFunctionType()));first=false;
+    std::snprintf(chunk,sizeof(chunk),"%s{\"id\":%d,\"team\":%d,\"human\":%d,\"p\":[%.3f,%.3f,%.3f],\"speed\":%.3f,\"action\":%d}",first?"":",",actor->GetID(),actor->GetTeamID(),actor->GetExternalController()?1:0,
+      point.coords[0],point.coords[1],point.coords[2],actor->GetMovement().GetLength(),int(actor->GetCurrentFunctionType()));row+=chunk;first=false;
   }
   const Vector3 ballPoint=ball->Predict(0);
-  printf("],\"difficulty\":%.2f,\"designated_id\":%d,\"ball\":[%.3f,%.3f,%.3f],\"ball_speed\":%.3f}\n",
-    matchDifficulty,GetDesignatedPossessionPlayer()->GetID(),ballPoint.coords[0],ballPoint.coords[1],ballPoint.coords[2],ball->GetMovement().GetLength());fflush(stdout);
+  std::snprintf(chunk,sizeof(chunk),"],\"difficulty\":%.2f,\"designated_id\":%d,\"ball\":[%.3f,%.3f,%.3f],\"ball_speed\":%.3f}\n",
+    matchDifficulty,GetDesignatedPossessionPlayer()->GetID(),ballPoint.coords[0],ballPoint.coords[1],ballPoint.coords[2],ball->GetMovement().GetLength());row+=chunk;
+  // One stdio call holds its stream lock for the whole JSON record.
+  printf("%s",row.c_str());fflush(stdout);
 }

@@ -292,6 +292,10 @@ class Match {
     int trainingContactExercise=0;
     bool trainingGrip=false;
     bool trainingGripBlocked=false;
+    bool trainingPartnerBall=false;
+    unsigned long trainingGripStarted=0;
+    float trainingGripEscape=0;
+    Vector3 trainingGripAnchor{0};
     unsigned long trainingContactUntil=0,trainingTackleUntil=0;
     unsigned long playerMatchPassUntil_ms = 0;
     int trainingExercise = 0;

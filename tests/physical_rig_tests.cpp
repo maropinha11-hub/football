@@ -44,16 +44,16 @@ int main(int argc,char **argv){
   check(rig.metrics().lean<.003f,"damped balance returns to rest");
   check(length(subtractPoint(initialLeft,rig.points()[9]))<.012f && length(subtractPoint(initialRight,rig.points()[12]))<.012f,"stance feet remain anchored during a recoverable push");
   float minimumPelvis=10;unsigned fell=0,recovered=0;Mode previous=rig.mode();
-  rig.impulse({{165,0,0}},{{0,0,.18f}});
+  rig.impulse({{165,0,0}},{{0,0,.18f}},true);
   bool allFinite=true;float accumulatedRotation=0,peakAngular=0,peakJointError=0;Quat lastRoot=rig.pose()[0];
   for(unsigned step=0;step<800;++step){rig.step(input);if(rig.mode()==Mode::Falling){accumulatedRotation+=length(logarithm(productRotation(rig.pose()[0],inverseRotation(lastRoot))));peakAngular=std::max(peakAngular,rig.metrics().angularSpeed);peakJointError=std::max(peakJointError,rig.metrics().jointError);}lastRoot=rig.pose()[0];allFinite&=finite(rig);minimumPelvis=std::min(minimumPelvis,rig.points()[0][2]);maximumBoneError=std::max(maximumBoneError,boneError(rig,bind));if(rig.mode()!=previous){fell+=rig.mode()==Mode::Falling;recovered+=rig.mode()==Mode::Recovering;previous=rig.mode();}}
-  check(fell==1 && recovered==1 && rig.mode()==Mode::Active,"a strong impulse produces fall, get-up and active control in order");
+  check(fell==1 && recovered==1 && rig.mode()==Mode::Active,"the explicit lab fall produces fall, get-up and active control in order");
   check(minimumPelvis<.6f && minimumPelvis>.07f,"physical pelvis falls onto the ground instead of playing an upright trip");
   check(allFinite && maximumBoneError<1e-5f,"articulation remains finite and bones do not stretch through a fall");
   check(accumulatedRotation<5.0f && peakAngular<18.f,"a lateral fall does not spin the pelvis through a somersault");
   check(peakJointError<.08f,"Bullet constraints retain their anatomical joint anchors");
   for(float dt:{.005f,.01f,.02f}){
-    rig.configure(bind,1);rig.step(input,dt);rig.impulse({{-190,0,0}},{{0,0,.5f}});
+    rig.configure(bind,1);rig.step(input,dt);rig.impulse({{-190,0,0}},{{0,0,.5f}},true);
     for(unsigned i=0;i<unsigned(8/dt);++i)rig.step(input,dt);
     check(finite(rig) && rig.mode()==Mode::Active,"fall and recovery remain stable across supported timesteps");
   }

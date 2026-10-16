@@ -247,7 +247,7 @@ class HumanoidBase {
     bool PhysicalRigEnabled() const;
     bool PhysicalRigBusy() const;
     void TogglePhysicalRig();
-    void AddPhysicalImpulse(const Vector3 &impulse, const Vector3 &lever=Vector3(0,0,.35f));
+    void AddPhysicalImpulse(const Vector3 &impulse, const Vector3 &lever=Vector3(0,0,.35f),bool forceFall=false);
     void PhysicalCollision(const Vector3 &velocityChange);
     void ResetPhysicalRig();
     void UpdatePhysicalRigPose();
@@ -256,6 +256,8 @@ class HumanoidBase {
     void PutPhysicalRig();
     void ConfigurePhysicalRig();
     void SetPhysicalGrip(const Vector3 &point,const Vector3 &force);
+    Vector3 PhysicalBalanceVelocity()const;
+    Vector3 SafeFirstPersonEye(const Vector3 &eye)const;
     void SetPhysicalShield(bool active) {physicalShield=active;}
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
     float PhysicalHandDistance(const Vector3 &point)const;
@@ -436,6 +438,7 @@ class HumanoidBase {
     std::vector<std::shared_ptr<football_physics::ShirtCloth>> shirtCloth;
     std::vector<unsigned long> shirtClothTime;
     unsigned long physicalActionTime=0;
+    float physicalPartnerPhase=0;
     bool physicalShield=false;
     Vector3 physicalHandTarget{0};
     bool physicalHandTargetActive=false;

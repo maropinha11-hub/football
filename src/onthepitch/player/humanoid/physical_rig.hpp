@@ -39,26 +39,31 @@ struct Input {
   Vec handTarget{{0,0,0}};
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
-  bool action=false,upperReception=false,protect=false,handTargetActive=false;
+  bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
 };
 struct Metrics {
   float lean=0,turnRate=0,supportMargin=0,effort=0,reach=0,penetration=0;
   float angularSpeed=0,kineticEnergy=0,jointError=0;
   unsigned groundContacts=0;
   float selfPenetration=0,brace=0,recoveryPhase=0;
+  float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
+  int balancePhase=0,balanceChoice=-1;
 };
 struct RecoveryKey { Pose pose{}; Vec pelvis{{0,0,0}}; };
 using RecoveryMotion=std::vector<RecoveryKey>;
+struct BalanceMotion {RecoveryMotion frames;Vec push{{0,-1,0}};float speed=0,gain=1,lateral=0;};
 
 class ArticulatedBody;
+class BalanceController;
 class PhysicalRig {
  public:
   PhysicalRig();
   ~PhysicalRig();
   void configure(const pes3::NativeBind &bind,float heightScale);
   void setRecoveryMotions(RecoveryMotion front,RecoveryMotion back);
+  void setBalanceMotions(std::vector<BalanceMotion> motions);
   void reset();
-  void impulse(Vec newtonSeconds,Vec lever={{0,0,.35f}});
+  void impulse(Vec newtonSeconds,Vec lever={{0,0,.35f}},bool forceFall=false);
   void step(const Input &input,float dt=.01f);
   // Re-sample a native animation phase within the same simulation tick.
   // This never advances momentum, balance filters or the reach envelope.
@@ -71,9 +76,10 @@ class PhysicalRig {
   const Metrics &metrics()const{return debug;}
   bool initialized()const{return ready;}
   const Pose &additivePose()const{return additive;}
+  Vec balanceVelocity()const;
   float renderWeight()const{return state==Mode::Active?0.f:1.f;}
   float age()const{return stateAge;}
-  static constexpr float mass=75.f;
+  static constexpr float mass=84.f;
  private:
   void forwardKinematics();
   void solveLeg(unsigned hip,Vec target);
@@ -85,6 +91,14 @@ class PhysicalRig {
   Pose local{},world{};
   Pose additive{};
   std::unique_ptr<ArticulatedBody> articulated;
+  std::unique_ptr<BalanceController> balance;
+  std::vector<BalanceMotion> balanceMotions;
+  int balanceChoice=-1,handShoulder=3;
+  float balanceMotionTime=0,handEnvelope=0,handDt=.01f;
+  bool forcedFall=false,handUpdatePending=false,handInitialized=false;
+  Quat handPose[2];
+  Vec handVelocity[2]{};
+  Vec lastHandTarget{{0,0,0}};
   Pose recoveryPose{};
   RecoveryMotion recoveryFront,recoveryBack;
   const RecoveryMotion *recoveryMotion=nullptr;

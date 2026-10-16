@@ -130,9 +130,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "F8: impacto lateral leve, com recuperacao de equilibrio.\n"
         "F9: queda fisica; levantar usa as animacoes originais com apoio.\n"
         "F10: parceiro ao lado / pressionando / fora do treino.\n"
-        "Segure H ou L3: alcancar e segurar a camisa do parceiro proximo.\n"
+        "F11: alternar bola no parceiro / no jogador para testar LT.\n"
+        "Segure LT/L2: com bola protege; sem bola tenta segurar a camisa.\n"
         "Solte para largar; distancia excessiva tambem solta.\n"
-        "Segure N ou LT: protecao com o braco proximo do adversario.\n"
+        "H: agarrar; N: proteger. L3 nao aciona mais a camisa.\n"
         "M: teste de disputa corporal, apenas em alcance de contato.\n"
         "R/View: reiniciar, inclusive durante uma queda.\n"
         "F4: passe rasteiro; F5: bola para o peito; F6: bola alta.\n"
@@ -140,6 +141,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "partida-fisica.bat: o mesmo experimento contra os times da CPU.\n"
         "Impactos entre jogadores tambem perturbam o corpo controlado.\n"
         "run-training.bat e jogar-partida.bat abrem as versoes aprovadas.\n\n"
+        "O equilibrio tenta recuperar apoio antes de uma queda comum.\n"
         "A locomocao continua guiada pelas animacoes existentes, com ajustes\n"
         "de equilibrio, bracos e alcance gradual. Nas quedas, articulacoes,\n"
         "gravidade e contatos com o chao controlam o corpo. A recuperacao\n"
@@ -151,7 +153,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Camera: sensibilidade aumentada de 2.6 para 3.8.\n"
         "Os 270 contextos de teste sao variacoes de parametros,\n"
         "nao 270 capturas de movimento novas. Os limites completos da\n"
-        "pesquisa e da simulacao constam em docs/FISICA-CORPORAL.md no GitHub.\n",
+        "pesquisa e da simulacao constam em docs/EQUILIBRIO-E-CONTATO.md no GitHub.\n",
         encoding="utf-8",
     )
     (stage / "run-controller-test.bat").write_text(

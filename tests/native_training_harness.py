@@ -34,8 +34,8 @@ class NativeTraining:
             self.pad_file=self.output/'pad.txt'
             self.pad(0,0)
             self.env.update(LD_PRELOAD=str(library),FOOTBALL_TEST_PAD_FILE=str(self.pad_file))
-    def pad(self,x,y,sprint=False,close=False,buttons=0):
-        self.pad_values=[int(x*32767),int(y*32767),0,0,-32768,32767 if close else-32768,
+    def pad(self,x,y,sprint=False,close=False,buttons=0,left_trigger=0):
+        self.pad_values=[int(x*32767),int(y*32767),0,0,int(max(0,min(1,left_trigger))*65535-32768),32767 if close else-32768,
                          buttons|((1<<10)if sprint else 0)] # SDL right shoulder = RB.
         temporary=self.pad_file.with_suffix('.new');temporary.write_text(' '.join(map(str,self.pad_values)))
         temporary.replace(self.pad_file)

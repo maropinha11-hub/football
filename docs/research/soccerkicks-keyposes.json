@@ -1,0 +1,290 @@
+{
+  "kind": "manual_2d_reference_study",
+  "source_url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/overview/gif_over.gif",
+  "source_sha256": "261f833bfa7231231736ebb82eed8d1c32b28f74ce00f6f6757603e82515e755",
+  "source_license": "CC0-1.0; authors Nayari Lessa, Esther Colombini and Alexandre Simoes",
+  "frame_size": [
+    2597,
+    720
+  ],
+  "crop": [
+    0,
+    0,
+    640,
+    720
+  ],
+  "frame_duration_ms": 50,
+  "uncertainty_pixels": 16,
+  "coordinates": "pixels in original first 640x720 panel; visually digitized, not source HMMR annotations",
+  "frames": [
+    {
+      "frame": 0,
+      "time_s": 0.0,
+      "phase": "aproximacao",
+      "points": {
+        "shoulder_center": [
+          140,
+          246
+        ],
+        "hip_center": [
+          128,
+          382
+        ],
+        "wrist_image_left": [
+          80,
+          372
+        ],
+        "wrist_image_right": [
+          208,
+          354
+        ],
+        "ankle_image_left": [
+          102,
+          506
+        ],
+        "ankle_image_right": [
+          138,
+          500
+        ]
+      },
+      "projected_trunk_angle_deg": 5.042451069170913,
+      "projected_wrist_span_over_trunk": 0.9467586447086037
+    },
+    {
+      "frame": 20,
+      "time_s": 1.0,
+      "phase": "ajuste_apoio",
+      "points": {
+        "shoulder_center": [
+          184,
+          256
+        ],
+        "hip_center": [
+          160,
+          388
+        ],
+        "wrist_image_left": [
+          102,
+          386
+        ],
+        "wrist_image_right": [
+          234,
+          368
+        ],
+        "ankle_image_left": [
+          114,
+          530
+        ],
+        "ankle_image_right": [
+          130,
+          494
+        ]
+      },
+      "projected_trunk_angle_deg": 10.304846468766033,
+      "projected_wrist_span_over_trunk": 0.9929753269845129
+    },
+    {
+      "frame": 25,
+      "time_s": 1.25,
+      "phase": "preparacao",
+      "points": {
+        "shoulder_center": [
+          216,
+          212
+        ],
+        "hip_center": [
+          184,
+          356
+        ],
+        "wrist_image_left": [
+          160,
+          354
+        ],
+        "wrist_image_right": [
+          310,
+          314
+        ],
+        "ankle_image_left": [
+          98,
+          460
+        ],
+        "ankle_image_right": [
+          202,
+          538
+        ]
+      },
+      "projected_trunk_angle_deg": 12.528807709151511,
+      "projected_wrist_span_over_trunk": 1.0523957262864014
+    },
+    {
+      "frame": 30,
+      "time_s": 1.5,
+      "phase": "abertura_bracos",
+      "points": {
+        "shoulder_center": [
+          264,
+          210
+        ],
+        "hip_center": [
+          252,
+          368
+        ],
+        "wrist_image_left": [
+          104,
+          336
+        ],
+        "wrist_image_right": [
+          450,
+          246
+        ],
+        "ankle_image_left": [
+          98,
+          512
+        ],
+        "ankle_image_right": [
+          234,
+          540
+        ]
+      },
+      "projected_trunk_angle_deg": 4.343239951689387,
+      "projected_wrist_span_over_trunk": 2.2562465288431315
+    },
+    {
+      "frame": 35,
+      "time_s": 1.75,
+      "phase": "seguimento_chute",
+      "points": {
+        "shoulder_center": [
+          300,
+          204
+        ],
+        "hip_center": [
+          288,
+          348
+        ],
+        "wrist_image_left": [
+          192,
+          340
+        ],
+        "wrist_image_right": [
+          418,
+          340
+        ],
+        "ankle_image_left": [
+          264,
+          556
+        ],
+        "ankle_image_right": [
+          428,
+          432
+        ]
+      },
+      "projected_trunk_angle_deg": 4.763641690726178,
+      "projected_wrist_span_over_trunk": 1.564023203912103
+    },
+    {
+      "frame": 40,
+      "time_s": 2.0,
+      "phase": "recuperacao_apoio",
+      "points": {
+        "shoulder_center": [
+          348,
+          202
+        ],
+        "hip_center": [
+          348,
+          366
+        ],
+        "wrist_image_left": [
+          326,
+          364
+        ],
+        "wrist_image_right": [
+          400,
+          326
+        ],
+        "ankle_image_left": [
+          416,
+          554
+        ],
+        "ankle_image_right": [
+          458,
+          528
+        ]
+      },
+      "projected_trunk_angle_deg": 0.0,
+      "projected_wrist_span_over_trunk": 0.5072349839776932
+    },
+    {
+      "frame": 45,
+      "time_s": 2.25,
+      "phase": "recomposicao",
+      "points": {
+        "shoulder_center": [
+          368,
+          216
+        ],
+        "hip_center": [
+          380,
+          376
+        ],
+        "wrist_image_left": [
+          414,
+          370
+        ],
+        "wrist_image_right": [
+          408,
+          380
+        ],
+        "ankle_image_left": [
+          422,
+          566
+        ],
+        "ankle_image_right": [
+          516,
+          514
+        ]
+      },
+      "projected_trunk_angle_deg": 4.289153328819018,
+      "projected_wrist_span_over_trunk": 0.07268276506915651
+    },
+    {
+      "frame": 56,
+      "time_s": 2.8000000000000003,
+      "phase": "retorno",
+      "points": {
+        "shoulder_center": [
+          374,
+          210
+        ],
+        "hip_center": [
+          372,
+          380
+        ],
+        "wrist_image_left": [
+          334,
+          374
+        ],
+        "wrist_image_right": [
+          512,
+          300
+        ],
+        "ankle_image_left": [
+          394,
+          558
+        ],
+        "ankle_image_right": [
+          392,
+          534
+        ]
+      },
+      "projected_trunk_angle_deg": 0.6740368979845053,
+      "projected_wrist_span_over_trunk": 1.1338585477032987
+    }
+  ],
+  "limits": [
+    "Eight approximate projected keyposes from one short kick; not 3D motion capture or a bank of game-ready animations.",
+    "Camera perspective and occlusions prevent interpreting projected angles as anatomical joint angles.",
+    "Native runtime variants are separate procedural references, not hundreds of independently rotoscoped performances."
+  ]
+}
