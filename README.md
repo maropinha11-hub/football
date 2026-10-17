@@ -33,11 +33,16 @@ reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
 os limites desta revisão](docs/BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
 O treino e a partida aprovados continuam nos atalhos anteriores.
 
-O experimento também acrescenta **334 perfis procedurais de tronco e braços**
+RT, parado próximo da bola, inicia a passagem do pé; RT com direção faz um
+arrasto de sola. Solte e pressione novamente para repetir. A condução recebe
+pequenos quiques após contato real. Veja [o teste de sola e as variações
+ampliadas](docs/SOLA-E-VARIACOES.md).
+
+O experimento também acrescenta **1.000 perfis procedurais de tronco e braços**
 para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
 rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
 contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
-somente essa camada. O catálogo audita 1.254 pares candidatos incluindo
+somente essa camada. O catálogo audita 2.604 pares candidatos incluindo
 espelhamentos, sem contar essas combinações como capturas novas. Veja
 [como testar e os limites das variações situacionais](docs/VARIACOES-CORPORAIS-SITUACIONAIS.md).
 
@@ -222,7 +227,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Mover / conduzir | Analógico esquerdo | WASD |
 | Virar sem bola / olhar com bola | Analógico direito | Setas |
 | Correr | RB + analógico | Shift + WASD |
-| Reservado no treino | RT | Espaço |
+| Modo sola no treino físico | RT | — |
 | Passe curto | A | J |
 | Passe em profundidade | Y | I |
 | Passe alto / carrinho sem bola | B | L |
@@ -259,9 +264,9 @@ O jogador destro conserva ligeiramente mais impulso em contatos com o pé
 esquerdo, sem reduzir o alcance dos toques. O contato recebe um ajuste suave
 da perna no instante do toque, com limite de alcance e sem esticar os ossos.
 Reiniciar o exercício também limpa os comandos de chute e passe pendentes.
-RB + RT adianta a bola no instante de um toque original e mantém a assistência
-para alcançá-la, inclusive ao virar e ao soltar RT. Passes e chutes liberam
-essa recuperação. A bola conserva sua trajetória física entre os contatos.
+RB mantém a corrida nativa. No treino físico, RT inicia os gestos de sola
+quando o jogador está parado e a bola está próxima. A bola conserva sua
+trajetória física entre os contatos.
 
 No exercício de bola aérea, a trajetória permite cabecear antes do primeiro
 quique. Prepare A para passar ou X para finalizar antes da chegada da bola;

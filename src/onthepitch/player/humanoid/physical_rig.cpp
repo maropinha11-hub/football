@@ -155,7 +155,7 @@ void PhysicalRig::evaluate(const Input &input){
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
   leanAxis=capped(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),.38f);
-  const float actionBias=input.upperReception || input.action?0.f:1.f;
+  const float actionBias=input.upperReception || input.situation.kind==football_situations::ActionKind::Header?0.f:input.action?.35f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
   Pose target=input.pose;
   if(balanceChoice>=0 && !input.staggering && !input.action && !input.upperReception){

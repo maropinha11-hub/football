@@ -92,6 +92,7 @@ bool _PassFiddlingEnabled() {
 
 void Humanoid::Process() {
   if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
+  if(ProcessFootwork())return;
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);
   _cache_AccelerationFactor = GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor);
@@ -549,6 +550,12 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (ballcontrol): %f\n", bumpyRideBias);
 
+        if(PhysicalRigEnabled() && match->GetBall()->Predict(0).coords[2]<.145f && touchVec.coords[2]<.72f) {
+          const float hop=clamp(GetConfiguration()->GetReal("training_control_hop",.68f),0.f,.85f);
+          const float delta=(touchVec-currentBallVec).Get2D().GetLength();
+          touchVec.coords[2]=std::max(touchVec.coords[2],hop*clamp(delta/2.f,.70f,1.f));
+          if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CONTROL_HOP t=%lu vz=%.6f delta=%.6f\n",match->GetActualTime_ms(),touchVec.coords[2],delta);
+        }
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.6f * (1.0f - bumpyRideBias)); // 1.0
 

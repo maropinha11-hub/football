@@ -57,12 +57,13 @@ def main():
             check('Windows embeds contextual body actions and independent F1 comparison',all(token in exe
                   for token in [b'PHYSICAL_SITUATION_BANK',b'PHYSICAL_SITUATION_RENDER',b'PHYSICAL_SITUATION_TOGGLE']))
             check('F1 and honest procedural profile counts accompany both packages',all(token in full.read(prefix+'LEIA-FISICA.txt')
-                  for token in [b'F1:',b'334 perfis procedurais',b'1.254 combinacoes',b'nao sao novas capturas']))
+                  for token in [b'F1:',b'1000 perfis procedurais',b'2.604 combinacoes',b'nao sao novas capturas']))
             catalog=full.read(prefix+'situational-motion-catalog.json')
             check('packaged catalog equals generated source and update manifest', catalog == patch.read('situational-motion-catalog.json')
                   and catalog == Path('config/situational-motion-catalog.json').read_bytes())
             check('situational profiles are enabled only within the opt-in physical path',b'"training_situational_motion" "true"'in config
                   and all(b'--physical-rig'not in full.read(prefix+f)for f in ['run-training.bat','jogar-partida.bat']))
+            check('the portable binary includes RT sole contact and measured control lift',all(token in exe for token in [b'PHYSICAL_FOOTWORK_CONTACT',b'PHYSICAL_FOOTWORK_END',b'PHYSICAL_CONTROL_HOP']))
             recovery_files=['media/animations/movement_special/idle/special/000_stand_up_from_'+side+'.anim'for side in ['front','back']]
             check('both original get-up animations are included unchanged', all(full.read(prefix+path)==(Path('data')/path).read_bytes()for path in recovery_files))
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),

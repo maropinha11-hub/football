@@ -81,7 +81,7 @@ int main(int argc,char **argv) {
   Context hard=c;hard.speed=6;hard.power=1;hard.pressure=1;hard.signedTurn=2.5f;hard.difficulty=1;hard.ball={{.6f,-.5f,.1f}};
   layer.reset();settle(layer,hard);auto difficult=base;layer.evaluate(hard,bind,1,difficult,{{0,0,.96f}});
   check(layer.metrics().torsoBend>easy.torsoBend*2 && layer.metrics().shoulderAmplitude>easy.shoulderAmplitude*2,"difficult passes recruit substantially more torso and arms");
-  check(layer.metrics().torsoBend<.30f && layer.metrics().torsoTwist<.35f && layer.metrics().shoulderAmplitude<.40f,"whole upper-body adaptation respects conservative angular limits");
+  check(layer.metrics().torsoBend<.42f && layer.metrics().torsoTwist<.49f && layer.metrics().shoulderAmplitude<.49f,"whole upper-body adaptation respects conservative angular limits");
   bool exact=true;for(unsigned i:{0u,7u,8u,9u,10u,11u,12u})exact&=std::memcmp(base[i].data(),difficult[i].data(),sizeof(pes3::Rotation))==0;
   const auto oldPoints=points(bind,base),newPoints=points(bind,difficult);
   check(exact && pointDistance(oldPoints[9],newPoints[9])==0 && pointDistance(oldPoints[12],newPoints[12])==0,"pelvis, legs and both contact foot endpoints remain exactly native");
@@ -160,9 +160,9 @@ int main(int argc,char **argv) {
   // here and keeps profile counts separate from genuinely checked poses.
   unsigned matrix=0;bool matrixSafe=true;float maximumBend=0,maximumShoulder=0;
   for(unsigned type=1;type<=5;++type)for(float turn:{-2.6f,0.f,2.6f})
-    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f}) {
+    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f})for(unsigned pattern=0;pattern<3;++pattern) {
       Context variant=hard;variant.kind=ActionKind(type);variant.signedTurn=turn;variant.speed=speed;
-      variant.phase=phase;variant.trunkGain=variant.armGain=variant.followThroughGain=gain;
+      variant.pattern=pattern;variant.phase=phase;variant.trunkGain=variant.armGain=variant.followThroughGain=gain;
       variant.rightFoot=matrix%2==0;variant.supportSide=variant.rightFoot?-1:1;
       layer.reset();for(unsigned tick=0;tick<60;++tick)layer.step(variant,.02f);
       const auto source=native[matrix%native.size()];auto adjusted=source;
@@ -175,8 +175,14 @@ int main(int argc,char **argv) {
       maximumBend=std::max(maximumBend,layer.metrics().torsoBend);
       maximumShoulder=std::max(maximumShoulder,layer.metrics().shoulderAmplitude);++matrix;
     }
-  check(matrix==360 && matrixSafe && maximumBend<.30f && maximumShoulder<.40f,
-    "360 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
+  check(matrix==1080 && matrixSafe && maximumBend<.42f && maximumShoulder<.49f,
+    "1080 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
+  layer.reset();Context open=hard;open.pattern=0;open.signedTurn=1.3f;settle(layer,open);
+  auto compact=base;layer.evaluate(open,bind,1,compact,{{0,0,.96f}});
+  layer.reset();open.pattern=1;settle(layer,open);auto lateralPose=base;layer.evaluate(open,bind,1,lateralPose,{{0,0,.96f}});
+  layer.reset();open.pattern=2;open.ball[2]=-.05f;settle(layer,open);auto aerialPose=base;layer.evaluate(open,bind,1,aerialPose,{{0,0,.96f}});
+  check(qdistance(compact[1],lateralPose[1])>.025f && qdistance(lateralPose[1],aerialPose[1])>.04f,
+    "compact, lateral opening and airborne patterns change actual torso axes instead of cloning a label");
   layer.reset();Context corrupt=hard;corrupt.phase=std::nanf("");corrupt.ball[0]=std::nanf("");
   corrupt.power=std::nanf("");corrupt.signedTurn=std::nanf("");layer.step(corrupt);
   auto safe=base;layer.evaluate(corrupt,bind,1,safe,{{0,0,.96f}});bool finitePose=true;

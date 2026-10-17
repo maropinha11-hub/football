@@ -10,13 +10,18 @@ import subprocess
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
-p.add_argument('--only',nargs='+',choices=['physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','anatomy_lab','stagger_lab','stagger_match'])
+p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','footwork_external','footwork_fps','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','anatomy_lab','stagger_lab','stagger_match'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
 env['LD_LIBRARY_PATH']=str(native/'lib/x86_64-linux-gnu')+':'+env.get('LD_LIBRARY_PATH','')
 env['FOOTBALL_TEST_GL_THREADS']='1'
-cases=[('physical_solo','training_physical_rig_smoke.py',[]),
+cases=[('control_hop_comparison','training_control_hop_smoke.py',[]),
+       ('footwork_external','training_footwork_smoke.py',[]),
+       ('footwork_fps','training_footwork_smoke.py',['--camera','2']),
+       ('situational_fps','training_situational_actions_smoke.py',[]),
+       ('situational_external','training_situational_actions_smoke.py',['--camera','1']),
+       ('physical_solo','training_physical_rig_smoke.py',[]),
        ('physical_actions','training_running_actions_smoke.py',['--physical']),
        ('physical_controls','training_native_controls_smoke.py',['--physical']),
        ('physical_match','training_physical_rig_smoke.py',['--match']),

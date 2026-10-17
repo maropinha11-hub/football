@@ -143,6 +143,8 @@ class CatalogSources(unittest.TestCase):
             for identifier in record["profile_ids"]:
                 profile = indexed[identifier]
                 self.assertLessEqual(profile["effort"]*.5, float(metadata.get("touch_maxpowerfactor", "1"))+.000001)
+                if profile["pattern"] == 2:
+                    self.assertGreaterEqual(record["contact"]["ball"][2], .45)
                 self.assertLessEqual(abs(profile["reach"]*.5-source_reach), .2500001)
                 self.assertLessEqual(abs(profile["turn"]*.5-turn), turn_margin)
 
@@ -152,7 +154,7 @@ class CatalogSources(unittest.TestCase):
             expected = (catalogue.KIND_VALUES[profile["kind"]]*128+
                         profile["effort"]*27+profile["pressure"]*9+
                         profile["turn"]*3+profile["reach"])
-            self.assertEqual(profile["id"], expected)
+            self.assertEqual(profile["id"], expected*4+profile["pattern"])
             for field in ("trunkGain", "armGain", "followThroughGain"):
                 self.assertGreaterEqual(profile[field], .7)
                 self.assertLessEqual(profile[field], 1.2)
@@ -184,9 +186,9 @@ class CompiledProfileLookup(unittest.TestCase):
         source = folder/"profiles.cpp"
         source.write_text('''
 #include "situational_profiles.hpp"
-extern "C" unsigned query(int kind,float effort,float pressure,float turn,float reach){
+extern "C" unsigned query(int kind,float effort,float pressure,float turn,float reach,unsigned pattern){
   return football_situations::profileFor(
-    static_cast<football_situations::ActionKind>(kind),effort,pressure,turn,reach).id;
+    static_cast<football_situations::ActionKind>(kind),effort,pressure,turn,reach,pattern).id;
 }
 ''')
         subprocess.run(["g++", "-std=c++14", "-Wall", "-Wextra", "-Werror",
@@ -194,9 +196,10 @@ extern "C" unsigned query(int kind,float effort,float pressure,float turn,float 
                         str(source), "-o", str(folder/"profiles.so")],
                        check=True, capture_output=True)
         cls.library = ctypes.CDLL(str(folder/"profiles.so"))
-        cls.query = cls.library.query
-        cls.query.argtypes = [ctypes.c_int]+[ctypes.c_float]*4
-        cls.query.restype = ctypes.c_uint
+        query = cls.library.query
+        query.argtypes = [ctypes.c_int]+[ctypes.c_float]*4+[ctypes.c_uint]
+        query.restype = ctypes.c_uint
+        cls.query = staticmethod(lambda kind, effort, pressure, turn, reach, pattern=0: query(kind, effort, pressure, turn, reach, pattern))
 
     @classmethod
     def tearDownClass(cls):
@@ -206,7 +209,7 @@ extern "C" unsigned query(int kind,float effort,float pressure,float turn,float 
         for profile in catalogue.profiles():
             self.assertEqual(self.query(catalogue.KIND_VALUES[profile["kind"]],
                                         profile["effort"]*.5, profile["pressure"]*.5,
-                                        profile["turn"]*.5, profile["reach"]*.5),
+                                        profile["turn"]*.5, profile["reach"]*.5, profile["pattern"]),
                              profile["id"])
 
     def test_category_constraints_clamp_unsupported_extremes(self):

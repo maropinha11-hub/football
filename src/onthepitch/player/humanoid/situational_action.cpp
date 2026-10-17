@@ -58,6 +58,9 @@ void ActionLayer::step(const Context &c,float dt) {
   const float direction=clamp(std::atan2(finite(c.direction[0]),-finite(c.direction[1],-1)),-pi,pi)/pi;
   const float turn=clamp(c.signedTurn/pi,-1,1);
   const float lateral=clamp(c.ball[0]/.7f,-1,1);
+  const float opening=std::fabs(std::sin(clamp(c.signedTurn,-pi,pi)));
+  const float height=clamp((finite(c.ball[2],-.85f)+.85f)/1.1f,0,1);
+  const float openPattern=c.pattern==1?1.f:0.f,airPattern=c.pattern==2?1.f:0.f;
   float type=1;
   if(c.kind==ActionKind::Shot)type=1.18f;
   if(c.kind==ActionKind::Cross)type=1.10f;
@@ -66,24 +69,26 @@ void ActionLayer::step(const Context &c,float dt) {
   const float effort=load*type*envelope;
   const float trunk=effort*clamp(c.trunkGain,0,1.25f);
   if(c.kind!=ActionKind::Header) {
-    target[1]={{trunk*(.105f*before+.155f*after),
-      trunk*(-foot*(.035f*before+.065f*after)+.025f*lateral-.025f*support*pressure),
-      trunk*(foot*(-.19f*before+.24f*after)+.065f*direction+.055f*turn)}};
-    target[1][0]=clamp(target[1][0],-.24f,.24f);
-    target[1][1]=clamp(target[1][1],-.12f,.12f);
-    target[1][2]=clamp(target[1][2],-.33f,.33f);
+    target[1]={{trunk*((.17f+.12f*opening)*before+.25f*after-airPattern*.26f*height*before),
+      trunk*(-foot*(.055f*before+.09f*after)+.06f*lateral-.045f*support*pressure+
+             openPattern*.10f*std::sin(turn*pi)*before+airPattern*.08f*foot*before),
+      trunk*(foot*(-.26f*before+.34f*after)+.12f*direction+.09f*turn+
+             openPattern*.20f*std::sin(turn*pi)*(before-.5f*after))}};
+    target[1][0]=clamp(target[1][0],-.30f,.36f);
+    target[1][1]=clamp(target[1][1],-.20f,.20f);
+    target[1][2]=clamp(target[1][2],-.48f,.48f);
   }
   // Counterbalancing upper arms are intentionally modest. The native clip
   // supplies the gross action, and the anatomical constraint pass runs later.
   // Added abduction keeps the arms away from the torso instead of planting a
   // hand on an opponent or manufacturing a support force.
-  const float span=effort*(.07f+.15f*pressure+.13f*(before+after));
-  const float counter=effort*foot*(.14f*before-.17f*after);
+  const float span=effort*(.10f+.17f*pressure+(.20f+.09f*openPattern+.12f*airPattern)*(before+after));
+  const float counter=effort*foot*(.21f*before-.25f*after);
   target[3]={{effort*(-.09f*before+.08f*after)-.35f*counter,-span,counter}};
   target[5]={{effort*(.08f*before-.09f*after)+.35f*counter,span,-counter}};
   target[4]={{-effort*(.09f*before+.11f*after+.04f*pressure),0,0}};
   target[6]={{-effort*(.11f*before+.09f*after+.04f*pressure),0,0}};
-  for(unsigned i:{3u,4u,5u,6u})target[i]=bounded(pes3::scalePoint(target[i],clamp(c.armGain,0,1.25f)),.38f);
+  for(unsigned i:{3u,4u,5u,6u})target[i]=bounded(pes3::scalePoint(target[i],clamp(c.armGain,0,1.25f)),.48f);
 
   // Critically damped, acceleration- and speed-bounded filters. Unlike a
   // per-evaluation lerp, the result cannot depend on how many candidate poses
@@ -96,11 +101,11 @@ void ActionLayer::step(const Context &c,float dt) {
     acceleration=bounded(acceleration,36.f);
     velocity_[i]=bounded(pes3::addPoint(velocity_[i],pes3::scalePoint(acceleration,dt)),2.1f);
     offset_[i]=pes3::addPoint(offset_[i],pes3::scalePoint(velocity_[i],dt));
-    offset_[i]=bounded(offset_[i],.39f);
+    offset_[i]=bounded(offset_[i],i==1?.58f:.49f);
     if(i==1) {
-      offset_[i][0]=clamp(offset_[i][0],-.25f,.25f);
-      offset_[i][1]=clamp(offset_[i][1],-.13f,.13f);
-      offset_[i][2]=clamp(offset_[i][2],-.34f,.34f);
+      offset_[i][0]=clamp(offset_[i][0],-.30f,.36f);
+      offset_[i][1]=clamp(offset_[i][1],-.20f,.20f);
+      offset_[i][2]=clamp(offset_[i][2],-.48f,.48f);
     }
     maximumRate=std::max(maximumRate,length(pes3::subtractPoint(offset_[i],old))/dt);
   }

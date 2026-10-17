@@ -1,5 +1,8 @@
 # Variações corporais durante as jogadas
 
+Registro da revisão `11a818c`. A ampliação seguinte está em
+[Sola, ações laterais e respostas aéreas](SOLA-E-VARIACOES.md).
+
 Esta etapa acrescenta respostas de tronco e braços às animações existentes.
 Um passe em corrida, com giro do corpo ou pressão próxima, pode recrutar mais
 o tronco e abrir os braços para contrabalançar o movimento. A preparação e o

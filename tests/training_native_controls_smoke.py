@@ -15,7 +15,10 @@ try:
    for rt in [False,True]:
     g.reset();g.pad(0,-1,sprint=sprint,close=rt);g.advance(1500);f=g.advance(1400)
     speeds.append(statistics.median(x['speed']for x in f))
-   check('RT remains reserved with RB '+str(sprint),abs(speeds[0]-speeds[1])<.2,speeds)
+   if a.physical and not sprint:
+    check('RT selects the stationary sole mode instead of ordinary walking',speeds[0]>1.0 and speeds[1]<.2 and 'PHYSICAL_FOOTWORK_BEGIN' in g.log.read_text(),speeds)
+   else:
+    check('RT preserves native movement with RB '+str(sprint),abs(speeds[0]-speeds[1])<.2,speeds)
   g.reset();g.pad(0,-1);g.advance(500);g.keys(['Right'],True);f=g.advance(450);g.keys(['Right'],False)
   check('right stick/head look is independent from forward body travel',abs(f[-1]['head_yaw'])>.5 and abs(f[-1]['player_yaw'])<.2,f[-1])
   f=g.advance(2300);check('head recenters gradually',abs(f[-1]['head_yaw'])<.2,f[-1]['head_yaw'])

@@ -93,6 +93,7 @@ bool HumanoidBase::PhysicalStaggering()const {
      (currentAnim->functionType==e_FunctionType_Trip && currentAnim->anim->GetVariable("triptype")=="1"));
 }
 void HumanoidBase::ResetPhysicalRig(){
+  ResetFootwork();
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();fetchedPhysicalRig=false;
   physicalSituationProfile=0;buf_situationState.Clear();fetchedSituationState=Vector3(0);
@@ -174,7 +175,7 @@ void HumanoidBase::AddPhysicalImpulse(const Vector3 &value,const Vector3 &lever,
 void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   using football_situations::ActionKind;
   auto &context=input.situation;
-  context.enabled=GetConfiguration()->GetBool("training_situational_motion",true) && !input.upperReception && !input.staggering;
+  context.enabled=GetConfiguration()->GetBool("training_situational_motion",true) && !input.upperReception && !input.staggering && !FootworkBusy();
   const auto type=currentAnim->functionType;
   const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
   if(currentAnim->touchFrame>=0){
@@ -237,7 +238,9 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   // is useful on cuts and contested touches, not on every ordinary foot tap.
   if(context.kind==ActionKind::Control && turn<.18f && context.pressure<.4f)context.kind=ActionKind::None;
   if(context.kind!=ActionKind::None){
-    const auto &profile=football_situations::profileFor(context.kind,std::max(context.power,context.difficulty),context.pressure,turn,reach);
+    const unsigned pattern=ballLocal.coords[2]+.85f>.48f?2u:std::fabs(context.signedTurn)>.40f?1u:0u;
+    const auto &profile=football_situations::profileFor(context.kind,std::max(context.power,context.difficulty),context.pressure,turn,reach,pattern);
+    context.pattern=profile.pattern;
     physicalSituationProfile=profile.id;context.trunkGain=profile.trunkGain;context.armGain=profile.armGain;context.followThroughGain=profile.followThroughGain;
   }
 }
@@ -256,7 +259,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     input.action=currentAnim->functionType!=e_FunctionType_Movement && currentAnim->functionType!=e_FunctionType_BallControl;
     // Preserve the authored preparation pose while a one-touch action is
     // queued. Its current base can still be locomotion during interception.
-    input.action=input.action || (player->GetExternalController() && static_cast<HumanController*>(player->GetExternalController())->GetActionMode()!=0);
+    input.action=input.action || FootworkBusy() || (player->GetExternalController() && static_cast<HumanController*>(player->GetExternalController())->GetActionMode()!=0);
     std::vector<Player*> opponents;match->GetTeam(1-static_cast<Player*>(player)->GetTeamID())->GetActivePlayers(opponents);
     for(auto *opponent:opponents) {
       const Vector3 delta=opponent->GetPosition()-spatialState.position;
@@ -268,7 +271,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     // remains responsible for accepting an actual ball impulse.
     const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
     const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
-    if(UsesTrainingContacts() && currentAnim->touchFrame>=0 && !currentAnim->touchMade && remaining>=0 && remaining<=24 &&
+    if(!FootworkBusy() && UsesTrainingContacts() && currentAnim->touchFrame>=0 && !currentAnim->touchMade && remaining>=0 && remaining<=24 &&
        (part=="right_foot" || part=="left_foot" || part=="head" || part=="trunk")) {
       Quaternion q[13],global[13];Vector3 p[13];
       const unsigned frame=std::min<unsigned>(currentAnim->touchFrame,currentAnim->positions.size()-1);
