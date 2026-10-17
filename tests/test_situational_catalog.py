@@ -97,12 +97,14 @@ class CatalogSources(unittest.TestCase):
         self.assertIsNone(chest["action_kind"])
         self.assertIn(control["contact"]["part"], catalogue.FOOT_PARTS)
         self.assertEqual(control["action_kind"], "Control")
-        # Several source filenames contain 'header' but AddExtraTouches uses
-        # nearest utility geometry, which may classify an arm. Do not replace
-        # the actual classification with a filename guess.
+        # Raised arms are closer to the utility marker in these authored
+        # headers. The corrected native loader requires actual HEAD contact.
         ambiguous = indexed["data/media/animations/pass/idle/nonbase/090_header.anim"]
-        self.assertNotEqual(ambiguous["contact"]["part"], "head")
-        self.assertEqual(ambiguous["profile_ids"], [])
+        self.assertEqual(ambiguous["contact"]["part"], "head")
+        self.assertEqual(ambiguous["contact"]["classification"],
+                         "native_header_semantics_with_runtime_head_skin_gate")
+        self.assertEqual(ambiguous["action_kind"], "Header")
+        self.assertTrue(ambiguous["profile_ids"])
 
     def test_native_speed_quantization_matches_real_root_keys(self):
         for record in self.sources:
@@ -154,7 +156,7 @@ class CatalogSources(unittest.TestCase):
             expected = (catalogue.KIND_VALUES[profile["kind"]]*128+
                         profile["effort"]*27+profile["pressure"]*9+
                         profile["turn"]*3+profile["reach"])
-            self.assertEqual(profile["id"], expected*4+profile["pattern"])
+            self.assertEqual(profile["id"], expected*16+profile["pattern"])
             for field in ("trunkGain", "armGain", "followThroughGain"):
                 self.assertGreaterEqual(profile[field], .7)
                 self.assertLessEqual(profile[field], 1.2)

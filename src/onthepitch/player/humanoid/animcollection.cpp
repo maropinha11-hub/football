@@ -983,6 +983,15 @@ int AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode,
         (animation->GetName().find("chest")!=std::string::npos || animation->GetVariable("added_chest")=="true"))
       animation->SetVariable("touch_bodypart","trunk");
 
+    // Geometry origins are a coarse classifier: a raised upper arm may be
+    // nearer the authored forehead marker than the head's mesh origin. The
+    // named native header clips are head contacts, never legal arm passes.
+    // Runtime selection still has to fit their actual weighted head skin.
+    if(TrainingEnabled() && animation->GetName().find("header")!=std::string::npos &&
+       (animation->GetAnimType()=="shortpass" || animation->GetAnimType()=="shot") &&
+       closestBodyPart->GetName().find("arm")!=std::string::npos)
+      animation->SetVariable("touch_bodypart","head");
+
     return animTouchFrame; // XDEBUG disable this
 
     int heightCheat = 0.0f;

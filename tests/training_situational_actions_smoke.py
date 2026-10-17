@@ -93,8 +93,14 @@ def main():
                 pad(*stick, sprint=bool(run_ms))
                 # Capture preparation/follow-through rather than only the
                 # resting pose after the ball has gone.
-                if name in {"standing_forward_pass", "running_right_shot"}:
-                    game.advance(150)
+                if name in {"standing_forward_pass", "running_right_pass", "running_right_shot"}:
+                    # Capture the body at the actual accepted impact rather
+                    # than a fixed delay that can precede a running wind-up.
+                    for _ in range(25):
+                        game.advance(50)
+                        if any(row.get("function") == str(function) for row in
+                               events(game.log.read_text()[start:], "TRAINING_ACTION_TOUCH")):
+                            break
                     capture(game, name)
                 frames = game.advance(2200)
                 pad(0, 0)
@@ -129,6 +135,21 @@ def main():
                       and summary["peak_ball_speed_mps"] > 4,
                       dict(touches=hits, selected=selected,
                            peak_ball_speed_mps=summary["peak_ball_speed_mps"]))
+                contact_time = int(hits[0]["t"]) if hits else -10000
+                impact_body = [row for row in body if abs(int(row["t"])-contact_time) <= 30]
+                impact_render = [row for row in rendered if abs(int(row["t"])-contact_time) <= 250]
+                check(name + " retains torso and arms at impact and in the rendered follow-through",
+                      bool(impact_body) and bool(impact_render)
+                      and maximum(impact_body, "trunk") > .035
+                      and maximum(impact_body, "arms") > .05
+                      and maximum(impact_render, "trunk") > .025,
+                      dict(contact_time=contact_time, simulation_samples=len(impact_body),
+                           rendered_samples=len(impact_render),
+                           simulation_trunk_rad=maximum(impact_body, "trunk"),
+                           simulation_arms_rad=maximum(impact_body, "arms"),
+                           rendered_trunk_rad=maximum(impact_render, "trunk"),
+                           nearest_render_offset_ms=min((abs(int(row["t"])-contact_time)
+                                                        for row in impact_render), default=None)))
                 schema = {"t", "actor", "action", "profile", "source", "difficulty", "phase",
                           "weight", "trunk", "arms", "foot_error", "root_error"}
                 check(name + " measures an applied whole-body situation",

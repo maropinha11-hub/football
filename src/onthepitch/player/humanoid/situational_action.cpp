@@ -46,12 +46,17 @@ void ActionLayer::step(const Context &c,float dt) {
   if(!active&&kind_==ActionKind::None) { reset();return; }
   dt=clamp(dt,.001f,.025f);
   const float phase=clamp(c.phase,0,1),contact=clamp(c.contactPhase,.12f,.88f);
-  const float before=phase<=contact?std::sin(pi*phase/contact):0;
-  const float after=phase>contact?std::sin(pi*(phase-contact)/(1-contact))*clamp(c.followThroughGain,0,1.25f):0;
+  const float recovery=clamp((phase-contact)/(1-contact),0,1);
+  // Keep a loaded upper body THROUGH impact. The previous two half-sines
+  // both reached zero at contact, leaving the native straight torso exposed.
+  const float before=phase<=contact?std::sin(.75f*pi*phase/contact):
+    .70710678f*(1-smooth(recovery/.38f));
+  const float after=smooth((phase-contact+.10f)/.30f)*smooth((1-phase)/.22f)*clamp(c.followThroughGain,0,1.25f);
+  const float plant=smooth(phase/(contact*.65f))*smooth((1-phase)/(1-contact));
   // Preparation peaks before contact and unwinds into the follow-through. A
   // smooth start/end leaves the native clip responsible for its own timing.
   const float envelope=active?smooth(phase/.10f)*smooth((1-phase)/.15f):0;
-  const float hard=active?difficulty(c):metrics_.difficulty,load=.20f+.80f*hard;
+  const float hard=active?difficulty(c):metrics_.difficulty,load=.30f+.90f*hard;
   const float foot=c.rightFoot?1.f:-1.f;
   const float support=c.supportSide<0?-1.f:1.f;
   const float pressure=clamp(c.pressure,0,1);
@@ -61,6 +66,9 @@ void ActionLayer::step(const Context &c,float dt) {
   const float opening=std::fabs(std::sin(clamp(c.signedTurn,-pi,pi)));
   const float height=clamp((finite(c.ball[2],-.85f)+.85f)/1.1f,0,1);
   const float openPattern=c.pattern==1?1.f:0.f,airPattern=c.pattern==2?1.f:0.f;
+  const float lowDrive=c.pattern==3?1.f:0.f,insideSweep=c.pattern==4?1.f:0.f;
+  const float lofted=c.pattern==5?1.f:0.f,backTurn=c.pattern==6?1.f:0.f;
+  const float firstTime=c.pattern==7?1.f:0.f,braced=c.pattern==8?1.f:0.f;
   float type=1;
   if(c.kind==ActionKind::Shot)type=1.18f;
   if(c.kind==ActionKind::Cross)type=1.10f;
@@ -68,12 +76,19 @@ void ActionLayer::step(const Context &c,float dt) {
   std::array<Point,7> target{};
   const float effort=load*type*envelope;
   const float trunk=effort*clamp(c.trunkGain,0,1.25f);
-  if(c.kind!=ActionKind::Header) {
-    target[1]={{trunk*((.17f+.12f*opening)*before+.25f*after-airPattern*.26f*height*before),
+  const float headerRelease=c.kind==ActionKind::Header ?
+    (c.contactMade?smooth(recovery/.18f):0.f):1.f;
+  {
+    target[1]={{trunk*((.22f+.17f*opening)*before+.29f*after-airPattern*.26f*height*before+
+      lowDrive*.15f*plant-lofted*.18f*before+firstTime*.13f*(before-after)+braced*.10f*plant),
       trunk*(-foot*(.055f*before+.09f*after)+.06f*lateral-.045f*support*pressure+
-             openPattern*.10f*std::sin(turn*pi)*before+airPattern*.08f*foot*before),
-      trunk*(foot*(-.26f*before+.34f*after)+.12f*direction+.09f*turn+
-             openPattern*.20f*std::sin(turn*pi)*(before-.5f*after))}};
+             openPattern*.12f*std::sin(turn*pi)*before+airPattern*.08f*foot*before+
+             insideSweep*.13f*foot*plant-lofted*.10f*foot*before+braced*.11f*support*plant),
+      trunk*(foot*(-.30f*before+.40f*after)+.18f*direction*plant+.14f*turn*plant+
+             openPattern*.24f*std::sin(turn*pi)*(before-.5f*after)+
+             insideSweep*.22f*foot*(after-.5f*before)+backTurn*.24f*turn*(before+after)+
+             firstTime*.15f*foot*(before-after))}};
+    target[1]=pes3::scalePoint(target[1],headerRelease);
     target[1][0]=clamp(target[1][0],-.30f,.36f);
     target[1][1]=clamp(target[1][1],-.20f,.20f);
     target[1][2]=clamp(target[1][2],-.48f,.48f);
@@ -82,8 +97,8 @@ void ActionLayer::step(const Context &c,float dt) {
   // supplies the gross action, and the anatomical constraint pass runs later.
   // Added abduction keeps the arms away from the torso instead of planting a
   // hand on an opponent or manufacturing a support force.
-  const float span=effort*(.10f+.17f*pressure+(.20f+.09f*openPattern+.12f*airPattern)*(before+after));
-  const float counter=effort*foot*(.21f*before-.25f*after);
+  const float span=effort*(.10f+.17f*pressure+(.24f+.09f*openPattern+.12f*airPattern+.10f*braced+.08f*backTurn)*(before+after));
+  const float counter=effort*foot*((.25f+.10f*insideSweep+.08f*firstTime)*before-(.29f+.10f*backTurn)*after);
   target[3]={{effort*(-.09f*before+.08f*after)-.35f*counter,-span,counter}};
   target[5]={{effort*(.08f*before-.09f*after)+.35f*counter,span,-counter}};
   target[4]={{-effort*(.09f*before+.11f*after+.04f*pressure),0,0}};
@@ -111,10 +126,10 @@ void ActionLayer::step(const Context &c,float dt) {
   }
   if(active)kind_=c.kind;
   metrics_.kind=kind_;
-  metrics_.torsoBend=kind_==ActionKind::Header?0:std::sqrt(offset_[1][0]*offset_[1][0]+offset_[1][1]*offset_[1][1]);
-  metrics_.torsoTwist=kind_==ActionKind::Header?0:std::fabs(offset_[1][2]);
+  metrics_.torsoBend=headerRelease==0?0:std::sqrt(offset_[1][0]*offset_[1][0]+offset_[1][1]*offset_[1][1]);
+  metrics_.torsoTwist=headerRelease==0?0:std::fabs(offset_[1][2]);
   metrics_.shoulderAmplitude=std::max(length(offset_[3]),length(offset_[5]));
-  metrics_.torsoAngle=kind_==ActionKind::Header?0:length(offset_[1]);
+  metrics_.torsoAngle=headerRelease==0?0:length(offset_[1]);
   metrics_.armsAngle=std::max(metrics_.shoulderAmplitude,std::max(length(offset_[4]),length(offset_[6])));
   metrics_.angularRate=maximumRate;metrics_.difficulty=hard;metrics_.phase=active?phase:1;
   metrics_.weight=clamp(std::max(metrics_.torsoAngle,metrics_.armsAngle)/.35f,0,1);
@@ -133,8 +148,8 @@ void ActionLayer::evaluate(const Context &c,const pes3::NativeBind &bind,float s
   for(unsigned i=1;i<7;++i)for(float value:bind.offsets[i])if(!std::isfinite(value))return;
   auto result=pose;
   // Changing middle rotates all of the upper skin, not a leg or its endpoint.
-  // Headers skip it entirely so even their contact point is invariant.
-  if(kind!=ActionKind::Header) {
+  // Headers skip it until contact so their contacting point is invariant.
+  if(kind!=ActionKind::Header || (c.contactMade && c.phase>c.contactPhase)) {
     if(!pes3::unitRotation(pes3::productRotation(exponential(offset_[1]),pose[1]),result[1]))return;
     if(c.preserveHead) {
       // In parent-local coordinates: qMiddle' * qNeck' = qMiddle * qNeck.

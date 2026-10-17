@@ -1,3 +1,6 @@
+> Registro histórico da versão `296bce6`. Os gestos com RT foram removidos.
+> Veja a versão atual em [Mira e corpo](MIRA-E-CORPO.md).
+
 # Sola, ações laterais e respostas aéreas
 
 Extraia o ZIP completo em uma pasta nova e abra `treino-fisico.bat`.

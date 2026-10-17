@@ -142,7 +142,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredLookAt = false;
 
         float inputPower = clamp(pow(gaugeFactor, 0.7f), 0.01f, 1.0f);
-        command.touchInfo.inputDirection = inputDirection;
+        command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_shortpass_autodirection", _default_ShortPass_AutoDirection);
         command.touchInfo.autoPowerBias = GetConfiguration()->GetReal("gameplay_shortpass_autopower", _default_ShortPass_AutoPower);
@@ -159,7 +159,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredLookAt = false;
 
         float inputPower = clamp(pow(gaugeFactor, 0.65f), 0.01f, 1.0f);
-        command.touchInfo.inputDirection = inputDirection;
+        command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_throughpass_autodirection", _default_ThroughPass_AutoDirection);
         command.touchInfo.autoPowerBias = GetConfiguration()->GetReal("gameplay_throughpass_autopower", _default_ThroughPass_AutoPower);
@@ -176,7 +176,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredLookAt = false;
 
         float inputPower = clamp(pow(gaugeFactor, 0.55f), 0.01f, 1.0f);
-        command.touchInfo.inputDirection = inputDirection;
+        command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_highpass_autodirection", _default_HighPass_AutoDirection);
         command.touchInfo.autoPowerBias = GetConfiguration()->GetReal("gameplay_highpass_autopower", _default_HighPass_AutoPower);
@@ -192,7 +192,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredMovement = false;
         command.useDesiredLookAt = false;
         command.desiredVelocityFloat = inputVelocityFloat; // this is so we can use sprint/dribble buttons as shot modifiers
-        command.touchInfo.inputDirection = inputDirection;
+        command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_shot_autodirection", _default_Shot_AutoDirection);
         if (GetHIDevice()->GetDeviceType() == e_HIDeviceType_Keyboard) command.touchInfo.autoDirectionBias = 1.0f;
         command.touchInfo.desiredDirection = AI_GetShotDirection(CastPlayer(), command.touchInfo.inputDirection, command.touchInfo.autoDirectionBias);
@@ -577,6 +577,14 @@ void HumanController::Process() {
   }
 
   if (actionMode == 2) {
+    const Vector3 stick=hid->GetDirection();
+    if(TrainingEnabled()) {
+      // Seed even when the first tap precedes reception assistance. Later
+      // taps must not reset a committed aim to an old exercise's direction.
+      if(!actionCommitted && gauge_ms==0)actionAim=CastPlayer()->GetDirectionVec();
+      if(match->TrainingReceivingBall() && stick.GetLength()>.001f)
+        actionAim=match->GetTrainingAim(stick).GetNormalized(actionAim);
+    }
     if (hid->GetButton(actionButton) && !actionCommitted) {
       if(actionButton==e_ButtonFunction_Shot && hid->GetButton(e_ButtonFunction_Switch))shotChip=true;
       gauge_ms += 10;
@@ -595,6 +603,9 @@ void HumanController::Process() {
 Vector3 HumanController::GetDirection() {
   Vector3 direction = CastPlayer()->GetDirectionVec();
   const Vector3 stick = hid->GetDirection();
+  if(TrainingEnabled() && match->TrainingReceivingBall())
+    return stick.GetLength()>.001f ? match->GetTrainingAim(stick).GetNormalized(direction) :
+      (actionMode==2?actionAim:direction);
   return (TrainingEnabled() ? match->GetTrainingMovement(stick) : stick).GetNormalized(direction);
 }
 

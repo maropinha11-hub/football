@@ -134,6 +134,16 @@ void Match::LaunchTrainingBall(int delivery) {
   fflush(stdout);
 }
 
+Vector3 Match::GetTrainingAim(const Vector3 &stick) const {
+  // Reception restricts locomotion, never the outgoing pass/header target.
+  // Aim is relative to the current front, excluding independent head look
+  // and the repeated-turn steering target used while dribbling.
+  if(!IsFirstPerson())return stick;
+  const Vector3 front=GetTrainingFacing();
+  const Vector3 right(front.coords[1],-front.coords[0],0);
+  return front*stick.coords[1]+right*stick.coords[0];
+}
+
 Vector3 Match::GetTrainingMovement(const Vector3 &stick) const {
   if(trainingReceiving || (trainingPlayer && trainingPlayer->GetHumanoid()->UpperReceptionActive() && ball->Predict(0).coords[2]>.45f)) {
     // Only approach/retreat is authored for these chest receptions. In third

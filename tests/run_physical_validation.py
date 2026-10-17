@@ -10,15 +10,13 @@ import subprocess
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
-p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','footwork_external','footwork_fps','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','anatomy_lab','stagger_lab','stagger_match'])
+p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
 env['LD_LIBRARY_PATH']=str(native/'lib/x86_64-linux-gnu')+':'+env.get('LD_LIBRARY_PATH','')
 env['FOOTBALL_TEST_GL_THREADS']='1'
 cases=[('control_hop_comparison','training_control_hop_smoke.py',[]),
-       ('footwork_external','training_footwork_smoke.py',[]),
-       ('footwork_fps','training_footwork_smoke.py',['--camera','2']),
        ('situational_fps','training_situational_actions_smoke.py',[]),
        ('situational_external','training_situational_actions_smoke.py',['--camera','1']),
        ('physical_solo','training_physical_rig_smoke.py',[]),
@@ -32,6 +30,9 @@ cases=[('control_hop_comparison','training_control_hop_smoke.py',[]),
        ('pass_turn','training_pass_turn_smoke.py',[]),
        ('balance_lab','training_balance_control_smoke.py',[]),
        ('aerial_taps','training_aerial_taps_smoke.py',[]),
+       ('aerial_direction_fps','training_aerial_direction_smoke.py',[]),
+       ('aerial_direction_external','training_aerial_direction_smoke.py',['--camera','1']),
+       ('aerial_direction_approved','training_aerial_direction_smoke.py',['--approved']),
        ('anatomy_lab','training_anatomy_smoke.py',[]),
        ('stagger_lab','training_stagger_smoke.py',[]),
        ('stagger_match','training_stagger_smoke.py',['--match'])]

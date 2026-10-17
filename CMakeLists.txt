@@ -108,7 +108,7 @@ target_sources(football_body PRIVATE src/onthepitch/player/humanoid/situational_
 target_include_directories(football_body PRIVATE ${BULLET_PHYSICS_SOURCE_DIR}/src)
 target_link_libraries(football_body PUBLIC BulletDynamics BulletCollision LinearMath)
 target_link_libraries(gamelib PUBLIC football_body)
-target_sources(gamelib PRIVATE src/onthepitch/player/humanoid/humanoid_motion.cpp src/onthepitch/player/humanoid/humanoid_footwork.cpp)
+target_sources(gamelib PRIVATE src/onthepitch/player/humanoid/humanoid_motion.cpp)
 target_sources(gamelib PRIVATE src/onthepitch/training.cpp src/onthepitch/trainingcontrol.cpp src/onthepitch/player/humanoid/humanoid_contacts.cpp)
 target_sources(gamelib PRIVATE src/onthepitch/player/humanoid/humanoid_physical.cpp src/onthepitch/player/humanoid/physical_rig.cpp src/onthepitch/player/humanoid/humanoid_cloth.cpp)
 target_sources(gamelib PRIVATE src/onthepitch/training_contact.cpp)

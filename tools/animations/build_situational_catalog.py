@@ -221,9 +221,9 @@ def profiles():
                         if kind == "Control" and (effort == 2 or reach == 2):
                             continue
                         e, p, t, r = (x*.5 for x in (effort, pressure, turn, reach))
-                        for pattern in range(1 if kind == "None" else 3):
+                        for pattern in range(1 if kind == "None" else 9):
                             output.append({
-                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*4+pattern,
+                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*16+pattern,
                                 "kind": kind, "effort": effort, "pressure": pressure,
                                 "turn": turn, "reach": reach, "pattern": pattern,
                                 "trunkGain": round(.78+e*.12+t*.13+r*.11+p*.04, 5),
@@ -300,9 +300,13 @@ def build_catalog(root=ROOT):
             part, distance, pelvis, facing = contact_geometry(tracks, frame, ball, hierarchy)
             if metadata["type"] == "trap" and "chest" in path.name:
                 part = "trunk"
+            classification = "native_utility_geometry_origin"
+            if metadata["type"] in ("shortpass", "shot") and "header" in path.name and "arm" in part:
+                part = "head"
+                classification = "native_header_semantics_with_runtime_head_skin_gate"
             record["contact"] = {
                 "frame": frame, "ball": ball, "part": part,
-                "classification": "native_utility_geometry_origin",
+                "classification": classification,
                 "origin_distance_m": round(distance, 6),
                 "pelvis_offset": tuple(round(x-y, 6) for x, y in zip(ball, pelvis)),
                 "body_direction": tuple(round(x, 6) for x in facing),
@@ -342,11 +346,11 @@ def summary(catalog):
                         "pressure": "opponent proximity/physical pressure, normalized 0..1",
                         "turn": "abs(signed body-local action turn)/pi",
                         "reach": "min(1, horizontal ball offset from pelvis / 0.85m)",
-                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance"]},
+                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace"]},
         "constraints": [
             "Native function, contact part, event frame, foot and special/retainer-state eligibility stay authoritative",
             "Header has no full-turn torso profile; Control excludes maximum effort and maximum reach profiles",
-            "Contact classification reproduces utility-model geometry origins; runtime deformed-skin contact must still pass",
+            "Contact classification uses utility-model origins with native header semantic correction; runtime deformed head/foot skin contact must still pass",
             "Source/profile counts include only the authored reach/turn neighborhood and permitted maximum power",
             "CPU/player pressure may choose another gain profile without cloning animation tracks",
             "Profiles adjust torso/arm response; they never change root, legs, ball position or contact timing",
@@ -385,7 +389,7 @@ def cpp_header(catalog):
         "                        profileUnit(turn)*2,profileUnit(reach)*2};",
         "  const Profile *best=&kProfiles[0]; float bestCost=1e9f;",
         "  for(const Profile &profile:kProfiles){",
-        "    if(profile.kind!=kind || profile.pattern!=std::min(pattern,2u))continue;",
+        "    if(profile.kind!=kind || profile.pattern!=std::min(pattern,8u))continue;",
         "    const float delta[4]={query[0]-profile.effort,query[1]-profile.pressure,",
         "                          query[2]-profile.turn,query[3]-profile.reach};",
         "    const float cost=delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]+delta[3]*delta[3];",

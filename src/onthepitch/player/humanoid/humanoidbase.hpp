@@ -243,9 +243,6 @@ class HumanoidBase {
     Vector3 DribbleBallTarget(float phase, unsigned side) const;
     float DribbleShoeDistance(const Vector3 &point, unsigned side, Vector3 *closest = nullptr) const;
     void UpdateTrainingContactPose();
-    bool ProcessFootwork();
-    bool FootworkBusy() const {return footworkPhase>=0;}
-    void ResetFootwork();
     bool UsesTrainingContacts() const;
     bool PhysicalRigEnabled() const;
     bool PhysicalRigBusy() const;
@@ -400,11 +397,6 @@ class HumanoidBase {
     std::unique_ptr<Animation> dribbleTrialAnimation;
     float dribbleTrialPhase = 0, dribbleTrialBlend = 0;
     float dribbleTrialSourceSpeed = 3.2055483f;
-    float footworkPhase=-1;
-    bool footworkWaitRelease=false;
-    unsigned footworkKind=0, footworkContacts=0;
-    Vector3 footworkHome,footworkBall,footworkSole,footworkGoal,footworkVelocity,footworkDirection;
-    float footworkFacing=0;
     float dribbleContactFrames[2] = {0,0};
     std::vector<std::array<Vector3,3>> dribbleShoeTriangles[2];
     Vector3 dribbleFootOffsets[2], fetchedDribbleFootOffsets[2];

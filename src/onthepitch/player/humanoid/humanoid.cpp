@@ -92,7 +92,6 @@ bool _PassFiddlingEnabled() {
 
 void Humanoid::Process() {
   if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
-  if(ProcessFootwork())return;
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);
   _cache_AccelerationFactor = GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor);
@@ -634,6 +633,8 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (pass): %f\n", bumpyRideBias);
 
+        if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))
+          printf("TRAINING_ACTION_AIM t=%lu function=%d part=%s requested=[%.6f,%.6f] actual=[%.6f,%.6f]\n",match->GetActualTime_ms(),int(currentAnim->functionType),currentAnim->anim->GetVariable("touch_bodypart").c_str(),ballDirection.coords[0],ballDirection.coords[1],touchVec.coords[0],touchVec.coords[1]);
         match->GetBall()->Touch(touchVec);
         match->GetBall()->TriggerBallTouchSound(std::pow(NormalizedClamp(touchVec.GetLength(), 4.0f, 40.0f), 0.7f));
 
@@ -671,7 +672,9 @@ void Humanoid::Process() {
         radian xRot = 0;
         radian yRot = 0;
         radian zRot = 0;
-        Vector3 touchVec = GetShotVector(match, CastPlayer(), nextStartPos, nextStartAngle, nextBodyAngle, CalculateOutgoingMovement(currentAnim->positions), currentAnim, currentAnim->frameNum, spatialState, decayingPositionOffset, xRot, yRot, zRot, currentAnim->originatingCommand.touchInfo.autoDirectionBias);
+        Anim aimedShot=*currentAnim;
+        aimedShot.originatingCommand.touchInfo.desiredDirection=ballDirection;
+        Vector3 touchVec = GetShotVector(match, CastPlayer(), nextStartPos, nextStartAngle, nextBodyAngle, CalculateOutgoingMovement(currentAnim->positions), &aimedShot, currentAnim->frameNum, spatialState, decayingPositionOffset, xRot, yRot, zRot, currentAnim->originatingCommand.touchInfo.autoDirectionBias);
 
         Vector3 spin;bool physicalShot=false,lowSpin=false;
         if(UsesTrainingContacts() && match->GetBall()->Predict(0).coords[2]<.65f &&
@@ -699,6 +702,8 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (shot): %f\n", bumpyRideBias);
 
+        if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))
+          printf("TRAINING_ACTION_AIM t=%lu function=%d part=%s requested=[%.6f,%.6f] actual=[%.6f,%.6f]\n",match->GetActualTime_ms(),int(currentAnim->functionType),currentAnim->anim->GetVariable("touch_bodypart").c_str(),ballDirection.coords[0],ballDirection.coords[1],touchVec.coords[0],touchVec.coords[1]);
         match->GetBall()->Touch(touchVec);
         if(physicalShot) {
           match->GetBall()->SetAngularVelocity(spin);
