@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-17",
+  "scope": "Context-sensitive procedural upper-body action variations using the project's existing native animation sources.",
+  "provenance": "Review of already recorded source material; no new external dataset was downloaded for this registry.",
+  "sources": [
+    {
+      "name": "SoccerKicks overview: manually digitized projected keyposes",
+      "registry": "docs/research/soccerkicks-keyposes.json",
+      "url": "https://github.com/nayariml/SoccerKicks/blob/ba737850324430c6274acf214abccd0615f0bb86/overview/gif_over.gif",
+      "sha256": "261f833bfa7231231736ebb82eed8d1c32b28f74ce00f6f6757603e82515e755",
+      "license_recorded_in_source_registry": "CC0-1.0",
+      "observation": "The short reference kick shows coordinated preparation, arm opening, kicking follow-through and return. The eight projected samples include changing trunk inclination and arm span.",
+      "application": "Use a phased torso and arm response with preparation, contact protection and recovery instead of changing only the kicking leg.",
+      "limits": "Eight approximate 2D samples from one short kick. Camera projection, occlusion and manual uncertainty prevent interpreting image angles as anatomical joint angles or treating these as reconstructed 3D clips."
+    },
+    {
+      "name": "Motion Matching: feature database and inertial transitions",
+      "registry": "docs/physical-rig-v2-research.json",
+      "url": "https://github.com/orangeduck/Motion-Matching/tree/57b7250e0d34a4e456a34d47e24c2f05fdcc711e",
+      "reference_license": "MIT",
+      "application": "Keep native action feasibility and source clips; use explicit context descriptors and continuous bounded weights for situational changes.",
+      "limits": "Feature combinations are procedural descriptors, not independent recorded performances. The reference does not supply a football motion database."
+    },
+    {
+      "name": "DeepMimic target-pose PD controller interface",
+      "registry": "docs/anatomy-physics-research.json",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/CtPDController.cpp",
+      "sha256": "87219ca8644799b0a0286b40a3ad1a5bfff7091ed13716b0d83af6ca1d71d102",
+      "application": "Retain bounded pose targets and muscular tracking while respecting the native skeletal constraints.",
+      "limits": "No trained control policy, model weights or DeepMimic motion sequence is imported. An additive action layer is not a learned whole-body balancing policy."
+    },
+    {
+      "name": "Jolt swing/twist motor and limit separation",
+      "registry": "docs/anatomy-physics-research.json",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/Jolt/Physics/Constraints/ConstraintPart/SwingTwistConstraintPart.h",
+      "sha256": "0a96a8cf3e7656b51849fb19e9f171fda6995df093b470e2e7176932ab5cf28a",
+      "reference_license": "MIT",
+      "application": "Project the final rendered arm blend into the skeleton's existing shoulder/elbow limits and retain the trunk collision proxy.",
+      "limits": "Reference only. No Jolt library or source is imported. Native prototype angular limits are not clinical measurements."
+    }
+  ],
+  "validation_contract": [
+    "A difficult running action must produce visibly larger applied trunk and arm rotations than an easy pass.",
+    "Each authored action impulse must retain same-tick weighted-skin contact at the existing 0.0025 m acceptance tolerance.",
+    "Upper-body situational changes must not translate the native root or foot joints.",
+    "First-time foot passes and headers must retain the existing native action selection and contact path.",
+    "Rendered arms must retain the existing joint limits after crossfading.",
+    "Disabling the physical experiment must retain the existing native gameplay path."
+  ],
+  "capture_accounting": {
+    "new_captured_or_reconstructed_3d_sequences": 0,
+    "new_independent_rotoscoped_performances": 0,
+    "variant_meaning": "Context descriptors and procedural pose adjustments built around existing authored sources; counts must be reported separately from recorded animation clips."
+  }
+}

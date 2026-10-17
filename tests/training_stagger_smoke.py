@@ -41,13 +41,17 @@ try:
     f=matchframes(g)[-1];human=next(x for x in f['players']if x['human']);opponent=min((x for x in f['players']if x['team']==1 and x['id']!=18),key=lambda x:math.dist(x['p'][:2],human['p'][:2]))
     dx,dy=[opponent['p'][i]-human['p'][i]for i in range(2)];size=max(.001,math.hypot(dx,dy));g.pad(dx/size,-dy/size,sprint=True);g.advance(400)
    g.pad(0,0);g.advance(1500);capture(g,'physical-full-match');f=matchframes(g);human=f[-1]['locked_id']
-   check('native collision disturbs CPU bodies as well as the human',any(int(x['actor'])!=human for x in events(g,'PHYSICAL_STAGGER_REQUEST')),events(g,'PHYSICAL_STAGGER_REQUEST')[:15])
-   check('CPU contact selects full-body protective animation',any(int(x['actor'])!=human for x in events(g,'PHYSICAL_STAGGER_CLIP')),events(g,'PHYSICAL_STAGGER_CLIP')[:15])
    check('formations and one-player control remain intact',all(x['human_count']==1 and x['selected_id']==x['locked_id']and len(x['players'])==22 for x in f),dict(frames=len(f)))
    check('native AI still makes ball decisions',len(events(g,'PLAYER_MATCH_ACTION'))>3,events(g,'PLAYER_MATCH_ACTION')[:8])
    # Exercise the explicit close-contact setup and both keyboard intents.
-   start=len(g.log.read_text());g.keys(['m','F2'],True);g.advance(100);g.keys(['m','F2'],False);g.advance(500)
+   # AI can evade a chasing player, so a chase alone does not guarantee an
+   # impact. Exercise an actual in-range contest before requiring its CPU
+   # response. Sending M and F2 together can consume M before setup occurs.
+   start=len(g.log.read_text());key(g,'F2');key(g,'m');g.advance(500)
    check('match laboratory reaches a real opponent and applies a body contest',bool(events(g,'PHYSICAL_MATCH_SETUP',start))and bool(events(g,'PHYSICAL_MATCH_CONTEST',start)),events(g,'PHYSICAL_MATCH_CONTEST',start))
+   requests=events(g,'PHYSICAL_STAGGER_REQUEST',start);clips=events(g,'PHYSICAL_STAGGER_CLIP',start)
+   check('an in-range body contest disturbs both the CPU and human bodies',{human}<={int(x['actor'])for x in requests}and any(int(x['actor'])!=human for x in requests),requests[:15])
+   check('CPU contact selects full-body protective animation',any(int(x['actor'])!=human for x in clips),clips[:15])
    g.keys(['n'],True);g.advance(300);g.keys(['n'],False);g.keys(['h'],True);g.advance(400);g.keys(['h'],False)
    intents=events(g,'PHYSICAL_MATCH_CONTACT',start)
    check('protection and shirt-reaching input are available in the full match',any(x['shield']=='1'for x in intents)and any(x['reaching']=='1'for x in intents),intents[-8:])

@@ -54,6 +54,15 @@ def main():
                   for token in [b'PHYSICAL_ARM_RENDER',b'PHYSICAL_ARM_LIMITS',b'PHYSICAL_IMPACT_TEST',b'intended_speed=',b'actual_speed=']))
             check('all three impact levels are documented in the portable game',all(token in full.read(prefix+'LEIA-FISICA.txt')
                   for token in [b'F8:',b'Shift+F8:',b'Ctrl+F8:',b'125 N.s',b'190 N.s',b'350 N.s']))
+            check('Windows embeds contextual body actions and independent F1 comparison',all(token in exe
+                  for token in [b'PHYSICAL_SITUATION_BANK',b'PHYSICAL_SITUATION_RENDER',b'PHYSICAL_SITUATION_TOGGLE']))
+            check('F1 and honest procedural profile counts accompany both packages',all(token in full.read(prefix+'LEIA-FISICA.txt')
+                  for token in [b'F1:',b'334 perfis procedurais',b'1.254 combinacoes',b'nao sao novas capturas']))
+            catalog=full.read(prefix+'situational-motion-catalog.json')
+            check('packaged catalog equals generated source and update manifest', catalog == patch.read('situational-motion-catalog.json')
+                  and catalog == Path('config/situational-motion-catalog.json').read_bytes())
+            check('situational profiles are enabled only within the opt-in physical path',b'"training_situational_motion" "true"'in config
+                  and all(b'--physical-rig'not in full.read(prefix+f)for f in ['run-training.bat','jogar-partida.bat']))
             recovery_files=['media/animations/movement_special/idle/special/000_stand_up_from_'+side+'.anim'for side in ['front','back']]
             check('both original get-up animations are included unchanged', all(full.read(prefix+path)==(Path('data')/path).read_bytes()for path in recovery_files))
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),

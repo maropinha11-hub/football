@@ -33,6 +33,14 @@ reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
 os limites desta revisão](docs/BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
 O treino e a partida aprovados continuam nos atalhos anteriores.
 
+O experimento também acrescenta **334 perfis procedurais de tronco e braços**
+para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
+rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
+contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
+somente essa camada. O catálogo audita 1.254 pares candidatos incluindo
+espelhamentos, sem contar essas combinações como capturas novas. Veja
+[como testar e os limites das variações situacionais](docs/VARIACOES-CORPORAIS-SITUACIONAIS.md).
+
 A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
 Você controla o mesmo jogador do treino; os outros dez companheiros e os

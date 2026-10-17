@@ -69,6 +69,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         else:
             shutil.copy2(entry, stage / entry.name)
     shutil.copy2(project / "config" / "training.config", stage / "training.config")
+    shutil.copy2(project / "config" / "situational-motion-catalog.json",
+                 stage / "situational-motion-catalog.json")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
@@ -127,6 +129,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
+        "F1: comparar variacoes corporais de passes/chutes ligadas/desligadas.\n"
         "F3: mudar direcao do impacto (direita/frente/esquerda/tras).\n"
         "F8: impacto lateral medio (125 N.s), com tentativa de equilibrio.\n"
         "Shift+F8: impacto forte (190 N.s), para testar passos de recuperacao.\n"
@@ -146,6 +149,13 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "partida-fisica.bat: o mesmo experimento contra os times da CPU.\n"
         "Todos os 22 jogadores recebem a camada fisica, inclusive a CPU.\n"
         "Impactos selecionam passos de apoio e protecao de corpo inteiro.\n"
+        "Passes, chutes e cruzamentos recebem preparacao e recuperacao de\n"
+        "tronco e bracos conforme direcao, velocidade, bola e adversario.\n"
+        "Teste um passe parado e outro para o lado durante a corrida com RB.\n"
+        "A camada nova preserva os pes e o contato original com a bola.\n"
+        "O catalogo inclui 334 perfis procedurais sobre as animacoes existentes;\n"
+        "as 1.254 combinacoes auditadas nao sao novas capturas nem uma\n"
+        "validacao exaustiva. Consulte situational-motion-catalog.json.\n"
         "Na partida, LT/L2 ou H/N tambem tentam agarrar/proteger; M disputa.\n"
         "F2 na partida: aproxima um adversario para ensaio de contato.\n"
         "F11 na partida: coloca a bola no adversario proximo para testar LT.\n"
@@ -258,7 +268,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     with zipfile.ZipFile(update,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9)as output:
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
-        for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt"):
+        for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
+                         "situational-motion-catalog.json"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt"):
             output.write(stage/filename,filename)

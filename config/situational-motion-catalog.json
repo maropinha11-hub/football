@@ -1,0 +1,68 @@
+{
+  "constraints": [
+    "Native function, contact part, event frame, foot and special/retainer-state eligibility stay authoritative",
+    "Header has no full-turn torso profile; Control excludes maximum effort and maximum reach profiles",
+    "Contact classification reproduces utility-model geometry origins; runtime deformed-skin contact must still pass",
+    "Source/profile counts include only the authored reach/turn neighborhood and permitted maximum power",
+    "CPU/player pressure may choose another gain profile without cloning animation tracks",
+    "Profiles adjust torso/arm response; they never change root, legs, ball position or contact timing",
+    "Continuous parameters permit intermediate responses; these are not additional authored or captured clips",
+    "Metadata compatibility is an eligibility bound, not proof that every context is realistic or collision-free"
+  ],
+  "coordinates": {
+    "bins": [
+      0,
+      0.5,
+      1
+    ],
+    "effort": "max(power,difficulty), normalized 0..1",
+    "pressure": "opponent proximity/physical pressure, normalized 0..1",
+    "reach": "min(1, horizontal ball offset from pelvis / 0.85m)",
+    "turn": "abs(signed body-local action turn)/pi"
+  },
+  "counts": {
+    "action_sources_per_kind": {
+      "Control": 40,
+      "Cross": 12,
+      "Header": 6,
+      "Pass": 24,
+      "Shot": 14
+    },
+    "action_sources_with_compatible_profiles": 96,
+    "authored_source_files": 293,
+    "exhaustively_rendered_contexts": 0,
+    "metadata_compatible_pairs_including_native_mirrors": 1254,
+    "metadata_compatible_source_profile_pairs": 627,
+    "native_loader_excluded_files": 10,
+    "native_loader_source_files": 283,
+    "native_source_types": {
+      "ballcontrol": 45,
+      "deflect": 28,
+      "highpass": 15,
+      "interfere": 7,
+      "movement": 65,
+      "shortpass": 37,
+      "shot": 17,
+      "sliding": 6,
+      "special": 4,
+      "trap": 40,
+      "trip": 19
+    },
+    "new_baked_animation_files": 0,
+    "new_captured_clips": 0,
+    "profiles": 334,
+    "profiles_per_kind": {
+      "Control": 36,
+      "Cross": 81,
+      "Header": 54,
+      "None": 1,
+      "Pass": 81,
+      "Shot": 81
+    }
+  },
+  "description": "Bounded procedural upper-body gain profiles over original native animation clips",
+  "inspect_sources": "python3 tools/animations/build_situational_catalog.py --inventory /tmp/situational-inventory.json",
+  "reproduce": "python3 tools/animations/build_situational_catalog.py --check",
+  "schema": 1,
+  "source_digest": "7d89db43f11e564e80b1a03e5d1f6a4483532dc67057997b6a8d7f931452d66c"
+}

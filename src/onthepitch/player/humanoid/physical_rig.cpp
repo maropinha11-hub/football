@@ -16,7 +16,7 @@ void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){refe
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){situationLayer.reset();ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 void PhysicalRig::forwardKinematics(){
@@ -55,6 +55,9 @@ void PhysicalRig::step(const Input &input,float dt){
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
   debug={};
+  auto situation=input.situation;
+  if(input.upperReception || input.staggering || state!=Mode::Active)situation.enabled=false;
+  situationLayer.step(situation,dt);
   handDt=dt;handUpdatePending=true;
   if(input.handTargetActive)lastHandTarget=input.handTarget;
   handEnvelope+=(float(input.handTargetActive && !input.action && !input.upperReception)-handEnvelope)*(1-std::exp(-8*dt));
@@ -183,6 +186,21 @@ void PhysicalRig::evaluate(const Input &input){
   }
   local=target;forwardKinematics();
   local[2]=normalized(productRotation(inverseRotation(world[1]),head));forwardKinematics();
+  // An action has its own bounded preparation/follow-through layer. It must
+  // not inherit the old 'action disables all balance' behavior. Its upper
+  // chain cannot reposition the root, support feet, or the ball-contact foot.
+  const Vec situationRoot=root,situationLeft=positions[9],situationRight=positions[12];
+  const Pose situationBase=local;
+  auto situation=input.situation;
+  if(input.upperReception || input.staggering)situation.enabled=false;
+  situationLayer.evaluate(situation,reference,scale,local,root);
+  forwardKinematics();
+  debug.situation=situationLayer.metrics();
+  debug.situationTrunk=length(logarithm(productRotation(local[1],inverseRotation(situationBase[1]))));
+  debug.situationArms=0;
+  for(unsigned bone:{3u,4u,5u,6u})debug.situationArms=std::max(debug.situationArms,length(logarithm(productRotation(local[bone],inverseRotation(situationBase[bone])))));
+  debug.situationRootError=length(subtractPoint(root,situationRoot));
+  debug.situationFootError=std::max(length(subtractPoint(positions[9],situationLeft)),length(subtractPoint(positions[12],situationRight)));
   for(unsigned ankle:{9u,12u})if(length(reachOffsets[ankle])>1e-6f)
     solveLeg(ankle-2,addPoint(positions[ankle],reachOffsets[ankle]));
   {

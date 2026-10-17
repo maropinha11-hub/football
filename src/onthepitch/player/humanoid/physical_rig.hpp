@@ -2,6 +2,7 @@
 // Native-rig physics experiment. SI units, +Z up, fixed-step integration.
 // No source motion data, trained policy or proprietary animation is embedded.
 #include "../../../pes3/native_pose.hpp"
+#include "situational_action.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -41,6 +42,7 @@ struct Input {
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false;
+  football_situations::Context situation;
 };
 struct Metrics {
   float lean=0,turnRate=0,supportMargin=0,effort=0,reach=0,penetration=0;
@@ -50,6 +52,8 @@ struct Metrics {
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
   float armLimitError=0,armPenetration=0;
   float muscleEffort=0,supportTorque=0;
+  football_situations::ActionMetrics situation;
+  float situationTrunk=0,situationArms=0,situationFootError=0,situationRootError=0;
   int balancePhase=0,balanceChoice=-1;
 };
 struct RecoveryKey { Pose pose{}; Vec pelvis{{0,0,0}}; };
@@ -121,5 +125,6 @@ class PhysicalRig {
   bool ready=false;
   Mode state=Mode::Active;
   Metrics debug{};
+  football_situations::ActionLayer situationLayer;
 };
 }

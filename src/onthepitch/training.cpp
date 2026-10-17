@@ -16,6 +16,12 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
     printf("PHYSICAL_IMPACT_DIRECTION t=%lu direction=%u\n",time,direction);
   }
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
+  if(events.ConsumeKeyPress(SDLK_F1)){
+    const bool enabled=!GetConfiguration()->GetBool("training_situational_motion",true);
+    GetConfiguration()->SetBool("training_situational_motion",enabled);
+    match->SpamMessage(enabled?"Variacoes corporais: ligadas":"Variacoes corporais: desligadas",3000);
+    printf("PHYSICAL_SITUATION_TOGGLE t=%lu enabled=%d\n",time,enabled?1:0);
+  }
   const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D((1-int(direction))*.5f*pi);
   if(events.ConsumeKeyPress(SDLK_F8)){
     const bool control=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);

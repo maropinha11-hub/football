@@ -21,7 +21,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
-namespace football_physics {class PhysicalRig;class ShirtCloth;}
+namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -449,6 +449,10 @@ class HumanoidBase {
     bool physicalShield=false;
     Vector3 physicalHandTarget{0};
     bool physicalHandTargetActive=false;
+    unsigned physicalSituationProfile=0;
+    TemporalSmoother<Vector3> buf_situationState;
+    Vector3 fetchedSituationState{0};
+    void BuildSituationalInput(football_physics::Input &input);
     void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
 
     AnimApplyBuffer animApplyBuffer;
