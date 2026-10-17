@@ -257,6 +257,8 @@ class HumanoidBase {
     void ConfigurePhysicalRig();
     void SetPhysicalGrip(const Vector3 &point,const Vector3 &force);
     Vector3 PhysicalBalanceVelocity()const;
+    bool PhysicalStaggering()const;
+    bool PhysicalShielding()const {return physicalShield;}
     Vector3 PhysicalContactVelocity(const Vector3 &desired)const;
     void SetPhysicalTraction(const Vector3 &force) {physicalTraction=force;}
     Vector3 SafeFirstPersonEye(const Vector3 &eye)const;
@@ -264,6 +266,7 @@ class HumanoidBase {
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
     float PhysicalHandDistance(const Vector3 &point)const;
     Vector3 GetPhysicalShirtPoint()const;
+    Vector3 GetPhysicalShirtPoint(const Vector3 &from)const;
     void PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes);
     void PhysicalActionContact();
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
@@ -441,6 +444,7 @@ class HumanoidBase {
     std::vector<std::shared_ptr<football_physics::ShirtCloth>> shirtCloth;
     std::vector<unsigned long> shirtClothTime;
     unsigned long physicalActionTime=0;
+    unsigned long physicalStaggerUntil=0;
     float physicalPartnerPhase=0;
     bool physicalShield=false;
     Vector3 physicalHandTarget{0};

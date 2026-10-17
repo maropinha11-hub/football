@@ -398,15 +398,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         const Vector3 velocity=movement.desiredDirection*movement.desiredVelocityFloat+step;
         movement.desiredDirection=velocity.GetNormalized(movement.desiredDirection);
         movement.desiredVelocityFloat=std::min(sprintVelocity,velocity.GetLength());
-        // The authored locomotion quantizes speeds below 1.8 m/s to idle.
-        // A corrective request of e.g. 0.4 m/s was therefore never a step.
-        // Briefly select its slowest stepping gait, then brake as the
-        // disturbance settles; never teleport the pelvis or either foot.
-        if(hid->GetDirection().GetLength()<.05f && step.GetLength()>.10f){
-          movement.desiredVelocityFloat=std::max(movement.desiredVelocityFloat,idleDribbleSwitch+.05f);
-          movement.useDesiredLookAt=true;
-          movement.desiredLookAt=player->GetPosition()+step.GetNormalized(movement.desiredDirection)*10.f;
-        }
+        // Visible support steps use the native full-body trip selector.
+        // Never replace an impact reaction with a forced generic walk.
         if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%50==0)
           printf("PHYSICAL_STEP_COMMAND t=%lu demand=%.5f velocity=%.5f direction=[%.4f,%.4f] look=%d\n",match->GetActualTime_ms(),step.GetLength(),movement.desiredVelocityFloat,movement.desiredDirection.coords[0],movement.desiredDirection.coords[1],movement.useDesiredLookAt?1:0);
       }

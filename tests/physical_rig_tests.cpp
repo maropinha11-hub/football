@@ -46,7 +46,12 @@ int main(int argc,char **argv){
   float minimumPelvis=10;unsigned fell=0,recovered=0;Mode previous=rig.mode();
   rig.impulse({{165,0,0}},{{0,0,.18f}},true);
   bool allFinite=true;float accumulatedRotation=0,peakAngular=0,peakJointError=0;Quat lastRoot=rig.pose()[0];
+  float muscleWork=0;unsigned muscularFallSamples=0;
   for(unsigned step=0;step<800;++step){rig.step(input);if(rig.mode()==Mode::Falling){accumulatedRotation+=length(logarithm(productRotation(rig.pose()[0],inverseRotation(lastRoot))));peakAngular=std::max(peakAngular,rig.metrics().angularSpeed);peakJointError=std::max(peakJointError,rig.metrics().jointError);}lastRoot=rig.pose()[0];allFinite&=finite(rig);minimumPelvis=std::min(minimumPelvis,rig.points()[0][2]);maximumBoneError=std::max(maximumBoneError,boneError(rig,bind));if(rig.mode()!=previous){fell+=rig.mode()==Mode::Falling;recovered+=rig.mode()==Mode::Recovering;previous=rig.mode();}}
+  // Repeat a short unsupported fall to observe actual dynamic joint motors.
+  PhysicalRig falling;falling.configure(bind,1);falling.step(input);falling.impulse({{165,0,0}},{{0,0,.18f}},true);
+  for(unsigned i=0;i<90;++i){falling.step(input);if(falling.mode()==Mode::Falling){muscleWork+=falling.metrics().muscleEffort;muscularFallSamples+=falling.metrics().muscleEffort>.001f;}}
+  check(muscularFallSamples>50 && muscleWork>1.f,"dynamic fall retains bounded internal joint effort instead of going limp");
   check(fell==1 && recovered==1 && rig.mode()==Mode::Active,"the explicit lab fall produces fall, get-up and active control in order");
   check(minimumPelvis<.6f && minimumPelvis>.07f,"physical pelvis falls onto the ground instead of playing an upright trip");
   check(allFinite && maximumBoneError<1e-5f,"articulation remains finite and bones do not stretch through a fall");

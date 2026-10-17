@@ -40,6 +40,7 @@ struct Input {
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
+  bool staggering=false,passiveTracking=false;
 };
 struct Metrics {
   float lean=0,turnRate=0,supportMargin=0,effort=0,reach=0,penetration=0;
@@ -48,6 +49,7 @@ struct Metrics {
   float selfPenetration=0,brace=0,recoveryPhase=0;
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
   float armLimitError=0,armPenetration=0;
+  float muscleEffort=0,supportTorque=0;
   int balancePhase=0,balanceChoice=-1;
 };
 struct RecoveryKey { Pose pose{}; Vec pelvis{{0,0,0}}; };

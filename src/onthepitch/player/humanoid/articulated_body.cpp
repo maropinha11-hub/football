@@ -30,6 +30,8 @@ struct ArticulatedBody::World {
   std::vector<std::unique_ptr<btRigidBody>> bodies;
   std::vector<std::unique_ptr<btGeneric6DofSpring2Constraint>> joints;
   std::array<btVector3,13> centers;
+  Pose muscleTarget{};
+  float age=0;
   bool tracking=false;
   World(){
     dynamics.setGravity(btVector3(0,0,-9.81f));
@@ -49,6 +51,7 @@ ArticulatedBody::~ArticulatedBody()=default;
 void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose &pose,Vec pelvis,Vec velocity,Vec impulse,Vec lever,bool tracking){
   state.reset(new World);auto &s=*state;
   s.tracking=tracking;
+  s.muscleTarget=pose;
   std::array<btTransform,13> frames;
   for(unsigned i=0;i<13;++i){
     int parent=pes3::nativeParents[i];
@@ -149,15 +152,55 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
 }
 void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
   auto &s=*state;
-  if(!s.tracking && s.bodies[2]->getCenterOfMassPosition().z()>.5f && s.bodies[1]->getLinearVelocity().z()<-.25f){
+  if(!s.tracking){
+    s.age+=dt;
+    // Retain joint muscle tone during a fall. These are internal equal and
+    // opposite torques: they cannot lift or suspend the complete body.
+    const float height=s.bodies[1]->getCenterOfMassPosition().z();
+    const float tone=.12f+.88f*std::exp(-s.age/1.1f);
+    Pose targets=s.muscleTarget;
+    const float tuck=smooth((.85f-height)/.55f);
+    for(unsigned i:{8u,11u})targets[i]=blended(targets[i],exponential({{.85f,0,0}}),tuck*.65f);
+    for(unsigned i:{4u,6u})targets[i]=blended(targets[i],exponential({{-.95f,0,0}}),.35f+.35f*tuck);
+    // Arms extend toward the impending ground contact, while elbows retain
+    // flexion to absorb it. The shoulder and its parent receive opposite work.
     const Vec velocity=vec(s.bodies[1]->getLinearVelocity());
-    const Vec direction=unit({{velocity[0]*.22f,velocity[1]*.22f,-1.f}});
-    for(unsigned i:{3u,5u}){
-      auto &arm=*s.bodies[i+1];const Quat orientation=quat(arm.getWorldTransform().getRotation());
-      Vec error=logarithm(pes3::swingRotation(rotatePoint(orientation,{{0,0,-1}}),direction));
-      arm.applyTorque(bv(capped(subtractPoint(scalePoint(error,6.f),scalePoint(vec(arm.getAngularVelocity()),.6f)),5.f)));
+    const Quat trunk=quat(s.bodies[2]->getWorldTransform().getRotation());
+    if(height>.28f && velocity[2]<-.15f){
+      for(unsigned i:{3u,5u}){
+        const Vec direction=unit({{velocity[0]*.28f+(i==3?.20f:-.20f),velocity[1]*.28f,-1.f}});
+        const Quat desired=normalized(productRotation(pes3::swingRotation(rotatePoint(trunk,{{0,0,-1}}),direction),trunk));
+        targets[i]=blended(targets[i],normalized(productRotation(inverseRotation(trunk),desired)),.7f);
+      }
+      metrics.brace=1;
     }
-    metrics.brace=1;
+    for(unsigned i=1;i<13;++i){
+      const int parent=pes3::nativeParents[i];auto &child=*s.bodies[i+1];auto &base=*s.bodies[parent+1];
+      const btQuaternion wanted=base.getWorldTransform().getRotation()*bq(targets[i]);
+      const Vec error=logarithm(quat(wanted*child.getWorldTransform().getRotation().inverse()));
+      const Vec relative=vec(child.getAngularVelocity()-base.getAngularVelocity());
+      const float stiffness=i<=2?30.f:i>=7?22.f:12.f;
+      const float limit=(i<=2?32.f:i>=7?26.f:9.f)*tone;
+      const Vec torque=capped(subtractPoint(scalePoint(error,stiffness*tone),scalePoint(relative,2.f*std::sqrt(tone))),limit);
+      child.applyTorque(bv(torque));base.applyTorque(-bv(torque));
+      child.activate();base.activate();metrics.muscleEffort+=length(torque)*dt;
+    }
+    // Supported ankles can exchange an upright correction with the pelvis
+    // only while an actual floor manifold still carries a foot.
+    std::vector<unsigned> supports;
+    for(int m=0;m<s.dispatcher.getNumManifolds();++m){auto *manifold=s.dispatcher.getManifoldByIndexInternal(m);
+      for(unsigned foot:{9u,12u})if((manifold->getBody0()==s.bodies[0].get() && manifold->getBody1()==s.bodies[foot+1].get()) ||
+          (manifold->getBody1()==s.bodies[0].get() && manifold->getBody0()==s.bodies[foot+1].get())){
+        for(int c=0;c<manifold->getNumContacts();++c)if(manifold->getContactPoint(c).getDistance()<.003f){supports.push_back(foot);break;}
+      }
+    }
+    if(!supports.empty() && height>.6f && s.age<.65f){
+      auto &hips=*s.bodies[1];const Quat q=quat(hips.getWorldTransform().getRotation());
+      const Vec error=logarithm(pes3::swingRotation(rotatePoint(q,{{0,0,1}}),{{0,0,1}}));
+      const Vec torque=capped(subtractPoint(scalePoint(error,32.f),scalePoint(vec(hips.getAngularVelocity()),4.f)),24.f);
+      hips.applyTorque(bv(torque));for(unsigned foot:supports)s.bodies[foot+1]->applyTorque(-bv(scalePoint(torque,1.f/supports.size())));
+      metrics.supportTorque=std::max(metrics.supportTorque,length(torque));
+    }
   }
   s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;
   for(unsigned i=0;i<13;++i){

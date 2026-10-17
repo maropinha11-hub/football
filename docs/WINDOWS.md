@@ -93,6 +93,20 @@ cmake --build build-windows-mingw2 -j2
 python scripts/package-windows.py
 ```
 
+Na restauração de 17/10/2026, as DLLs funcionais foram recuperadas do próprio
+pacote, e seus arquivos de importação foram gerados com `gendef`/`dlltool`.
+Os cabeçalhos Boost 1.92 e SDL2 2.32.4 vieram das publicações oficiais no
+GitHub; o compilador é o MinGW GCC 14.2 POSIX do Debian. Esse SDK fica em
+`/workspace/.football-windows/sdk`, fora do repositório, com a configuração
+de CMake em `/workspace/.football-windows/toolchain.cmake`. Com esse SDK,
+o empacotamento usa:
+
+```bash
+source scripts/native-env.sh
+cmake --build build-windows-mingw2 -j2
+FOOTBALL_WINDOWS_VCPKG_BIN=/workspace/.football-windows/sdk/bin python3 scripts/package-windows.py
+```
+
 Os servidores indisponíveis de dependências foram substituídos por espelhos
 GitHub oficiais ou pelo arquivo fonte Debian. A amalgamação SQLite 3.53.4
 foi gerada pelos scripts do próprio SQLite a partir da tag oficial;

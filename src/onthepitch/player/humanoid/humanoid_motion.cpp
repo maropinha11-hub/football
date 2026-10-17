@@ -52,6 +52,14 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   for(int id:candidates){auto *clip=anims->GetAnim(id);
     auto found=database.find(clip);if(found==database.end())found=database.emplace(clip,extract(clip,0,0)).first;
     costs[id]=motionCost(query,found->second);
+    if(command.useDesiredTripDirection){
+      // Pose continuity is a secondary preference for impacts. A front brace
+      // may resemble idle more closely than a side step, but cannot recover
+      // a lateral blow. Preserve the native incident-direction constraint.
+      const Vector3 incident=command.desiredTripDirection.GetRotated2D(-spatialState.angle).Get2D().GetNormalized(Vector3(0,-1,0));
+      const Vector3 authored=GetVectorFromString(clip->GetVariable("bumpdirection")).Get2D().GetNormalized(incident);
+      costs[id]+=80.f*(1.f-incident.GetDotProduct(authored));
+    }
     if(preferRight && clip->GetVariable("touch_bodypart")!="right_foot")costs[id]+=10.f;
   }
   std::stable_sort(candidates.begin(),candidates.end(),[&](int a,int b){return costs[a]<costs[b];});

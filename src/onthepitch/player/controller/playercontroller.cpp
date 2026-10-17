@@ -602,6 +602,11 @@ void PlayerController::_MovementCommand(PlayerCommandQueue &commandQueue, bool f
     command.desiredLookAt = player->GetPosition() + resultLookDirection * 10.0f;
   }
 
+  if(!player->GetExternalController()){
+    const Vector3 velocity=player->GetHumanoid()->PhysicalContactVelocity(command.desiredDirection*command.desiredVelocityFloat);
+    command.desiredVelocityFloat=velocity.GetLength();
+    command.desiredDirection=velocity.GetNormalized(command.desiredDirection);
+  }
   commandQueue.push_back(command);
 
 }

@@ -289,6 +289,8 @@ class Match {
     Player *trainingPlayer = nullptr;
     Player *trainingPartner = nullptr;
     Vector3 trainingPartnerVelocity{0},trainingGripOffset{0};
+    Player *physicalGripOpponent=nullptr;
+    void ProcessPlayerMatchContact();
     int trainingContactExercise=0;
     bool trainingGrip=false;
     bool trainingGripBlocked=false;

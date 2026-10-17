@@ -4,6 +4,79 @@
 #include <cmath>
 #include <cstdio>
 
+void Match::ProcessPlayerMatchContact(){
+  if(!PlayerMatchEnabled() || !trainingPlayer)return;
+  auto *human=trainingPlayer->GetHumanoid();
+  std::vector<Player*> actors;teams[0]->GetActivePlayers(actors);teams[1]->GetActivePlayers(actors);
+  for(auto *actor:actors){auto *body=actor->GetHumanoid();body->SetPhysicalTraction(Vector3(0));body->SetPhysicalGrip(Vector3(0),Vector3(0));body->SetPhysicalShield(false);body->SetPhysicalHandTarget(Vector3(0),false);}
+  if(!human->PhysicalRigEnabled()){trainingGrip=false;physicalGripOpponent=nullptr;return;}
+  auto &events=UserEventManager::GetInstance();
+  Player *opponent=nullptr;float nearest=1000;
+  for(auto *actor:actors)if(actor->GetTeamID()!=trainingPlayer->GetTeamID() && actor->GetFormationEntry().role!=e_PlayerRole_GK){
+    const float distance=(actor->GetPosition()-trainingPlayer->GetPosition()).Get2D().GetLength();
+    if(distance<nearest){nearest=distance;opponent=actor;}
+  }
+  if(!opponent)return;
+  // Explicit optional laboratory setup, never part of ordinary match AI.
+  if(GetConfiguration()->GetBool("training_physical_lab",false) && events.ConsumeKeyPress(SDLK_F2)){
+    const Vector3 root=trainingPlayer->GetPosition(),forward=trainingPlayer->GetBodyDirectionVec();
+    opponent->ResetPosition(root+forward*.15f+forward.GetRotated2D(pi*.5f)*.68f,root+forward*3.f);
+    SpamMessage("Ensaio de contato: adversario aproximado | M: disputa | LT: proteger/agarrar",4000);
+    printf("PHYSICAL_MATCH_SETUP t=%lu actor=%d opponent=%d\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID());
+  }
+  if(trainingGrip && physicalGripOpponent)opponent=physicalGripOpponent;
+  auto *other=opponent->GetHumanoid();
+  const Vector3 separation=opponent->GetPosition()-trainingPlayer->GetPosition();
+  const float distance=separation.Get2D().GetLength();
+  const Vector3 normal=separation.Get2D().GetNormalized(trainingPlayer->GetBodyDirectionVec());
+  if(GetConfiguration()->GetBool("training_physical_lab",false) && events.ConsumeKeyPress(SDLK_F11)){
+    SetBallRetainer(0);ball->SetMomentum(Vector3(0));
+    ball->SetPosition(opponent->GetPosition()+opponent->GetBodyDirectionVec()*.55f+Vector3(0,0,.11f));
+    SpamMessage("Ensaio: bola no adversario | LT: tentar segurar",3000);
+  }
+  const bool withBall=trainingPlayer->HasPossession() && (ball->Predict(0)-trainingPlayer->GetPosition()).Get2D().GetLength()<1.5f;
+  bool trigger=false;
+  if(trainingController>0){const int slot=static_cast<HIDGamepad*>(controllers[trainingController])->GetGamepadID();trigger=events.GetControllerAxis(slot,SDL_CONTROLLER_AXIS_TRIGGERLEFT)>.35f;}
+  const bool gripKey=events.GetKeyboardState(SDLK_h) || (trigger && !withBall);
+  const bool shield=events.GetKeyboardState(SDLK_n) || (trigger && withBall);
+  if(!gripKey)trainingGripBlocked=false;
+  human->SetPhysicalShield(shield || gripKey);
+  // Possession-side AI keeps its native decisions but can brace in a contest.
+  if(distance<.9f && opponent->HasPossession())other->SetPhysicalShield(true);
+  const float yaw=std::atan2(opponent->GetBodyDirectionVec().coords[0],-opponent->GetBodyDirectionVec().coords[1]);
+  const Vector3 shirt=trainingGrip?opponent->GetPosition()+trainingGripAnchor.GetRotated2D(yaw):other->GetPhysicalShirtPoint(trainingPlayer->GetPosition());
+  const float gap=human->PhysicalHandDistance(shirt);
+  if((shield || gripKey) && distance<.9f)human->SetPhysicalHandTarget(shirt,true);
+  const bool busy=human->PhysicalRigBusy() || other->PhysicalRigBusy();
+  if(events.ConsumeKeyPress(SDLK_m) && !busy && distance<.85f && actualTime_ms>=trainingTackleUntil){
+    const float strength=trainingPlayer->GetMovement().GetLength()>4?175.f:95.f;
+    other->AddPhysicalImpulse(normal*strength,Vector3(0,0,.18f));human->AddPhysicalImpulse(-normal*strength*.45f,Vector3(0,0,.18f));
+    trainingTackleUntil=actualTime_ms+850;
+    printf("PHYSICAL_MATCH_CONTEST t=%lu actor=%d opponent=%d impulse=%.3f distance=%.4f\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID(),strength,distance);
+  }
+  if(gripKey && !trainingGrip && !trainingGripBlocked && !busy && distance<.9f && gap<.10f){
+    trainingGrip=true;physicalGripOpponent=opponent;trainingGripOffset=separation;trainingGripStarted=actualTime_ms;trainingGripEscape=0;
+    trainingGripAnchor=(shirt-opponent->GetPosition()).GetRotated2D(-yaw);
+    printf("PHYSICAL_MATCH_GRIP t=%lu state=begin actor=%d opponent=%d hand_gap=%.5f\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID(),gap);
+  }
+  if(trainingGrip && (!gripKey || busy || distance>1.08f || gap>.23f || trainingGripEscape>=1.f)){
+    trainingGrip=false;trainingGripBlocked=gripKey;physicalGripOpponent=nullptr;
+    printf("PHYSICAL_MATCH_GRIP t=%lu state=release reason=%s\n",actualTime_ms,!gripKey?"button":busy?"fall":trainingGripEscape>=1?"escaped":"reach");
+  }
+  if(trainingGrip){
+    const Vector3 relative=opponent->GetMovement()-trainingPlayer->GetMovement();
+    Vector3 force=(separation-trainingGripOffset)*900.f+relative*65.f;
+    if(force.GetLength()>260)force=force.GetNormalized(0)*260;
+    const float age=(actualTime_ms-trainingGripStarted)*.001f;
+    if(age>.6f)trainingGripEscape+=.01f*(.25f+.35f*std::min(1.f,force.GetLength()/200.f));
+    other->SetPhysicalGrip(shirt,-force);human->SetPhysicalTraction(force);other->SetPhysicalTraction(-force);
+    human->AddPhysicalImpulse(force*.01f,Vector3(0,0,.24f));other->AddPhysicalImpulse(-force*.01f,Vector3(0,0,.24f));
+    if(actualTime_ms%100==0)printf("PHYSICAL_MATCH_GRIP_FORCE t=%lu force=%.5f reaction=%.5f distance=%.5f escape=%.5f\n",actualTime_ms,force.GetLength(),force.GetLength(),distance,trainingGripEscape);
+  }
+  if(actualTime_ms%100==0 && GetConfiguration()->GetBool("training_telemetry",false))
+    printf("PHYSICAL_MATCH_CONTACT t=%lu opponent=%d distance=%.4f shield=%d reaching=%d grip=%d hand_gap=%.5f\n",actualTime_ms,opponent->GetID(),distance,shield?1:0,gripKey?1:0,trainingGrip?1:0,gap);
+}
+
 void Match::ProcessTrainingContact(){
   if(!trainingPartner)return;
   auto &events=UserEventManager::GetInstance();

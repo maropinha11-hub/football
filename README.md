@@ -19,6 +19,14 @@ queda deliberada de teste. R3/Tab mostra o corpo.
 No laboratório, **LT/L2 protege com a bola e tenta agarrar sem ela**; L3 não
 aciona a camisa. **F10** ativa o parceiro e **F11** alterna a posse de teste.
 `partida-fisica.bat` permite testar contatos com jogadores da CPU.
+A física agora alcança os **22 jogadores**. Impactos recuperáveis usam as
+animações nativas de desequilíbrio de corpo inteiro, escolhidas pela direção
+do impacto; **F3** muda essa direção no teste de F8. A queda mantém motores
+articulares limitados e tentativa de apoio enquanto os pés tocam o chão.
+Na partida, **LT/L2**, **H/N** e **M** permitem testar proteção, agarramento e
+disputa. **F2** aproxima um adversário para um ensaio explícito de contato;
+ele continua sendo controlado pela CPU. Veja [os testes de equilíbrio e
+partida](docs/PASSOS-DE-APOIO-E-PARTIDA.md).
 A revisão limita ombros/cotovelos também após a mistura gráfica, mantém
 pedidos de passe/cabeçada durante apertos repetidos e faz a tração da camisa
 reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
@@ -224,7 +232,7 @@ controle físico, do Bluetooth ou da sensação dos comandos no seu PC.
 | Receber passe na posição atual | — | F4 |
 | Receber no peito, parado ou avançando | — | F5 |
 | Receber cruzamento alto | — | F6 |
-| Sair | — | Esc ou F12 |
+| Sair | — | Esc ou F2 |
 
 Segure e solte A/B/X/Y para graduar a força. X também aumenta a elevação
 com a carga; LB+X produz uma cobertura mais lenta e arqueada. A carga máxima

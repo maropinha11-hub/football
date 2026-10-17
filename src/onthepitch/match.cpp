@@ -1623,7 +1623,8 @@ void Match::CheckHumanoidCollisions() {
 
       //if (playerBounces.at(i1).size() > 0) printf("\n");
       // okay, accumulated all, now distribute them in normalized fashion
-      players.at(i1)->OffsetPosition(bounceVec * 0.01f * 1.0f);
+      const auto *body=players.at(i1)->GetHumanoid();
+      players.at(i1)->OffsetPosition(bounceVec * 0.01f * (body->PhysicalRigEnabled() && body->PhysicalShielding()?.6f:1.f));
       players.at(i1)->GetHumanoid()->PhysicalCollision(bounceVec);
       //printf("moving player %i\n", i1);
     }

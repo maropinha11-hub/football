@@ -55,7 +55,7 @@ bool HumanoidBase::UsesTrainingContacts() const {
 }
 
 void HumanoidBase::CaptureContactMesh() {
-  if(PlayerMatchEnabled() && !UsesTrainingContacts())return;
+  if(PlayerMatchEnabled() && !UsesTrainingContacts() && !PhysicalRigEnabled())return;
   contactJointBone.fill(-1);
   for(unsigned j=0;j<joints.size();++j)for(unsigned i=0;i<13;++i)
     if(joints[j].node->GetName()==pes3::nativeBoneNames[i])contactJointBone[j]=int(i);
@@ -439,7 +439,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
 
 void HumanoidBase::UpdateTrainingContactPose() {
   contactPoseBlend=0;
-  if(!UsesTrainingContacts())return;
+  if(!UsesTrainingContacts() && !PhysicalRigEnabled())return;
   const unsigned frame=std::min<unsigned>(currentAnim->frameNum,currentAnim->positions.size()-1);
   Vector3 approach=currentAnim->actionSmuggleOffset;
   if(currentAnim->touchFrame>0 && currentAnim->frameNum<=currentAnim->touchFrame) {
@@ -462,6 +462,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
   UpdatePhysicalRigPose();
+  if(!UsesTrainingContacts())return;
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?
       ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;

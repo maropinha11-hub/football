@@ -1,5 +1,8 @@
 # Revisão dos braços, ações de primeira e contato
 
+Registro da revisão anterior. A caminhada comum após impactos foi substituída
+pelas reações descritas em [Passos de apoio e física na partida](PASSOS-DE-APOIO-E-PARTIDA.md).
+
 Extraia o ZIP Windows completo em uma **pasta nova**, entre em
 `football-training-windows-x86_64` e abra **treino-fisico.bat**.
 

@@ -1986,6 +1986,10 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     currentAnim->anim = anims->GetAnim(selectedAnimID);
     currentAnim->id = selectedAnimID;
     currentAnim->functionType = command.desiredFunctionType;//StringToFunctionType(currentAnim->anim->GetVariable("type"));
+    if(PhysicalRigEnabled() && command.desiredFunctionType==e_FunctionType_Trip && currentAnim->anim->GetVariable("triptype")=="1"){
+      physicalStaggerUntil=match->GetActualTime_ms()+currentAnim->anim->GetFrameCount()*10+200;
+      printf("PHYSICAL_STAGGER_CLIP t=%lu actor=%d clip=%s frames=%d speed=%.3f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->anim->GetFrameCount(),spatialState.floatVelocity);
+    }
     currentAnim->frameNum = 0;
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->touchMade = false;

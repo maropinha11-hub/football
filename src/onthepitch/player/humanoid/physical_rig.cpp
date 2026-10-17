@@ -112,9 +112,11 @@ void PhysicalRig::step(const Input &input,float dt){
       }
     }
     physicalUpperValid=false;evaluate(input);
-    if(!articulated)articulated.reset(new ArticulatedBody);
-    articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
-    physicalUpperValid=true;evaluate(input);
+    if(!input.passiveTracking || impulseSize>0 || debug.balanceRisk>.02f){
+      if(!articulated)articulated.reset(new ArticulatedBody);
+      articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
+      physicalUpperValid=true;evaluate(input);
+    }else articulated.reset();
   }else if(state==Mode::Falling){
     for(unsigned sub=0;sub<2;++sub)articulated->step(dt*.5f,local,root,debug);
     forwardKinematics();separateArms();
@@ -153,7 +155,7 @@ void PhysicalRig::evaluate(const Input &input){
   const float actionBias=input.upperReception || input.action?0.f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
   Pose target=input.pose;
-  if(balanceChoice>=0 && !input.action && !input.upperReception){
+  if(balanceChoice>=0 && !input.staggering && !input.action && !input.upperReception){
     const auto &motion=balanceMotions[balanceChoice];
     const float frame=balanceMotionTime/.016f;
     if(frame<float(motion.frames.size()-1)){
@@ -239,6 +241,24 @@ void PhysicalRig::reachHand(unsigned shoulder,Vec target,float weight){
   arm=normalized(productRotation(exponential(scalePoint(upperDirection,twist)),arm));
   Quat wanted[2]={normalized(productRotation(inverseRotation(world[1]),arm)),exponential({{-std::acos(bounded(dotPoint(upperDirection,lowerDirection),-1,1)),0,0}})};
   for(unsigned i=0;i<2;++i)wanted[i]=anatomicalArm(shoulder+i,wanted[i]);
+  // Projecting the analytic elbow plane into its anatomical limits can
+  // leave the hand short of a reachable shirt. Refine the constrained goal,
+  // then approach it through the same bounded angular-velocity controller.
+  // This never expands the grip distance or moves the hand instantaneously.
+  for(unsigned iteration=0;iteration<10;++iteration){
+    Quat upperQ=normalized(productRotation(world[1],wanted[0]));
+    Vec elbowPoint=addPoint(positions[shoulder],rotatePoint(upperQ,scalePoint(reference.offsets[elbow],scale)));
+    Vec tip=addPoint(elbowPoint,rotatePoint(productRotation(upperQ,wanted[1]),{{0,0,-.25f*scale}}));
+    const Vec axis=rotatePoint(upperQ,{{1,0,0}});
+    Vec a=subtractPoint(tip,elbowPoint),b=subtractPoint(target,elbowPoint);
+    a=subtractPoint(a,scalePoint(axis,dotPoint(a,axis)));b=subtractPoint(b,scalePoint(axis,dotPoint(b,axis)));
+    const float angle=bounded(std::atan2(dotPoint(axis,crossPoint(a,b)),dotPoint(a,b)),-.18f,.18f);
+    wanted[1]=anatomicalArm(elbow,productRotation(exponential({{angle,0,0}}),wanted[1]));
+    tip=addPoint(elbowPoint,rotatePoint(productRotation(upperQ,wanted[1]),{{0,0,-.25f*scale}}));
+    const Quat correction=pes3::swingRotation(unit(subtractPoint(tip,positions[shoulder])),unit(subtractPoint(target,positions[shoulder])));
+    upperQ=normalized(productRotation(exponential(capped(logarithm(correction),.18f)),upperQ));
+    wanted[0]=anatomicalArm(shoulder,productRotation(inverseRotation(world[1]),upperQ));
+  }
   if(handUpdatePending)for(unsigned i=0;i<2;++i){
     const Vec error=logarithm(productRotation(wanted[i],inverseRotation(handPose[i])));
     const Vec speed=capped(scalePoint(error,12.f),3.8f);
