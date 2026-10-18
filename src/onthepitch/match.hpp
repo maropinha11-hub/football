@@ -296,6 +296,7 @@ class Match {
     struct PhysicalAIHold {Player *victim=nullptr;Vector3 offset{0},anchor{0};unsigned long started=0,cooldown=0;};
     std::map<int,PhysicalAIHold> physicalAIHolds;
     void ProcessPlayerMatchContact();
+    void ApplyPhysicalBodyDuel(Player *first,Player *second);
     int trainingContactExercise=0;
     bool trainingGrip=false;
     bool trainingGripBlocked=false;

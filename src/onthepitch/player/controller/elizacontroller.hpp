@@ -58,6 +58,7 @@ class ElizaController : public PlayerController {
     float _GetPassingOdds(Player *targetPlayer, e_FunctionType passType, const std::vector<PlayerImage> &opponentPlayerImages, float ballVelocityMultiplier = 1.0f);
     float _GetPassingOdds(const Vector3 &target, e_FunctionType passType, const std::vector<PlayerImage> &opponentPlayerImages, float ballVelocityMultiplier = 1.0f);
     void _AddCelebration(std::vector<PlayerCommand> &commandQueue);
+    void _QueueAerialDuel(PlayerCommandQueue &commandQueue);
 
     Strategy *defenseStrategy;
     Strategy *midfieldStrategy;

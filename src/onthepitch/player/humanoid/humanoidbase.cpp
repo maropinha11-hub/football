@@ -960,6 +960,9 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
   buf_physicalRig.SetValue(PhysicalRigEnabled()?(PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
+  const auto rootOffset=physicalRig&&physicalRig->initialized()?physicalRig->rootOffset():football_physics::Vec{{0,0,0}};
+  buf_physicalRootOffset.SetValue(Vector3(rootOffset[0],rootOffset[1],rootOffset[2]),snapshotTime_ms);
+  buf_animApplyBuffer.motionMatched=PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_motion_matching",true);
   const auto situation=physicalRig && physicalRig->initialized()?physicalRig->metrics().situation:football_situations::ActionMetrics{};
   buf_situationState.SetValue(Vector3(situation.weight,situation.difficulty,int(situation.kind)),snapshotTime_ms);
   buf_physicalGripPoint.SetValue(physicalGripPoint,snapshotTime_ms);
@@ -1017,6 +1020,7 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
   fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
+  fetchedPhysicalRootOffset=buf_physicalRootOffset.GetValue(putTime_ms);
   fetchedPhysicalRagdoll=buf_physicalRig.GetValue(putTime_ms)>1.5f;
   fetchedSituationState=buf_situationState.GetValue(putTime_ms);
   fetchedPhysicalGripPoint=buf_physicalGripPoint.GetValue(putTime_ms);
@@ -1076,7 +1080,7 @@ void HumanoidBase::Put() {
     if (GetConfiguration()->GetBool("training_telemetry",false)) printf("PES3_BODY_RESTORE native=1\n");
   }
   fetchedbuf_animApplyBuffer.anim->Apply(nodeMap, fetchedbuf_animApplyBuffer.frameNum, -1,
-    fetchedbuf_animApplyBuffer.smooth && !restoreNative, fetchedbuf_animApplyBuffer.smoothFactor,
+    fetchedbuf_animApplyBuffer.smooth && !restoreNative && !fetchedbuf_animApplyBuffer.motionMatched, fetchedbuf_animApplyBuffer.smoothFactor,
     fetchedbuf_animApplyBuffer.position, fetchedbuf_animApplyBuffer.orientation, fetchedbuf_animApplyBuffer.offsets,
     &movementHistory,timeDiff_ms,fetchedbuf_animApplyBuffer.noPos,false,TrainingEnabled()?12.0f:8.0f);
   pes3StudyWasApplied=studyApplied;

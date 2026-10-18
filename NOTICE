@@ -24,3 +24,10 @@ Copyright (c) 2003-2023 Erwin Coumans and contributors.
 Statically linked, unmodified upstream source under the zlib license.
 The complete license is included as BULLET-LICENSE.txt in the portable package
 and third_party/bullet/LICENSE.txt in the source tree.
+
+Motion matching and rotation-space inertialization reference the public
+Motion-Matching implementation by Daniel Holden, copyright (c) 2021,
+https://github.com/orangeduck/Motion-Matching (MIT license).
+The full notice is in third_party/motion-matching/LICENSE.txt and is included
+as MOTION-MATCHING-LICENSE.txt in the portable package. Its LAFAN demo motion
+data and pretrained networks are not included or used for metric training.

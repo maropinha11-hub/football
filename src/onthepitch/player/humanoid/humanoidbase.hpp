@@ -21,7 +21,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
-namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;}
+namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;struct NativeMotionBank;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -164,6 +164,7 @@ struct AnimApplyBuffer {
     dribbleTrialFunction = src.dribbleTrialFunction;
     dribbleTrialFacing = src.dribbleTrialFacing;
     upperReception = src.upperReception; upperPhase=src.upperPhase; upperWeight=src.upperWeight; upperArmWeight=src.upperArmWeight;
+    motionMatched=src.motionMatched;
   }
   Animation *anim;
   int frameNum;
@@ -176,6 +177,7 @@ struct AnimApplyBuffer {
   std::map < std::string, BiasedOffset > offsets;
   Animation *upperReception=nullptr;
   float upperPhase=0,upperWeight=0,upperArmWeight=0;
+  bool motionMatched=false;
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
@@ -261,11 +263,13 @@ class HumanoidBase {
     bool PhysicalShielding()const {return physicalShield;}
     Vector3 PhysicalContactVelocity(const Vector3 &desired)const;
     void SetPhysicalTraction(const Vector3 &force) {physicalTraction=force;}
+    void AddPhysicalTraction(const Vector3 &force) {physicalTraction+=force;if(physicalTraction.GetLength()>500)physicalTraction=physicalTraction.GetNormalized(0)*500;}
     Vector3 SafeFirstPersonEye(const Vector3 &eye)const;
     void SetPhysicalShield(bool active) {physicalShield=active;}
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
     float PhysicalHandDistance(const Vector3 &point)const;
     bool TackleLegContact(const HumanoidBase &victim,Vector3 &point)const;
+    bool BodyContestContact(const HumanoidBase &other,Vector3 &point,Vector3 &normal,float &depth)const;
     Vector3 GetPhysicalShirtPoint()const;
     Vector3 GetPhysicalShirtPoint(const Vector3 &from)const;
     void PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes);
@@ -456,9 +460,15 @@ class HumanoidBase {
     bool physicalHandTargetActive=false;
     unsigned physicalSituationProfile=0;
     TemporalSmoother<Vector3> buf_situationState;
+    TemporalSmoother<Vector3> buf_physicalRootOffset;
+    Vector3 fetchedPhysicalRootOffset{0};
     Vector3 fetchedSituationState{0};
     void BuildSituationalInput(football_physics::Input &input);
     void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
+    int MotionEntryFrame(int id)const;
+    std::map<int,int> motionEntryFrames;
+    std::shared_ptr<football_physics::NativeMotionBank> motionBank;
+    unsigned long motionEpoch=0;
 
     AnimApplyBuffer animApplyBuffer;
 

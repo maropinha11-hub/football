@@ -344,6 +344,7 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
   if (match->IsInPlay() && !match->IsInSetPiece()) {
 
+    _QueueAerialDuel(commandQueue);
     // ball control?
     _BallControlCommand(commandQueue, false, false, false); // last param true == enable sticky run direction.
 
@@ -1234,6 +1235,42 @@ float ElizaController::_GetPassingOdds(const Vector3 &target, e_FunctionType pas
   float odds = 1.0f - danger;
 
   return odds;
+}
+
+void ElizaController::_QueueAerialDuel(PlayerCommandQueue &queue){
+  if(!PlayerMatchEnabled()||!player->GetHumanoid()->PhysicalRigEnabled()||
+     CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK||team->GetDesignatedTeamPossessionPlayer()!=player)return;
+  if(std::any_of(queue.begin(),queue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_ShortPass||c.desiredFunctionType==e_FunctionType_LongPass||c.desiredFunctionType==e_FunctionType_HighPass||c.desiredFunctionType==e_FunctionType_Shot;}))return;
+  if(match->GetLastTouchPlayer()==player&&CastPlayer()->GetLastTouchType()!=e_TouchType_Accidental)return;
+  const Vector3 position=player->GetPosition(),goal(-team->GetSide()*pitchHalfW,0,0);
+  if((goal-position).Get2D().GetLength()<18.f)return; // preserve native finishing choices
+  std::vector<PlayerImage> opponents;_mentalImage->GetTeamPlayerImages(1-team->GetID(),-1,opponents);
+  float pressure=100;for(const auto &opponent:opponents)pressure=std::min(pressure,(opponent.position-position).Get2D().GetLength());
+  if(pressure>1.65f)return;
+  float arrival=0,height=0,best=100;
+  for(unsigned ms=80;ms<=650;ms+=20){const Vector3 ball=match->GetBall()->Predict(ms);
+    const float gap=(ball-position-player->GetMovement()*(ms*.001f)).Get2D().GetLength();
+    if(ball.coords[2]<1.25f||ball.coords[2]>2.45f||gap>.90f)continue;
+    const float score=gap+.18f*std::fabs(ball.coords[2]-1.75f)+ms*.0001f;
+    if(score<best){best=score;arrival=ms*.001f;height=ball.coords[2];}
+  }
+  if(arrival==0)return;
+  Player *target=nullptr;float rating=.68f;
+  const float offside=std::max(0.f,AI_GetOffsideLine(match,_mentalImage,1-team->GetID())*(-team->GetSide()));
+  std::vector<Player*> mates;team->GetActivePlayers(mates);
+  for(auto *mate:mates)if(mate!=player){const Vector3 delta=mate->GetPosition()-position;const float range=delta.Get2D().GetLength();
+    if(range<4||range>20||delta.coords[0]*(-team->GetSide())<0||mate->GetPosition().coords[0]*(-team->GetSide())>offside)continue;
+    const float odds=_GetPassingOdds(mate,e_FunctionType_ShortPass,opponents);
+    if(odds>rating){rating=odds;target=mate;}
+  }
+  PlayerCommand header;header.desiredFunctionType=e_FunctionType_ShortPass;
+  header.useDesiredMovement=header.useDesiredLookAt=false;
+  header.touchInfo.desiredDirection=((target?target->GetPosition()+target->GetMovement()*.25f:goal)-position).GetNormalized(Vector3(-team->GetSide(),0,0));
+  header.touchInfo.inputDirection=header.touchInfo.desiredDirection;header.touchInfo.targetPlayer=target;
+  header.touchInfo.desiredPower=header.touchInfo.inputPower=target?.45f:.62f;header.touchInfo.autoDirectionBias=.1f;
+  queue.insert(queue.begin(),header);
+  if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
+    printf("CPU_AERIAL_DUEL t=%lu actor=%d arrival=%.4f height=%.4f pressure=%.4f target=%d\n",match->GetActualTime_ms(),player->GetID(),arrival,height,pressure,target?target->GetID():-1);
 }
 
 void ElizaController::_AddCelebration(std::vector<PlayerCommand> &commandQueue) {

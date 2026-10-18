@@ -3,6 +3,7 @@
 // No source motion data, trained policy or proprietary animation is embedded.
 #include "../../../pes3/native_pose.hpp"
 #include "situational_action.hpp"
+#include "pose_inertia.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -42,6 +43,13 @@ struct Input {
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false;
+  bool useInertia=false,preserveLook=false;
+  bool adaptiveMotion=false,receiving=false,bodyContact=false;
+  float receiveTime=0,receiveHeight=0;
+  Vec ball{{0,0,0}},ballVelocity{{0,0,0}};
+  unsigned long motionEpoch=0;
+  std::array<Vec,13> poseVelocity{};
+  std::array<float,13> inertiaMask{};
   football_situations::Context situation;
 };
 struct Metrics {
@@ -52,6 +60,8 @@ struct Metrics {
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
   float armLimitError=0,armPenetration=0;
   float muscleEffort=0,supportTorque=0;
+  float inertiaOffset=0;
+  float stanceOffset=0,receiveAnticipation=0;
   football_situations::ActionMetrics situation;
   float situationTrunk=0,situationArms=0,situationFootError=0,situationRootError=0;
   int balancePhase=0,balanceChoice=-1;
@@ -83,6 +93,7 @@ class PhysicalRig {
   const Metrics &metrics()const{return debug;}
   bool initialized()const{return ready;}
   const Pose &additivePose()const{return additive;}
+  Vec rootOffset()const{return state==Mode::Active?activeRootOffset:Vec{{0,0,0}};}
   Vec balanceVelocity()const;
   float renderWeight()const{return state==Mode::Active?0.f:1.f;}
   float age()const{return stateAge;}
@@ -126,5 +137,8 @@ class PhysicalRig {
   Mode state=Mode::Active;
   Metrics debug{};
   football_situations::ActionLayer situationLayer;
+  PoseInertia poseInertia;
+  Vec rootPosture{{0,0,0}},rootPostureVelocity{{0,0,0}},activeRootOffset{{0,0,0}};
+  float receiveEnvelope=0;
 };
 }

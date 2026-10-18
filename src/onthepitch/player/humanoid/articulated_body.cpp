@@ -31,6 +31,8 @@ struct ArticulatedBody::World {
   std::vector<std::unique_ptr<btGeneric6DofSpring2Constraint>> joints;
   std::array<btVector3,13> centers;
   Pose muscleTarget{};
+  std::array<btQuaternion,13> previousTarget;
+  bool targetValid=false;
   float age=0;
   bool tracking=false;
   World(){
@@ -123,12 +125,16 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
 void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics){
   if(!state || !state->tracking)start(bind,scale,target,pelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},true);
   auto &s=*state;std::array<btTransform,13> desired,previous;
+  std::array<Vec,13> desiredVelocity{};
   for(unsigned i=0;i<13;++i){int parent=pes3::nativeParents[i];
     desired[i]=parent<0?btTransform(bq(target[i]),bv(pelvis)):
       desired[parent]*btTransform(bq(target[i]),bv(scalePoint(bind.offsets[i],scale)));
     auto &body=*s.bodies[i+1];
     previous[i]=body.getWorldTransform();
+    if(s.targetValid)desiredVelocity[i]=capped(scalePoint(logarithm(quat(desired[i].getRotation()*s.previousTarget[i].inverse())),1/std::max(.001f,dt)),12.f);
+    s.previousTarget[i]=desired[i].getRotation();
   }
+  s.targetValid=true;
   if(length(impulse)>0)s.bodies[2]->applyImpulse(bv(scalePoint(impulse,.35f)),btVector3(0,0,.12f));
   for(unsigned sub=0;sub<2;++sub){
     for(unsigned i=0;i<13;++i)if(i==0 || i>=7){
@@ -143,7 +149,9 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
     }
     for(unsigned i=1;i<=6;++i){auto &body=*s.bodies[i+1];
       const Vec error=logarithm(quat(desired[i].getRotation()*body.getWorldTransform().getRotation().inverse()));
-      const Vec acceleration=capped(subtractPoint(scalePoint(error,625.f),scalePoint(vec(body.getAngularVelocity()),50.f)),140.f);
+      // Drive pose AND reference velocity. Damping against zero world
+      // velocity was resisting the very arm swing the reference requested.
+      const Vec acceleration=capped(addPoint(scalePoint(error,625.f),scalePoint(subtractPoint(desiredVelocity[i],vec(body.getAngularVelocity())),50.f)),140.f);
       const btVector3 torque=body.getInvInertiaTensorWorld().inverse()*bv(acceleration);
       body.applyTorque(bv(capped(vec(torque),i==1?90.f:12.f)));body.activate();
     }

@@ -77,8 +77,11 @@ try:
   check('hand solver limits angular speed and elbow flexion',bool(arms)and all(float(x['arm_speed'])<=3.81 and float(x['elbow'])<=2.41 for x in arms),dict(samples=len(arms),peak_speed=max(float(x['arm_speed'])for x in arms)))
   g.reset();key(g,'F10');g.advance(1600)
   start=len(g.read_log());g.advance(2200)
-  contacts=events(g,'PHYSICAL_PAIR_CONTACT',start);states=events(g,'PHYSICAL_RIG_STATE',start)
-  check('continuous normal pressure produces contact without automatic knockdowns',bool(contacts)and not any(x['to']=='1'for x in states),dict(contacts=contacts[:10],states=states))
+  contacts=events(g,'PHYSICAL_PAIR_CONTACT',start);surface=events(g,'PHYSICAL_BODY_DUEL',start);states=events(g,'PHYSICAL_RIG_STATE',start)
+  # Real posed shoulders/arms may stop the approach before the old root
+  # capsule overlaps. Require the actual new surface contact in that case.
+  actualSurface=bool(surface)and all(0<float(x['normal_force'])<=260.01 and 0<float(x['penetration'])<=.08001 and x['reciprocal']=='1'for x in surface)
+  check('continuous normal pressure produces contact without automatic knockdowns',(bool(contacts)or actualSurface)and not any(x['to']=='1'for x in states),dict(contacts=contacts[:10],surface=surface[:10],states=states))
   key(g,'Tab');g.keys(['Down','Right'],True);g.advance(550);g.keys(['Down','Right'],False);capture(g,'fp-look-down')
   start=len(g.read_log());key(g,'F9');g.advance(700);capture(g,'fp-fall');g.advance(6000)
   eyes=events(g,'PHYSICAL_EYE',start)

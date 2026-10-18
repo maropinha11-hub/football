@@ -27,6 +27,7 @@
 #include "../../match.hpp"
 #include "../../keeper_trajectory.hpp"
 #include "../../physical_match_rules.hpp"
+#include "motion_matching.hpp"
 
 #include "../../../main.hpp"
 
@@ -1349,7 +1350,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     if ((currentMentalImage->GetBallPrediction(200).Get2D() - spatialState.position).GetLength() > ballDistanceOptimizeThreshold) {
       return false;
     }
-    if ((currentMentalImage->GetBallPrediction(defaultTouchOffset_ms).Get2D() - spatialState.position).GetLength() > 2.0f &&
+    const bool requestedNearAction=UsesTrainingContacts()&&player->GetExternalController()&&
+      (command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||
+       command.desiredFunctionType==e_FunctionType_HighPass||command.desiredFunctionType==e_FunctionType_Shot)&&
+      (match->GetBall()->Predict(0)-spatialState.position).Get2D().GetLength()<1.65f;
+    if (!requestedNearAction && (currentMentalImage->GetBallPrediction(defaultTouchOffset_ms).Get2D() - spatialState.position).GetLength() > 2.0f &&
     //    match->GetBall()->GetMovement().GetNormalized(0).GetDotProduct(player->GetMovement().GetNormalizedMax(1.0f)) < 0) { // ball and player going the other way
         (currentMentalImage->GetBallPrediction(defaultTouchOffset_ms).Get2D() - (player->GetPosition() + player->GetMovement() * defaultTouchOffset_ms * 0.001)).GetLength() >
         (currentMentalImage->GetBallPrediction(0).Get2D()                     - (player->GetPosition())).GetLength()) { // ball moving away from player
@@ -2109,7 +2114,13 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       physicalStaggerUntil=match->GetActualTime_ms()+currentAnim->anim->GetFrameCount()*10+200;
       printf("PHYSICAL_STAGGER_CLIP t=%lu actor=%d clip=%s frames=%d speed=%.3f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->anim->GetFrameCount(),spatialState.floatVelocity);
     }
-    currentAnim->frameNum = 0;
+    currentAnim->frameNum = std::max(0,std::min(MotionEntryFrame(selectedAnimID),int(positions_tmp.size())-2));
+    ++motionEpoch;
+    if(currentAnim->frameNum>0){
+      football_physics::phaseRootTrajectory(positions_tmp,currentAnim->frameNum);
+      if(GetConfiguration()->GetBool("training_telemetry",false))
+        printf("MOTION_PHASE_ENTER t=%lu actor=%d clip=%d frame=%d function=%d root_step=%.6f\n",match->GetActualTime_ms(),player->GetID(),selectedAnimID,currentAnim->frameNum,int(command.desiredFunctionType),positions_tmp[currentAnim->frameNum].GetLength());
+    }
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->touchMade = false;
     if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))

@@ -16,7 +16,7 @@ void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){refe
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){situationLayer.reset();ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){situationLayer.reset();poseInertia.reset();rootPosture=rootPostureVelocity=activeRootOffset={{0,0,0}};receiveEnvelope=0;ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 void PhysicalRig::forwardKinematics(){
@@ -52,6 +52,8 @@ PhysicalRig::PhysicalRig():balance(new BalanceController){}
 PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &input,float dt){
   dt=bounded(dt,.001f,.02f);
+  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.advance(dt);}
+  else poseInertia.reset();
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
   debug={};
@@ -67,6 +69,20 @@ void PhysicalRig::step(const Input &input,float dt){
   filteredTurn+=(bounded(turn,-6,6)-filteredTurn)*(1-std::exp(-6*dt));
   previousVelocity=input.velocity;lastForward=input.forward;
   debug.turnRate=filteredTurn;debug.effort=bounded(length(filteredAcceleration)/12+std::fabs(filteredTurn)*length(input.velocity)/55,0,1);
+  const bool prepareReception=input.adaptiveMotion&&input.receiving&&!input.action&&!input.upperReception&&
+    !input.bodyContact&&!input.handTargetActive&&!input.gripped;
+  receiveEnvelope+=(float(prepareReception)-receiveEnvelope)*(1-std::exp(-10*dt));
+  Vec wantedRoot{{0,0,0}};
+  if(input.adaptiveMotion&&!input.action&&!input.upperReception&&!input.staggering&&state==Mode::Active){
+    const float contest=bounded((1.35f-input.opponentDistance)/.85f,0,1)*(input.protect?1.f:.35f);
+    Vec away=scalePoint(unit(input.opponent,{{0,-1,0}}),-.045f*contest);away[2]=-.040f*contest;
+    wantedRoot=away;
+  }
+  for(unsigned sub=0;sub<2;++sub){const float h=dt*.5f;
+    const Vec acceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedRoot,rootPosture),144.f),scalePoint(rootPostureVelocity,24.f)),2.f);
+    rootPostureVelocity=capped(addPoint(rootPostureVelocity,scalePoint(acceleration,h)),.22f);
+    rootPosture=capped(addPoint(rootPosture,scalePoint(rootPostureVelocity,h)),.065f);
+  }
   const float impulseSize=length(pendingImpulse);
   bool lostBalance=false;
   if(state==Mode::Active){
@@ -151,13 +167,32 @@ void PhysicalRig::step(const Input &input,float dt){
 void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
-  local=input.pose;forwardKinematics();const Vec left=positions[9],right=positions[12];
+  local=input.pose;
+  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.apply(input.pose,input.poseVelocity,input.inertiaMask,local);}
+  forwardKinematics();const Vec left=positions[9],right=positions[12];
+  activeRootOffset=input.adaptiveMotion&&!input.bodyContact?rootPosture:Vec{{0,0,0}};
+  root=addPoint(root,activeRootOffset);forwardKinematics();
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
-  leanAxis=capped(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),.38f);
+  leanAxis=capped(addPoint(addPoint(scalePoint(leanAxis,input.adaptiveMotion?.55f:.14f),sway),balance->lean()),.38f);
   const float actionBias=input.upperReception || input.situation.kind==football_situations::ActionKind::Header?0.f:input.action?.35f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
-  Pose target=input.pose;
+  Pose target=local;
+  debug.inertiaOffset=input.useInertia?poseInertia.maximumOffset():0;
+  debug.stanceOffset=length(activeRootOffset);
+  const float anticipation=input.adaptiveMotion&&!input.action&&!input.upperReception&&!input.bodyContact&&!input.handTargetActive&&!input.gripped?
+    receiveEnvelope*bounded((.95f-input.receiveTime)/.5f,0,1):0;
+  debug.receiveAnticipation=anticipation;
+  if(anticipation>0){
+    const Vec relative=rotatePoint(inverseRotation(world[0]),input.ball);
+    const float side=bounded(relative[0]/1.5f,-1,1),chest=bounded((input.receiveHeight-.55f)/.8f,0,1);
+    target[1]=normalized(productRotation(exponential({{-anticipation*.10f*chest,anticipation*.08f*side,anticipation*.12f*side}}),target[1]));
+    for(unsigned shoulder:{3u,5u}){
+      const float sign=shoulder==3?-1.f:1.f;
+      target[shoulder]=normalized(productRotation(exponential({{-anticipation*.15f,sign*anticipation*(.16f+.15f*chest),-.06f*side*anticipation}}),target[shoulder]));
+      target[shoulder+1]=normalized(productRotation(exponential({{-anticipation*.20f,0,0}}),target[shoulder+1]));
+    }
+  }
   if(balanceChoice>=0 && !input.staggering && !input.action && !input.upperReception){
     const auto &motion=balanceMotions[balanceChoice];
     const float frame=balanceMotionTime/.016f;
@@ -173,7 +208,7 @@ void PhysicalRig::evaluate(const Input &input){
   }
   // Active movement stays on its native smoothed lower-body animation.
   // Only additive upper-body balance is applied; no absolute-pose overwrite.
-  const Quat head=world[2];
+  const Quat head=input.preserveLook?normalized(productRotation(productRotation(input.pose[0],input.pose[1]),input.pose[2])):world[2];
   target[1]=normalized(productRotation(exponential(rotatePoint(inverseRotation(world[0]),leanAxis)),target[1]));
   if(!input.upperReception){
     const float shield=input.opponentDistance<1.15f?(.45f+.8f*protection)*(1-input.opponentDistance/1.15f):0;
@@ -181,7 +216,7 @@ void PhysicalRig::evaluate(const Input &input){
     for(unsigned i:{3u,5u}){
       const float armShield=shield*((i==5)==opponentRight?1.f:.1f);
       const float counterbalance=bounded(length(sway)*.75f,0,.20f);
-      target[i]=normalized(productRotation(exponential({{-.4f*length(sway),-filteredTurn*.012f+(i==5?armShield+counterbalance:-armShield-counterbalance),0}}),target[i]));
+      target[i]=normalized(productRotation(exponential({{-.4f*length(sway),-filteredTurn*(input.adaptiveMotion&&!input.action?.04f:.012f)+(i==5?armShield+counterbalance:-armShield-counterbalance),0}}),target[i]));
     }
   }
   local=target;forwardKinematics();
@@ -201,6 +236,7 @@ void PhysicalRig::evaluate(const Input &input){
   for(unsigned bone:{3u,4u,5u,6u})debug.situationArms=std::max(debug.situationArms,length(logarithm(productRotation(local[bone],inverseRotation(situationBase[bone])))));
   debug.situationRootError=length(subtractPoint(root,situationRoot));
   debug.situationFootError=std::max(length(subtractPoint(positions[9],situationLeft)),length(subtractPoint(positions[12],situationRight)));
+  if(length(activeRootOffset)>1e-6f){solveLeg(7,left);solveLeg(10,right);}
   for(unsigned ankle:{9u,12u})if(length(reachOffsets[ankle])>1e-6f)
     solveLeg(ankle-2,addPoint(positions[ankle],reachOffsets[ankle]));
   {
@@ -215,8 +251,8 @@ void PhysicalRig::evaluate(const Input &input){
       // a freely lagging forearm made the elbow look dislocated even when
       // Bullet's own constraint was valid. Free falls still use full dynamics.
       const bool arm=i>=3;
-      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.14f:i==1?.22f:.20f);
-      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.20f:.65f)),local[i]));
+      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?(input.adaptiveMotion?.20f:.14f):i==1?.22f:.20f);
+      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?(input.adaptiveMotion?.35f:.20f):.65f)),local[i]));
     }
     forwardKinematics();
   }

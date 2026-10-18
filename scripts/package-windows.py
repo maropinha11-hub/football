@@ -74,6 +74,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
+    shutil.copy2(project / "third_party/motion-matching/LICENSE.txt", stage / "MOTION-MATCHING-LICENSE.txt")
     shutil.copy2(project / "scripts/import-pes3.ps1", stage / "import-pes3.ps1")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -129,6 +130,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
+        "F12: comparar busca por quadros de pose e transicoes suaves ligada/desligada.\n"
         "F1: comparar variacoes corporais de passes/chutes ligadas/desligadas.\n"
         "RT fica reservado no treino; os gestos de sola foram removidos.\n"
         "Na recepcao, mire com o analogico esquerdo e prepare A/X/Y/B antes\n"
@@ -170,6 +172,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Na partida, LT/L2 ou H/N tambem tentam agarrar/proteger; M disputa.\n"
         "F2 na partida: aproxima um adversario para ensaio de contato.\n"
         "Ctrl+F2: aproxima pela frente para testar botes/carrinhos.\n"
+        "Alt+F2: bola alta e adversario lado a lado para disputar de cabeca.\n"
         "F11 na partida: coloca a bola no adversario proximo para testar LT.\n"
         "Shift+F11: bola no jogador humano; B no teclado solicita tentativa CPU de agarrar.\n"
         "A sem bola: bote em pe. B no controle sem bola: carrinho.\n"
@@ -210,7 +213,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     )
     (stage / "LEIA-ME.txt").write_text(
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
-        "Extraia este ZIP para uma pasta nova. jogar-partida.bat: partida 11 x 11.\n"
+        "Extraia este ZIP para uma pasta nova. Para testar esta atualizacao,\n"
+        "abra treino-fisico.bat; partida-fisica.bat testa os mesmos movimentos\n"
+        "com os dois times. R3/Tab mostra o corpo; F12 compara as novas transicoes.\n"
+        "jogar-partida.bat: partida 11 x 11 com a base aprovada.\n"
         "run-training.bat: treino aprovado. RT/E sem bola: pedir passe. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n"
         "treino-fisico.bat abre ragdoll e variacoes corporais; leia LEIA-FISICA.txt.\n"
@@ -293,7 +299,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json"):
             output.write(stage/filename,filename)
-        for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt"):
+        for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
             output.write(stage/filename,filename)
         output.writestr("LEIA-ATUALIZACAO.txt",
             ("Windows x64 — conducao nativa com pe direito\r\n\r\n" if approved_binary is None else

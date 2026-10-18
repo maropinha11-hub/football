@@ -46,6 +46,13 @@ def main():
                   and b'zlib license' in license_text)
             check('camera uses the approved increased sensitivity', b'"firstperson_look_speed" "3.8"' in config)
             check('packaged code implements constrained motion matching', b'MOTION_MATCH t=' in exe)
+            check('Windows includes per-frame matching, inertia, anticipation and reciprocal body duels',all(token in exe
+                  for token in [b'MOTION_PHASE_ENTER',b'MOTION_INERTIA',b'PHYSICAL_ADAPTIVE',b'PHYSICAL_BODY_DUEL',b'CPU_AERIAL_DUEL']))
+            check('motion matching comparison and aerial drill are documented',b'F12:'in full.read(prefix+'LEIA-FISICA.txt')
+                  and b'Alt+F2:'in full.read(prefix+'LEIA-FISICA.txt')and b'"training_motion_matching" "true"'in config)
+            check('MIT motion matching attribution accompanies the full and update package',
+                  b'Daniel Holden'in full.read(prefix+'MOTION-MATCHING-LICENSE.txt')and
+                  full.read(prefix+'MOTION-MATCHING-LICENSE.txt')==patch.read('MOTION-MATCHING-LICENSE.txt'))
             check('contact laboratory instructions include partner, grip, protection and contest', all(token in full.read(prefix+'LEIA-FISICA.txt')
                   for token in [b'F10',b'F11',b'LT/L2',b'L3 nao',b'M:']))
             check('Windows code includes the shirt constraint and rendered recovery support', all(token in exe

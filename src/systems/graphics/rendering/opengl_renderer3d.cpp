@@ -2299,7 +2299,9 @@ struct GLfunctions {
           case SDL_KEYDOWN:
             switch(event.key.keysym.sym) {
               case SDLK_F12:
-                EnvironmentManager::GetInstance().SignalQuit();
+                // F12 belongs to the training motion comparison. Keep a
+                // deliberate global exit on Ctrl+F12 instead.
+                if(event.key.keysym.mod & KMOD_CTRL)EnvironmentManager::GetInstance().SignalQuit();
                 break;
               default:
                 break;

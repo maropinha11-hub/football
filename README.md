@@ -33,6 +33,14 @@ reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
 os limites desta revisão](docs/BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
 O treino e a partida aprovados continuam nos atalhos anteriores.
 
+O experimento agora procura quadros dentro dos ciclos de movimento por pose,
+velocidade dos membros, apoios e trajetória prevista. A métrica foi treinada
+com **27.206 quadros do banco nativo**, incluindo espelhamentos; isso não
+representa milhares de novas capturas. As trocas conservam a pose e a
+velocidade de saída, enquanto ações com a bola mantêm a preparação e o
+contato nativos. **F12** permite comparar essa revisão. **Alt+F2** na partida
+física prepara uma disputa aérea. Veja [implementação, pesquisa e limites](docs/MOTION-MATCHING.md).
+
 RT fica reservado no treino. Os gestos de sola foram retirados.
 Na chegada de uma bola, a mira dos passes e cabeceios funciona em todas as
 direções, separada da assistência que posiciona o jogador para recebê-la.

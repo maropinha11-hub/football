@@ -25,18 +25,18 @@
 #include "../player.hpp"
 #include "../humanoid/humanoid_utils.hpp"
 #include "../../../main.hpp"
+#include "../../reception_prediction.hpp"
 
 namespace {
 bool imminentReception(Match *match,Player *player){
   if(!TrainingEnabled()||match->GetBallRetainer())return false;
   Player *last=match->GetLastTouchPlayer();
   if(last==player&&player->GetLastTouchType()!=e_TouchType_Accidental)return false;
-  const Vector3 ball=match->GetBall()->Predict(0),offset=ball-player->GetPosition();
-  const Vector3 relative=match->GetBall()->GetMovement()-player->GetMovement();
-  const float time=clamp(-offset.Get2D().GetDotProduct(relative.Get2D())/std::max(.01f,relative.Get2D().GetSquaredLength()),.03f,.6f);
-  const Vector3 arrival=match->GetBall()->Predict(unsigned(time*1000))-player->GetPosition()-player->GetMovement()*time;
+  const Vector3 ball=match->GetBall()->Predict(0);
   const bool free=!last||last->GetTeamID()==player->GetTeamID()||(last->GetPosition()-ball).Get2D().GetLength()>1.15f;
-  return football_rules::incomingReception(arrival.Get2D().GetLength(),arrival.coords[2],std::max(-offset.Get2D().GetNormalized(0).GetDotProduct(relative),-relative.coords[2]*.5f),relative.GetLength(),free);
+  auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};
+  const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(player->GetPosition()),point(player->GetMovement()),point(match->GetBall()->GetMovement()),free);
+  return plan.valid;
 }
 }
 
@@ -296,6 +296,8 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
   const bool receiving=imminentReception(match,CastPlayer());
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
+  if(receiving&&std::none_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_Trap;}))
+    _TrapCommand(commandQueue,idleTurnToOpponentGoal,knockOn);
   if(TrainingEnabled() && !CastPlayer()->HasPossession()){
     const Vector3 delta=(match->GetBall()->Predict(100)-player->GetPosition()).Get2D();
     if(!football_rules::rearReception(delta.GetNormalized(player->GetBodyDirectionVec()).GetDotProduct(player->GetBodyDirectionVec()),
