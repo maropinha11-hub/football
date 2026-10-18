@@ -36,7 +36,7 @@ CONTACT_TYPES = frozenset(("ballcontrol", "trap", "shortpass", "longpass",
                            "highpass", "shot", "deflect", "catch", "interfere",
                            "sliding"))
 BALL_ACTIONS = {"shortpass": "Pass", "shot": "Shot", "highpass": "Cross",
-                "ballcontrol": "Control"}
+                "ballcontrol": "Control", "trap": "Control"}
 FOOT_PARTS = frozenset(("left_foot", "right_foot"))
 
 
@@ -221,7 +221,12 @@ def profiles():
                         if kind == "Control" and (effort == 2 or reach == 2):
                             continue
                         e, p, t, r = (x*.5 for x in (effort, pressure, turn, reach))
-                        for pattern in range(1 if kind == "None" else 9):
+                        for pattern in range(1 if kind == "None" else 15):
+                            eligible={9: {"Control"}, 10: {"Control"}, 11: {"Header"},
+                                      12: {"Pass", "Shot", "Cross"}, 13: {"Pass", "Shot"},
+                                      14: {"Shot", "Cross"}}
+                            if pattern in eligible and kind not in eligible[pattern]:
+                                continue
                             output.append({
                                 "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*16+pattern,
                                 "kind": kind, "effort": effort, "pressure": pressure,
@@ -257,7 +262,7 @@ def matching_profiles(record, all_profiles):
     for profile in all_profiles:
         if profile["kind"] != action:
             continue
-        if profile["pattern"] == 2 and contact["ball"][2] < .45:
+        if profile["pattern"] in (2,12) and contact["ball"][2] < .45:
             continue
         if profile["effort"]*.5 > maximum_power+.000001:
             continue
@@ -346,7 +351,7 @@ def summary(catalog):
                         "pressure": "opponent proximity/physical pressure, normalized 0..1",
                         "turn": "abs(signed body-local action turn)/pi",
                         "reach": "min(1, horizontal ball offset from pelvis / 0.85m)",
-                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace"]},
+                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace", "cushioned_control", "directed_control", "reactive_header", "volley", "outside_strike", "instep_power"]},
         "constraints": [
             "Native function, contact part, event frame, foot and special/retainer-state eligibility stay authoritative",
             "Header has no full-turn torso profile; Control excludes maximum effort and maximum reach profiles",
@@ -389,7 +394,7 @@ def cpp_header(catalog):
         "                        profileUnit(turn)*2,profileUnit(reach)*2};",
         "  const Profile *best=&kProfiles[0]; float bestCost=1e9f;",
         "  for(const Profile &profile:kProfiles){",
-        "    if(profile.kind!=kind || profile.pattern!=std::min(pattern,8u))continue;",
+        "    if(profile.kind!=kind || profile.pattern!=std::min(pattern,14u))continue;",
         "    const float delta[4]={query[0]-profile.effort,query[1]-profile.pressure,",
         "                          query[2]-profile.turn,query[3]-profile.reach};",
         "    const float cost=delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]+delta[3]*delta[3];",

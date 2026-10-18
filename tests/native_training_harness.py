@@ -47,6 +47,12 @@ class NativeTraining:
         for line in lines:
             if line.startswith(b'TRAINING_FRAME '):self.cache.append(json.loads(line[15:]))
         return self.cache
+    def read_log(self):
+        # A printf record may straddle a buffered write while the game runs.
+        # Consumers must parse completed records; malformed completed JSON
+        # remains an error, rather than being silently skipped.
+        text=self.log.read_text(errors='replace')
+        return text.rpartition('\n')[0]+'\n' if '\n' in text else ''
     def wait(self,predicate,seconds=30):
         deadline=time.monotonic()+seconds
         while time.monotonic()<deadline:
@@ -104,8 +110,11 @@ class NativeTraining:
                 if self.server.poll()is not None or time.monotonic()>deadline:raise RuntimeError('Xvfb not ready')
                 time.sleep(.05)
             with self.log.open('w')as stream:
+                game_env=dict(self.env)
+                extra=self.env.get('FOOTBALL_TEST_PRELOAD','')
+                if extra:game_env['LD_PRELOAD']=extra+':'+game_env.get('LD_PRELOAD','')
                 self.game=subprocess.Popen([str(self.build/'gameplayfootball'),'--config',str(config),'--training','--telemetry'],
-                                           cwd=self.build,env=self.env,stdout=stream,stderr=subprocess.STDOUT)
+                                           cwd=self.build,env=game_env,stdout=stream,stderr=subprocess.STDOUT)
             self.wait(lambda:self.frames()and self.frames()[-1]['t']>=500,seconds=60)
             windows=self.wait(lambda:subprocess.run(['xdotool','search','--pid',str(self.game.pid)],env=self.env,
                                  text=True,capture_output=True).stdout.splitlines())

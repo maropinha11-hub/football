@@ -11,8 +11,8 @@ def check(name,ok,evidence):
 try:
  with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides={'context_x':640,'context_y':360,'training_physical_rig':'true','training_physical_lab':'true'})as g:
   for name,stick in [('straight',(1,0)),('behind',(-1,0)),('behind_on_release',(-1,0))]:
-   g.reset();start=len(g.log.read_text());g.pad(*( (1,0)if name=='behind_on_release'else stick),buttons=1);g.advance(180);g.pad(*stick);f=g.advance(2500);g.pad(0,0)
-   log=g.log.read_text()[start:];hits=[x for x in events(log,'TRAINING_ACTION_TOUCH')if x['function']=='4'];turn=events(log,'PHYSICAL_PASS_TURN')
+   g.reset();start=len(g.read_log());g.pad(*( (1,0)if name=='behind_on_release'else stick),buttons=1);g.advance(180);g.pad(*stick);f=g.advance(2500);g.pad(0,0)
+   log=g.read_log()[start:];hits=[x for x in events(log,'TRAINING_ACTION_TOUCH')if x['function']=='4'];turn=events(log,'PHYSICAL_PASS_TURN')
    check(name+' pass completes with a real foot contact',len(hits)==1 and max(x['ball_speed']for x in f)>4,dict(hits=hits,turn=turn,peak_ball_speed=max(x['ball_speed']for x in f)))
    if name.startswith('behind'):
     selected=[x for x in events(log,'TRAINING_NATIVE_START')if x['function']=='4']

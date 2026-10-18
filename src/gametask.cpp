@@ -130,11 +130,12 @@ void GameTask::ProcessPhase() {
   }
 
   if (match) {
+    // Resets and physics toggles inside Process also clear/replace snapshot
+    // containers. Guard that work with the reader's mutex, not only the final
+    // publication, so graphics cannot copy a map or buffer being destroyed.
+    boost::timed_mutex::scoped_lock snapshotLock(matchPutBufferMutex);
     match->Process();
-
-    matchPutBufferMutex.lock();
     match->PreparePutBuffers();
-    matchPutBufferMutex.unlock();
   }
 
   if (menuScene) {

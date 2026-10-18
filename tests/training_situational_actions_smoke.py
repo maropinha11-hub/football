@@ -87,7 +87,7 @@ def main():
                 if run_ms:
                     pad(0, -1, sprint=True)
                     game.advance(run_ms)
-                start = len(game.log.read_text())
+                start = len(game.read_log())
                 pad(*stick, sprint=bool(run_ms), buttons=button)
                 game.advance(hold_ms)
                 pad(*stick, sprint=bool(run_ms))
@@ -99,12 +99,12 @@ def main():
                     for _ in range(25):
                         game.advance(50)
                         if any(row.get("function") == str(function) for row in
-                               events(game.log.read_text()[start:], "TRAINING_ACTION_TOUCH")):
+                               events(game.read_log()[start:], "TRAINING_ACTION_TOUCH")):
                             break
                     capture(game, name)
                 frames = game.advance(2200)
                 pad(0, 0)
-                log = game.log.read_text()[start:]
+                log = game.read_log()[start:]
                 hits = [row for row in events(log, "TRAINING_ACTION_TOUCH")
                         if int(row["function"]) == function]
                 selected = [row for row in events(log, "TRAINING_NATIVE_START")
@@ -237,7 +237,7 @@ def main():
                 for name, launch, part in [("ground_first_time", "F4", None),
                                            ("aerial_first_time", "F6", "head")]:
                     game.reset()
-                    start = len(game.log.read_text())
+                    start = len(game.read_log())
                     game.keys([launch], True)
                     game.keys([launch], False)
                     for _ in range(5):
@@ -246,13 +246,13 @@ def main():
                         pad(0, 0)
                         game.advance(100)
                     game.advance(1800)
-                    log = game.log.read_text()[start:]
+                    log = game.read_log()[start:]
                     hits = [row for row in events(log, "TRAINING_ACTION_TOUCH")
                             if row["function"] == "4" and (part is None or row["part"] == part)]
                     check(name + " still reaches a physical first-time pass",
                           bool(hits), dict(touches=hits))
 
-            log = game.log.read_text()
+            log = game.read_log()
             hits = events(log, "TRAINING_ACTION_TOUCH")
             accepted = [row for row in events(log, "TRAINING_SKIN_CONTACT")
                         if row["accepted"] == "1"]
@@ -283,12 +283,12 @@ def main():
                 game.advance(100)
                 game.keys(["F1"], False)
                 game.advance(100)
-                start = len(game.log.read_text())
+                start = len(game.read_log())
                 pad(0, 0, buttons=1)
                 game.advance(180)
                 pad(0, 0)
                 game.advance(2300)
-                segment = game.log.read_text()[start:]
+                segment = game.read_log()[start:]
                 touches = [row for row in events(segment, "TRAINING_ACTION_TOUCH")
                            if row["function"] == "4"]
                 situation = events(segment, "PHYSICAL_SITUATION")
@@ -306,12 +306,12 @@ def main():
             game.keys(["F7"], True)
             game.keys(["F7"], False)
             game.advance(200)
-            start = len(game.log.read_text())
+            start = len(game.read_log())
             pad(0, -1, buttons=1)
             game.advance(180)
             pad(0, -1)
             game.advance(2300)
-            off = game.log.read_text()[start:]
+            off = game.read_log()[start:]
             off_hits = [row for row in events(off, "TRAINING_ACTION_TOUCH") if row["function"] == "4"]
             check("disabling physical rig preserves the original pass and removes the situation overlay",
                   len(off_hits) == 1 and not events(off, "PHYSICAL_SITUATION"),

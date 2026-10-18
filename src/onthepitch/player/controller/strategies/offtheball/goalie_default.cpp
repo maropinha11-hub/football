@@ -3,6 +3,7 @@
 // i do not offer support, so don't ask. to be used for inspiration :)
 
 #include "goalie_default.hpp"
+#include "../../../../keeper_trajectory.hpp"
 
 #include "base/geometry/triangle.hpp"
 
@@ -41,7 +42,7 @@ Vector3 CalculateBestAchievableTarget(Player *player, const Vector3 &pos1, float
 void GoalieDefaultStrategy::RequestInput(const MentalImage *mentalImage, Vector3 &direction, float &velocity) {
 
   // base position
-  float lineDistance = 10.0f; // default distance keeper stays in front of goal line
+  float lineDistance = PlayerMatchEnabled()?(controller->GetFadingTeamPossessionAmount()>1.2f?8.f:4.f):10.0f; // default distance keeper stays in front of goal line
   Vector3 ballPos = mentalImage->GetBallPrediction(600 + CastPlayer()->GetTimeNeededToGetToBall_ms() * 0.2f).Get2D(); // todo: not sure if we should keep this to 'now' or more predictive
   Vector3 targetPos = Vector3((pitchHalfW - lineDistance) * team->GetSide(), 0, 0);
   Vector3 goalPos = Vector3(pitchHalfW * team->GetSide(), 0, 0);
@@ -220,67 +221,54 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage *mentalImage, Vector3
     }
   }
 
+  const char *mode=IsBallBoundForGoal()?"shot":"position";
+  if(PlayerMatchEnabled()){
+    // Read the same curved/bouncing forecast as the ball. Claim only an
+    // attainable, descending arrival inside our area, before opponents.
+    const float side=team->GetSide();
+    if(!IsBallBoundForGoal()){
+      const float danger=(mentalImage->GetBallPrediction(0).Get2D()-goalPos).GetLength();
+      if(controller->GetFadingTeamPossessionAmount()<1.05f){
+        const float depth=clamp(danger*.45f,2.f,9.f);
+        targetPos.coords[0]=side*std::max(targetPos.coords[0]*side,pitchHalfW-depth);
+      }
+      std::vector<Player*> opponents;controller->GetOppTeam()->GetActivePlayers(opponents);
+      for(unsigned ms=200;ms<=1200;ms+=100){
+        const Vector3 arrival=mentalImage->GetBallPrediction(ms);
+        if(arrival.coords[0]*side<pitchHalfW-12.f || arrival.coords[0]*side>pitchHalfW-.2f ||
+           std::fabs(arrival.coords[1])>14.f || arrival.coords[2]<.5f || arrival.coords[2]>2.35f ||
+           mentalImage->GetBallPrediction(ms+50).coords[2]>arrival.coords[2])continue;
+        int maximum=-1;
+        const unsigned reach=AI_GetTimeNeededForDistance_ms(player->GetPosition(),player->GetMovement(),arrival.Get2D(),player->GetMaxVelocity(),false,maximum,false).optimistic_ms;
+        if(reach+120>ms)continue;
+        bool crowded=false;for(auto *opp:opponents){
+          const Vector3 predicted=opp->GetPosition()+opp->GetMovement()*(ms*.001f);
+          if((predicted-arrival).Get2D().GetLength()<1.2f){crowded=true;break;}
+        }
+        if(crowded)continue;
+        targetPos=arrival.Get2D();maxVelocity=sprintVelocity;mode="claim";break;
+      }
+    }
+    if(!std::isfinite(targetPos.coords[0])||!std::isfinite(targetPos.coords[1]))targetPos=goalPos-Vector3(side*.7f,0,0);
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("KEEPER_DECISION t=%lu actor=%d mode=%s target=[%.4f,%.4f] bound=%d\n",match->GetActualTime_ms(),player->GetID(),mode,targetPos.coords[0],targetPos.coords[1],IsBallBoundForGoal()?1:0);
+  }
+
   direction = targetPos - player->GetPosition();
   velocity = clamp(direction.GetLength() * distanceToVelocityMultiplier, idleVelocity, maxVelocity);
   direction.Normalize(player->GetDirectionVec());
 }
 
 void GoalieDefaultStrategy::CalculateIfBallIsBoundForGoal(const MentalImage *mentalImage) {
-
-  ballBoundForGoal = false;
-  bool intersect = false;
-  ballBoundForGoal_ycoord = 0;
-
-  int side = team->GetSide();
-
-  float panic = 1.02f + (1.0f - (CastPlayer()->GetStat("mental_defensivepositioning") * 0.6f + CastPlayer()->GetStat("mental_vision") * 0.4f)) * 0.5f;
-  if (mentalImage->GetBallPrediction(4000).coords[0] * side > pitchHalfW && (player->GetPosition() - mentalImage->GetBallPrediction(250)).GetLength() < 32.0f) { // only if ball is close enough (cpu optimization)
-
-/* 3d version
-    Line line;
-    line.SetVertex(0, mentalImage->GetBallPrediction(40));
-    line.SetVertex(1, mentalImage->GetBallPrediction(4000));
-    //line.SetVertex(1, mentalImage->GetBallPrediction(0) + match->GetBall()->GetMovement() * 800);
-    Triangle goal1;
-    goal1.SetVertex(0, Vector3((pitchHalfW - 0.0) * side,  3.7 * panic, 0));
-    goal1.SetVertex(1, Vector3((pitchHalfW - 0.0) * side, -3.7 * panic, 0));
-    goal1.SetVertex(2, Vector3((pitchHalfW - 0.0) * side,  3.7 * panic, 2.5 * panic));
-    goal1.SetNormals(Vector3(-side, 0, 0));
-    Triangle goal2;
-    goal2.SetVertex(0, Vector3((pitchHalfW - 0.0) * side, -3.7 * panic, 0));
-    goal2.SetVertex(1, Vector3((pitchHalfW - 0.0) * side, -3.7 * panic, 2.5 * panic));
-    goal2.SetVertex(2, Vector3((pitchHalfW - 0.0) * side,  3.7 * panic, 2.5 * panic));
-    goal2.SetNormals(Vector3(-side, 0, 0));
-
-    //match->SetDebugPilon(Vector3(55 * side, 3.66, 2.44));
-    //match->SetDebugPilon2(line.GetVertex(1));
-
-    Vector3 intersectVec;
-    intersect = goal1.IntersectsLine(line, intersectVec);
-    if (!intersect) {
-      intersect = goal2.IntersectsLine(line, intersectVec);
+  ballBoundForGoal=false;ballBoundForGoal_ycoord=0;
+  const float panic=1.02f+(1-(CastPlayer()->GetStat("mental_defensivepositioning")*.6f+CastPlayer()->GetStat("mental_vision")*.4f))*.5f;
+  Vector3 previous=mentalImage->GetBallPrediction(0);
+  for(unsigned ms=20;ms<4000 && ms<ballPredictionSize_ms;ms+=20){
+    const Vector3 next=mentalImage->GetBallPrediction(ms);float y=0;
+    if(football_keeper::goalCrossing({{previous.coords[0],previous.coords[1],previous.coords[2]}},
+        {{next.coords[0],next.coords[1],next.coords[2]}},team->GetSide(),pitchHalfW,3.7f*panic,goalHeight+.11f,y)){
+      ballBoundForGoal=true;ballBoundForGoal_ycoord=y;return;
     }
-*/
-
-    // 2d version
-
-    Line ballToGoal;
-    ballToGoal.SetVertex(0, mentalImage->GetBallPrediction(0).Get2D());
-    ballToGoal.SetVertex(1, mentalImage->GetBallPrediction(800).Get2D());
-    Line goalLine;
-    goalLine.SetVertex(0, Vector3(pitchHalfW * side, -pitchHalfH, 0));
-    goalLine.SetVertex(1, Vector3(pitchHalfW * side,  pitchHalfH, 0));
-
-    Vector3 intersectPoint = ballToGoal.GetIntersectionPoint(goalLine).Get2D();
-    if (fabs(intersectPoint.coords[1]) > 3.7 * panic) intersect = false; else intersect = true;
-
-    if (intersect) {
-      //SetGreenDebugPilon(intersectPoint);
-      ballBoundForGoal_ycoord = intersectPoint.coords[1];
-      ballBoundForGoal = true;
-    } else {
-      //SetGreenDebugPilon(Vector3(0, 0, -10));
-    }
+    previous=next;
   }
-
 }

@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""A real CPU hand must reach the human shirt before applying a finite hold."""
+import argparse,hashlib,json,math,re
+from pathlib import Path
+from native_training_harness import NativeTraining
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':286');a=p.parse_args()
+r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
+def ev(g,prefix):return[dict(re.findall(r'(\w+)=([^\s]+)',x))for x in g.read_log().splitlines()if x.startswith(prefix+' ')]
+def check(name,ok,evidence):
+ row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
+try:
+ with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides={'context_x':480,'context_y':270,'training_physical_rig':'true','training_physical_lab':'true','player_match':'true','player_match_half_seconds':120,'simulation_seed':7})as g:
+  g.advance(2600);g.keys(['b','n'],True);g.keys(['Shift_L','F2','F11'],True);g.advance(100);g.keys(['Shift_L','F2','F11'],False)
+  g.advance(1500);grips=ev(g,'PHYSICAL_AI_GRIP');forces=ev(g,'PHYSICAL_AI_GRIP_FORCE')
+  check('CPU hand reaches the actual shirt before holding',any(x['state']=='begin'and float(x['gap'])<.10 for x in grips),grips)
+  check('CPU hold transmits bounded force through a reachable hand',bool(forces)and all(math.isfinite(float(x['force']))and float(x['force'])<=180.01 and float(x['gap'])<=.23 for x in forces),forces)
+  g.keys(['b','n'],False);g.advance(1800);grips=ev(g,'PHYSICAL_AI_GRIP');fouls=ev(g,'PHYSICAL_FOUL')
+  check('CPU grip eventually releases or is stopped by the referee',any(x['state']=='release'for x in grips)or bool(fouls),dict(grips=grips,fouls=fouls))
+  frames=[json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PLAYER_MATCH_FRAME ')]
+  check('contact drill preserves the two teams and fixed human',all(len(x['players'])==22 and x['human_count']==1 and x['selected_id']==x['locked_id']for x in frames),dict(samples=len(frames)))
+ r['result']='passed'if all(x['result']=='passed'for x in r['checks'])else'failed'
+except BaseException as e:r.update(result='failed',error=str(e));raise
+finally:
+ a.output.mkdir(parents=True,exist_ok=True);(a.output/'validation.json').write_text(json.dumps(r,indent=2)+'\n')
+if r['result']!='passed':raise SystemExit(1)

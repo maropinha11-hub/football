@@ -890,7 +890,10 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
   }
 
   if (isTakerTeam) {
-    taker = AI_GetClosestPlayer(team, match->GetBall()->Predict(0).Get2D(), false,PlayerMatchEnabled()?match->GetTrainingPlayer():nullptr);
+    taker = PlayerMatchEnabled() && setPiece!=e_SetPiece_KickOff &&
+        match->GetTrainingPlayer()->GetTeamID()==team->GetID() &&
+        GetConfiguration()->GetBool("player_match_all_restarts",true) ? match->GetTrainingPlayer() :
+      AI_GetClosestPlayer(team, match->GetBall()->Predict(0).Get2D(), false,PlayerMatchEnabled()?match->GetTrainingPlayer():nullptr);
 
     if (setPiece == e_SetPiece_ThrowIn || setPiece == e_SetPiece_KickOff) {
       taker->ResetPosition(match->GetBall()->Predict(0).Get2D() + match->GetBall()->Predict(0).Get2D().GetNormalized(Vector3(0, -team->GetSide(), 0)) * 0.3f, match->GetBall()->Predict(0).Get2D());
@@ -921,6 +924,13 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
 
 }
 
+void TeamAIController::RecordCombination(Player *from,Player *to,unsigned long time){
+  combinationFrom=from;combinationTo=to;combinationTime=time;
+  if(from && to && (from->GetPosition()-to->GetPosition()).Get2D().GetLength()<22.f)ApplyAttackingRun(from);
+}
+Player *TeamAIController::GetCombinationRunner(Player *receiver,unsigned long time)const{
+  return combinationTo==receiver && time>=combinationTime && time-combinationTime<3000?combinationFrom:nullptr;
+}
 void TeamAIController::ApplyAttackingRun(Player *manualPlayer) {
   endApplyAttackingRun_ms = match->GetActualTime_ms() + 4000;//1500;
 

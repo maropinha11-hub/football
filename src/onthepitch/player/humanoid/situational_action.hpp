@@ -12,12 +12,13 @@ enum class ActionKind { None=0, Pass=1, Shot=2, Cross=3, Header=4, Control=5 };
 struct Context {
   ActionKind kind=ActionKind::None;
   pes3::Point direction{{0,-1,0}}; // Body-local +X right, -Y forward.
+  pes3::Point incoming{{0,0,0}}; // Ball velocity relative to the player, in body axes.
   pes3::Point ball{{0,-.35f,-.85f}}; // Offset from the native pelvis.
   float speed=0, power=0, pressure=0, signedTurn=0;
   float phase=0, contactPhase=.5f, difficulty=0;
   float trunkGain=1, armGain=1, followThroughGain=1;
   int supportSide=-1;
-  unsigned pattern=0; // Compact, lateral, airborne, drive, sweep, loft, turn, first-time, brace.
+  unsigned pattern=0; // Fifteen contextual curves; the catalog restricts eligibility per action.
   bool rightFoot=true, contactMade=false, preserveHead=true, enabled=true;
 };
 
@@ -27,6 +28,11 @@ struct ActionMetrics {
   float torsoAngle=0, armsAngle=0;
   float angularRate=0, difficulty=0, phase=0, weight=0;
 };
+
+// This reception layer changes arms only: torso/head/contact chains and legs
+// keep their authored transforms. It is sampled by contact and render alike.
+void adaptChestArms(std::array<pes3::Rotation,7> &pose,float phase,float contact,
+                    float duration,float speed,float incomingSide);
 
 class ActionLayer {
  public:

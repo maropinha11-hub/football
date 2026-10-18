@@ -64,6 +64,8 @@ class ElizaController : public PlayerController {
     Strategy *offenseStrategy;
     Strategy *goalieStrategy;
 
+    bool turnForPass=false;
+    Vector3 passFacing{0};
     Vector3 lastDesiredDirection;
     float lastDesiredVelocity;
 

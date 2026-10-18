@@ -57,13 +57,15 @@ def main():
             check('Windows embeds contextual body actions and independent F1 comparison',all(token in exe
                   for token in [b'PHYSICAL_SITUATION_BANK',b'PHYSICAL_SITUATION_RENDER',b'PHYSICAL_SITUATION_TOGGLE']))
             check('F1 and honest procedural profile counts accompany both packages',all(token in full.read(prefix+'LEIA-FISICA.txt')
-                  for token in [b'F1:',b'2998 perfis procedurais',b'10.398 combinacoes',b'nao sao novas capturas']))
+                  for token in [b'F1:',b'3691 perfis procedurais',b'14.718 combinacoes',b'nao sao novas capturas']))
             catalog=full.read(prefix+'situational-motion-catalog.json')
             check('packaged catalog equals generated source and update manifest', catalog == patch.read('situational-motion-catalog.json')
                   and catalog == Path('config/situational-motion-catalog.json').read_bytes())
             check('situational profiles are enabled only within the opt-in physical path',b'"training_situational_motion" "true"'in config
                   and all(b'--physical-rig'not in full.read(prefix+f)for f in ['run-training.bat','jogar-partida.bat']))
             check('RT gestures are removed while aiming telemetry and control lift are shipped',b'PHYSICAL_FOOTWORK_BEGIN'not in exe and all(token in exe for token in [b'TRAINING_ACTION_AIM',b'PHYSICAL_CONTROL_HOP']) and b'RT fica reservado no treino' in full.read(prefix+'LEIA-FISICA.txt'))
+            check('irregular turf and full length human restarts are configured in the complete package',all(token in config for token in [b'"training_turf_enabled" "true"',b'"training_turf_roughness" "0.65"',b'"player_match_half_seconds" "2700"',b'"player_match_all_restarts" "true"']))
+            check('Windows includes physical tackles, referee, receiver and keeper decisions',all(token in exe for token in [b'PHYSICAL_TACKLE',b'PHYSICAL_FOUL',b'TURF_FORECAST',b'TRAINING_RECEIVE_ASSIST',b'KEEPER_DECISION',b'PLAYER_MATCH_TAKER',b'PLAYER_MATCH_TACTIC',b'PHYSICAL_AI_GRIP']))
             recovery_files=['media/animations/movement_special/idle/special/000_stand_up_from_'+side+'.anim'for side in ['front','back']]
             check('both original get-up animations are included unchanged', all(full.read(prefix+path)==(Path('data')/path).read_bytes()for path in recovery_files))
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),

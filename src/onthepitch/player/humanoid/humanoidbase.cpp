@@ -1337,12 +1337,12 @@ int HumanoidBase::GetIdleMovementAnimID() {
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
   ResetPhysicalRig();
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
-  contactPoseBlend=0;fetchedContactBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
+  contactPoseBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
   buf_trainingLook.Clear();
   buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();
   for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;buf_contactLocal[i].Clear();}
   dribbleTrialPhase=0;dribbleTrialBlend=0;
-  for(unsigned side=0;side<2;++side){dribbleFootOffsets[side]=Vector3(0);fetchedDribbleFootOffsets[side]=Vector3(0);buf_dribbleFootOffsets[side].Clear();}
+  for(unsigned side=0;side<2;++side){dribbleFootOffsets[side]=Vector3(0);buf_dribbleFootOffsets[side].Clear();}
   buf_dribbleRoot.Clear();
   buf_dribblePhase.Clear();buf_dribbleBlend.Clear();buf_dribbleFacing.Clear();
 

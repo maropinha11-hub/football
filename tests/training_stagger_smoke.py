@@ -9,16 +9,16 @@ p.add_argument('--display',default=':187');p.add_argument('--match',action='stor
 r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
-def events(g,prefix,start=0):return [dict(re.findall(r'(\w+)=([^\s]+)',line))for line in g.log.read_text()[start:].splitlines()if line.startswith(prefix+' ')]
+def events(g,prefix,start=0):return [dict(re.findall(r'(\w+)=([^\s]+)',line))for line in g.read_log()[start:].splitlines()if line.startswith(prefix+' ')]
 def key(g,k):g.keys([k],True);g.advance(100);g.keys([k],False);g.advance(100)
 def capture(g,name):subprocess.run(['import','-window',g.window,str(a.output/(name+'.png'))],env=g.env,check=True)
-def matchframes(g):return [json.loads(s[19:])for s in g.log.read_text().splitlines()if s.startswith('PLAYER_MATCH_FRAME ')]
+def matchframes(g):return [json.loads(s[19:])for s in g.read_log().splitlines()if s.startswith('PLAYER_MATCH_FRAME ')]
 try:
  with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides={'context_x':640,'context_y':360,'training_physical_rig':'true','training_physical_lab':'true','player_match':'true'if a.match else'false','player_match_half_seconds':60,'simulation_seed':9})as g:
   if not a.match:
    clips=[]
    for direction in range(4):
-    g.reset();start=len(g.log.read_text());origin=g.frames()[-1]['player']
+    g.reset();start=len(g.read_log());origin=g.frames()[-1]['player']
     g.keys(['Shift_L'],True);key(g,'F8');g.keys(['Shift_L'],False)
     capture(g,'support-step-'+str(direction));f=g.advance(2200)
     rows=events(g,'PHYSICAL_STAGGER_CLIP',start);states=events(g,'PHYSICAL_RIG_STATE',start)
@@ -26,7 +26,7 @@ try:
     check('impact direction '+str(direction)+' regains upright control',not any(x['to']=='1'for x in states)and f[-1]['speed']<.5,dict(states=states,final_speed=f[-1]['speed'],displacement_m=math.dist(origin[:2],f[-1]['player'][:2])))
     clips.extend(x['clip']for x in rows);key(g,'F3')
    check('directional blows choose multiple authored whole-body reactions',len(set(clips))>=3,sorted(set(clips)))
-   g.reset();start=len(g.log.read_text());g.keys(['Control_L'],True);key(g,'F8');g.keys(['Control_L'],False)
+   g.reset();start=len(g.read_log());g.keys(['Control_L'],True);key(g,'F8');g.keys(['Control_L'],False)
    g.advance(500);capture(g,'muscular-fall');g.advance(8500)
    impacts=events(g,'PHYSICAL_IMPACT_TEST',start);states=events(g,'PHYSICAL_RIG_STATE',start);support=events(g,'PHYSICAL_SUPPORT',start)
    falls=[s for s in support if s['mode']=='1']
@@ -34,7 +34,7 @@ try:
    check('fall retains internal muscle torque instead of becoming completely passive',len(falls)>5 and any(float(x['muscles'])>.001 for x in falls),falls[:10])
    check('fall completes the native get-up and returns control',any(x['from']=='2'and x['to']=='0'for x in states),states)
   else:
-   g.advance(2500);log=g.log.read_text();configured=events(g,'PHYSICAL_MATCH_ACTOR')+events(g,'PHYSICAL_BALANCE_BANK')
+   g.advance(2500);log=g.read_log();configured=events(g,'PHYSICAL_MATCH_ACTOR')+events(g,'PHYSICAL_BALANCE_BANK')
    ids={int(x['actor'])for x in configured};f=matchframes(g)[-1]
    check('all 22 match players have a physical actor',ids=={x['id']for x in f['players']},sorted(ids))
    for _ in range(40):
@@ -47,7 +47,8 @@ try:
    # AI can evade a chasing player, so a chase alone does not guarantee an
    # impact. Exercise an actual in-range contest before requiring its CPU
    # response. Sending M and F2 together can consume M before setup occurs.
-   start=len(g.log.read_text());key(g,'F2');key(g,'m');g.advance(500)
+   key(g,'r');g.advance(2700)
+   start=len(g.read_log());g.keys(['F2'],True);g.advance(60);g.keys(['F2'],False);key(g,'m');g.advance(700)
    check('match laboratory reaches a real opponent and applies a body contest',bool(events(g,'PHYSICAL_MATCH_SETUP',start))and bool(events(g,'PHYSICAL_MATCH_CONTEST',start)),events(g,'PHYSICAL_MATCH_CONTEST',start))
    requests=events(g,'PHYSICAL_STAGGER_REQUEST',start);clips=events(g,'PHYSICAL_STAGGER_CLIP',start)
    check('an in-range body contest disturbs both the CPU and human bodies',{human}<={int(x['actor'])for x in requests}and any(int(x['actor'])!=human for x in requests),requests[:15])
@@ -55,7 +56,7 @@ try:
    g.keys(['n'],True);g.advance(300);g.keys(['n'],False);g.keys(['h'],True);g.advance(400);g.keys(['h'],False)
    intents=events(g,'PHYSICAL_MATCH_CONTACT',start)
    check('protection and shirt-reaching input are available in the full match',any(x['shield']=='1'for x in intents)and any(x['reaching']=='1'for x in intents),intents[-8:])
-   key(g,'F7');start=len(g.log.read_text());g.advance(400)
+   key(g,'F7');start=len(g.read_log());g.advance(400)
    check('comparison toggle also disables every CPU physical rig',not events(g,'PHYSICAL_BALANCE',start),events(g,'PHYSICAL_BALANCE',start)[:3])
    key(g,'F7');g.advance(500)
   arms=events(g,'PHYSICAL_ARM_RENDER');check('final rendered arms keep their anatomical limits',len(arms)>100 and max(float(x['error'])for x in arms)<1e-5 and max(float(x['penetration'])for x in arms)<.004,dict(samples=len(arms),maximum_error_rad=max(float(x['error'])for x in arms),maximum_penetration_m=max(float(x['penetration'])for x in arms)))

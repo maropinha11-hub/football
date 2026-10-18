@@ -55,6 +55,8 @@ class Referee {
     void BallTouched();
     void TripNotice(Player *tripee, Player *tripper, int tackleType); // 1 == standing tackle resulting in little trip, 2 == standing tackle resulting in fall, 3 == sliding tackle
     bool CheckFoul();
+    void PhysicalFoul(Player *victim,Player *offender,float severity);
+    void PracticeSetPiece(e_SetPiece type,int teamID);
 
     Player *GetCurrentFoulPlayer() { return foul.foulPlayer; }
     int GetCurrentFoulType() { return foul.foulType; }

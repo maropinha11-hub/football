@@ -3,6 +3,7 @@
 #include "contact_resistance.hpp"
 #include "anatomical_arms.hpp"
 #include "situational_profiles.hpp"
+#include "../../physical_match_rules.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
@@ -38,7 +39,7 @@ void HumanoidBase::ConfigurePhysicalRig(){
   // CPU actors share the native full-body trip clips through the selector.
   // Do not duplicate the large optional additive bank for every teammate.
   if(PlayerMatchEnabled() && !player->GetExternalController()){
-    printf("PHYSICAL_MATCH_ACTOR actor=%d team=%d\n",player->GetID(),static_cast<Player*>(player)->GetTeamID());
+    printf("PHYSICAL_MATCH_ACTOR actor=%d team=%d skin_contacts=%d\n",player->GetID(),static_cast<Player*>(player)->GetTeamID(),UsesTrainingContacts()?1:0);
     return;
   }
   std::vector<football_physics::BalanceMotion> bank;
@@ -94,8 +95,8 @@ bool HumanoidBase::PhysicalStaggering()const {
 }
 void HumanoidBase::ResetPhysicalRig(){
   if(physicalRig)physicalRig->reset();
-  physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();fetchedPhysicalRig=false;
-  physicalSituationProfile=0;buf_situationState.Clear();fetchedSituationState=Vector3(0);
+  physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();
+  physicalSituationProfile=0;buf_situationState.Clear();
   for(auto &buffer:buf_physicalAdditive)buffer.Clear();
   physicalGripForce=Vector3(0);physicalTraction=Vector3(0);physicalActionTime=physicalStaggerUntil=0;physicalPartnerPhase=0;physicalShield=false;physicalHandTargetActive=false;
 }
@@ -181,7 +182,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
     if(type==e_FunctionType_ShortPass || type==e_FunctionType_LongPass)context.kind=ActionKind::Pass;
     if(type==e_FunctionType_Shot)context.kind=ActionKind::Shot;
     if(type==e_FunctionType_HighPass)context.kind=ActionKind::Cross;
-    if(type==e_FunctionType_BallControl)context.kind=ActionKind::Control;
+    if(type==e_FunctionType_BallControl || type==e_FunctionType_Trap)context.kind=ActionKind::Control;
     // Interference/deflection clips can also make a header. Never let an
     // earlier foot action's fading torso offset move their contact point.
     if(part=="head")context.kind=ActionKind::Header;
@@ -204,6 +205,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   const Quaternion inverseBody=quaternion(input.pose[0]).GetInverse();
   const Vector3 ballLocal=inverseBody*(match->GetBall()->Predict(remaining*10)-meetingRoot);
   context.ball=point(ballLocal);
+  context.incoming=point(inverseBody*(match->GetBall()->GetMovement()-spatialState.movement));
   Vector3 target=currentAnim->originatingCommand.touchInfo.desiredDirection;
   if(context.kind==ActionKind::Control)target=currentAnim->originatingCommand.desiredDirection;
   target=target.Get2D().GetNormalized(spatialState.bodyDirectionVec);
@@ -235,14 +237,20 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   context.difficulty=clamp(.27f*context.speed/7.f+.19f*context.power+.34f*turn+.14f*context.pressure+.06f*reach,0.f,1.f);
   // Keep the accepted straight dribble intact. Contextual torso recruitment
   // is useful on cuts and contested touches, not on every ordinary foot tap.
-  if(context.kind==ActionKind::Control && turn<.18f && context.pressure<.4f)context.kind=ActionKind::None;
+  if(type==e_FunctionType_BallControl && context.kind==ActionKind::Control && turn<.18f && context.pressure<.4f)context.kind=ActionKind::None;
   if(context.kind!=ActionKind::None){
     const float height=ballLocal.coords[2]+.85f;
     unsigned pattern=0;
-    if(context.pressure>.65f)pattern=8;
+    if(context.kind==ActionKind::Header && match->GetBall()->GetMovement().GetLength()>4.f)pattern=11;
+    else if(context.kind==ActionKind::Control && type==e_FunctionType_Trap)pattern=turn>.12f?10:9;
+    else if((context.kind==ActionKind::Shot || context.kind==ActionKind::Pass || context.kind==ActionKind::Cross) && height>.45f)pattern=12;
+    else if((context.kind==ActionKind::Shot || context.kind==ActionKind::Cross) && context.power>.75f)pattern=14;
+    else if((context.kind==ActionKind::Pass || context.kind==ActionKind::Shot) && turn>.25f &&
+      ((context.rightFoot && ballLocal.coords[0]<-.06f)||(!context.rightFoot && ballLocal.coords[0]>.06f)))pattern=13;
+    else if(context.pressure>.65f)pattern=8;
     else if(turn>.62f)pattern=6;
     else if(height>.75f)pattern=2;
-    else if(match->GetBall()->GetMovement().GetLength()>4.f && !match->TrainingHasBall())pattern=7;
+    else if(match->GetBall()->GetMovement().GetLength()>4.f && !static_cast<Player*>(player)->HasPossession())pattern=7;
     else if(context.kind==ActionKind::Cross)pattern=5;
     else if(context.kind==ActionKind::Shot && context.power>.55f)pattern=3;
     else if(context.kind==ActionKind::Pass && std::fabs(context.signedTurn)>.35f)pattern=4;
@@ -344,23 +352,30 @@ void HumanoidBase::UpdatePhysicalRigPose(){
   for(unsigned i=0;i<13;++i){contactLocal[i]=quaternion(physicalRig->pose()[i]);contactGlobal[i]=quaternion(physicalRig->worldRotations()[i]);contactPositions[i]=vector(physicalRig->points()[i]);}
 }
 
-void HumanoidBase::PhysicalActionContact(){
+void HumanoidBase::PhysicalActionContact(const Vector3 &incoming){
   const bool pass=currentAnim->functionType==e_FunctionType_ShortPass || currentAnim->functionType==e_FunctionType_LongPass;
   const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
+  const bool header=part=="head";
   if(!PhysicalRigEnabled() || match->GetActualTime_ms()<physicalActionTime ||
       (!pass && currentAnim->functionType!=e_FunctionType_Shot && currentAnim->functionType!=e_FunctionType_HighPass) ||
-      (part!="right_foot" && part!="left_foot"))return;
-  const Vector3 velocity=currentAnim->incomingMovement;
-  const Vector3 kick=currentAnim->originatingCommand.touchInfo.desiredDirection;
-  const float speed=velocity.GetLength();
-  const float turn=std::fabs(velocity.GetNormalized(spatialState.bodyDirectionVec).GetAngle2D(kick));
-  if(speed<5.8f || turn<.9f)return;
-  physicalActionTime=match->GetActualTime_ms()+1000;
-  // A difficult running strike first perturbs the supported body. A nearby
-  // body collision may then exhaust that balance; no random fall is injected.
-  const float effort=clamp((speed-5.8f)/2.f,0.f,1.f)*clamp((turn-.9f)/1.5f,0.f,1.f);
-  AddPhysicalImpulse(kick.Get2D().GetNormalized(spatialState.bodyDirectionVec)*(25.f+40.f*effort)*(pass?.55f:1.f),Vector3(0,0,.20f));
-  if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_STRIKE_BALANCE t=%lu speed=%.3f turn=%.3f effort=%.4f\n",match->GetActualTime_ms(),speed,turn,effort);
+      (!header && part!="right_foot" && part!="left_foot"))return;
+  const float speed=currentAnim->incomingMovement.GetLength();
+  const Vector3 outgoing=match->GetBall()->GetMovement();
+  const float turn=std::fabs(spatialState.bodyDirectionVec.GetAngle2D(outgoing.Get2D()));
+  const float power=clamp(std::max(currentAnim->originatingCommand.touchInfo.desiredPower,
+      currentAnim->originatingCommand.touchInfo.inputPower),0.f,1.f);
+  const float effort=football_rules::strikeLoad(power,speed,turn,header);
+  if(effort<.28f)return;
+  physicalActionTime=match->GetActualTime_ms()+750;
+  const Vector3 recoil=(incoming-outgoing)*.43f;
+  // The extra load represents support demand during the follow-through,
+  // applied only AFTER the ball is hit. It never manufactures a ball touch
+  // or replaces the authored supporting foot before contact.
+  const float demand=(pass?.65f:header?.65f:1.f)*(15.f+45.f*effort);
+  const Vector3 direction=outgoing.Get2D().GetNormalized(spatialState.bodyDirectionVec);
+  AddPhysicalImpulse(recoil-direction*demand,Vector3(0,0,header?.35f:.22f));
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("PHYSICAL_STRIKE_BALANCE t=%lu actor=%d power=%.4f speed=%.3f turn=%.3f effort=%.4f impulse=%.4f header=%d\n",match->GetActualTime_ms(),player->GetID(),power,speed,turn,effort,(recoil-direction*demand).GetLength(),header?1:0);
 }
 
 void HumanoidBase::ProcessPhysicalMotion(){

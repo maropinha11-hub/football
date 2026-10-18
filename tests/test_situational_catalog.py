@@ -78,10 +78,11 @@ class CatalogSources(unittest.TestCase):
                         self.assertIn(contact["part"], catalogue.FOOT_PARTS)
                         self.assertEqual(catalogue.BALL_ACTIONS[record["native_type"]], profile["kind"])
 
-    def test_reception_trip_and_retainer_clips_stay_native(self):
+    def test_chest_trip_and_retainer_clips_stay_native(self):
         for record in self.sources:
             if (not record["native_loader_enabled"] or
-                    record["native_type"] in ("trap", "trip", "special", "deflect", "sliding", "interfere") or
+                    record["native_type"] in ("trip", "special", "deflect", "sliding", "interfere") or
+                    (record["native_type"] == "trap" and record["contact"]["part"] not in catalogue.FOOT_PARTS) or
                     any(record["metadata"].get(key) for key in
                         ("incoming_special_state", "outgoing_special_state", "incoming_retain_state", "outgoing_retain_state"))):
                 self.assertEqual(record["profile_ids"], [], record["source"])
@@ -145,7 +146,7 @@ class CatalogSources(unittest.TestCase):
             for identifier in record["profile_ids"]:
                 profile = indexed[identifier]
                 self.assertLessEqual(profile["effort"]*.5, float(metadata.get("touch_maxpowerfactor", "1"))+.000001)
-                if profile["pattern"] == 2:
+                if profile["pattern"] in (2,12):
                     self.assertGreaterEqual(record["contact"]["ball"][2], .45)
                 self.assertLessEqual(abs(profile["reach"]*.5-source_reach), .2500001)
                 self.assertLessEqual(abs(profile["turn"]*.5-turn), turn_margin)

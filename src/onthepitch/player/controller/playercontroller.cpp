@@ -20,6 +20,7 @@
 #include <cmath>
 
 #include "../../match.hpp"
+#include "../../physical_match_rules.hpp"
 #include "../../team.hpp"
 #include "../player.hpp"
 #include "../humanoid/humanoid_utils.hpp"
@@ -279,6 +280,11 @@ void PlayerController::_SetPieceCommand(PlayerCommandQueue &commandQueue) {
 void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, bool idleTurnToOpponentGoal, bool knockOn, bool stickyRunDirection, bool keepCurrentBodyDirection) {
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
+  if(TrainingEnabled() && !CastPlayer()->HasPossession()){
+    const Vector3 delta=(match->GetBall()->Predict(100)-player->GetPosition()).Get2D();
+    if(!football_rules::rearReception(delta.GetNormalized(player->GetBodyDirectionVec()).GetDotProduct(player->GetBodyDirectionVec()),
+        (match->GetBall()->GetMovement()-player->GetMovement()).GetLength(),delta.GetLength()))return;
+  }
 
   if (!CastPlayer()->HasPossession() && !CastPlayer()->AllowLastDitch()) {
     float strictnessInv = 3.0f;
@@ -287,7 +293,8 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
   }
 
   if (match->GetDesignatedPossessionPlayer() == player ||
-      (team->GetDesignatedTeamPossessionPlayer() == player && CouldWinABallDuelLikeliness() >= 0.25f)) {
+      (team->GetDesignatedTeamPossessionPlayer() == player && CouldWinABallDuelLikeliness() >= 0.25f) ||
+      (TrainingEnabled() && match->GetTrainingPlayer()==player && match->TrainingReceivingBall())) {
 
     PlayerCommand command;
     command.desiredFunctionType = e_FunctionType_BallControl;
@@ -327,13 +334,18 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
 }
 
 void PlayerController::_TrapCommand(PlayerCommandQueue &commandQueue, bool idleTurnToOpponentGoal, bool knockOn) {
+  if(TrainingEnabled() && !CastPlayer()->HasPossession()){
+    const Vector3 delta=(match->GetBall()->Predict(100)-player->GetPosition()).Get2D();
+    if(!football_rules::rearReception(delta.GetNormalized(player->GetBodyDirectionVec()).GetDotProduct(player->GetBodyDirectionVec()),
+        (match->GetBall()->GetMovement()-player->GetMovement()).GetLength(),delta.GetLength()))return;
+  }
 
   if (match->GetBall()->GetMovement().Get2D().GetLength() < 2.0f) return;// - CastPlayer()->GetMovement()).GetLength()
 
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
 
-  if (!hasPossession && (match->GetDesignatedPossessionPlayer() == player ||
+  if (!hasPossession && ((TrainingEnabled() && match->GetTrainingPlayer()==player && match->TrainingReceivingBall()) || match->GetDesignatedPossessionPlayer() == player ||
                          (team->GetDesignatedTeamPossessionPlayer() == player && CastPlayer()->GetTimeNeededToGetToBall_optimistic_ms() < 1000 && oppTimeNeededToGetToBall > 400 && !oppTeamHasPossession && CouldWinABallDuelLikeliness() >= 0.5f))) {// opp time was 500 ms
 
     PlayerCommand command;
@@ -364,10 +376,14 @@ void PlayerController::_TrapCommand(PlayerCommandQueue &commandQueue, bool idleT
 }
 
 void PlayerController::_InterfereCommand(PlayerCommandQueue &commandQueue, bool byAnyMeans) {
+  // Reaching for a shirt needs the arm/body movement, not an automatic foot
+  // tackle that disables the reach pose. Explicit human A still requests a poke.
+  if(CastPlayer()->GetHumanoid()->PhysicalRigEnabled() && CastPlayer()->GetHumanoid()->PhysicalShielding() &&
+      (!player->GetExternalController() || !byAnyMeans))return;
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
 
-  if (!teamHasBestPossession) {
+  if (!teamHasBestPossession || (PlayerMatchEnabled() && byAnyMeans)) {
 
     if (!byAnyMeans) {
       // if dot nears 1, it means opp is somewhat between ball and me
@@ -389,6 +405,7 @@ void PlayerController::_InterfereCommand(PlayerCommandQueue &commandQueue, bool 
 }
 
 void PlayerController::_SlidingCommand(PlayerCommandQueue &commandQueue) {
+  if(CastPlayer()->GetHumanoid()->PhysicalRigEnabled() && CastPlayer()->GetHumanoid()->PhysicalShielding())return;
   if (team->GetHumanGamerCount() != 0 && !PlayerMatchEnabled()) return;
   if (match->GetBallRetainer() != 0) return;
   if (CouldWinABallDuelLikeliness() < 0.7f) return;

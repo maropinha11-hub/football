@@ -38,13 +38,19 @@ Na chegada de uma bola, a mira dos passes e cabeceios funciona em todas as
 direções, separada da assistência que posiciona o jogador para recebê-la.
 Veja [a revisão de mira e movimento corporal](docs/MIRA-E-CORPO.md).
 
-O experimento também acrescenta **2.998 perfis procedurais de tronco e braços**
+O experimento também acrescenta **3.691 perfis procedurais de tronco e braços**
 para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
 rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
 contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
-somente essa camada. O catálogo audita 10.398 pares candidatos incluindo
+somente essa camada. O catálogo audita 14.718 pares candidatos incluindo
 espelhamentos, sem contar essas combinações como capturas novas. Veja
 [como testar e os limites das variações situacionais](docs/MIRA-E-CORPO.md).
+
+A revisão atual inclui gramado irregular com previsão da trajetória, recepção
+lateral, cobranças pelo jogador fixo, decisões contextuais da CPU e disputas
+com arbitragem. **A sem bola** tenta um bote; **B sem bola** dá carrinho.
+De costas, uma bola rápida exige virar o corpo para controlar. Veja os controles
+e os limites em [GRAMADO-E-DISPUTAS.md](docs/GRAMADO-E-DISPUTAS.md).
 
 A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).

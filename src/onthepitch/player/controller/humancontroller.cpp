@@ -288,10 +288,10 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     // ball control?
     bool keepCurrentBodyDirection = false;
     // sidestep dribble disabled for now, too quirky: if (hid->GetButton(e_ButtonFunction_Dribble)) keepCurrentBodyDirection = true;
-    _BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
+    if(actionMode!=1)_BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
 
     // trap?
-    _TrapCommand(commandQueue, idleTurnToOpponentGoal, knockOn);
+    if(actionMode!=1)_TrapCommand(commandQueue, idleTurnToOpponentGoal, knockOn);
 
     // reload original input
     if (actionMode == 2) {
@@ -302,7 +302,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     // interfere?
     bool byAnyMeans = false;
     if (hid->GetButton(e_ButtonFunction_Pressure)) byAnyMeans = true;
-    _InterfereCommand(commandQueue, byAnyMeans);
+    if(actionMode!=2)_InterfereCommand(commandQueue, byAnyMeans);
   }
 
   // movement
@@ -316,6 +316,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     forceMagnet = true;
     extraHaste = true;
   }
+  if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0 &&
+      !player->GetHumanoid()->UpperReceptionActive())forceMagnet=true;
   _MovementCommand(commandQueue, forceMagnet, extraHaste);
 
   if (commandQueue.size() > 0) {
@@ -328,7 +330,8 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // sprint after every forward-loop touch while RB is released.
       const Vector3 stick=hid->GetDirection();
       if(actionMode==0 && match->TrainingReceivingBall() && !player->GetHumanoid()->UpperReceptionActive())
-        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,idleDribbleSwitch+.05f);
+        command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,
+          walkVelocity*clamp(GetConfiguration()->GetReal("training_walk_speed_scale",.72f),.55f,1.f));
       else if(actionMode==0 && match->TrainingHasBall() && !hid->GetButton(e_ButtonFunction_Sprint) &&
           player->GetHumanoid()->GetCurrentAnim()->anim->GetVariable("training_dribble")=="true" &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.1f &&
@@ -338,11 +341,37 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       // The incoming-ball axis stays fixed. Forward/backward can adjust the
       // meeting point, but sideways input cannot turn the torso mid-reception.
       // Once the ball touches, native assistance follows the controlled drop.
-      if(actionMode==0 && (match->TrainingReceivingBall() ||
-          (player->GetHumanoid()->UpperReceptionActive() && match->GetBall()->Predict(0).coords[2]>.45f))) {
+      if(actionMode==0 && player->GetHumanoid()->UpperReceptionActive() && match->GetBall()->Predict(0).coords[2]>.45f) {
         command.desiredDirection=inputDirection;
         command.desiredVelocityFloat=(inputVelocityFloat>.05f?idleDribbleSwitch+.05f:0);
         command.desiredLookAt=player->GetPosition()+match->GetTrainingReceptionFacing()*10;
+      }
+      if(actionMode==0 && match->TrainingReceivingBall() && !player->GetHumanoid()->UpperReceptionActive()) {
+        if(stick.GetLength()>.05f){
+          const Vector3 front=match->GetTrainingReceptionFacing();
+          const Vector3 native=command.desiredDirection*command.desiredVelocityFloat;
+          const Vector3 sideways=native-front*native.GetDotProduct(front);
+          const Vector3 manual=inputDirection*inputVelocityFloat;
+          const Vector3 velocity=sideways+front*manual.GetDotProduct(front);
+          command.desiredVelocityFloat=std::min(walkVelocity,velocity.GetLength());
+          command.desiredDirection=velocity.GetNormalized(front);
+        }
+        const Vector3 arrival=match->GetBall()->Predict(200)-player->GetPosition();
+        const float lateral=std::fabs(arrival.Get2D().GetCrossProduct(match->GetTrainingReceptionFacing()).coords[2]);
+        if(stick.GetLength()<.05f && lateral<.25f &&
+            (match->GetBall()->Predict(0).coords[2]>.6f || match->GetBall()->Predict(200).coords[2]>.6f)){
+          // A well-aimed chest ball needs a quiet receiving base. Offset
+          // deliveries still retain the native lateral interception step.
+          command.desiredVelocityFloat=0;command.desiredDirection=match->GetTrainingReceptionFacing();
+        }
+        for(auto &receive:commandQueue)if(receive.desiredFunctionType==e_FunctionType_Trap ||
+            receive.desiredFunctionType==e_FunctionType_BallControl){
+          receive.desiredDirection=command.desiredDirection;
+          receive.desiredVelocityFloat=command.desiredVelocityFloat;
+          receive.desiredLookAt=command.desiredLookAt;
+        }
+        if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%100==0)
+          printf("TRAINING_RECEIVE_ASSIST t=%lu speed=%.5f direction=[%.5f,%.5f] match=%d\n",match->GetActualTime_ms(),command.desiredVelocityFloat,command.desiredDirection.coords[0],command.desiredDirection.coords[1],PlayerMatchEnabled()?1:0);
       }
       // Dribbling still needs the original movement assistance between touches,
       // especially when a turn cannot immediately use a ball-control animation.
@@ -498,14 +527,26 @@ void HumanController::Process() {
       // original two-second action buffer before an incoming ball is close,
       // so its first contact can be a pass, volley or header. B retains the
       // defensive slide when no reception is imminent.
-      if (hid->GetButton(e_ButtonFunction_ShortPass) ||
+      Player *owner=match->GetLastTouchPlayer();
+      bool enemyCarrier=PlayerMatchEnabled() && owner && owner->GetTeamID()!=team->GetID() &&
+        owner->HasPossession() && match->GetBall()->Predict(0).coords[2]<.8f;
+      if(PlayerMatchEnabled() && match->GetBall()->Predict(0).coords[2]<.8f){
+        std::vector<Player*> opponents;oppTeam->GetActivePlayers(opponents);
+        const Vector3 ball=match->GetBall()->Predict(0);
+        for(auto *opponent:opponents)if((ball-opponent->GetPosition()).Get2D().GetLength()<1.05f &&
+            (ball-player->GetPosition()).Get2D().GetLength()>(ball-opponent->GetPosition()).Get2D().GetLength()+.15f &&
+            match->GetBall()->GetMovement().GetLength()<opponent->GetMovement().GetLength()+3.f)enemyCarrier=true;
+      }
+      if (!enemyCarrier && (!PlayerMatchEnabled() || match->TrainingReceivingBall()) && (hid->GetButton(e_ButtonFunction_ShortPass) ||
           hid->GetButton(e_ButtonFunction_LongPass) || hid->GetButton(e_ButtonFunction_Shot))
-        possessionContext = 1.0f;
+        ) possessionContext = 1.0f;
+      if(enemyCarrier)possessionContext=-1.f;
       const Vector3 incoming = match->GetBall()->Predict(500) - player->GetPosition();
       if (match->GetBall()->Predict(0).coords[2] > 1.2f && incoming.Get2D().GetLength() < 2.5f &&
           incoming.Get2D().GetLength() < (match->GetBall()->Predict(0) - player->GetPosition()).Get2D().GetLength())
         possessionContext = 1.0f;
     }
+    if(match->IsInSetPiece() && team->GetController()->GetPieceTaker()==player)possessionContext=1.f;
     if (possessionContext < 0.0f) {
       bool allowPressure = true;
       bool allowSliding = true;

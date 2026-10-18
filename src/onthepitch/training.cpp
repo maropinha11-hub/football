@@ -1,11 +1,21 @@
 // Football Training: solo practice using the original Gameplay Football simulation.
 #include "match.hpp"
+#include "ball_turf.hpp"
 #include "../main.hpp"
 #include "managers/usereventmanager.hpp"
 #include <cmath>
 #include <cstdio>
 
 namespace {
+void turfInput(Match *match){
+  if(!UserEventManager::GetInstance().ConsumeKeyPress(SDLK_g))return;
+  const bool enabled=!GetConfiguration()->GetBool("training_turf_enabled",true);
+  GetConfiguration()->SetBool("training_turf_enabled",enabled);
+  match->GetBall()->CalculatePrediction();match->UpdateLatestMentalImageBallPredictions();
+  match->SpamMessage(enabled?"Gramado irregular ligado":"Gramado liso para comparar",3000);
+  printf("TURF_TOGGLE t=%lu enabled=%d\n",match->GetActualTime_ms(),enabled?1:0);
+}
+
 void physicalLabInput(Match *match,Player *actor,unsigned long time) {
   auto &events=UserEventManager::GetInstance();auto *body=actor->GetHumanoid();
   static unsigned direction=0;
@@ -108,12 +118,26 @@ void Match::LaunchTrainingBall(int delivery) {
   const Vector3 root=player->GetPosition().Get2D();
   const Vector3 forward=player->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
   // Reset only this attempt, retaining the player's current field position and facing.
-  ResetTraining(0,true);
+  if(!PlayerMatchEnabled())ResetTraining(0,true);
+  else {
+    SetBallRetainer(0);trainingReceiving=false;trainingReceptionFacing=forward;
+    lastTouchTeamID=-1;for(unsigned i=0;i<e_TouchType_SIZE;++i)lastTouchTeamIDs[i]=-1;
+    player->ResetPosition(root,root+forward*10.f);
+    if(player->GetExternalController())player->GetExternalController()->Reset();
+    trainingView.reset(std::atan2(forward.coords[1],forward.coords[0]));trainingEyeInitialized=false;
+  }
   const Vector3 chest=player->GetHumanoid()->GetStandingChestTarget();
-  const float flight=delivery==0?1.0f:delivery==1?.45f:1.15f;
-  const Vector3 target=delivery==0 ? root+forward*.55f+Vector3(0,0,.11f) :
-    delivery==1 ? chest : root+forward*.18f+Vector3(0,0,1.92f);
-  const Vector3 origin=root+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
+  auto &events=UserEventManager::GetInstance();
+  const bool driven=delivery==1 && events.GetKeyboardState(SDLK_LSHIFT);
+  const bool belly=delivery==1 && events.GetKeyboardState(SDLK_LCTRL);
+  const float flight=delivery==0?1.0f:delivery==1?(driven?.23f:.45f):1.15f;
+  const float offset=events.GetKeyboardState(SDLK_LSHIFT)?.65f:events.GetKeyboardState(SDLK_LCTRL)?-.65f:0.f;
+  const Vector3 lateral=forward.GetRotated2D(-.5f*pi)*offset;
+  Vector3 target=delivery==0 ? root+forward*.55f+lateral+Vector3(0,0,.11f) :
+    delivery==1 ? chest-Vector3(0,0,belly?.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
+  const float roughness=GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0;
+  if(delivery==0)target.coords[2]+=football_turf::sample(target.coords[0],target.coords[1],roughness).height;
+  const Vector3 origin=root+lateral+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
     Vector3(0,0,delivery==0?.11f:delivery==1?1.35f:3.6f);
   ball->SetPosition(origin);
   Vector3 velocity=(target-origin)/flight;
@@ -127,10 +151,11 @@ void Match::LaunchTrainingBall(int delivery) {
     velocity+=error/flight;
   }
   ball->SetMomentum(velocity);
+  UpdateLatestMentalImageBallPredictions();
   SpamMessage(delivery==0?"Passe rasteiro recebido | F4: repetir":
       delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
-  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f]\n",
-    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2]);
+  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d\n",
+    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0);
   fflush(stdout);
 }
 
@@ -225,6 +250,7 @@ void Match::ProcessTraining() {
   auto keyOnce = [&events](SDL_Keycode key) {
     return events.ConsumeKeyPress(key);
   };
+  turfInput(this);
 
   if (keyOnce(SDLK_ESCAPE)) EnvironmentManager::GetInstance().SignalQuit();
   if (keyOnce(SDLK_p)) pause = !pause;
@@ -440,6 +466,17 @@ void Match::WriteTrainingTelemetry(IHIDevice *input) {
 
 void Match::ProcessPlayerMatchInput() {
   auto &events=UserEventManager::GetInstance();
+  turfInput(this);
+  if(GetConfiguration()->GetBool("training_physical_lab",false) && events.ConsumeKeyPress(SDLK_F10)){
+    static unsigned scenario=0;const e_SetPiece types[]={e_SetPiece_FreeKick,e_SetPiece_Penalty,e_SetPiece_Corner,e_SetPiece_ThrowIn,e_SetPiece_GoalKick};
+    referee->PracticeSetPiece(types[scenario++%5],trainingPlayer->GetTeamID());
+    SpamMessage("Bola parada de teste | cobre com A/B/X | F10: proxima",3500);
+  }
+  if(GetConfiguration()->GetBool("training_physical_lab",false) && IsInPlay() && !IsInSetPiece()){
+    if(events.ConsumeKeyPress(SDLK_F4))LaunchTrainingBall(0);
+    if(events.ConsumeKeyPress(SDLK_F5))LaunchTrainingBall(1);
+    if(events.ConsumeKeyPress(SDLK_F6))LaunchTrainingBall(2);
+  }
   if(GetConfiguration()->GetBool("training_physical_lab",false))physicalLabInput(this,trainingPlayer,actualTime_ms);
   if(events.ConsumeKeyPress(SDLK_ESCAPE))EnvironmentManager::GetInstance().SignalQuit();
   if(events.ConsumeKeyPress(SDLK_p))pause=!pause;
@@ -487,6 +524,8 @@ Player *Match::RequestedPassTarget(Player *passer) const {
 
 void Match::RecordPlayerMatchAction(Player *actor,e_FunctionType action,Player *target) {
   if(!PlayerMatchEnabled())return;
+  if(target && actor->GetTeamID()==target->GetTeamID() && action==e_FunctionType_ShortPass)
+    actor->GetTeam()->GetController()->RecordCombination(actor,target,actualTime_ms);
   const bool requested=playerMatchPassUntil_ms>actualTime_ms && actor!=trainingPlayer && actor->GetTeamID()==0 &&
     target==trainingPlayer && (action==e_FunctionType_ShortPass || action==e_FunctionType_LongPass || action==e_FunctionType_HighPass);
   if(requested) {playerMatchPassUntil_ms=0;SpamMessage("Passe vindo para voce!",1800);}
@@ -496,8 +535,14 @@ void Match::RecordPlayerMatchAction(Player *actor,e_FunctionType action,Player *
   }
 }
 
+void Match::AlignTrainingView(){
+  const Vector3 forward=trainingPlayer->GetBodyDirectionVec();
+  trainingView.reset(std::atan2(forward.coords[1],forward.coords[0]));
+  trainingReceptionFacing=forward;trainingReceiving=false;trainingEyeInitialized=false;
+}
+
 void Match::RestartPlayerMatch() {
-  physicalGripOpponent=nullptr;trainingGrip=trainingGripBlocked=false;trainingGripEscape=0;
+  physicalGripOpponent=nullptr;physicalAIHolds.clear();trainingGrip=trainingGripBlocked=false;trainingGripEscape=0;
   pause=false;gameOver=false;inPlay=false;inSetPiece=false;goalScoredTimer=0;playerMatchPassUntil_ms=0;trainingKnockOnUntil_ms=0;trainingReceiving=false;
   SetMatchPhase(e_MatchPhase_PreMatch);matchTime_ms=0;
   for(int side=0;side<2;++side) {matchData->SetGoalCount(side,0);scoreboard->SetGoalCount(side,0);}
@@ -525,8 +570,8 @@ void Match::WritePlayerMatchTelemetry() {
       point.coords[0],point.coords[1],point.coords[2],actor->GetMovement().GetLength(),int(actor->GetCurrentFunctionType()));row+=chunk;first=false;
   }
   const Vector3 ballPoint=ball->Predict(0);
-  std::snprintf(chunk,sizeof(chunk),"],\"difficulty\":%.2f,\"designated_id\":%d,\"ball\":[%.3f,%.3f,%.3f],\"ball_speed\":%.3f}\n",
-    matchDifficulty,GetDesignatedPossessionPlayer()->GetID(),ballPoint.coords[0],ballPoint.coords[1],ballPoint.coords[2],ball->GetMovement().GetLength());row+=chunk;
+  std::snprintf(chunk,sizeof(chunk),"],\"difficulty\":%.2f,\"designated_id\":%d,\"ball\":[%.3f,%.3f,%.3f],\"ball_speed\":%.3f,\"restart_type\":%d,\"restart_team\":%d,\"taker\":%d}\n",
+    matchDifficulty,GetDesignatedPossessionPlayer()->GetID(),ballPoint.coords[0],ballPoint.coords[1],ballPoint.coords[2],ball->GetMovement().GetLength(),int(referee->GetBuffer().desiredSetPiece),referee->GetBuffer().teamID,referee->GetBuffer().taker?referee->GetBuffer().taker->GetID():-1);row+=chunk;
   // One stdio call holds its stream lock for the whole JSON record.
   printf("%s",row.c_str());fflush(stdout);
 }

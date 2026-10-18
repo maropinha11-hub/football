@@ -3,6 +3,7 @@
 // i do not offer support, so don't ask. to be used for inspiration :)
 
 #include "ball.hpp"
+#include "ball_turf.hpp"
 
 #include <cmath>
 
@@ -176,6 +177,8 @@ BallSpatialInfo Ball::CalculatePrediction() {
   //printf("timestep: %i\n", int(timeStep * 1000.0f));
   bool firstTime = true;
   bool airborneLowSpin=lowSpinFlight;
+  const float turfRoughness=TrainingEnabled() && GetConfiguration()->GetBool("training_turf_enabled",true) ?
+    football_turf::bound(GetConfiguration()->GetReal("training_turf_roughness",.65f),0,1):0;
 
   ballTouchesNet = false;
 
@@ -198,7 +201,8 @@ BallSpatialInfo Ball::CalculatePrediction() {
     if (drag_enabled) momentumPredict = momentumPredict.GetNormalized(0) * momentumVeloDragged;
 
 
-    float ballBottom = nextPos.coords[2] - 0.11f;
+    const auto turf=football_turf::sample(nextPos.coords[0],nextPos.coords[1],turfRoughness);
+    float ballBottom = nextPos.coords[2] - 0.11f-turf.height;
     float grassInfluenceBias = clamp(1.0f - (ballBottom / grassHeight), 0.0f, 1.0f); // 0 == no friction, 1 == all friction
     // todo: seems to cause 'feedback' on multibump (1st bump: ball gets lots of rotation. second bump: rotation makes ball accelerate too much)
     grassInfluenceBias = std::pow(
@@ -209,7 +213,17 @@ BallSpatialInfo Ball::CalculatePrediction() {
 
     // bounce
 
-    if (nextPos.coords[2] < 0.11f) {
+    if(turfRoughness>0) {
+      football_turf::Vec p{{nextPos.coords[0],nextPos.coords[1],nextPos.coords[2]}},v{{momentumPredict.coords[0],momentumPredict.coords[1],momentumPredict.coords[2]}};
+      const auto response=football_turf::contact(p,v,turfRoughness,bounce,linearBounce);
+      nextPos=Vector3(p[0],p[1],p[2]);momentumPredict=Vector3(v[0],v[1],v[2]);
+      if(response.contact){
+        airborneLowSpin=false;
+        frictionFactor=NormalizedClamp(-response.normalSpeed-.5f,0.f,12.f);
+        if(firstTime && GetConfiguration()->GetBool("training_telemetry",false))
+          printf("TURF_CONTACT t=%lu roughness=%.4f height=%.6f slope=[%.6f,%.6f] normal_speed=%.6f vz=%.6f energy_before=%.6f energy_after=%.6f\n",match->GetActualTime_ms(),turfRoughness,turf.height,turf.dx,turf.dy,response.normalSpeed,v[2],response.energyBefore,response.energyAfter);
+      }
+    } else if (nextPos.coords[2] < 0.11f) {
       airborneLowSpin=false;
       if (momentumPredict.coords[2] < 0.0f) {
         frictionFactor = NormalizedClamp(-momentumPredict.coords[2] - 0.5f, 0.0f, 12.0f); // when the ball is slammed into the ground, there's gonna be more friction. only set it here so it is only done once (on impact)
@@ -223,8 +237,8 @@ BallSpatialInfo Ball::CalculatePrediction() {
 
     // ground friction
 
-    if (nextPos.coords[2] < 0.11f + grassHeight && groundFriction_enabled) {
-      float adaptedFriction = (friction * grassInfluenceBias);
+    if (nextPos.coords[2] < 0.11f + turf.height + grassHeight && groundFriction_enabled) {
+      float adaptedFriction = (friction * grassInfluenceBias)*turf.resistance;
 
       // v(t) = v(0) * (k ^ t)
 
@@ -234,7 +248,7 @@ BallSpatialInfo Ball::CalculatePrediction() {
       float newVelo = velo - adaptedFriction * std::pow(velo, 2.0f) * timeStep;
 
       // linear friction
-      newVelo = clamp(newVelo - (linearFriction * grassInfluenceBias * timeStep), 0.0f, 100000.0f);
+      newVelo = clamp(newVelo - (linearFriction * grassInfluenceBias * turf.resistance * timeStep), 0.0f, 100000.0f);
 
       xy.Normalize(Vector3(0));
       xy *= newVelo;
@@ -531,6 +545,10 @@ BallSpatialInfo Ball::CalculatePrediction() {
     // predict next ms
 
     nextPos += momentumPredict * timeStep;
+    if(turfRoughness>0){
+      football_turf::Vec p{{nextPos.coords[0],nextPos.coords[1],nextPos.coords[2]}};
+      football_turf::preventPenetration(p,turfRoughness);nextPos=Vector3(p[0],p[1],p[2]);
+    }
 
     Vector3 rotationVector;
     rotationPredict_ms.GetAngles(rotationVector.coords[0], rotationVector.coords[1], rotationVector.coords[2]);
@@ -605,6 +623,10 @@ void Ball::Process() {
 
   positionBuffer = Predict(10);
   orientationBuffer = orientPrediction;
+  if(TrainingEnabled() && GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%100==0){
+    const Vector3 future=Predict(510);
+    printf("TURF_FORECAST t=%lu roughness=%.4f position=[%.6f,%.6f,%.6f] future500=[%.6f,%.6f,%.6f]\n",match->GetActualTime_ms(),GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0.f,positionBuffer.coords[0],positionBuffer.coords[1],positionBuffer.coords[2],future.coords[0],future.coords[1],future.coords[2]);
+  }
 
   ballPosHistory.push_back(positionBuffer);
   if (ballPosHistory.size() > ballHistorySize_ms) ballPosHistory.pop_front();

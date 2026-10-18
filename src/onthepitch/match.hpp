@@ -120,6 +120,7 @@ class Match {
     void SetTrainingPartner(Player *value) { trainingPartner=value; }
     Vector3 GetTrainingPartnerVelocity() const {return trainingPartnerVelocity;}
     void ProcessTrainingContact();
+    std::map<std::pair<int,int>,unsigned long> tackleContactUntil;
     void SetTrainingPlayer(Player *value) { trainingPlayer=value; }
     void ProcessPlayerMatchInput();
     void UpdatePlayerMatchCamera();
@@ -129,6 +130,7 @@ class Match {
     Player *RequestedPassTarget(Player *passer) const;
     void RecordPlayerMatchAction(Player *actor,e_FunctionType action,Player *target);
     void RestartPlayerMatch();
+    void AlignTrainingView();
     void NotifyTrainingTouch(e_FunctionType function, bool knockOn);
     Vector3 GetTrainingMovement(const Vector3 &stick) const;
     Vector3 GetTrainingAim(const Vector3 &stick) const;
@@ -291,6 +293,8 @@ class Match {
     Player *trainingPartner = nullptr;
     Vector3 trainingPartnerVelocity{0},trainingGripOffset{0};
     Player *physicalGripOpponent=nullptr;
+    struct PhysicalAIHold {Player *victim=nullptr;Vector3 offset{0},anchor{0};unsigned long started=0,cooldown=0;};
+    std::map<int,PhysicalAIHold> physicalAIHolds;
     void ProcessPlayerMatchContact();
     int trainingContactExercise=0;
     bool trainingGrip=false;

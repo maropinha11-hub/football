@@ -271,6 +271,10 @@ void Referee::PrepareSetPiece(e_SetPiece setPiece) {
   match->GetTeam(1)->GetController()->PrepareSetPiece(setPiece, buffer.teamID);
 
   buffer.taker = match->GetTeam(buffer.teamID)->GetController()->GetPieceTaker();
+  if(PlayerMatchEnabled()){
+    if(buffer.taker==match->GetTrainingPlayer())match->AlignTrainingView();
+    printf("PLAYER_MATCH_TAKER t=%lu type=%d team=%d actor=%d human=%d\n",match->GetActualTime_ms(),int(setPiece),buffer.teamID,buffer.taker->GetID(),buffer.taker==match->GetTrainingPlayer()?1:0);
+  }
 }
 
 void Referee::AlterSetPiecePrepareTime(unsigned long newTime_ms) {
@@ -389,6 +393,32 @@ void Referee::TripNotice(Player *tripee, Player *tripper, int tackleType) {
     }
 
   }
+}
+
+void Referee::PhysicalFoul(Player *victim,Player *offender,float severity){
+  if(!PlayerMatchEnabled() || !match->IsInPlay() || match->IsInSetPiece() || !victim || !offender ||
+     victim->GetTeamID()==offender->GetTeamID() || (!foul.hasBeenProcessed && foul.foulType))return;
+  foul.foulPlayer=offender;foul.foulVictim=victim;foul.foulType=severity>2.2f?2:1;
+  foul.advantage=false;foul.foulTime=match->GetActualTime_ms();foul.foulPosition=victim->GetPosition();foul.hasBeenProcessed=false;
+  CheckFoul();
+  printf("PHYSICAL_FOUL t=%lu offender=%d victim=%d severity=%.4f restart=%d team=%d\n",match->GetActualTime_ms(),offender->GetID(),victim->GetID(),severity,int(buffer.desiredSetPiece),buffer.teamID);
+}
+
+void Referee::PracticeSetPiece(e_SetPiece type,int teamID){
+  if(!PlayerMatchEnabled() || !GetConfiguration()->GetBool("training_physical_lab",false))return;
+  match->StopPlay();match->StopSetPiece();
+  match->GetTeam(0)->GetController()->PrepareSetPiece(e_SetPiece_None);
+  match->GetTeam(1)->GetController()->PrepareSetPiece(e_SetPiece_None);
+  foul.foulType=0;foul.hasBeenProcessed=true;foul.advantage=false;offsidePlayers.clear();
+  buffer.active=true;buffer.endPhase=false;buffer.teamID=teamID;buffer.taker=nullptr;buffer.desiredSetPiece=type;
+  buffer.stopTime=match->GetActualTime_ms();buffer.prepareTime=buffer.stopTime+300;buffer.startTime=buffer.prepareTime+700;
+  const float side=match->GetTeam(teamID)->GetSide();
+  buffer.restartPos=Vector3(-side*28,8,0);
+  if(type==e_SetPiece_Penalty)buffer.restartPos=Vector3(-side*(pitchHalfW-11),0,0);
+  if(type==e_SetPiece_Corner)buffer.restartPos=Vector3(-side*(pitchHalfW-.05f),pitchHalfH-.05f,0);
+  if(type==e_SetPiece_ThrowIn)buffer.restartPos=Vector3(0,pitchHalfH,0);
+  if(type==e_SetPiece_GoalKick)buffer.restartPos=Vector3(side*(pitchHalfW-5.5f),6,0);
+  printf("PLAYER_MATCH_RESTART_LAB t=%lu type=%d team=%d\n",buffer.stopTime,int(type),teamID);
 }
 
 bool Referee::CheckFoul() {

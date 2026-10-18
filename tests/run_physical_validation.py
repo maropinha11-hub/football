@@ -10,7 +10,8 @@ import subprocess
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
-p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match'])
+p.add_argument('--display-base',type=int,default=164)
+p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match','pitch_turf','pitch_receive','pitch_rules','pitch_body','pitch_tackle','cpu_grip','toggle_stress'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
@@ -35,13 +36,20 @@ cases=[('control_hop_comparison','training_control_hop_smoke.py',[]),
        ('aerial_direction_approved','training_aerial_direction_smoke.py',['--approved']),
        ('anatomy_lab','training_anatomy_smoke.py',[]),
        ('stagger_lab','training_stagger_smoke.py',[]),
-       ('stagger_match','training_stagger_smoke.py',['--match'])]
+       ('stagger_match','training_stagger_smoke.py',['--match']),
+       ('pitch_turf','training_pitch_rules_smoke.py',['--mode','turf']),
+       ('pitch_receive','training_pitch_rules_smoke.py',['--mode','receive']),
+       ('pitch_rules','training_pitch_rules_smoke.py',['--mode','rules']),
+       ('pitch_body','training_pitch_rules_smoke.py',['--mode','body']),
+       ('pitch_tackle','training_pitch_rules_smoke.py',['--mode','tackle']),
+       ('cpu_grip','training_cpu_grip_smoke.py',[]),
+       ('toggle_stress','training_toggle_stress_smoke.py',[])]
 if a.only:cases=[c for c in cases if c[0]in a.only]
 def run(item):
  i,(name,script,extra)=item
  with (a.output/(name+'.log')).open('w')as log:
   result=subprocess.run(['python3','tests/'+script,'--build',str(a.build),'--output',str(a.output/name),
-                         '--display',':'+str(164+i),*extra],env=env,stdout=log,stderr=subprocess.STDOUT)
+                         '--display',':'+str(a.display_base+i),*extra],env=env,stdout=log,stderr=subprocess.STDOUT)
  report=dict(scenario=name,exit_code=result.returncode)
  path=a.output/name/'validation.json'
  if path.exists():

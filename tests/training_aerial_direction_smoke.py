@@ -19,7 +19,7 @@ try:
    directions=[('left_diagonal',-.70710678,-.70710678),('right_diagonal',.70710678,-.70710678)]
    if key=='F6':directions += [('left',-1,0),('right',1,0)]
    for label,x,y in directions:
-    name=f'{key}_{kind}_{label}';g.reset();start=len(g.log.read_text())
+    name=f'{key}_{kind}_{label}';g.reset();start=len(g.read_log())
     g.keys([key],True);g.keys([key],False)
     f=g.frames()[-1];yaw=f['yaw']if a.camera==2 else f['player_yaw']
     # Aim diagonally on both sides of the player's CURRENT front. Reception
@@ -31,7 +31,7 @@ try:
     # Centering the stick while the action is queued must retain the aim.
     g.pad(0,0);g.advance(2000)
     events=[]
-    for t,k,part,tx,ty,vx,vy in re.findall(r'TRAINING_ACTION_AIM t=(\d+) function=(\d+) part=(\w+) requested=\[([^,]+),([^\]]+)\] actual=\[([^,]+),([^\]]+)\]',g.log.read_text()[start:]):
+    for t,k,part,tx,ty,vx,vy in re.findall(r'TRAINING_ACTION_AIM t=(\d+) function=(\d+) part=(\w+) requested=\[([^,]+),([^\]]+)\] actual=\[([^,]+),([^\]]+)\]',g.read_log()[start:]):
      if int(k)==kind:events.append(dict(t=int(t),part=part,target=[float(tx),float(ty)],velocity=[float(vx),float(vy)]))
     evidence=dict(expected_direction=requested,contacts=events)
     if events:

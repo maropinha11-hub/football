@@ -47,6 +47,8 @@ class TeamAIController {
     void ApplyOffsideTrap(Vector3 &position) const;
     float GetOffsideTrapX() const { return offsideTrapX; }
     void PrepareSetPiece(e_SetPiece setPiece, int takerTeamID = -1);
+    void RecordCombination(Player *from,Player *to,unsigned long time);
+    Player *GetCombinationRunner(Player *receiver,unsigned long time) const;
     Player *GetPieceTaker() { return taker; }
     e_SetPiece GetSetPieceType() { return setPieceType; }
     void ApplyAttackingRun(Player *manualPlayer = 0);
@@ -76,6 +78,8 @@ class TeamAIController {
     Team *team;
     Player *taker;
     e_SetPiece setPieceType;
+    Player *combinationFrom=nullptr,*combinationTo=nullptr;
+    unsigned long combinationTime=0;
 
     Properties baseTeamTactics;
     Properties teamTacticsModMultipliers;

@@ -36,6 +36,24 @@ float difficulty(const Context &c) {
 }
 }
 
+void adaptChestArms(std::array<Rotation,7> &pose,float phase,float contact,
+                    float duration,float speed,float incomingSide) {
+  if(!std::isfinite(phase)||!std::isfinite(duration)||duration<=0)return;
+  const float t=clamp(phase/duration,0,1),at=clamp(contact/duration,.1f,.9f);
+  const float envelope=smooth(t/.12f)*smooth((1-t)/.18f);
+  const float prepare=t<=at?std::sin(.5f*pi*t/at):1-smooth((t-at)/(1-at));
+  const float stride=clamp(speed/5,0,1),side=clamp(incomingSide/10,-1,1);
+  const float spread=envelope*(.035f+.055f*prepare+.025f*stride);
+  const float swing=envelope*(.055f*stride*std::sin(pi*t)+.035f*side*prepare);
+  const Point offsets[4]={{{swing,-spread,.025f*side*envelope}},
+    {{-envelope*(.03f+.04f*prepare),0,0}},
+    {{-swing,spread,-.025f*side*envelope}},
+    {{-envelope*(.04f+.03f*prepare),0,0}}};
+  for(unsigned i=0;i<4;++i){
+    Rotation q;if(pes3::unitRotation(pes3::productRotation(exponential(offsets[i]),pose[i+3]),q))pose[i+3]=q;
+  }
+}
+
 void ActionLayer::reset() {
   offset_={};velocity_={};kind_=ActionKind::None;metrics_={};
 }
@@ -69,6 +87,11 @@ void ActionLayer::step(const Context &c,float dt) {
   const float lowDrive=c.pattern==3?1.f:0.f,insideSweep=c.pattern==4?1.f:0.f;
   const float lofted=c.pattern==5?1.f:0.f,backTurn=c.pattern==6?1.f:0.f;
   const float firstTime=c.pattern==7?1.f:0.f,braced=c.pattern==8?1.f:0.f;
+  const float cushion=c.pattern==9?1.f:0.f,redirect=c.pattern==10?1.f:0.f;
+  const float reactive=c.pattern==11?1.f:0.f,volley=c.pattern==12?1.f:0.f;
+  const float outside=c.pattern==13?1.f:0.f,instep=c.pattern==14?1.f:0.f;
+  const float incomingSide=clamp(c.incoming[0]/10.f,-1,1);
+  const float incomingLoad=clamp(length(c.incoming)/15.f,0,1);
   float type=1;
   if(c.kind==ActionKind::Shot)type=1.18f;
   if(c.kind==ActionKind::Cross)type=1.10f;
@@ -80,14 +103,21 @@ void ActionLayer::step(const Context &c,float dt) {
     (c.contactMade?smooth(recovery/.18f):0.f):1.f;
   {
     target[1]={{trunk*((.22f+.17f*opening)*before+.29f*after-airPattern*.26f*height*before+
-      lowDrive*.15f*plant-lofted*.18f*before+firstTime*.13f*(before-after)+braced*.10f*plant),
+      lowDrive*.15f*plant-lofted*.18f*before+firstTime*.13f*(before-after)+braced*.10f*plant+
+      cushion*(-.16f*before+.10f*after)+redirect*.10f*before-
+      volley*.18f*height*before+instep*.16f*after+reactive*.13f*incomingLoad*after),
       trunk*(-foot*(.055f*before+.09f*after)+.06f*lateral-.045f*support*pressure+
              openPattern*.12f*std::sin(turn*pi)*before+airPattern*.08f*foot*before+
-             insideSweep*.13f*foot*plant-lofted*.10f*foot*before+braced*.11f*support*plant),
+             insideSweep*.13f*foot*plant-lofted*.10f*foot*before+braced*.11f*support*plant+
+      cushion*.08f*incomingSide*before+redirect*.11f*foot*plant-
+      volley*.12f*foot*before-outside*.12f*foot*plant),
       trunk*(foot*(-.30f*before+.40f*after)+.18f*direction*plant+.14f*turn*plant+
              openPattern*.24f*std::sin(turn*pi)*(before-.5f*after)+
              insideSweep*.22f*foot*(after-.5f*before)+backTurn*.24f*turn*(before+after)+
-             firstTime*.15f*foot*(before-after))}};
+             firstTime*.15f*foot*(before-after)+cushion*.08f*incomingSide*(before-after)+
+      redirect*.20f*(incomingSide+.5f*foot)*plant-volley*.12f*foot*before+
+      outside*foot*(.18f*before-.22f*after)+instep*foot*(-.16f*before+.20f*after)+
+      .045f*incomingSide*incomingLoad*before)}};
     target[1]=pes3::scalePoint(target[1],headerRelease);
     target[1][0]=clamp(target[1][0],-.30f,.36f);
     target[1][1]=clamp(target[1][1],-.20f,.20f);
@@ -97,8 +127,8 @@ void ActionLayer::step(const Context &c,float dt) {
   // supplies the gross action, and the anatomical constraint pass runs later.
   // Added abduction keeps the arms away from the torso instead of planting a
   // hand on an opponent or manufacturing a support force.
-  const float span=effort*(.10f+.17f*pressure+(.24f+.09f*openPattern+.12f*airPattern+.10f*braced+.08f*backTurn)*(before+after));
-  const float counter=effort*foot*((.25f+.10f*insideSweep+.08f*firstTime)*before-(.29f+.10f*backTurn)*after);
+  const float span=effort*(.10f+.17f*pressure+(.24f+.09f*openPattern+.12f*airPattern+.10f*braced+.08f*backTurn+.12f*cushion+.08f*redirect+.14f*reactive*incomingLoad+.15f*volley+.08f*instep)*(before+after));
+  const float counter=effort*foot*((.25f+.10f*insideSweep+.08f*firstTime)*before-(.29f+.10f*backTurn)*after)+effort*(redirect*.12f*foot*plant+reactive*.16f*incomingSide*before-outside*.13f*foot*before);
   target[3]={{effort*(-.09f*before+.08f*after)-.35f*counter,-span,counter}};
   target[5]={{effort*(.08f*before-.09f*after)+.35f*counter,span,-counter}};
   target[4]={{-effort*(.09f*before+.11f*after+.04f*pressure),0,0}};

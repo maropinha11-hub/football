@@ -25,7 +25,7 @@ try:
       ('header shot repeated taps','F6',4,'head',8,0),
       ('late header shot repeated taps','F6',4,'head',8,200),
       ('cross command repeated taps','F6',2,'head',6,0)]:
-   g.reset();start=len(g.log.read_text());g.keys([key],True);g.keys([key],False)
+   g.reset();start=len(g.read_log());g.keys([key],True);g.keys([key],False)
    launch=g.frames()[-1]['t']
    if delay:g.advance(delay)
    taps=[]
@@ -33,7 +33,7 @@ try:
     taps.append(g.frames()[-1]['t']-launch)
     g.pad(0,0,buttons=button);g.advance(100);g.pad(0,0);g.advance(100)
    g.advance(1800)
-   hits=[dict(t=int(t),part=body,kind=int(k))for t,body,k in re.findall(r'TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+)',g.log.read_text()[start:])]
+   hits=[dict(t=int(t),part=body,kind=int(k))for t,body,k in re.findall(r'TRAINING_ACTION_TOUCH t=(\d+) part=(\w+) function=(\d+)',g.read_log()[start:])]
    check(name,any(x['kind']==kind and (part is None or x['part']==part)for x in hits),dict(tap_offsets_ms=taps,touches=hits))
   g.keys(['Escape'],True);g.game.wait(timeout=15)
   check('clean exit',g.game.returncode==0,g.game.returncode)

@@ -160,7 +160,7 @@ int main(int argc,char **argv) {
   // here and keeps profile counts separate from genuinely checked poses.
   unsigned matrix=0;bool matrixSafe=true;float maximumBend=0,maximumShoulder=0;
   for(unsigned type=1;type<=5;++type)for(float turn:{-2.6f,0.f,2.6f})
-    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f})for(unsigned pattern=0;pattern<9;++pattern) {
+    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f})for(unsigned pattern=0;pattern<15;++pattern) {
       Context variant=hard;variant.kind=ActionKind(type);variant.signedTurn=turn;variant.speed=speed;
       variant.pattern=pattern;variant.phase=phase;variant.trunkGain=variant.armGain=variant.followThroughGain=gain;
       variant.rightFoot=matrix%2==0;variant.supportSide=variant.rightFoot?-1:1;
@@ -175,8 +175,8 @@ int main(int argc,char **argv) {
       maximumBend=std::max(maximumBend,layer.metrics().torsoBend);
       maximumShoulder=std::max(maximumShoulder,layer.metrics().shoulderAmplitude);++matrix;
     }
-  check(matrix==3240 && matrixSafe && maximumBend<.42f && maximumShoulder<.49f,
-    "3240 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
+  check(matrix==5400 && matrixSafe && maximumBend<.42f && maximumShoulder<.49f,
+    "5400 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
   layer.reset();Context open=hard;open.pattern=0;open.signedTurn=1.3f;settle(layer,open);
   auto compact=base;layer.evaluate(open,bind,1,compact,{{0,0,.96f}});
   layer.reset();open.pattern=1;settle(layer,open);auto lateralPose=base;layer.evaluate(open,bind,1,lateralPose,{{0,0,.96f}});
@@ -185,21 +185,21 @@ int main(int argc,char **argv) {
     "compact, lateral opening and airborne patterns change actual torso axes instead of cloning a label");
   // Every family must change the pose itself at the same contextual input,
   // rather than supplying additional names for the compact response.
-  std::array<pes3::NativeRotations,9> families;
+  std::array<pes3::NativeRotations,15> families;
   Context family=c;family.speed=3;family.power=.5f;family.pressure=.4f;
   family.signedTurn=1;family.ball={{.3f,-.4f,-.25f}};family.difficulty=.6f;
-  family.trunkGain=family.armGain=.85f;
-  for(unsigned pattern=0;pattern<9;++pattern) {
+  family.trunkGain=family.armGain=.85f;family.incoming={{4,7,-2}};
+  for(unsigned pattern=0;pattern<15;++pattern) {
     family.pattern=pattern;layer.reset();settle(layer,family);families[pattern]=base;
     layer.evaluate(family,bind,1,families[pattern],{{0,0,.96f}});
   }
   bool distinct=true;float minimumFamilyDistance=10;
-  for(unsigned a=0;a<9;++a)for(unsigned b=a+1;b<9;++b) {
+  for(unsigned a=0;a<15;++a)for(unsigned b=a+1;b<15;++b) {
     float separation=0;for(unsigned bone:{1u,3u,4u,5u,6u})
       separation=std::max(separation,qdistance(families[a][bone],families[b][bone]));
     minimumFamilyDistance=std::min(minimumFamilyDistance,separation);distinct&=separation>.005f;
   }
-  check(distinct,"all nine situational families produce different connected body poses at identical input");
+  check(distinct,"all fifteen situational families produce different connected body poses at identical input");
   Context impact=family;impact.pattern=0;impact.phase=impact.contactPhase;
   layer.reset();settle(layer,impact);
   check(layer.metrics().torsoAngle>.07f && layer.metrics().armsAngle>.10f,
@@ -208,6 +208,19 @@ int main(int argc,char **argv) {
   auto recovery=base;layer.evaluate(header,bind,1,recovery,{{0,0,.96f}});
   check(qdistance(recovery[1],base[1])>.03f,
     "a header can recruit the torso only after its real contact is complete");
+  std::array<pes3::Rotation,7> chest;
+  for(unsigned i=0;i<7;++i)chest[i]=base[i];
+  const auto chestBase=chest;adaptChestArms(chest,20,20,90,3,5);
+  bool chestContactFixed=true;for(unsigned i=0;i<3;++i)chestContactFixed&=std::memcmp(chest[i].data(),chestBase[i].data(),sizeof(pes3::Rotation))==0;
+  check(chestContactFixed && qdistance(chest[3],chestBase[3])>.03f && qdistance(chest[5],chestBase[5])>.03f,
+    "additional chest reception shapes change arms while preserving the exact contacting torso and head chain");
+  float chestRate=0;auto chestPrevious=chestBase;
+  for(unsigned frame=0;frame<=90;++frame){
+    auto current=chestBase;adaptChestArms(current,frame,20,90,3,5);
+    for(unsigned bone:{3u,4u,5u,6u})chestRate=std::max(chestRate,qdistance(current[bone],chestPrevious[bone])/.01f);
+    chestPrevious=current;
+  }
+  check(chestRate<1.5f,"chest arm variations evolve continuously and keep natural bounded speed");
   layer.reset();Context corrupt=hard;corrupt.phase=std::nanf("");corrupt.ball[0]=std::nanf("");
   corrupt.power=std::nanf("");corrupt.signedTurn=std::nanf("");layer.step(corrupt);
   auto safe=base;layer.evaluate(corrupt,bind,1,safe,{{0,0,.96f}});bool finitePose=true;

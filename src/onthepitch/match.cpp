@@ -4,6 +4,7 @@
 
 // Football Training: solo startup and practice simulation; original match remains available.
 #include "match.hpp"
+#include "physical_match_rules.hpp"
 
 #include "../main.hpp"
 
@@ -378,7 +379,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   if (TrainingEnabled()) {
     trainingCameraMode = clamp(GetConfiguration()->GetInt("training_camera", 2), 0, 2);
     if(PlayerMatchEnabled()) {
-      matchDurationFactor=clamp(GetConfiguration()->GetReal("player_match_half_seconds",180),2.0f,900.0f)/2700.0f;
+      matchDurationFactor=clamp(GetConfiguration()->GetReal("player_match_half_seconds",2700),2.0f,5400.0f)/2700.0f;
       trainingView.reset(0);trainingReceptionFacing=Vector3(1,0,0);
       SpamMessage("Partida 11 x 11 | RT/E: pedir passe | R: reiniciar | R3/Tab: camera",8000);
       printf("PLAYER_MATCH_START locked_id=%d home=%d away=%d half_seconds=%.2f\n",trainingPlayer->GetID(),teams[0]->GetActivePlayerCount(),teams[1]->GetActivePlayerCount(),matchDurationFactor*2700);
@@ -1920,9 +1921,36 @@ void Match::CheckHumanoidCollision(Player *p1, Player *p2, std::vector<PlayerBou
   // check for tackling collisions
 
   int tackle = 0;
-  if ((p1->GetCurrentFunctionType() == e_FunctionType_Sliding || p1->GetCurrentFunctionType() == e_FunctionType_Interfere) && p1->GetFrameNum() > 5 && p1->GetFrameNum() < 28) tackle += 1;
-  if ((p2->GetCurrentFunctionType() == e_FunctionType_Sliding || p2->GetCurrentFunctionType() == e_FunctionType_Interfere) && p2->GetFrameNum() > 5 && p2->GetFrameNum() < 28) tackle += 2;
+  auto activeTackle=[](Player *p){return p->GetFrameNum()>5 &&
+    ((p->GetCurrentFunctionType()==e_FunctionType_Sliding && p->GetFrameNum()<p->GetFrameCount()-8) ||
+     (p->GetCurrentFunctionType()==e_FunctionType_Interfere && p->GetFrameNum()<28));};
+  if(activeTackle(p1))tackle+=1;
+  if(activeTackle(p2))tackle+=2;
   if (distance < 2.0f && tackle > 0 && tackle < 3) { // if tackle is 3, ignore both
+    Player *offender=tackle==1?p1:p2,*victim=tackle==1?p2:p1;
+    if(TrainingEnabled() && offender->GetHumanoid()->UsesTrainingContacts() && victim->GetHumanoid()->UsesTrainingContacts()){
+      const auto pair=std::make_pair(offender->GetID(),victim->GetID());
+      Vector3 contact;
+      if(actualTime_ms>=tackleContactUntil[pair] && !victim->GetHumanoid()->PhysicalRigBusy() &&
+         offender->GetHumanoid()->TackleLegContact(*victim->GetHumanoid(),contact)){
+        tackleContactUntil[pair]=actualTime_ms+900;
+        const bool sliding=offender->GetCurrentFunctionType()==e_FunctionType_Sliding;
+        const float speed=(offender->GetMovement()-victim->GetMovement()).Get2D().GetLength();
+        const bool behind=(offender->GetPosition()-victim->GetPosition()).GetNormalized(0).GetDotProduct(victim->GetBodyDirectionVec())<-.25f;
+        const bool ballFirst=GetLastTouchPlayer()==offender && actualTime_ms-offender->GetLastTouchTime_ms()<250;
+        const auto response=football_rules::tackle(sliding,speed,behind,ballFirst);
+        const Vector3 direction=(offender->GetMovement()-victim->GetMovement()).Get2D().GetNormalized(
+          (victim->GetPosition()-offender->GetPosition()).Get2D().GetNormalized(offender->GetBodyDirectionVec()));
+        if(victim->GetHumanoid()->PhysicalRigEnabled()){
+          victim->GetHumanoid()->AddPhysicalImpulse(direction*response.impulse,Vector3(0,0,-.45f),response.fall);
+          offender->GetHumanoid()->AddPhysicalImpulse(-direction*response.impulse*.25f,Vector3(0,0,-.3f));
+        }else victim->TripMe(direction,response.fall?3:1);
+        if(response.foul)referee->PhysicalFoul(victim,offender,response.severity);
+        printf("PHYSICAL_TACKLE t=%lu actor=%d victim=%d sliding=%d ball_first=%d behind=%d speed=%.4f impulse=%.4f fall=%d foul=%d point=[%.4f,%.4f,%.4f]\n",
+          actualTime_ms,offender->GetID(),victim->GetID(),sliding,ballFirst,behind,speed,response.impulse,response.fall,response.foul,contact.coords[0],contact.coords[1],contact.coords[2]);
+      }
+      return;
+    }
     std::list < boost::intrusive_ptr<Geometry> > tacklerObjectList;
     std::list < boost::intrusive_ptr<Geometry> > victimObjectList;
     /*
@@ -2027,6 +2055,7 @@ void Match::CheckBallCollisions() {
 
   //printf("lasttouchbias: %f, isnul?: %s\n", GetLastTouchBias(200), GetLastTouchBias(200) == 0.0f ? "true" : "false");
   for (int i = 0; i < (signed int)players.size(); i++) {
+    if(players[i]->GetHumanoid()->UsesTrainingContacts())continue;
 
     bool biggestRatio = false;
     int teamID = players[i]->GetTeam()->GetID();

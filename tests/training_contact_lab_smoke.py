@@ -16,8 +16,8 @@ r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gam
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
 def events(g,prefix,start=0):
- return [dict(re.findall(r'(\w+)=([^\s]+)',x))for x in g.log.read_text()[start:].splitlines()if x.startswith(prefix+' ')]
-def frames(g):return [json.loads(x[19:])for x in g.log.read_text().splitlines()if x.startswith('PHYSICAL_RIG_FRAME ')]
+ return [dict(re.findall(r'(\w+)=([^\s]+)',x))for x in g.read_log()[start:].splitlines()if x.startswith(prefix+' ')]
+def frames(g):return [json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PHYSICAL_RIG_FRAME ')]
 def key(g,k):g.keys([k],True);g.advance(100);g.keys([k],False);g.advance(100)
 def screenshot(g,name):subprocess.run(['import','-window',g.window,str(a.output/(name+'.png'))],env=g.env,check=True)
 try:
@@ -36,7 +36,7 @@ try:
   g.reset();key(g,'F10');g.advance(400)
   lab=events(g,'PHYSICAL_LAB');partner=events(g,'PHYSICAL_PARTNER')
   check('F10 creates the side-contact exercise',lab[-1]['exercise']=='1' and partner and float(partner[-1]['distance'])<.85,dict(lab=lab[-1],partner=partner[-1]))
-  start=len(g.log.read_text());g.keys(['h'],True);g.advance(1800);screenshot(g,'shirt-grip')
+  start=len(g.read_log());g.keys(['h'],True);g.advance(1800);screenshot(g,'shirt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start)
   check('shirt grip starts only after the hand reaches the shirt',any(x['state']=='begin' and float(x['hand_gap'])<.10 for x in grips),grips)
   check('held shirt applies equal and opposite bounded forces',bool(forces)and all(abs(float(x['force'])-float(x['reaction']))<.001 and float(x['force'])<=260.01 for x in forces),forces[:8])

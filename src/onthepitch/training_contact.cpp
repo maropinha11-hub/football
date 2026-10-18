@@ -1,4 +1,6 @@
 #include "match.hpp"
+#include "physical_match_rules.hpp"
+#include <set>
 #include "../main.hpp"
 #include "managers/usereventmanager.hpp"
 #include <cmath>
@@ -10,6 +12,8 @@ void Match::ProcessPlayerMatchContact(){
   std::vector<Player*> actors;teams[0]->GetActivePlayers(actors);teams[1]->GetActivePlayers(actors);
   for(auto *actor:actors){auto *body=actor->GetHumanoid();body->SetPhysicalTraction(Vector3(0));body->SetPhysicalGrip(Vector3(0),Vector3(0));body->SetPhysicalShield(false);body->SetPhysicalHandTarget(Vector3(0),false);}
   if(!human->PhysicalRigEnabled()){trainingGrip=false;physicalGripOpponent=nullptr;return;}
+  if(!IsInPlay() || IsInSetPiece()){trainingGrip=false;physicalGripOpponent=nullptr;physicalAIHolds.clear();return;}
+
   auto &events=UserEventManager::GetInstance();
   Player *opponent=nullptr;float nearest=1000;
   for(auto *actor:actors)if(actor->GetTeamID()!=trainingPlayer->GetTeamID() && actor->GetFormationEntry().role!=e_PlayerRole_GK){
@@ -20,7 +24,8 @@ void Match::ProcessPlayerMatchContact(){
   // Explicit optional laboratory setup, never part of ordinary match AI.
   if(GetConfiguration()->GetBool("training_physical_lab",false) && events.ConsumeKeyPress(SDLK_F2)){
     const Vector3 root=trainingPlayer->GetPosition(),forward=trainingPlayer->GetBodyDirectionVec();
-    opponent->ResetPosition(root+forward*.15f+forward.GetRotated2D(pi*.5f)*.68f,root+forward*3.f);
+    const bool tackle=events.GetKeyboardState(SDLK_LCTRL);
+    opponent->ResetPosition(tackle?root+forward*.60f:root+forward*.15f+forward.GetRotated2D(pi*.5f)*.68f,root+forward*3.f);
     SpamMessage("Ensaio de contato: adversario aproximado | M: disputa | LT: proteger/agarrar",4000);
     printf("PHYSICAL_MATCH_SETUP t=%lu actor=%d opponent=%d\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID());
   }
@@ -31,7 +36,10 @@ void Match::ProcessPlayerMatchContact(){
   const Vector3 normal=separation.Get2D().GetNormalized(trainingPlayer->GetBodyDirectionVec());
   if(GetConfiguration()->GetBool("training_physical_lab",false) && events.ConsumeKeyPress(SDLK_F11)){
     SetBallRetainer(0);ball->SetMomentum(Vector3(0));
-    ball->SetPosition(opponent->GetPosition()+opponent->GetBodyDirectionVec()*.55f+Vector3(0,0,.11f));
+    Player *receiver=events.GetKeyboardState(SDLK_LSHIFT)?trainingPlayer:opponent;
+    ball->SetPosition(receiver->GetPosition()+receiver->GetBodyDirectionVec()*.55f+Vector3(0,0,.11f));
+    receiver->GetTeam()->SetLastTouchPlayer(receiver,e_TouchType_Intentional_Nonkicked);
+    receiver->UpdatePossessionStats(false);UpdateLatestMentalImageBallPredictions();
     SpamMessage("Ensaio: bola no adversario | LT: tentar segurar",3000);
   }
   const bool withBall=trainingPlayer->HasPossession() && (ball->Predict(0)-trainingPlayer->GetPosition()).Get2D().GetLength()<1.5f;
@@ -59,6 +67,11 @@ void Match::ProcessPlayerMatchContact(){
     trainingGripAnchor=(shirt-opponent->GetPosition()).GetRotated2D(-yaw);
     printf("PHYSICAL_MATCH_GRIP t=%lu state=begin actor=%d opponent=%d hand_gap=%.5f\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID(),gap);
   }
+  if(trainingGrip && football_rules::excessiveHold((actualTime_ms-trainingGripStarted)*.001f,
+      std::min(260.f,((separation-trainingGripOffset)*900.f+(opponent->GetMovement()-trainingPlayer->GetMovement())*65.f).GetLength()),other->PhysicalRigBusy())){
+    referee->PhysicalFoul(opponent,trainingPlayer,other->PhysicalRigBusy()?1.7f:1.1f);
+    trainingGrip=false;trainingGripBlocked=true;physicalGripOpponent=nullptr;return;
+  }
   if(trainingGrip && (!gripKey || busy || distance>1.08f || gap>.23f || trainingGripEscape>=1.f)){
     trainingGrip=false;trainingGripBlocked=gripKey;physicalGripOpponent=nullptr;
     printf("PHYSICAL_MATCH_GRIP t=%lu state=release reason=%s\n",actualTime_ms,!gripKey?"button":busy?"fall":trainingGripEscape>=1?"escaped":"reach");
@@ -72,6 +85,56 @@ void Match::ProcessPlayerMatchContact(){
     other->SetPhysicalGrip(shirt,-force);human->SetPhysicalTraction(force);other->SetPhysicalTraction(-force);
     human->AddPhysicalImpulse(force*.01f,Vector3(0,0,.24f));other->AddPhysicalImpulse(-force*.01f,Vector3(0,0,.24f));
     if(actualTime_ms%100==0)printf("PHYSICAL_MATCH_GRIP_FORCE t=%lu force=%.5f reaction=%.5f distance=%.5f escape=%.5f\n",actualTime_ms,force.GetLength(),force.GetLength(),distance,trainingGripEscape);
+  }
+  // The CPU uses the same reach-limited hands, shirt force, reciprocal
+  // traction, protection and referee as the controlled player.
+  std::set<int> occupied;
+  if(trainingGrip){occupied.insert(trainingPlayer->GetID());occupied.insert(opponent->GetID());}
+  for(auto *actor:actors){
+    if(actor==trainingPlayer || actor->GetFormationEntry().role==e_PlayerRole_GK || occupied.count(actor->GetID()))continue;
+    auto *body=actor->GetHumanoid();if(body->PhysicalRigBusy())continue;
+    auto &hold=physicalAIHolds[actor->GetID()];Player *victim=hold.victim;
+    if(!victim){
+      float closest=.95f;
+      for(auto *candidate:actors)if(candidate->GetTeamID()!=actor->GetTeamID() && !occupied.count(candidate->GetID())){
+        const float gap=(candidate->GetPosition()-actor->GetPosition()).Get2D().GetLength();
+        if(gap<closest){closest=gap;victim=candidate;}
+      }
+    }
+    if(!victim)continue;
+    auto *target=victim->GetHumanoid();const Vector3 delta=victim->GetPosition()-actor->GetPosition();
+    const float d=delta.Get2D().GetLength();
+    const bool possession=actor->HasPossession() && (ball->Predict(0)-actor->GetPosition()).Get2D().GetLength()<1.4f;
+    const bool carrier=victim->HasPossession() && (ball->Predict(0)-victim->GetPosition()).Get2D().GetLength()<1.4f;
+    if(possession && d<.95f)body->SetPhysicalShield(true);
+    const bool laboratory=GetConfiguration()->GetBool("training_physical_lab",false)&&events.GetKeyboardState(SDLK_b)&&victim==trainingPlayer;
+    const bool reaching=carrier && ((actualTime_ms/1000+actor->GetID()*7)%17==0 || laboratory);
+    if(reaching || hold.victim)body->SetPhysicalShield(true);
+    const Vector3 shirt=target->GetPhysicalShirtPoint(actor->GetPosition());
+    if((possession || reaching || hold.victim) && d<.95f)body->SetPhysicalHandTarget(shirt,true);
+    const float hand=body->PhysicalHandDistance(shirt);
+    if(laboratory && actualTime_ms%100==0)
+      printf("PHYSICAL_AI_REACH t=%lu actor=%d victim=%d distance=%.5f carrier=%d hand_gap=%.5f function=%d\n",actualTime_ms,actor->GetID(),victim->GetID(),d,carrier,hand,int(actor->GetCurrentFunctionType()));
+    if(!hold.victim && reaching && actualTime_ms>=hold.cooldown && d<.85f && hand<.10f && !target->PhysicalRigBusy()){
+      hold.victim=victim;hold.offset=delta;hold.started=actualTime_ms;
+      printf("PHYSICAL_AI_GRIP t=%lu actor=%d victim=%d state=begin gap=%.5f\n",actualTime_ms,actor->GetID(),victim->GetID(),hand);
+    }
+    if(!hold.victim)continue;
+    const float age=(actualTime_ms-hold.started)*.001f;
+    Vector3 force=(delta-hold.offset)*900.f+(victim->GetMovement()-actor->GetMovement())*65.f;
+    if(force.GetLength()>180)force=force.GetNormalized(0)*180;
+    if(football_rules::excessiveHold(age,force.GetLength(),target->PhysicalRigBusy())){
+      referee->PhysicalFoul(victim,actor,target->PhysicalRigBusy()?1.7f:1.1f);
+      hold.victim=nullptr;hold.cooldown=actualTime_ms+7000;return;
+    }
+    if(d>1.08f || hand>.23f || target->PhysicalRigBusy() || age>1.4f || (!reaching && age>.7f)){
+      printf("PHYSICAL_AI_GRIP t=%lu actor=%d victim=%d state=release age=%.4f\n",actualTime_ms,actor->GetID(),victim->GetID(),age);
+      hold.victim=nullptr;hold.cooldown=actualTime_ms+5000;continue;
+    }
+    body->SetPhysicalTraction(force);target->SetPhysicalGrip(shirt,-force);target->SetPhysicalTraction(-force);
+    body->AddPhysicalImpulse(force*.01f,Vector3(0,0,.24f));target->AddPhysicalImpulse(-force*.01f,Vector3(0,0,.24f));
+    occupied.insert(actor->GetID());occupied.insert(victim->GetID());
+    if(actualTime_ms%100==0 || (laboratory && actualTime_ms%20==0))printf("PHYSICAL_AI_GRIP_FORCE t=%lu actor=%d victim=%d force=%.4f age=%.4f gap=%.5f\n",actualTime_ms,actor->GetID(),victim->GetID(),force.GetLength(),age,hand);
   }
   if(actualTime_ms%100==0 && GetConfiguration()->GetBool("training_telemetry",false))
     printf("PHYSICAL_MATCH_CONTACT t=%lu opponent=%d distance=%.4f shield=%d reaching=%d grip=%d hand_gap=%.5f\n",actualTime_ms,opponent->GetID(),distance,shield?1:0,gripKey?1:0,trainingGrip?1:0,gap);

@@ -17,7 +17,7 @@ def events(text, prefix):
 
 
 def physical_frames(game):
-    return [json.loads(line[len('PHYSICAL_RIG_FRAME '):]) for line in game.log.read_text().splitlines()
+    return [json.loads(line[len('PHYSICAL_RIG_FRAME '):]) for line in game.read_log().splitlines()
             if line.startswith('PHYSICAL_RIG_FRAME ')]
 
 
@@ -56,7 +56,7 @@ def main():
             if args.match:
                 game.advance(2500)
                 for _ in range(40):
-                    frames = [json.loads(line[19:]) for line in game.log.read_text().splitlines()
+                    frames = [json.loads(line[19:]) for line in game.read_log().splitlines()
                               if line.startswith('PLAYER_MATCH_FRAME ')]
                     frame = frames[-1]
                     actor = next(p for p in frame['players'] if p['human'])
@@ -67,7 +67,7 @@ def main():
                     game.pad(dx / size, -dy / size, sprint=True)
                     game.advance(400)
                 game.pad(0, 0)
-                log = game.log.read_text()
+                log = game.read_log()
                 check('real native player collisions feed impulses into the controlled physical rig',
                       bool(events(log, 'PHYSICAL_RIG_IMPULSE')), events(log, 'PHYSICAL_RIG_IMPULSE')[:12])
                 check('CPU formation and player lock coexist with the physical actor',
@@ -76,11 +76,11 @@ def main():
                 screenshot(game, 'physical-contact-match')
             else:
                 game.reset()
-                start = len(game.log.read_text())
+                start = len(game.read_log())
                 origin = game.frames()[-1]
                 game.pad(0, -1)
                 frames = game.advance(3500)
-                log = game.log.read_text()[start:]
+                log = game.read_log()[start:]
                 travel = math.dist(origin['player'][:2], frames[-1]['player'][:2])
                 gap = max(math.dist(f['player'][:2], f['ball'][:2]) for f in frames)
                 check('native right-foot dribble still advances under the physical layer',
@@ -105,15 +105,15 @@ def main():
                       dict(peak_lean=max(f['lean'] for f in response)))
                 for cycle in range(2):
                     game.reset()
-                    start = len(game.log.read_text())
+                    start = len(game.read_log())
                     key(game, 'F9')
                     game.pad(0, -1, buttons=4)
                     game.advance(850)
                     game.pad(0, 0)
                     if cycle == 0:
                         screenshot(game, 'physical-fall')
-                    game.wait(lambda: 'PHYSICAL_RIG_RECOVERED ' in game.log.read_text()[start:], seconds=18)
-                    segment = game.log.read_text()[start:]
+                    game.wait(lambda: 'PHYSICAL_RIG_RECOVERED ' in game.read_log()[start:], seconds=18)
+                    segment = game.read_log()[start:]
                     states = events(segment, 'PHYSICAL_RIG_STATE')
                     check(f'fall {cycle + 1} completes falling, get-up and return to control without a crash',
                           {('0', '1'), ('1', '2'), ('2', '0')} <= {(e['from'], e['to']) for e in states}, states)
@@ -131,26 +131,26 @@ def main():
                       bool(falls) and min(f['root'][2] for f in falls) < .6,
                       dict(minimum_pelvis_m=min(f['root'][2] for f in falls)))
                 # Physical pose composition must keep the source hierarchy lengths.
-                rendered = events(game.log.read_text(), 'PHYSICAL_RIG_RENDER')
+                rendered = events(game.read_log(), 'PHYSICAL_RIG_RENDER')
                 check('rendered skeleton preserves its bone lengths', bool(rendered)
                       and max(float(e['length_error']) for e in rendered) < 1e-5,
                       dict(samples=len(rendered), maximum_error_m=max(float(e['length_error']) for e in rendered)))
                 game.reset()
                 key(game, 'F5')
                 game.advance(2600)
-                log = game.log.read_text()
+                log = game.read_log()
                 upper = [e for e in events(log, 'TRAINING_ACTION_TOUCH') if e.get('upper_layer') == '1']
                 check('standing chest reception still makes actual skin contact in the physical profile',
                       bool(upper), upper[-2:])
                 # Keyboard toggle compares profiles without repurposing Xbox controls.
                 key(game, 'F7')
-                start = len(game.log.read_text())
+                start = len(game.read_log())
                 game.advance(350)
-                check('F7 disables the experiment for comparison', 'PHYSICAL_RIG_TOGGLE enabled=0' in game.log.read_text()
-                      and not physical_frames_from_text(game.log.read_text()[start:]), {})
+                check('F7 disables the experiment for comparison', 'PHYSICAL_RIG_TOGGLE enabled=0' in game.read_log()
+                      and not physical_frames_from_text(game.read_log()[start:]), {})
                 key(game, 'F7')
                 game.advance(200)
-                check('F7 re-enables physical composition', 'PHYSICAL_RIG_TOGGLE enabled=1' in game.log.read_text(), {})
+                check('F7 re-enables physical composition', 'PHYSICAL_RIG_TOGGLE enabled=1' in game.read_log(), {})
                 game.reset()
                 key(game, 'F9')
                 game.advance(400)
@@ -167,7 +167,7 @@ def main():
                 check('first-person head look remains responsive', game.frames()[-1]['camera'] == 2
                       and abs(game.frames()[-1]['head_yaw']) > .1, game.frames()[-1])
                 screenshot(game, 'physical-first-person')
-            log = game.log.read_text()
+            log = game.read_log()
             skin = [e for e in events(log, 'TRAINING_SKIN_CONTACT') if e['accepted'] == '1']
             touches = events(log, 'TRAINING_ACTION_TOUCH')
             accepted = {e['t'] for e in skin}
