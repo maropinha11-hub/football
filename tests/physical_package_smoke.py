@@ -57,7 +57,7 @@ def main():
             check('Windows embeds contextual body actions and independent F1 comparison',all(token in exe
                   for token in [b'PHYSICAL_SITUATION_BANK',b'PHYSICAL_SITUATION_RENDER',b'PHYSICAL_SITUATION_TOGGLE']))
             check('F1 and honest procedural profile counts accompany both packages',all(token in full.read(prefix+'LEIA-FISICA.txt')
-                  for token in [b'F1:',b'3691 perfis procedurais',b'14.718 combinacoes',b'nao sao novas capturas']))
+                  for token in [b'F1:',b'6274 perfis procedurais',b'28.632 combinacoes',b'nao sao novas capturas']))
             catalog=full.read(prefix+'situational-motion-catalog.json')
             check('packaged catalog equals generated source and update manifest', catalog == patch.read('situational-motion-catalog.json')
                   and catalog == Path('config/situational-motion-catalog.json').read_bytes())

@@ -23,12 +23,19 @@ extern "C" bool foul(float age,float force,bool fall){return football_rules::exc
 extern "C" bool receive(float facing,float speed,float distance){return football_rules::rearReception(facing,speed,distance);}
 extern "C" void tackle(bool sliding,float speed,bool behind,bool ballFirst,float *out){auto t=football_rules::tackle(sliding,speed,behind,ballFirst);out[0]=t.impulse;out[1]=t.fall;out[2]=t.foul;out[3]=t.severity;}
 extern "C" float load(float p,float s,float t,bool h){return football_rules::strikeLoad(p,s,t,h);}
+extern "C" float cut(float speed,float request,float dot){return football_rules::cutImpulse(speed,request,dot);}
+extern "C" bool reception(float gap,float height,float closing,float speed,bool free){return football_rules::incomingReception(gap,height,closing,speed,free);}
+extern "C" bool heel(float face,float speed,float power,float pressure,float own,unsigned long elapsed){return football_rules::rareHeel(face,speed,power,pressure,own,elapsed);}
+extern "C" float angle(float goal,float ball,float defender){return football_keeper::closeAngleDepth(goal,ball,defender);}
+extern "C" int circulate(float age,float outlet){football_tactics::Situation s;s.settled=true;s.possessionSeconds=age;s.outletOdds=outlet;return int(football_tactics::choose(s));}
 extern "C" int tactic(float own,float goal,float width,float pressure,float outlet,float cross,float shot,float ret,bool defender,bool box,bool runner,bool settled){football_tactics::Situation s;s.ownGoal=own;s.goal=goal;s.width=width;s.pressureDistance=pressure;s.outletOdds=outlet;s.crossOdds=cross;s.shotOdds=shot;s.returnOdds=ret;s.defender=defender;s.boxReceiver=box;s.returnRunner=runner;s.settled=settled;return int(football_tactics::choose(s));}
 extern "C" float request(int type,float odds,float speed,float forward,float ground,float range,float space){return football_tactics::requestScore(type,odds,speed,forward,ground,range,space);}
 extern "C" bool crossing(float *a,float *b,float side,float *y){return football_keeper::goalCrossing({{a[0],a[1],a[2]}},{{b[0],b[1],b[2]}},side,52.5f,3.8f,2.55f,*y);}
 '''
   subprocess.run(['g++','-std=c++14','-O2','-shared','-fPIC','-I'+str(ROOT/'src'),'-x','c++','-','-o',str(library)],input=source,text=True,check=True)
   cls.lib=C.CDLL(str(library));f=C.c_float;b=C.c_bool;fp=C.POINTER(f)
+  for name,args,result in [('cut',[f]*3,f),('reception',[f]*4+[b],b),('heel',[f]*5+[C.c_ulong],b),('angle',[f]*3,f),('circulate',[f]*2,C.c_int)]:
+   fn=getattr(cls.lib,name);fn.argtypes=args;fn.restype=result
   for name,args,result in [('surface',[f,f,f,fp],None),('collide',[fp,fp,f,f,fp],None),('foul',[f,f,b],b),('receive',[f,f,f],b),('tackle',[b,f,b,b,fp],None),('load',[f,f,f,b],f),('tactic',[f]*8+[b]*4,C.c_int),('request',[C.c_int]+[f]*6,f),('crossing',[fp,fp,f,fp],b)]:
    fn=getattr(cls.lib,name);fn.argtypes=args;fn.restype=result
  @classmethod
@@ -44,6 +51,21 @@ extern "C" bool crossing(float *a,float *b,float side,float *y){return football_
    s=self.field(x,y,.65);self.assertEqual(s,self.field(x,y,.65));heights.append(s[0]);self.assertTrue(0<=s[0]<.0101);self.assertLess(math.hypot(*s[1:3]),.1)
    self.assertTrue(.86<s[3]<=1 and .85<s[4]<1.15)
   self.assertGreater(max(heights)-min(heights),.006)
+ def test_cut_loading_requires_speed_and_a_real_stop_or_reversal(self):
+  self.assertEqual(self.lib.cut(4,4,-1),0);self.assertEqual(self.lib.cut(8,8,1),0)
+  self.assertGreater(self.lib.cut(8,8,-1),90);self.assertGreater(self.lib.cut(8,0,0),60)
+  self.assertLessEqual(self.lib.cut(20,8,-1),140)
+ def test_reception_requires_a_reachable_free_arrival(self):
+  self.assertTrue(self.lib.reception(.4,.12,6,6,True));self.assertTrue(self.lib.reception(.3,1.6,9,9,True))
+  for args in [(1.5,1,6,6,True),(.4,3,6,6,True),(.4,1,-1,6,True),(.4,1,6,26,True),(.4,1,6,6,False)]:self.assertFalse(self.lib.reception(*args))
+ def test_heel_is_reserved_for_rare_low_power_emergencies_far_from_own_goal(self):
+  self.assertTrue(self.lib.heel(-1,1,.3,.4,40,31000))
+  for args in [(-1,1,.3,.4,40,1000),(-1,1,.3,.4,10,31000),(-1,1,.9,.4,40,31000),(-1,1,.3,4,40,31000),(1,1,.3,.4,40,31000)]:self.assertFalse(self.lib.heel(*args))
+ def test_keeper_closes_one_on_one_but_respects_cover_and_loose_ball(self):
+  self.assertGreater(self.lib.angle(16,.6,8),5)
+  self.assertEqual(self.lib.angle(16,.6,1),0);self.assertEqual(self.lib.angle(16,6,8),0);self.assertEqual(self.lib.angle(32,.6,8),0)
+ def test_circulation_requires_a_completed_settled_possession_and_safe_outlet(self):
+  self.assertEqual(self.lib.circulate(.9,.9),6);self.assertEqual(self.lib.circulate(.1,.9),0);self.assertEqual(self.lib.circulate(.9,.4),0)
  def test_surface_normals_match_the_actual_height(self):
   for x,y in [(i*.43,j*.37)for i in range(-3,4)for j in range(-3,4)]:
    s=self.field(x,y,.65);eps=.0005

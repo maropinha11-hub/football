@@ -349,6 +349,12 @@ class Match {
     Gui2TacticsDebug *tacticsDebug;
     Gui2Caption *messageCaption;
     unsigned long messageCaptionRemoveTime_ms;
+    // Text rendering owns shared font state. Simulation publishes plain data;
+    // only the graphics phase may redraw captions, including after a restart.
+    std::string messageText,buf_messageText,fetchedbuf_messageText;
+    unsigned long messageSerial=0,buf_messageSerial=0,fetchedbuf_messageSerial=0,renderedMessageSerial=0;
+    unsigned long buf_messageRemoveTime=0,fetchedbuf_messageRemoveTime=0;
+    int buf_goalCount[2]={0,0},fetchedbuf_goalCount[2]={0,0},renderedGoalCount[2]={-1,-1};
 
     mutable Lockable<unsigned long> iterations;
     TaskSequenceInfo gameSequenceInfo;

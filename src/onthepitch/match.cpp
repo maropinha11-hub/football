@@ -624,10 +624,7 @@ void Match::UpdateControllerSetup() {
 }
 
 void Match::SpamMessage(const std::string &msg, int time_ms) {
-  messageCaption->SetCaption(msg);
-  float w = messageCaption->GetTextWidthPercent();
-  messageCaption->SetPosition(50 - w * 0.5f, 5);
-  messageCaption->Show();
+  messageText=msg;++messageSerial;
   messageCaptionRemoveTime_ms = actualTime_ms + time_ms;
 }
 
@@ -1023,14 +1020,12 @@ void Match::Process() {
     if (IsInPlay()) {
       if (t1goal) {
         matchData->SetGoalCount(teams[1]->GetID(), matchData->GetGoalCount(1) + 1);
-        scoreboard->SetGoalCount(1, matchData->GetGoalCount(1));
         goalScored = true;
         lastGoalTeamID = teams[1]->GetID();
         teams[1]->GetController()->UpdateTactics();
       }
       if (t2goal) {
         matchData->SetGoalCount(teams[0]->GetID(), matchData->GetGoalCount(0) + 1);
-        scoreboard->SetGoalCount(0, matchData->GetGoalCount(0));
         goalScored = true;
         lastGoalTeamID = teams[0]->GetID();
         teams[0]->GetController()->UpdateTactics();
@@ -1192,6 +1187,9 @@ bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& re
 }
 
 void Match::PreparePutBuffers() {
+  buf_messageText=messageText;buf_messageSerial=messageSerial;
+  buf_messageRemoveTime=messageCaptionRemoveTime_ms;
+  for(int side=0;side<2;++side)buf_goalCount[side]=matchData->GetGoalCount(side);
 
   gameSequenceInfo = GetScheduler()->GetTaskSequenceInfo("game");
   unsigned long time_ms = EnvironmentManager::GetInstance().GetTime_ms() - gameSequenceInfo.startTime_ms;
@@ -1245,6 +1243,9 @@ void Match::FetchPutBuffers() {
 
   fetchedbuf_matchTime_ms = buf_matchTime_ms;
   fetchedbuf_actualTime_ms = buf_actualTime_ms;
+  fetchedbuf_messageText=buf_messageText;fetchedbuf_messageSerial=buf_messageSerial;
+  fetchedbuf_messageRemoveTime=buf_messageRemoveTime;
+  for(int side=0;side<2;++side)fetchedbuf_goalCount[side]=buf_goalCount[side];
   if (pes3Preview) pes3Preview->fetch();
 
   fetchedbuf_cameraOrientation = buf_cameraOrientation.GetValue(putTime_ms);
@@ -1263,6 +1264,18 @@ void Match::FetchPutBuffers() {
 }
 
 void Match::Put() {
+  // SDL_ttf/FreeType font faces are shared with the clock captions. Redrawing
+  // messages or goals on the simulation thread races those graphics calls.
+  if(renderedMessageSerial!=fetchedbuf_messageSerial){
+    messageCaption->SetCaption(fetchedbuf_messageText);
+    const float width=messageCaption->GetTextWidthPercent();
+    messageCaption->SetPosition(50-width*.5f,5);messageCaption->Show();
+    renderedMessageSerial=fetchedbuf_messageSerial;
+  }
+  if(fetchedbuf_messageRemoveTime<=fetchedbuf_actualTime_ms)messageCaption->Hide();
+  for(int side=0;side<2;++side)if(renderedGoalCount[side]!=fetchedbuf_goalCount[side]){
+    scoreboard->SetGoalCount(side,fetchedbuf_goalCount[side]);renderedGoalCount[side]=fetchedbuf_goalCount[side];
+  }
 
   if (GetIterations() < 2) return; // no processes done yet (todo: this is not the correct way to measure that :p)
 
@@ -1373,7 +1386,6 @@ void Match::Put() {
       scoreboard->SetTimeStr(timeStr);
     //}
 
-    if (messageCaptionRemoveTime_ms <= fetchedbuf_actualTime_ms) messageCaption->Hide();
 
 
     // radar

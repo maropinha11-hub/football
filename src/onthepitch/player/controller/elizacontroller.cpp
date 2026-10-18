@@ -19,6 +19,7 @@
 
 #include "elizacontroller.hpp"
 #include "../../tactical_choices.hpp"
+#include "../../physical_match_rules.hpp"
 
 #include <cmath>
 
@@ -312,6 +313,7 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
     if (boundForGoal) manualMovement = true;
     if (CastPlayer() != match->GetDesignatedPossessionPlayer()) manualMovement = true;
     goalieStrategy->RequestInput(keeperMentalImage, manualMovementDirection, manualMovementVelocityFloat);
+    if(PlayerMatchEnabled())manualMovement=true;
 
     //if (boundForGoal && hasUniquePossession) printf("has unique possession, so no deflect anims (poss: %f)\n", possessionAmount);
     if (!hasUniquePossession || possessionAmount < 3.4f) {
@@ -815,6 +817,17 @@ Vector3 ElizaController::GetSupportPosition_ForceField(const MentalImage *mental
 
   Vector3 forceFieldPosition = currentPos + AI_GetForceFieldMovement(forceField, currentPos, 7);//8);
 
+  if(PlayerMatchEnabled()&&team->HasPossession()){
+    const Vector3 ball=match->GetBall()->Predict(400);
+    const auto role=CastPlayer()->GetDynamicFormationEntry().role;
+    if(std::fabs(ball.coords[1])>16.f&&ball.coords[0]*(-team->GetSide())>pitchHalfW-30.f&&
+       (role==e_PlayerRole_CF||role==e_PlayerRole_AM)){
+      const float lane=(player->GetID()%2?1.f:-1.f)*(role==e_PlayerRole_CF?3.5f:7.f);
+      const Vector3 run((-team->GetSide())*(pitchHalfW-(role==e_PlayerRole_CF?8.f:13.f)),lane,0);
+      forceFieldPosition=forceFieldPosition*.45f+run*.55f;
+    }
+  }
+
   float margin = 0.08f;
   if (forceNoOffside) if (forceFieldPosition.coords[0] * -team->GetSide() > (offsideX * -team->GetSide()) - margin) forceFieldPosition.coords[0] = offsideX - (margin * -team->GetSide());
 
@@ -832,6 +845,22 @@ void ElizaController::Reset() {
 void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQueue, Vector3 &rawInputDirection, float &rawInputVelocityFloat) {
 
   turnForPass=false;
+  if(PlayerMatchEnabled()){
+    const Vector3 delta=match->GetBall()->Predict(0)-player->GetPosition();
+    const Vector3 relative=match->GetBall()->GetMovement()-player->GetMovement();
+    const float finishRange=(player->GetPosition()-Vector3(-team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();
+    const float finishHeight=match->GetBall()->Predict(150).coords[2];
+    const bool aerialFinish=finishRange<18.f&&finishHeight>.8f&&finishHeight<2.6f;
+    if((match->GetLastTouchPlayer()!=player||CastPlayer()->GetLastTouchType()==e_TouchType_Accidental)&&
+       !aerialFinish&&relative.GetLength()>2.8f&&delta.Get2D().GetLength()<4.f&&
+       (match->GetBall()->Predict(300)-player->GetPosition()-player->GetMovement()*.3f).Get2D().GetLength()<delta.Get2D().GetLength()){
+      // Acquire the pass before distributing it. Proximity-based possession
+      // statistics alone are not proof of a completed reception. A reachable
+      // attacking aerial opportunity keeps the native first-time finish/pass
+      // options instead of always being converted into a chest trap.
+      _TrapCommand(commandQueue,false,false);return;
+    }
+  }
   float oneTouchIsHard = 0.0f;
   float movementDiff = NormalizedClamp((match->GetBall()->GetMovement() - CastPlayer()->GetMovement()).GetLength(), 0.0f, 10.0f);
   oneTouchIsHard = movementDiff - CastPlayer()->GetStat("technical_shortpass") * movementDiff * 0.8f;
@@ -975,11 +1004,16 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
     } // !self
   }
 
-  if(PlayerMatchEnabled() && CastPlayer()->GetPossessionDuration_ms()>350 && match->GetBall()->Predict(0).coords[2]<.55f){
+  // A confirmed quick possession can already offer a safe defensive outlet.
+  // Waiting 350ms skipped this selector whenever the native pass had started
+  // sooner. Incoming fast balls are still acquired above; circulation retains
+  // its own settled-possession requirement in choose().
+  if(PlayerMatchEnabled() && hasPossession && match->GetBall()->Predict(0).coords[2]<.55f){
     using namespace football_tactics;
     Situation state;const Vector3 p=player->GetPosition(),goal(-team->GetSide()*pitchHalfW,0,0);
     state.ownGoal=(p-Vector3(team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();state.goal=(goal-p).Get2D().GetLength();state.width=std::fabs(p.coords[1]);
     state.defender=AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role)<.35f;state.settled=hasPossession;
+    state.possessionSeconds=CastPlayer()->GetPossessionDuration_ms()*.001f;
     for(const auto &opp:opponentPlayerImages)state.pressureDistance=std::min(state.pressureDistance,(opp.position-p).Get2D().GetLength());
     Player *outlet=nullptr,*box=nullptr;
     float outletRating=-1;
@@ -1006,6 +1040,7 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
     state.shotOdds=_GetPassingOdds(goal,e_FunctionType_Shot,opponentPlayerImages,3.f);
     const Choice choice=choose(state);PlayerCommandQueue preferred;
     if(choice==Choice::BuildOut && outlet)_AddPass(preferred,outlet,e_FunctionType_ShortPass);
+    if(choice==Choice::Circulate && outlet)_AddPass(preferred,outlet,e_FunctionType_ShortPass);
     if(choice==Choice::Combination && runner)_AddPass(preferred,runner,e_FunctionType_ShortPass);
     if(choice==Choice::Clearance)_AddPanicPass(preferred);
     if(choice==Choice::Cross && box)_AddPass(preferred,box,e_FunctionType_HighPass);
@@ -1018,7 +1053,8 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
     // A safe explicit human request remains first. Other contextual options
     // precede the original alternatives, which remain available if reach fails.
     if(requestedPass<0)commandQueue.insert(commandQueue.begin(),preferred.begin(),preferred.end());
-    if(GetConfiguration()->GetBool("training_telemetry",false) && (match->GetActualTime_ms()+player->GetID()*10)%200==0)
+    if(GetConfiguration()->GetBool("training_telemetry",false) &&
+       (choice!=Choice::Native||(match->GetActualTime_ms()+player->GetID()*10)%200==0))
       printf("PLAYER_MATCH_TACTIC t=%lu actor=%d choice=%s own_goal=%.3f goal=%.3f pressure=%.3f outlet=%.4f cross=%.4f shot=%.4f options=%zu\n",match->GetActualTime_ms(),player->GetID(),name(choice),state.ownGoal,state.goal,state.pressureDistance,state.outletOdds,state.crossOdds,state.shotOdds,preferred.size());
   }
 
@@ -1075,7 +1111,12 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
 
   e_Velocity enumVelocity = e_Velocity_Idle;
   AI_GetBestDribbleMovement(match, player->GetID(), _mentalImage, rawInputDirection, rawInputVelocityFloat, team->GetTeamData()->GetTactics());
-  if(turnForPass && commandQueue.empty()){rawInputDirection=passFacing;rawInputVelocityFloat=.8f;}
+  if(PlayerMatchEnabled()&&hasPossession){
+    float pressure=100;for(const auto &opponent:opponentPlayerImages)pressure=std::min(pressure,(opponent.position-player->GetPosition()).Get2D().GetLength());
+    const float goalRange=(player->GetPosition()-Vector3(-team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();
+    if(pressure>1.8f&&goalRange>24.f)rawInputVelocityFloat=std::min(rawInputVelocityFloat,walkVelocity+.5f);
+  }
+  if(turnForPass){rawInputDirection=passFacing;rawInputVelocityFloat=.8f;}
   if(PlayerMatchEnabled() && GetConfiguration()->GetBool("training_telemetry",false) &&
       (match->GetActualTime_ms()+player->GetID()*10)%100==0) {
     printf("PLAYER_MATCH_AI t=%lu actor=%d team=%d desired_speed=%.3f choices=%zu request_target=%d request_odds=%.3f request_pass=%d\n",
@@ -1088,7 +1129,8 @@ void ElizaController::_AddPass(std::vector<PlayerCommand> &commandQueue, Player 
   if(PlayerMatchEnabled() && CastPlayer()->HasPossession() && (target->GetPosition()-player->GetPosition()).Get2D().GetNormalized(0).GetDotProduct(player->GetBodyDirectionVec())<-.25f){
     std::vector<Player*> opponents;match->GetTeam(abs(team->GetID()-1))->GetActivePlayers(opponents);
     float pressure=100;for(auto *opp:opponents)pressure=std::min(pressure,(opp->GetPosition()-player->GetPosition()).Get2D().GetLength());
-    if(pressure>1.2f){
+    const float ownGoal=(player->GetPosition()-Vector3(team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();
+    if(!football_rules::rareHeel(-1.f,player->GetMovement().GetLength(),.35f,pressure,ownGoal,match->GetActualTime_ms())){
       turnForPass=true;passFacing=(target->GetPosition()-player->GetPosition()).Get2D().GetNormalized(player->GetDirectionVec());
       if(GetConfiguration()->GetBool("training_telemetry",false) && match->GetActualTime_ms()%200==0)
         printf("PLAYER_MATCH_TURN_PASS t=%lu actor=%d target=%d pressure=%.4f\n",match->GetActualTime_ms(),player->GetID(),target->GetID(),pressure);

@@ -18,7 +18,7 @@ struct Context {
   float phase=0, contactPhase=.5f, difficulty=0;
   float trunkGain=1, armGain=1, followThroughGain=1;
   int supportSide=-1;
-  unsigned pattern=0; // Fifteen contextual curves; the catalog restricts eligibility per action.
+  unsigned pattern=0; // Thirty-two contextual curves; the catalog restricts eligibility per action.
   bool rightFoot=true, contactMade=false, preserveHead=true, enabled=true;
 };
 

@@ -25,6 +25,8 @@
 #include "../player.hpp"
 #include "../../team.hpp"
 #include "../../match.hpp"
+#include "../../keeper_trajectory.hpp"
+#include "../../physical_match_rules.hpp"
 
 #include "../../../main.hpp"
 
@@ -91,6 +93,14 @@ bool _PassFiddlingEnabled() {
 }
 
 void Humanoid::Process() {
+  if(physicalPendingCut.GetLength()>0){
+    const Vector3 demand=physicalPendingCut;physicalPendingCut=Vector3(0);
+    if(!PhysicalRigBusy()&&!UpperReceptionActive()&&(currentAnim->functionType==e_FunctionType_Movement||currentAnim->functionType==e_FunctionType_BallControl)){
+      interruptAnim=e_InterruptAnim_Trip;tripType=1;tripDirection=demand.GetNormalized(spatialState.bodyDirectionVec);
+      physicalStaggerUntil=match->GetActualTime_ms()+1800;
+      if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CUT_STEP t=%lu actor=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),demand.GetLength());
+    }
+  }
   if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);
@@ -453,7 +463,10 @@ void Humanoid::Process() {
       printf("TRAINING_ACTION_TOUCH t=%lu part=trunk function=3 z=%.4f upper_layer=1\n",match->GetActualTime_ms(),match->GetBall()->Predict(0).coords[2]);
   }
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
-  if (enableControlledBallCollisions && !UpperReceptionActive() && controlledBallCollision && currentAnim->touchFrame == -1 && physicalContact("")) {
+  // A physical actor needs an authored reception or a real impact response.
+  // This legacy wildcard silently cushioned any skin hit during idle/movement,
+  // before the swept contact code could transmit its momentum to the body.
+  if (enableControlledBallCollisions && !PhysicalRigEnabled() && !UpperReceptionActive() && controlledBallCollision && currentAnim->touchFrame == -1 && physicalContact("")) {
     if (player->GetDebug()) printf("HIT: controlledcollision\n");
     Vector3 currentBallVec = match->GetBall()->GetMovement();
     radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
@@ -1323,6 +1336,8 @@ float Humanoid::GetHasteFactor(bool considerOpponentProximity) const {
 
 bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInterruptAnim, bool preferPassAndShot) { // returns false on no applicable anim found
   assert(command.desiredDirection.coords[2] == 0.0f);
+  if(command.useDesiredMovement&&(command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl))
+    PhysicalDirectionChange(command.desiredDirection*command.desiredVelocityFloat);
 
 
   // optimizations
@@ -1520,6 +1535,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
+  if(dataSet.empty()&&PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
+     CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK&&!command.onlyDeflectAnimsThatPickupBall){
+    query.byIncomingVelocity=false;query.byIncomingBodyDirection=false;query.bySide=false;
+    anims->CrudeSelection(dataSet,query);
+  }
   if(dataSet.empty() && PhysicalRigEnabled() && command.desiredFunctionType==e_FunctionType_Trip && command.tripType==1){
     // Contacts can arrive between the native velocity/body-direction bins.
     // Keep the protective full-body reaction eligible and rank its entry
@@ -1917,6 +1937,14 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   }
 
   int selectedAnimID = -1;
+  if(UsesTrainingContacts()&&(command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||
+      command.desiredFunctionType==e_FunctionType_HighPass||command.desiredFunctionType==e_FunctionType_Shot)){
+    float pressure=100;std::vector<Player*> opponents;match->GetTeam(1-CastPlayer()->GetTeamID())->GetActivePlayers(opponents);
+    for(auto *opponent:opponents)pressure=std::min(pressure,(opponent->GetPosition()-spatialState.position).Get2D().GetLength());
+    const float ownGoal=(spatialState.position-Vector3(team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();
+    const bool rare=football_rules::rareHeel(-1.f,spatialState.floatVelocity,command.touchInfo.desiredPower,pressure,ownGoal,match->GetActualTime_ms()-physicalHeelTime);
+    if(!rare)dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("physical_heel")=="true";}),dataSet.end());
+  }
   RankMotionMatches(dataSet,command);
   std::vector<Vector3> positions_tmp;
   int touchFrame_tmp = -1;
@@ -1961,6 +1989,31 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
            command.desiredFunctionType == e_FunctionType_Deflect) {
     float hasteFactor = GetHasteFactor(false);
     selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
+    if(selectedAnimID<0&&PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
+       CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK&&match->GetActualTime_ms()>=physicalKeeperAttemptUntil&&
+       currentAnim->functionType!=e_FunctionType_Deflect&&!command.onlyDeflectAnimsThatPickupBall&&
+       match->GetBall()->GetMovement().GetLength()>5.f){
+      Vector3 previous=match->GetBall()->Predict(0);bool threatened=false;Vector3 crossing;
+      for(unsigned ms=20;ms<=900;ms+=20){const Vector3 next=match->GetBall()->Predict(ms);float y=0;
+        if(football_keeper::goalCrossing({{previous.coords[0],previous.coords[1],previous.coords[2]}},{{next.coords[0],next.coords[1],next.coords[2]}},team->GetSide(),pitchHalfW,3.8f,goalHeight+.11f,y)){
+          threatened=true;crossing=Vector3(team->GetSide()*pitchHalfW,y,next.coords[2]);break;
+        }previous=next;
+      }
+      float best=1e9f;Vector3 local=(crossing-spatialState.position).GetRotated2D(-spatialState.angle);
+      if(threatened)for(int id:dataSet){auto *clip=anims->GetAnim(id);
+        if(!clip->GetVariable("outgoing_retain_state").empty())continue;
+        auto ext=boost::static_pointer_cast<FootballAnimationExtension>(clip->GetExtension("football"));Vector3 point;int frame;
+        if(!ext||!ext->GetFirstTouch(point,frame))continue;
+        const float score=std::fabs(point.coords[0]-local.coords[0])+1.7f*std::fabs(point.coords[2]-local.coords[2]);
+        if(score<best){best=score;selectedAnimID=id;}
+      }
+      if(selectedAnimID>=0){
+        touchFrame_tmp=-1;fullActionSmuggle_tmp=Vector3(0);actionSmuggle_tmp=Vector3(0);
+        CalculatePhysicsVector(anims->GetAnim(selectedAnimID),false,Vector3(0),false,desiredBodyDirectionRel,positions_tmp,rotationSmuggle_tmp);
+        physicalKeeperAttemptUntil=match->GetActualTime_ms()+1800;
+        if(GetConfiguration()->GetBool("training_telemetry",false))printf("KEEPER_DIVE_ATTEMPT t=%lu actor=%d clip=%s contact=0\n",match->GetActualTime_ms(),player->GetID(),anims->GetAnim(selectedAnimID)->GetName().c_str());
+      }
+    }
     if(selectedAnimID<0 && command.desiredFunctionType==e_FunctionType_Interfere && PlayerMatchEnabled() &&
        player->GetExternalController() && static_cast<HumanController*>(player->GetExternalController())->GetActionMode()==1){
       // A manual poke is an attempt, including when the ball cannot be won.

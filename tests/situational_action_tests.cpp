@@ -160,7 +160,7 @@ int main(int argc,char **argv) {
   // here and keeps profile counts separate from genuinely checked poses.
   unsigned matrix=0;bool matrixSafe=true;float maximumBend=0,maximumShoulder=0;
   for(unsigned type=1;type<=5;++type)for(float turn:{-2.6f,0.f,2.6f})
-    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f})for(unsigned pattern=0;pattern<15;++pattern) {
+    for(float speed:{0.f,3.f,7.f})for(float phase:{.15f,.36f,.70f,.91f})for(float gain:{.75f,1.2f})for(unsigned pattern=0;pattern<32;++pattern) {
       Context variant=hard;variant.kind=ActionKind(type);variant.signedTurn=turn;variant.speed=speed;
       variant.pattern=pattern;variant.phase=phase;variant.trunkGain=variant.armGain=variant.followThroughGain=gain;
       variant.rightFoot=matrix%2==0;variant.supportSide=variant.rightFoot?-1:1;
@@ -175,8 +175,8 @@ int main(int argc,char **argv) {
       maximumBend=std::max(maximumBend,layer.metrics().torsoBend);
       maximumShoulder=std::max(maximumShoulder,layer.metrics().shoulderAmplitude);++matrix;
     }
-  check(matrix==5400 && matrixSafe && maximumBend<.42f && maximumShoulder<.49f,
-    "5400 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
+  check(matrix==11520 && matrixSafe && maximumBend<.42f && maximumShoulder<.49f,
+    "11520 native-source action contexts preserve exact lower-body contact and bounded finite upper-body poses");
   layer.reset();Context open=hard;open.pattern=0;open.signedTurn=1.3f;settle(layer,open);
   auto compact=base;layer.evaluate(open,bind,1,compact,{{0,0,.96f}});
   layer.reset();open.pattern=1;settle(layer,open);auto lateralPose=base;layer.evaluate(open,bind,1,lateralPose,{{0,0,.96f}});
@@ -185,21 +185,21 @@ int main(int argc,char **argv) {
     "compact, lateral opening and airborne patterns change actual torso axes instead of cloning a label");
   // Every family must change the pose itself at the same contextual input,
   // rather than supplying additional names for the compact response.
-  std::array<pes3::NativeRotations,15> families;
+  std::array<pes3::NativeRotations,32> families;
   Context family=c;family.speed=3;family.power=.5f;family.pressure=.4f;
   family.signedTurn=1;family.ball={{.3f,-.4f,-.25f}};family.difficulty=.6f;
   family.trunkGain=family.armGain=.85f;family.incoming={{4,7,-2}};
-  for(unsigned pattern=0;pattern<15;++pattern) {
+  for(unsigned pattern=0;pattern<32;++pattern) {
     family.pattern=pattern;layer.reset();settle(layer,family);families[pattern]=base;
     layer.evaluate(family,bind,1,families[pattern],{{0,0,.96f}});
   }
   bool distinct=true;float minimumFamilyDistance=10;
-  for(unsigned a=0;a<15;++a)for(unsigned b=a+1;b<15;++b) {
+  for(unsigned a=0;a<32;++a)for(unsigned b=a+1;b<32;++b) {
     float separation=0;for(unsigned bone:{1u,3u,4u,5u,6u})
       separation=std::max(separation,qdistance(families[a][bone],families[b][bone]));
     minimumFamilyDistance=std::min(minimumFamilyDistance,separation);distinct&=separation>.005f;
   }
-  check(distinct,"all fifteen situational families produce different connected body poses at identical input");
+  check(distinct,"all thirty-two situational families produce different connected body poses at identical input");
   Context impact=family;impact.pattern=0;impact.phase=impact.contactPhase;
   layer.reset();settle(layer,impact);
   check(layer.metrics().torsoAngle>.07f && layer.metrics().armsAngle>.10f,

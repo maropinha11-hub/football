@@ -97,6 +97,8 @@ void HumanoidBase::ResetPhysicalRig(){
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;buf_physicalRig.Clear();
   physicalSituationProfile=0;buf_situationState.Clear();
+  physicalCutUntil=physicalBallImpactTime=physicalKeeperAttemptUntil=0;physicalIntentTime=~0ul;
+  physicalPendingCut=Vector3(0);
   for(auto &buffer:buf_physicalAdditive)buffer.Clear();
   physicalGripForce=Vector3(0);physicalTraction=Vector3(0);physicalActionTime=physicalStaggerUntil=0;physicalPartnerPhase=0;physicalShield=false;physicalHandTargetActive=false;
 }
@@ -104,6 +106,30 @@ void HumanoidBase::PhysicalCollision(const Vector3 &change){
   if(!PhysicalRigEnabled() || match->GetActualTime_ms()<physicalCollisionTime || change.GetLength()<.5f)return;
   physicalCollisionTime=match->GetActualTime_ms()+220;
   AddPhysicalImpulse(change*football_physics::PhysicalRig::mass*.30f);
+}
+void HumanoidBase::PhysicalDirectionChange(const Vector3 &desired){
+  const auto now=match->GetActualTime_ms();
+  if(!PhysicalRigEnabled()||physicalIntentTime==now||now<physicalCutUntil||PhysicalRigBusy()||PhysicalStaggering()||UpperReceptionActive())return;
+  physicalIntentTime=now;
+  const float speed=spatialState.movement.Get2D().GetLength();
+  const float facing=spatialState.movement.GetNormalized(0).GetDotProduct(desired.GetNormalized(0));
+  const float load=football_rules::cutImpulse(speed,desired.GetLength(),facing);
+  if(load<25)return;
+  physicalCutUntil=now+1400;
+  AddPhysicalImpulse(spatialState.movement.GetNormalized(0)*load,Vector3(0,0,.38f));
+  if(load>=35)physicalPendingCut=spatialState.movement.GetNormalized(0)*load;
+  if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CUT t=%lu actor=%d speed=%.4f requested=%.4f facing=%.4f impulse=%.4f\n",now,player->GetID(),speed,desired.GetLength(),facing,load);
+  if(!PlayerMatchEnabled()||!static_cast<Player*>(player)->HasPossession())return;
+  std::vector<Player*> opponents;match->GetTeam(1-static_cast<Player*>(player)->GetTeamID())->GetActivePlayers(opponents);
+  for(auto *other:opponents){
+    auto *body=other->GetHumanoid();
+    if((other->GetPosition()-spatialState.position).Get2D().GetLength()>1.5f||other->GetMovement().GetLength()<4.f||
+       other->GetMovement().GetNormalized(0).GetDotProduct(spatialState.movement.GetNormalized(0))<.55f||now<body->physicalCutUntil)continue;
+    body->physicalCutUntil=now+1600;
+    body->AddPhysicalImpulse(other->GetMovement().GetNormalized(0)*std::min(100.f,load*.8f),Vector3(0,0,.35f));
+    if(load*.8f>=35)body->physicalPendingCut=other->GetMovement().GetNormalized(0)*std::min(100.f,load*.8f);
+    if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CUT_FOOTING t=%lu actor=%d carrier=%d impulse=%.4f\n",now,other->GetID(),player->GetID(),std::min(100.f,load*.8f));
+  }
 }
 void HumanoidBase::TogglePhysicalRig(){
   const bool enabled=!GetConfiguration()->GetBool("training_physical_rig",false);
@@ -194,7 +220,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
     !currentAnim->anim->GetVariable("outgoing_special_state").empty() ||
     !currentAnim->anim->GetVariable("incoming_retain_state").empty() ||
     !currentAnim->anim->GetVariable("outgoing_retain_state").empty();
-  if(nativeContact || special || type==e_FunctionType_Trip)context.enabled=false;
+  if((nativeContact&&!currentAnim->touchMade) || special || type==e_FunctionType_Trip)context.enabled=false;
   const unsigned now=std::min<unsigned>(currentAnim->frameNum,currentAnim->positions.size()-1);
   const unsigned at=std::min<unsigned>(std::max(0,currentAnim->touchFrame),currentAnim->positions.size()-1);
   const int remaining=std::max(0,currentAnim->touchFrame-currentAnim->frameNum);
@@ -238,11 +264,24 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   // Keep the accepted straight dribble intact. Contextual torso recruitment
   // is useful on cuts and contested touches, not on every ordinary foot tap.
   if(type==e_FunctionType_BallControl && context.kind==ActionKind::Control && turn<.18f && context.pressure<.4f)context.kind=ActionKind::None;
+  const bool bodyReaction=physicalBallImpactTime&&match->GetActualTime_ms()-physicalBallImpactTime<700&&
+    !input.action&&!input.upperReception&&!input.staggering;
+  if(bodyReaction){
+    context.kind=ActionKind::Control;context.incoming=point(inverseBody*physicalBallImpactVelocity);
+    context.ball=point(inverseBody*(physicalBallImpactPosition-contactPositions[0]));
+    context.phase=clamp((match->GetActualTime_ms()-physicalBallImpactTime+40)/740.f,0.f,1.f);
+    context.contactPhase=.12f;context.contactMade=true;context.power=clamp(physicalBallImpactVelocity.GetLength()/25.f,0.f,1.f);
+    context.difficulty=std::max(context.difficulty,context.power*.8f);context.preserveHead=context.power<.6f;
+  }
   if(context.kind!=ActionKind::None){
     const float height=ballLocal.coords[2]+.85f;
     unsigned pattern=0;
-    if(context.kind==ActionKind::Header && match->GetBall()->GetMovement().GetLength()>4.f)pattern=11;
-    else if(context.kind==ActionKind::Control && type==e_FunctionType_Trap)pattern=turn>.12f?10:9;
+    if(bodyReaction)pattern=physicalBallImpactPosition.coords[2]>1.1f?18:16;
+    else if(context.kind==ActionKind::Header)pattern=type==e_FunctionType_Trap?17:context.pressure>.4f?23:11;
+    else if(context.kind==ActionKind::Control && type==e_FunctionType_Trap)pattern=part.find("knee")!=std::string::npos||part.find("thigh")!=std::string::npos?16:part.find("shoulder")!=std::string::npos?15:height>1.15f?18:turn>.12f?26:22;
+    else if(context.kind==ActionKind::Pass&&turn>.2f)pattern=20;
+    else if(context.kind==ActionKind::Cross&&context.speed>3.f)pattern=24;
+    else if(context.kind==ActionKind::Shot&&context.power>.75f)pattern=21;
     else if((context.kind==ActionKind::Shot || context.kind==ActionKind::Pass || context.kind==ActionKind::Cross) && height>.45f)pattern=12;
     else if((context.kind==ActionKind::Shot || context.kind==ActionKind::Cross) && context.power>.75f)pattern=14;
     else if((context.kind==ActionKind::Pass || context.kind==ActionKind::Shot) && turn>.25f &&
@@ -255,6 +294,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
     else if(context.kind==ActionKind::Shot && context.power>.55f)pattern=3;
     else if(context.kind==ActionKind::Pass && std::fabs(context.signedTurn)>.35f)pattern=4;
     else if(std::fabs(context.signedTurn)>.40f)pattern=1;
+    if(pattern==0&&context.kind!=ActionKind::Control)pattern=28+unsigned(std::min(3.f,context.speed/2.f));
     const auto &profile=football_situations::profileFor(context.kind,std::max(context.power,context.difficulty),context.pressure,turn,reach,pattern);
     context.pattern=profile.pattern;
     physicalSituationProfile=profile.id;context.trunkGain=profile.trunkGain;context.armGain=profile.armGain;context.followThroughGain=profile.followThroughGain;
@@ -353,6 +393,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
 }
 
 void HumanoidBase::PhysicalActionContact(const Vector3 &incoming){
+  if(currentAnim->anim->GetVariable("physical_heel")=="true")physicalHeelTime=match->GetActualTime_ms();
   const bool pass=currentAnim->functionType==e_FunctionType_ShortPass || currentAnim->functionType==e_FunctionType_LongPass;
   const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
   const bool header=part=="head";

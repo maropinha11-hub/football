@@ -1,7 +1,12 @@
 #pragma once
 #include <array>
+#include <algorithm>
 #include <cmath>
 namespace football_keeper {
+inline float closeAngleDepth(float goalDistance,float attackerDistance,float defenderDistance){
+ if(!std::isfinite(goalDistance)||!std::isfinite(attackerDistance)||!std::isfinite(defenderDistance)||attackerDistance>1.6f||goalDistance>24||goalDistance<1||defenderDistance<3)return 0;
+ return std::max(1.5f,std::min(8.f,goalDistance*.43f));
+}
 inline bool goalCrossing(const std::array<float,3> &a,const std::array<float,3> &b,
                          float side,float line,float width,float height,float &y){
  const float before=a[0]*side-line,after=b[0]*side-line;

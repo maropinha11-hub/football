@@ -157,7 +157,7 @@ class CatalogSources(unittest.TestCase):
             expected = (catalogue.KIND_VALUES[profile["kind"]]*128+
                         profile["effort"]*27+profile["pressure"]*9+
                         profile["turn"]*3+profile["reach"])
-            self.assertEqual(profile["id"], expected*16+profile["pattern"])
+            self.assertEqual(profile["id"], expected*32+profile["pattern"])
             for field in ("trunkGain", "armGain", "followThroughGain"):
                 self.assertGreaterEqual(profile[field], .7)
                 self.assertLessEqual(profile[field], 1.2)

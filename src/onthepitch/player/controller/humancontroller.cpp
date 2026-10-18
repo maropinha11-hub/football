@@ -8,6 +8,8 @@
 #include "../../AIsupport/AIfunctions.hpp"
 
 #include "../../../main.hpp"
+#include "../../../hid/gamepad.hpp"
+#include "../../../managers/usereventmanager.hpp"
 
 HumanController::HumanController(Match *match, IHIDevice *hid) : PlayerController(match), hid(hid) {
   Reset();
@@ -35,6 +37,34 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   float rawInputVelocityFloat = 0;
   _GetHidInput(rawInputDirection, rawInputVelocityFloat);
   _SetInput(rawInputDirection, rawInputVelocityFloat);
+  Player *holdTarget=nullptr;
+  if(player->GetHumanoid()->PhysicalRigEnabled()&&actionMode!=2){
+    auto &events=UserEventManager::GetInstance();
+    bool hold=events.GetKeyboardState(SDLK_h);
+    if(hid->GetDeviceType()==e_HIDeviceType_Gamepad){
+      const int slot=static_cast<HIDGamepad*>(hid)->GetGamepadID();
+      hold=hold||events.GetControllerAxis(slot,SDL_CONTROLLER_AXIS_TRIGGERLEFT)>.35f;
+    }
+    if(hold){
+      std::vector<Player*> opponents;
+      if(!PlayerMatchEnabled()&&match->GetTrainingPartner())opponents.push_back(match->GetTrainingPartner());
+      else match->GetTeam(1-team->GetID())->GetActivePlayers(opponents);
+      float nearest=1.2f;
+      for(auto *other:opponents){
+        const float distance=(other->GetPosition()-player->GetPosition()).Get2D().GetLength();
+        if(distance<nearest){nearest=distance;holdTarget=other;}
+      }
+      if(holdTarget){
+        // The first-person camera's with-ball flag intentionally has wide
+        // hysteresis. Physical protection/holding needs the closer owner,
+        // including when a laboratory pass was just given to the partner.
+        const Vector3 ball=match->GetBall()->Predict(0);
+        const float mine=(ball-player->GetPosition()).Get2D().GetLength();
+        const float theirs=(ball-holdTarget->GetPosition()).Get2D().GetLength();
+        if(match->TrainingHasBall()&&mine<1.5f&&mine<theirs+.12f)holdTarget=nullptr;
+      }
+    }
+  }
 
 
   // clear buffer?
@@ -288,10 +318,10 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     // ball control?
     bool keepCurrentBodyDirection = false;
     // sidestep dribble disabled for now, too quirky: if (hid->GetButton(e_ButtonFunction_Dribble)) keepCurrentBodyDirection = true;
-    if(actionMode!=1)_BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
+    if(actionMode!=1&&!holdTarget)_BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
 
     // trap?
-    if(actionMode!=1)_TrapCommand(commandQueue, idleTurnToOpponentGoal, knockOn);
+    if(actionMode!=1&&!holdTarget)_TrapCommand(commandQueue, idleTurnToOpponentGoal, knockOn);
 
     // reload original input
     if (actionMode == 2) {
@@ -302,7 +332,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     // interfere?
     bool byAnyMeans = false;
     if (hid->GetButton(e_ButtonFunction_Pressure)) byAnyMeans = true;
-    if(actionMode!=2)_InterfereCommand(commandQueue, byAnyMeans);
+    if(actionMode!=2&&(!holdTarget||actionMode==1))_InterfereCommand(commandQueue, byAnyMeans);
   }
 
   // movement
@@ -408,6 +438,19 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   }
 
   if(player->GetHumanoid()->PhysicalRigEnabled()){
+    if(holdTarget&&!commandQueue.empty()){
+      auto &movement=commandQueue.back();
+      if(movement.desiredFunctionType==e_FunctionType_Movement){
+        // A deliberate hold must not chase a passing ball through the native
+        // reception magnet. Manual stick movement and physical traction still
+        // apply, while the torso follows the actual nearby shirt target.
+        movement.desiredDirection=rawInputDirection.GetNormalized(player->GetBodyDirectionVec());
+        movement.desiredVelocityFloat=rawInputVelocityFloat;
+        movement.useDesiredLookAt=true;movement.desiredLookAt=holdTarget->GetPosition().Get2D();
+        if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
+          printf("PHYSICAL_HOLD_STANCE t=%lu actor=%d target=%d manual_speed=%.4f\n",match->GetActualTime_ms(),player->GetID(),holdTarget->GetID(),rawInputVelocityFloat);
+      }
+    }
     if(actionMode==2 && !commandQueue.empty() && match->TrainingReceivingBall() &&
        hid->GetDirection().GetLength()<.05f && player->GetMovement().GetLength()<1.5f &&
        (match->GetBall()->Predict(0).coords[2]>1.2f || match->GetBall()->Predict(200).coords[2]>1.2f)){

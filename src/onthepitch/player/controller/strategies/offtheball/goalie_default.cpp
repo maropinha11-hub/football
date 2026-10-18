@@ -248,6 +248,19 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage *mentalImage, Vector3
         if(crowded)continue;
         targetPos=arrival.Get2D();maxVelocity=sprintVelocity;mode="claim";break;
       }
+      Player *attacker=controller->GetOppTeam()->GetDesignatedTeamPossessionPlayer();
+      if(attacker&&attacker->HasPossession()&&mentalImage->GetBallPrediction(100).coords[2]<.8f){
+        const Vector3 attack=attacker->GetPosition()+attacker->GetMovement()*.18f;
+        float cover=100;std::vector<Player*> mates;team->GetActivePlayers(mates);
+        for(auto *mate:mates)if(mate!=player)cover=std::min(cover,(mate->GetPosition()-attack).Get2D().GetLength());
+        const float range=(attack-goalPos).Get2D().GetLength();
+        const float depth=football_keeper::closeAngleDepth(range,(mentalImage->GetBallPrediction(0)-attacker->GetPosition()).Get2D().GetLength(),cover);
+        if(depth>0){
+          targetPos=goalPos+(attack-goalPos).Get2D().GetNormalized(Vector3(-side,0,0))*std::min(depth,std::max(.3f,range-.7f));
+          maxVelocity=sprintVelocity;mode="close_angle";
+          if(range<8.f&&(attack-player->GetPosition()).Get2D().GetLength()<3.f){targetPos=mentalImage->GetBallPrediction(180).Get2D();mode="smother";}
+        }
+      }
     }
     if(!std::isfinite(targetPos.coords[0])||!std::isfinite(targetPos.coords[1]))targetPos=goalPos-Vector3(side*.7f,0,0);
     if(GetConfiguration()->GetBool("training_telemetry",false))

@@ -73,8 +73,10 @@ try:
     key(g,'r');g.advance(2700);yaw=g.frames()[-1]['player_yaw'];g.pad(math.cos(yaw),-math.sin(yaw),sprint=True);g.advance(650 if button==2 else 0);yaw=g.frames()[-1]['player_yaw'];pre=[]
     if button==2:
      g.pad(math.cos(yaw),-math.sin(yaw),buttons=button,sprint=True);pre=g.advance(100)
-    g.keys(['Control_L','F2','F11'],True);g.advance(20);g.keys(['Control_L','F2','F11'],False)
-    start=len(g.read_log());g.pad(math.cos(yaw),-math.sin(yaw),buttons=button,sprint=True);attempt=pre+g.advance(1000);g.pad(0,0);g.advance(700);check(('standing bote'if button==1 else'sliding tackle')+' selects a native defensive motion',any(x['function']==(11 if button==1 else 13) for x in attempt),dict(functions=sorted({x['function']for x in attempt})))
+    # Capture before setup: telemetry acknowledgement may span a 100ms frame,
+    # during which the already-running native slide can legitimately hit.
+    start=len(g.read_log());g.keys(['Control_L','F2','F11'],True);g.advance(20);g.keys(['Control_L','F2','F11'],False)
+    g.pad(math.cos(yaw),-math.sin(yaw),buttons=button,sprint=True);attempt=pre+g.advance(1000);g.pad(0,0);g.advance(700);check(('standing bote'if button==1 else'sliding tackle')+' selects a native defensive motion',any(x['function']==(11 if button==1 else 13) for x in attempt),dict(functions=sorted({x['function']for x in attempt})))
     evidence+=ev(g,'PHYSICAL_TACKLE',start)
    if a.mode=='tackle':
     check('a late sliding contact trips an opponent through the articulated body',any(x['sliding']=='1' and x['fall']=='1' for x in evidence) and any(x['to']=='1' for x in ev(g,'PHYSICAL_RIG_STATE')),dict(tackles=evidence,states=ev(g,'PHYSICAL_RIG_STATE')))

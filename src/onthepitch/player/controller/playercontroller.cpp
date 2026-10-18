@@ -24,6 +24,21 @@
 #include "../../team.hpp"
 #include "../player.hpp"
 #include "../humanoid/humanoid_utils.hpp"
+#include "../../../main.hpp"
+
+namespace {
+bool imminentReception(Match *match,Player *player){
+  if(!TrainingEnabled()||match->GetBallRetainer())return false;
+  Player *last=match->GetLastTouchPlayer();
+  if(last==player&&player->GetLastTouchType()!=e_TouchType_Accidental)return false;
+  const Vector3 ball=match->GetBall()->Predict(0),offset=ball-player->GetPosition();
+  const Vector3 relative=match->GetBall()->GetMovement()-player->GetMovement();
+  const float time=clamp(-offset.Get2D().GetDotProduct(relative.Get2D())/std::max(.01f,relative.Get2D().GetSquaredLength()),.03f,.6f);
+  const Vector3 arrival=match->GetBall()->Predict(unsigned(time*1000))-player->GetPosition()-player->GetMovement()*time;
+  const bool free=!last||last->GetTeamID()==player->GetTeamID()||(last->GetPosition()-ball).Get2D().GetLength()>1.15f;
+  return football_rules::incomingReception(arrival.Get2D().GetLength(),arrival.coords[2],std::max(-offset.Get2D().GetNormalized(0).GetDotProduct(relative),-relative.coords[2]*.5f),relative.GetLength(),free);
+}
+}
 
 #include "../../AIsupport/mentalimage.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
@@ -278,6 +293,7 @@ void PlayerController::_SetPieceCommand(PlayerCommandQueue &commandQueue) {
 }
 
 void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, bool idleTurnToOpponentGoal, bool knockOn, bool stickyRunDirection, bool keepCurrentBodyDirection) {
+  const bool receiving=imminentReception(match,CastPlayer());
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
   if(TrainingEnabled() && !CastPlayer()->HasPossession()){
@@ -294,6 +310,7 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
 
   if (match->GetDesignatedPossessionPlayer() == player ||
       (team->GetDesignatedTeamPossessionPlayer() == player && CouldWinABallDuelLikeliness() >= 0.25f) ||
+      receiving ||
       (TrainingEnabled() && match->GetTrainingPlayer()==player && match->TrainingReceivingBall())) {
 
     PlayerCommand command;
@@ -334,19 +351,20 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
 }
 
 void PlayerController::_TrapCommand(PlayerCommandQueue &commandQueue, bool idleTurnToOpponentGoal, bool knockOn) {
-  if(TrainingEnabled() && !CastPlayer()->HasPossession()){
+  const bool receiving=imminentReception(match,CastPlayer());
+  if(TrainingEnabled() && !receiving && !CastPlayer()->HasPossession()){
     const Vector3 delta=(match->GetBall()->Predict(100)-player->GetPosition()).Get2D();
     if(!football_rules::rearReception(delta.GetNormalized(player->GetBodyDirectionVec()).GetDotProduct(player->GetBodyDirectionVec()),
         (match->GetBall()->GetMovement()-player->GetMovement()).GetLength(),delta.GetLength()))return;
   }
 
-  if (match->GetBall()->GetMovement().Get2D().GetLength() < 2.0f) return;// - CastPlayer()->GetMovement()).GetLength()
+  if (match->GetBall()->GetMovement().Get2D().GetLength() < 2.0f&&!receiving) return;
 
   if (match->GetBall()->Predict(200).GetDistance(player->GetPosition()) > ballDistanceOptimizeThreshold) return;
   if (match->GetBallRetainer() != 0) return;
 
-  if (!hasPossession && ((TrainingEnabled() && match->GetTrainingPlayer()==player && match->TrainingReceivingBall()) || match->GetDesignatedPossessionPlayer() == player ||
-                         (team->GetDesignatedTeamPossessionPlayer() == player && CastPlayer()->GetTimeNeededToGetToBall_optimistic_ms() < 1000 && oppTimeNeededToGetToBall > 400 && !oppTeamHasPossession && CouldWinABallDuelLikeliness() >= 0.5f))) {// opp time was 500 ms
+  if (receiving || (!hasPossession && ((TrainingEnabled() && match->GetTrainingPlayer()==player && match->TrainingReceivingBall()) || match->GetDesignatedPossessionPlayer() == player ||
+                         (team->GetDesignatedTeamPossessionPlayer() == player && CastPlayer()->GetTimeNeededToGetToBall_optimistic_ms() < 1000 && oppTimeNeededToGetToBall > 400 && !oppTeamHasPossession && CouldWinABallDuelLikeliness() >= 0.5f)))) {// opp time was 500 ms
 
     PlayerCommand command;
     command.desiredFunctionType = e_FunctionType_Trap;
@@ -370,6 +388,10 @@ void PlayerController::_TrapCommand(PlayerCommandQueue &commandQueue, bool idleT
 
     command.useDesiredLookAt = true;
     command.desiredLookAt = CastPlayer()->GetPosition() + CastPlayer()->GetMovement() * 0.3f + command.desiredDirection * 10.0f;
+    if(receiving && (!player->GetExternalController()||inputVelocityFloat<.1f))
+      command.desiredLookAt=match->GetBall()->Predict(50).Get2D();
+    if(receiving&&GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
+      printf("RECEPTION_REQUEST t=%lu actor=%d height=%.4f speed=%.4f\n",match->GetActualTime_ms(),player->GetID(),match->GetBall()->Predict(100).coords[2],match->GetBall()->GetMovement().GetLength());
 
     commandQueue.push_back(command);
   }

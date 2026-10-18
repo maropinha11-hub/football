@@ -132,6 +132,11 @@ void HumanoidBase::CaptureContactMesh() {
       Quaternion local[13],global[13];Vector3 positions[13],root;Quaternion unused;
       animation->GetKeyFrame("player",entry.first,unused,root);
       SampleContactAnimation(animation,float(entry.first),root,0,false,local,global,positions);
+      if(part.find("foot")!=std::string::npos&&(animation->GetAnimType()=="shortpass"||animation->GetAnimType()=="longpass"||animation->GetAnimType()=="highpass"||animation->GetAnimType()=="shot")){
+        const Vector3 direction=GetVectorFromString(animation->GetVariable("balldirection")).Get2D().GetNormalized(0);
+        const Vector3 forward=(global[0]*Vector3(0,-1,0)).Get2D().GetNormalized(0);
+        if(direction.GetDotProduct(forward)<-.55f)animation->SetVariable("physical_heel","true");
+      }
       if(animation->GetVariable("added_chest")=="true") {
         // Fold the authored pelvis rotation into the spine, just as the live
         // upper layer does. Bind against upright locomotion hips, not the
@@ -491,6 +496,12 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   contactPreviousBall=resolved;
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
+  if(PhysicalRigEnabled()&&(part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||part.find("knee")!=std::string::npos)){
+    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
+    const Vector3 impulse=(incoming-outgoing)*.43f;
+    if(-inward>14.f)AddPhysicalImpulse(impulse,point-contactPositions[0]);
+    if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());
+  }
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f actor=%d\n",
       match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength(),player->GetID());

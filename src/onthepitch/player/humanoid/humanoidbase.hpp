@@ -445,6 +445,10 @@ class HumanoidBase {
     std::vector<std::shared_ptr<football_physics::ShirtCloth>> shirtCloth;
     std::vector<unsigned long> shirtClothTime;
     unsigned long physicalActionTime=0;
+    unsigned long physicalCutUntil=0,physicalIntentTime=~0ul,physicalBallImpactTime=0,physicalKeeperAttemptUntil=0,physicalHeelTime=0;
+    Vector3 physicalBallImpactVelocity{0},physicalBallImpactPosition{0};
+    Vector3 physicalPendingCut{0};
+    void PhysicalDirectionChange(const Vector3 &desired);
     unsigned long physicalStaggerUntil=0;
     float physicalPartnerPhase=0;
     bool physicalShield=false;

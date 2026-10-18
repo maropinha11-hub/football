@@ -130,14 +130,15 @@ void Match::LaunchTrainingBall(int delivery) {
   auto &events=UserEventManager::GetInstance();
   const bool driven=delivery==1 && events.GetKeyboardState(SDLK_LSHIFT);
   const bool belly=delivery==1 && events.GetKeyboardState(SDLK_LCTRL);
-  const float flight=delivery==0?1.0f:delivery==1?(driven?.23f:.45f):1.15f;
+  const bool impact=driven&&belly;
+  const float flight=delivery==0?1.0f:delivery==1?(impact?.13f:driven?.23f:.45f):1.15f;
   const float offset=events.GetKeyboardState(SDLK_LSHIFT)?.65f:events.GetKeyboardState(SDLK_LCTRL)?-.65f:0.f;
   const Vector3 lateral=forward.GetRotated2D(-.5f*pi)*offset;
   Vector3 target=delivery==0 ? root+forward*.55f+lateral+Vector3(0,0,.11f) :
-    delivery==1 ? chest-Vector3(0,0,belly?.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
+    delivery==1 ? chest+Vector3(0,0,impact?0.f:belly?-.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
   const float roughness=GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0;
   if(delivery==0)target.coords[2]+=football_turf::sample(target.coords[0],target.coords[1],roughness).height;
-  const Vector3 origin=root+lateral+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
+  const Vector3 origin=root+(impact?Vector3(0):lateral)+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
     Vector3(0,0,delivery==0?.11f:delivery==1?1.35f:3.6f);
   ball->SetPosition(origin);
   Vector3 velocity=(target-origin)/flight;
@@ -475,7 +476,64 @@ void Match::ProcessPlayerMatchInput() {
   if(GetConfiguration()->GetBool("training_physical_lab",false) && IsInPlay() && !IsInSetPiece()){
     if(events.ConsumeKeyPress(SDLK_F4))LaunchTrainingBall(0);
     if(events.ConsumeKeyPress(SDLK_F5))LaunchTrainingBall(1);
-    if(events.ConsumeKeyPress(SDLK_F6))LaunchTrainingBall(2);
+    if(events.ConsumeKeyPress(SDLK_F6)){
+      if(!events.GetKeyboardState(SDLK_LCTRL))LaunchTrainingBall(2);
+      else if(events.GetKeyboardState(SDLK_LSHIFT)){
+        // Initial conditions only: the native CPU must still acquire the
+        // ball, evaluate the open lanes and execute its own pass/contact.
+        std::vector<Player*> mates,opponents;
+        teams[1-trainingPlayer->GetTeamID()]->GetActivePlayers(mates);
+        teams[trainingPlayer->GetTeamID()]->GetActivePlayers(opponents);
+        Player *carrier=nullptr;
+        for(auto *actor:mates)if(actor->GetFormationEntry().role==e_PlayerRole_CB){carrier=actor;break;}
+        if(carrier){
+          const float side=carrier->GetTeam()->GetSide();const Vector3 origin(side*30,0,0),goal(-side*pitchHalfW,0,0);
+          unsigned lane=0;
+          for(auto *actor:mates){
+            if(actor==carrier){actor->ResetPosition(origin,goal);continue;}
+            if(actor->GetFormationEntry().role==e_PlayerRole_GK){actor->ResetPosition(Vector3(side*(pitchHalfW-2),0,0),origin);continue;}
+            const float x=(lane%2?7.f:-8.f)+float(lane/4)*-4.f;
+            const float y=(lane%4<2?1.f:-1.f)*(9.f+float(lane/4)*6.f);
+            actor->ResetPosition(origin+Vector3(side*x,y,0),goal);++lane;
+          }
+          unsigned mark=0;
+          for(auto *actor:opponents){actor->ResetPosition(Vector3(-side*15,float(int(mark++%5)-2)*6,0),origin);}
+          SetBallRetainer(0);ball->SetPosition(origin+Vector3(-side*.45f,0,.11f));ball->SetMomentum(Vector3(0));
+          carrier->GetTeam()->SetLastTouchPlayer(carrier,e_TouchType_Intentional_Kicked);
+          printf("CIRCULATION_LAB_SETUP t=%lu actor=%d side=%.0f\n",actualTime_ms,carrier->GetID(),side);
+          SpamMessage("Saida curta livre | CPU decide e executa | R: reiniciar",4000);
+        }
+      }
+      else{
+        static unsigned nextKeeperTrial=0;const unsigned trial=nextKeeperTrial++%3;
+        Player *keeper=nullptr,*defender=nullptr;std::vector<Player*> opponents;teams[1-trainingPlayer->GetTeamID()]->GetActivePlayers(opponents);
+        for(auto *actor:opponents)if(actor->GetFormationEntry().role==e_PlayerRole_GK)keeper=actor;else defender=actor;
+        if(keeper){
+          const float side=keeper->GetTeam()->GetSide();const Vector3 goal(side*pitchHalfW,0,0),forward(side,0,0);
+          for(auto *actor:opponents)if(actor!=keeper)actor->ResetPosition(Vector3(side*15,actor->GetID()%2?20:-20,0),goal);
+          SetBallRetainer(0);ball->SetMomentum(Vector3(0));
+          if(trial==0){
+            trainingPlayer->ResetPosition(goal-forward*14,goal);keeper->ResetPosition(goal-forward*1.5f,goal-forward*20);
+            ball->SetPosition(trainingPlayer->GetPosition()+forward*.45f+Vector3(0,0,.11f));
+            trainingPlayer->GetTeam()->SetLastTouchPlayer(trainingPlayer,e_TouchType_Intentional_Kicked);
+          }else if(trial==1){
+            const Vector3 start=goal-forward*13+Vector3(0,-1.5f,.2f);
+            keeper->ResetPosition(goal-forward*.8f+Vector3(0,-2.5f,0),start);
+            trainingPlayer->ResetPosition(start.Get2D()-forward,goal);ball->SetPosition(start);
+            ball->SetMomentum(Vector3(side*13/.42f,5.05f/.42f,(2.12f+.5f*9.81f*.42f*.42f)/.42f));
+            trainingPlayer->GetTeam()->SetLastTouchPlayer(trainingPlayer,e_TouchType_Intentional_Kicked);
+          }else if(defender){
+            const Vector3 start=goal-forward*8+Vector3(0,.5f,.11f);
+            keeper->ResetPosition(goal-forward*2+Vector3(0,.5f,0),start);
+            trainingPlayer->ResetPosition(Vector3(0,-20,0),goal);
+            ball->SetPosition(start);ball->SetMomentum(forward*8);
+            defender->GetTeam()->SetLastTouchPlayer(defender,e_TouchType_Intentional_Kicked);
+          }
+          printf("KEEPER_LAB_SETUP t=%lu mode=%u actor=%d side=%.0f\n",actualTime_ms,trial,keeper->GetID(),side);
+          SpamMessage("Ensaio goleiro: cara a cara / angulo / recuo | Ctrl+F6: proximo",4000);
+        }
+      }
+    }
   }
   if(GetConfiguration()->GetBool("training_physical_lab",false))physicalLabInput(this,trainingPlayer,actualTime_ms);
   if(events.ConsumeKeyPress(SDLK_ESCAPE))EnvironmentManager::GetInstance().SignalQuit();
@@ -545,7 +603,7 @@ void Match::RestartPlayerMatch() {
   physicalGripOpponent=nullptr;physicalAIHolds.clear();trainingGrip=trainingGripBlocked=false;trainingGripEscape=0;
   pause=false;gameOver=false;inPlay=false;inSetPiece=false;goalScoredTimer=0;playerMatchPassUntil_ms=0;trainingKnockOnUntil_ms=0;trainingReceiving=false;
   SetMatchPhase(e_MatchPhase_PreMatch);matchTime_ms=0;
-  for(int side=0;side<2;++side) {matchData->SetGoalCount(side,0);scoreboard->SetGoalCount(side,0);}
+  for(int side=0;side<2;++side)matchData->SetGoalCount(side,0);
   ResetSituation(Vector3(0));referee->ResetForKickoff();
   trainingView.reset(0);trainingReceptionFacing=Vector3(1,0,0);trainingEyeInitialized=false;
   if(trainingPlayer->GetExternalController())trainingPlayer->GetExternalController()->Reset();

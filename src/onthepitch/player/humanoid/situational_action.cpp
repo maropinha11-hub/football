@@ -74,7 +74,7 @@ void ActionLayer::step(const Context &c,float dt) {
   // Preparation peaks before contact and unwinds into the follow-through. A
   // smooth start/end leaves the native clip responsible for its own timing.
   const float envelope=active?smooth(phase/.10f)*smooth((1-phase)/.15f):0;
-  const float hard=active?difficulty(c):metrics_.difficulty,load=.30f+.90f*hard;
+  const float hard=active?difficulty(c):metrics_.difficulty,load=.36f+.94f*hard;
   const float foot=c.rightFoot?1.f:-1.f;
   const float support=c.supportSide<0?-1.f:1.f;
   const float pressure=clamp(c.pressure,0,1);
@@ -95,7 +95,7 @@ void ActionLayer::step(const Context &c,float dt) {
   float type=1;
   if(c.kind==ActionKind::Shot)type=1.18f;
   if(c.kind==ActionKind::Cross)type=1.10f;
-  if(c.kind==ActionKind::Control)type=.55f;
+  if(c.kind==ActionKind::Control)type=.72f;
   std::array<Point,7> target{};
   const float effort=load*type*envelope;
   const float trunk=effort*clamp(c.trunkGain,0,1.25f);
@@ -127,12 +127,28 @@ void ActionLayer::step(const Context &c,float dt) {
   // supplies the gross action, and the anatomical constraint pass runs later.
   // Added abduction keeps the arms away from the torso instead of planting a
   // hand on an opponent or manufacturing a support force.
-  const float span=effort*(.10f+.17f*pressure+(.24f+.09f*openPattern+.12f*airPattern+.10f*braced+.08f*backTurn+.12f*cushion+.08f*redirect+.14f*reactive*incomingLoad+.15f*volley+.08f*instep)*(before+after));
+  const float span=effort*(.12f+.18f*pressure+(.30f+.09f*openPattern+.12f*airPattern+.10f*braced+.08f*backTurn+.12f*cushion+.08f*redirect+.14f*reactive*incomingLoad+.15f*volley+.08f*instep)*(before+after));
   const float counter=effort*foot*((.25f+.10f*insideSweep+.08f*firstTime)*before-(.29f+.10f*backTurn)*after)+effort*(redirect*.12f*foot*plant+reactive*.16f*incomingSide*before-outside*.13f*foot*before);
   target[3]={{effort*(-.09f*before+.08f*after)-.35f*counter,-span,counter}};
   target[5]={{effort*(.08f*before-.09f*after)+.35f*counter,span,-counter}};
   target[4]={{-effort*(.09f*before+.11f*after+.04f*pressure),0,0}};
   target[6]={{-effort*(.11f*before+.09f*after+.04f*pressure),0,0}};
+  if(c.pattern>=15&&c.pattern<=31){
+    const unsigned style=c.pattern-15;
+    const float wave=std::sin(pi*phase*(1.f+.045f*style));
+    const float counterWave=std::sin(pi*phase*(1.1f+.07f*(style%5)));
+    const float side=style%2?1.f:-1.f;
+    const float absorption=clamp(c.incoming[1]/18.f,-1.f,1.f);
+    target[1][0]+=trunk*((.035f+.006f*style)*wave-.13f*absorption*before);
+    target[1][1]+=trunk*(.025f+.008f*(style%4))*side*counterWave;
+    target[1][2]+=trunk*(.065f+.006f*style)*(turn+.4f*incomingSide+.3f*foot)*wave;
+    target[3][0]+=effort*(.08f+.009f*style)*counterWave;
+    target[5][0]-=effort*(.10f+.007f*style)*wave;
+    target[3][1]-=effort*(.035f+.005f*style)*wave;
+    target[5][1]+=effort*(.045f+.004f*style)*counterWave;
+    if(c.pattern==18&&c.contactMade&&incomingLoad>.85f)
+      target[1][0]-=trunk*.40f*before;
+  }
   for(unsigned i:{3u,4u,5u,6u})target[i]=bounded(pes3::scalePoint(target[i],clamp(c.armGain,0,1.25f)),.48f);
 
   // Critically damped, acceleration- and speed-bounded filters. Unlike a
