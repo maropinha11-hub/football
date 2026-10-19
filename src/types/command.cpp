@@ -3,6 +3,16 @@
 // i do not offer support, so don't ask. to be used for inspiration :)
 
 #include "command.hpp"
+#include <atomic>
+#include <boost/thread/thread.hpp>
+
+namespace {
+std::atomic<unsigned> pendingCompletionCallbacks{0};
+struct CompletionCallbackScope {
+  CompletionCallbackScope() { pendingCompletionCallbacks.fetch_add(1); }
+  ~CompletionCallbackScope() { pendingCompletionCallbacks.fetch_sub(1); }
+};
+}
 
 namespace blunted {
 
@@ -26,6 +36,9 @@ namespace blunted {
   bool Command::Handle(void *caller) {
     bool result = Execute(caller);
 
+    // Register before readiness becomes visible. The scheduler can finish as
+    // soon as it sees that flag, while OnComplete is still about to notify it.
+    CompletionCallbackScope completion;
     {
       boost::mutex::scoped_lock lock(mutex);
       handled = true;
@@ -36,6 +49,12 @@ namespace blunted {
     OnComplete();
 
     return result;
+  }
+
+  void Command::WaitForCompletionCallbacks() {
+    // Called after Scheduler::Run has stopped producing work and released
+    // its mutex. Callbacks are therefore free to acquire it and finish.
+    while (pendingCompletionCallbacks.load() != 0) boost::this_thread::yield();
   }
 
   void Command::Wait() {

@@ -346,7 +346,10 @@ namespace blunted {
   }
 
   Quaternion Quaternion::GetLerped(float bias, const Quaternion &to) const {
-    return (*this * (1 - bias) + to * bias).GetNormalized();
+    // q and -q describe the same orientation. Interpolating their raw signs
+    // collapses at the midpoint, or takes a full turn across the yaw seam.
+    const Quaternion target = GetDotProduct(to) < 0 ? -to : to;
+    return (*this * (1 - bias) + target * bias).GetNormalized();
   }
 
   Quaternion Quaternion::GetSlerped(float bias, const Quaternion &to) const {

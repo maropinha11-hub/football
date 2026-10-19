@@ -80,6 +80,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         shutil.copy2(project / "scripts" / filename, stage / filename)
     shutil.copy2(project / "docs/MOVIMENTO-E-COBRANCAS.md",stage / "LEIA-MOVIMENTO.txt")
     shutil.copy2(project / "docs/CONTINUIDADE-E-PASSES.md",stage / "LEIA-CONTINUIDADE.txt")
+    shutil.copy2(project / "docs/CAMERA-E-TRANSICOES.md",stage / "LEIA-CAMERA.txt")
     for filename in ("mocap-retarget.json","uploaded-motion-catalog.json"):
         shutil.copy2(project / "docs" / filename,stage / filename)
     for filename, command in [
@@ -135,6 +136,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "1. Extraia este ZIP completo em uma pasta nova.\n"
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
+        "Correcao desta revisao: rotacoes pelo arco curto, camera presa a\n"
+        "cabeca renderizada e leitura direta dos quadros. Leia LEIA-CAMERA.txt.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
         "F12: comparar busca por quadros de pose e transicoes suaves ligada/desligada.\n"
         "F1: comparar variacoes corporais de passes/chutes ligadas/desligadas.\n"
@@ -305,7 +308,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","LEIA-MOVIMENTO.txt","mocap-retarget.json",
-                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1","LEIA-CONTINUIDADE.txt"):
+                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1","LEIA-CONTINUIDADE.txt","LEIA-CAMERA.txt"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
             output.write(stage/filename,filename)

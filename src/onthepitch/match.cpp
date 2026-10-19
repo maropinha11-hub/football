@@ -1355,15 +1355,37 @@ void Match::Put() {
     if (neck != nodes.end()) {
       // The skin scales joint offsets by player height; the camera must use the same transform.
       const float scale = trainingPlayer->GetPlayerData()->GetHeight() / defaultPlayerHeight;
-      eyeOffset = (neck->second->GetDerivedPosition() - root) * scale + neck->second->GetDerivedRotation()*Vector3(0,-.12f,.14f);
-      eyeOffset.coords[2] = clamp(eyeOffset.coords[2], trainingPlayer->GetHumanoid()->PhysicalRigEnabled()?.18f:.55f, nominal + .12f);
+      const Quaternion head=neck->second->GetDerivedRotation();
+      eyeOffset = ((neck->second->GetDerivedPosition() - root) + head*Vector3(0,-.12f,.14f))*scale;
+      // Use the final rendered head, including a blended turn, reception or
+      // fall. Interpolating an independent camera aim makes the eyes look
+      // through the side of their own body when the neck reaches its limit.
+      const Vector3 forward=head*Vector3(0,-1,0);
+      Quaternion yaw,pitch;
+      yaw.SetAngleAxis(std::atan2(forward.coords[1],forward.coords[0])-.5f*pi,Vector3(0,0,1));
+      pitch.SetAngleAxis(.5f*pi+std::atan2(forward.coords[2],forward.Get2D().GetLength()),Vector3(1,0,0));
+      cameraNode->SetRotation(yaw,false);
+      camera->SetRotation(pitch,false);
     }
     if (!trainingEyeInitialized) { trainingEyePosition = eyeOffset; trainingEyeInitialized = true; }
     // The neck already follows the interpolated skeleton. A second position
     // low-pass makes the eye lag inside the torso during turns and impacts.
     trainingEyePosition=eyeOffset;
-    cameraNode->SetPosition(trainingPlayer->GetHumanoid()->SafeFirstPersonEye(root+trainingEyePosition), false);
+    int width,height,bpp;GetScene2D()->GetContextSize(width,height,bpp);
+    const float aspect=float(width)/std::max(1,height),tangent=std::tan(fetchedbuf_cameraFOV*pi/360.f);
+    const float lensClearance=fetchedbuf_cameraNearCap*std::sqrt(1+tangent*tangent*(1+aspect*aspect))+.006f;
+    cameraNode->SetPosition(trainingPlayer->GetHumanoid()->SafeFirstPersonEye(root+trainingEyePosition,lensClearance), false);
     cameraNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    if (neck != nodes.end() && GetConfiguration()->GetBool("training_motion_diagnostics",false)) {
+      const Vector3 headForward=neck->second->GetDerivedRotation()*Vector3(0,-1,0);
+      const Vector3 viewForward=camera->GetDerivedRotation()*Vector3(0,0,-1);
+      const Vector3 eye=cameraNode->GetPosition();
+      const auto body=nodes.at("body")->GetDerivedRotation();
+      printf("FIRSTPERSON_FRAME t=%lu snapshot=%lu eye=[%.7f,%.7f,%.7f] anchor_error=%.7f alignment=%.7f body=[%.7f,%.7f,%.7f,%.7f]\n",
+        GetPreviousPutTime_ms(),fetchedbuf_actualTime_ms,eye.coords[0],eye.coords[1],eye.coords[2],
+        (eye-root-trainingEyePosition).GetLength(),viewForward.GetDotProduct(headForward),
+        body.elements[0],body.elements[1],body.elements[2],body.elements[3]);
+    }
   }
 
   if (!pause) {

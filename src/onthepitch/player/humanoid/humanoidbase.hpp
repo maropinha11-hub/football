@@ -264,7 +264,7 @@ class HumanoidBase {
     Vector3 PhysicalContactVelocity(const Vector3 &desired)const;
     void SetPhysicalTraction(const Vector3 &force) {physicalTraction=force;}
     void AddPhysicalTraction(const Vector3 &force) {physicalTraction+=force;if(physicalTraction.GetLength()>500)physicalTraction=physicalTraction.GetNormalized(0)*500;}
-    Vector3 SafeFirstPersonEye(const Vector3 &eye)const;
+    Vector3 SafeFirstPersonEye(const Vector3 &eye,float clearance)const;
     void SetPhysicalShield(bool active) {physicalShield=active;}
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
     float PhysicalHandDistance(const Vector3 &point)const;

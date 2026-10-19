@@ -165,30 +165,31 @@ Vector3 HumanoidBase::PhysicalBalanceVelocity()const{return PhysicalRigEnabled()
 Vector3 HumanoidBase::PhysicalContactVelocity(const Vector3 &desired)const{
   return PhysicalRigEnabled()?vector(football_physics::contactVelocity(point(desired),point(physicalTraction),physicalShield)):desired;
 }
-Vector3 HumanoidBase::SafeFirstPersonEye(const Vector3 &requested)const{
+Vector3 HumanoidBase::SafeFirstPersonEye(const Vector3 &requested,float clearance)const{
   Quaternion q[13];Vector3 p[13];
   const Vector3 origin=player->GetGeomPosition().Get2D();
   for(unsigned i=0;i<13;++i){const auto node=nodeMap.at(pes3::nativeBoneNames[i]);q[i]=node->GetDerivedRotation();p[i]=origin+(node->GetDerivedPosition()-origin)*zMultiplier;}
   // The caller already samples the rendered neck after the root offset.
   Vector3 eye=requested;
-  // Keep the camera sphere outside the torso and the moving upper arms.
-  // These are rendered joints, not the older simulation snapshot.
-  for(unsigned iteration=0;iteration<4;++iteration)for(unsigned bone:{0u,1u,3u,4u,5u,6u}){
-    Vector3 a=p[bone],b=bone==0?p[1]:bone==1?p[2]:bone==3||bone==5?p[bone+1]:p[bone]+q[bone]*Vector3(0,0,-.25f*zMultiplier);
+  // Arms may cross the view without moving the observer's head. The upper
+  // torso proxy must stop below the neck: a capsule ending at the neck was
+  // incorrectly pushing the anatomical eye on every step and body turn.
+  for(unsigned iteration=0;iteration<4;++iteration)for(unsigned bone:{0u,1u}){
+    Vector3 a=p[bone],b=bone==0?p[1]:p[1]+(p[2]-p[1])*.65f;
     const Vector3 axis=b-a;const float along=clamp((eye-a).GetDotProduct(axis)/std::max(.00001f,axis.GetSquaredLength()),0.f,1.f);
     const Vector3 closest=a+axis*along;
-    const float radius=(bone<=1?.17f:.055f)*zMultiplier+.065f;
+    const float radius=.16f*zMultiplier+clearance;
     if((eye-closest).GetLength()<radius)eye=closest+(eye-closest).GetNormalized(q[1]*Vector3(0,-1,0))*radius;
   }
   float gap=100;
   for(unsigned iteration=0;iteration<3;++iteration){
     Vector3 surface;gap=ContactSurface(eye,"trunk",q,p,&surface)+.11f;
-    if(gap>=.065f)break;
-    eye=surface+(eye-surface).GetNormalized(q[1]*Vector3(0,-1,0))*.065f;
+    if(gap>=clearance)break;
+    eye=surface+(eye-surface).GetNormalized(q[1]*Vector3(0,-1,0))*clearance;
   }
   gap=ContactSurface(eye,"trunk",q,p)+.11f;
   if(GetConfiguration()->GetBool("training_telemetry",false))
-    printf("PHYSICAL_EYE t=%lu clearance=%.6f correction=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,gap,(eye-requested).GetLength());
+    printf("PHYSICAL_EYE t=%lu clearance=%.6f correction=%.6f near=%.6f required=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,gap,(eye-requested).GetLength(),training::eyeNearPlane,clearance);
   return eye;
 }
 void HumanoidBase::AddPhysicalImpulse(const Vector3 &value,const Vector3 &lever,bool forceFall){
@@ -340,9 +341,14 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       contactPart!="left_foot"&&contactPart!="right_foot"&&currentAnim->touchFrame-currentAnim->frameNum<=12);
     if(input.useInertia){
       input.inertiaMask.fill(1.f);input.inertiaMask[0]=0;
-      const int next=std::min(currentAnim->frameNum+1,currentAnim->anim->GetEffectiveFrameCount());
-      for(unsigned i=1;i<13;++i){Quaternion q;Vector3 p;currentAnim->anim->GetKeyFrame(pes3::nativeBoneNames[i],next,q,p);
-        input.poseVelocity[i]=football_physics::capped(football_physics::scalePoint(football_physics::logarithm(football_physics::productRotation(rotation(q),football_physics::inverseRotation(input.pose[i]))),100.f),16.f);
+      const int frame=std::min(currentAnim->frameNum,currentAnim->anim->GetEffectiveFrameCount());
+      const int next=std::min(frame+1,currentAnim->anim->GetEffectiveFrameCount());
+      for(unsigned i=1;i<13;++i){Quaternion q,previous;Vector3 p;
+        currentAnim->anim->GetKeyFrame(pes3::nativeBoneNames[i],frame,previous,p);
+        currentAnim->anim->GetKeyFrame(pes3::nativeBoneNames[i],next,q,p);
+        // Both samples must belong to the incoming clip. Comparing its next
+        // key with the already blended pose treats the blend offset as speed.
+        input.poseVelocity[i]=football_physics::capped(football_physics::scalePoint(football_physics::logarithm(football_physics::productRotation(rotation(q),football_physics::inverseRotation(rotation(previous)))),100.f),16.f);
       }
       const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
       if(currentAnim->touchFrame>=0&&!currentAnim->touchMade){

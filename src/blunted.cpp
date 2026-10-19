@@ -135,6 +135,10 @@ namespace blunted {
 
     scheduler->Run();
 
+    // Readiness precedes OnComplete to avoid a scheduler/command lock
+    // inversion. Do not delete its notification mutex underneath a callback.
+    Command::WaitForCompletionCallbacks();
+
     // stop signaling systems
     // also clears links to user tasks
     scheduler->Exit();

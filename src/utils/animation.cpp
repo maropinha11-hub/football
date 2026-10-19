@@ -177,121 +177,41 @@ namespace blunted {
   }
 
   void Animation::GetInterpolatedValues(const std::map<int, KeyFrame> &animation, int frame, Quaternion &orientation, Vector3 &position, bool getOrientation, bool getPosition) const {
-    std::vector<WeighedKey> weighedKeys;
-    // todo: rename weighing to weighting, omg
-
     position = Vector3(0);
     orientation = QUATERNION_IDENTITY;
+    if (animation.empty()) return;
 
-    if (frame > 0 && frame < GetFrameCount()) {
-      std::map<int, KeyFrame>::const_iterator animIter = animation.begin();
-
-      while (animIter != animation.end()) {
-
-        // still before current frame and yet encountered keys? clear them, we don't need earlier keys
-        if (animIter->first < frame && weighedKeys.size() > 0) weighedKeys.clear();
-
-        // add key, hopefully this is the last one before our current frame, or the first after
-        WeighedKey key;
-        key.keyFrame = animIter->second;
-        key.frame = animIter->first;
-        weighedKeys.push_back(key);
-
-        // if this keyframe came after our current frame, we've got everything we need, so bail out
-        if (animIter->first >= frame) {
-          animIter = animation.end();
+    auto first = animation.begin();
+    auto left = first;
+    auto right = first;
+    if (frame > 0 && animation.size() > 1) {
+      if (frame < GetFrameCount()) {
+        // Baked mocap tracks contain hundreds of keys. Walking from their
+        // beginning for every joint made late-frame sampling and index builds
+        // quadratic. Keep the same interpolation with logarithmic lookup and
+        // no per-sample heap allocations.
+        right = animation.lower_bound(frame);
+        if (right == animation.end()) {
+          left = right = std::prev(animation.end());
+        } else if (right->first == frame || right == first) {
+          left = right;
         } else {
-          animIter++;
+          left = std::prev(right);
         }
+      } else {
+        // Preserve the native root-motion extrapolation beyond the clip.
+        right = std::prev(animation.end());
+        left = std::prev(right);
       }
-
-      // we've now got either 1 keyframe (before/after/at our current frame) or 2, on both sides of (or 1 at) our keyframe.
-      // calculate its/their influence
-      float bias = 0;
-
-      if (weighedKeys.size() == 1) {
-
-        WeighedKey &key = weighedKeys.at(0);
-        key.influence = 1;
-
-      } else if (weighedKeys.size() == 2) {
-
-        // distance between keyframes and current frame
-        int distance = weighedKeys.at(1).frame - weighedKeys.at(0).frame;
-        int distance1 = frame - weighedKeys.at(0).frame;
-        int distance2 = weighedKeys.at(1).frame - frame;
-        float ratio1 = 1 - (distance1 * 1.0) / (distance * 1.0);
-        float ratio2 = 1 - (distance2 * 1.0) / (distance * 1.0);
-        weighedKeys.at(0).influence = ratio1;
-        weighedKeys.at(1).influence = ratio2;
-
-        int relPosition = frame - weighedKeys.at(0).frame;
-        bias = (relPosition * 1.0) / (distance * 1.0);
-
-      }
-
-      if (getOrientation) {
-        if (weighedKeys.size() > 1) {
-          orientation = weighedKeys.at(0).keyFrame.orientation.GetSlerped(bias, weighedKeys.at(1).keyFrame.orientation);
-        } else {
-          orientation = weighedKeys.at(0).keyFrame.orientation;
-        }
-      }
-
-      if (getPosition) {
-        for (unsigned int v = 0; v < weighedKeys.size(); v++) {
-          position += weighedKeys.at(v).keyFrame.position * weighedKeys.at(v).influence;
-        }
-      }
-
-    } else if (frame >= GetFrameCount()) {
-
-      // extrapolate beyond animation
-      // remember, weighed keys are in reverse order here!
-
-      // get last 2 keyframes
-      std::map<int, KeyFrame>::const_iterator animIter = animation.end();
-      while (animIter != animation.begin()) {
-        animIter--;
-
-        // add key
-        WeighedKey key;
-        key.keyFrame = animIter->second;
-        key.frame = animIter->first;
-        weighedKeys.push_back(key);
-
-        if (weighedKeys.size() == 2) {
-          animIter = animation.begin();
-        }
-      }
-      if (weighedKeys.size() == 0) return; // should not happen
-      if (weighedKeys.size() == 1) {
-        if (getOrientation) orientation = weighedKeys.at(0).keyFrame.orientation;
-        if (getPosition) position = weighedKeys.at(0).keyFrame.position;
-        return;
-      }
-      // extrapolate
-      //position = weighedKeys.at(0).keyFrame.position; // ignore position
-      float dist1 = weighedKeys.at(0).frame - weighedKeys.at(1).frame;
-      float dist2 = frame - weighedKeys.at(0).frame;
-      float bias = 1 + ((1 / dist1) * dist2);
-      // extrapolation through hax: bias > 1 doesn't really give proper results. however, it works for small angles so FUFUUFUUUU XD
-      // (use slerp instead of lerp - lerp can't extrapolate at all)
-      //bias = clamp(bias, 0.0f, 1.0f);
-      if (getOrientation) orientation = weighedKeys.at(1).keyFrame.orientation.GetSlerped(bias, weighedKeys.at(0).keyFrame.orientation);
-      if (getPosition) position = weighedKeys.at(1).keyFrame.position * (1 - bias) + weighedKeys.at(0).keyFrame.position * bias;
-
-    } else if (frame <= 0) {
-
-      // extrapolate before animation
-      // for now, just return first key
-
-      std::map<int, KeyFrame>::const_iterator animIter = animation.begin();
-      if (getOrientation) orientation = animIter->second.orientation;
-      if (getPosition) position = animIter->second.position;
-
     }
-
+    if (left == right) {
+      if (getOrientation) orientation = left->second.orientation;
+      if (getPosition) position = left->second.position;
+      return;
+    }
+    const float bias = float(frame - left->first) / float(right->first - left->first);
+    if (getOrientation) orientation = left->second.orientation.GetSlerped(bias, right->second.orientation);
+    if (getPosition) position = left->second.position * (1 - bias) + right->second.position * bias;
   }
 
   void Animation::ConvertToStartFacingForwardIfIdle() {

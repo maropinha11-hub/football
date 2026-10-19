@@ -76,7 +76,7 @@ try:
   key(g,'Tab');g.keys(['Down','Right'],True);g.advance(550);g.keys(['Down','Right'],False);capture(g,'fp-look-down')
   start=len(g.read_log());key(g,'F9');g.advance(700);capture(g,'fp-fall');g.advance(6000)
   eyes=events(g,'PHYSICAL_EYE',start)
-  check('first-person eye remains outside rendered trunk while falling and recovering',len(eyes)>=20 and all(float(x['clearance'])>=.0645 and math.isfinite(float(x['correction']))for x in eyes),dict(samples=len(eyes),minimum_clearance=min(float(x['clearance'])for x in eyes)if eyes else None))
+  check('first-person eye remains outside rendered trunk while falling and recovering',len(eyes)>=20 and all(float(x['clearance'])>=float(x['required'])-.0005 and math.isfinite(float(x['correction']))for x in eyes),dict(samples=len(eyes),minimum_clearance=min(float(x['clearance'])for x in eyes)if eyes else None,near_plane=float(eyes[0]['near'])if eyes else None))
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)
  r['result']='passed'if all(c['result']=='passed'for c in r['checks'])else'failed'
 except BaseException as e:r.update(result='failed',error=str(e));raise

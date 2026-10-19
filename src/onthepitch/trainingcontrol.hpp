@@ -9,6 +9,10 @@
 namespace training {
 using blunted::Vector3;
 constexpr float pi = 3.14159265358979323846f;
+// Keep the local body visible at close range without requiring the camera to
+// leave the head. Clearance protects the entire near rectangle, including
+// its corners at the current field of view and screen aspect ratio.
+constexpr float eyeNearPlane = .02f;
 inline float limit(float value, float low, float high) { return std::max(low, std::min(high, value)); }
 inline float angle(float value) { return std::atan2(std::sin(value), std::cos(value)); }
 inline Vector3 forward(float yaw) { return Vector3(std::cos(yaw), std::sin(yaw), 0); }

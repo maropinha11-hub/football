@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <chrono>
 
 namespace football_physics {
 struct NativeMotionBank {
@@ -67,6 +68,9 @@ void HumanoidBase::BlendMotionPose(Quaternion *pose,Vector3 &root){
 void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &command){
   motionEntryFrames.clear();
   if(!PhysicalRigEnabled() || candidates.empty())return;
+  const bool diagnostics=GetConfiguration()->GetBool("training_motion_diagnostics",false);
+  const auto searchStart=diagnostics?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
+  unsigned builtClips=0;
   using namespace football_physics;
   const bool adaptive=GetConfiguration()->GetBool("training_motion_matching",true);
   if(command.desiredFunctionType==e_FunctionType_Movement&&command.useDesiredMovement&&command.desiredVelocityFloat<.15f){
@@ -104,8 +108,12 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
       }
     }
     const Vector3 origin=rootAt(frame);
-    for(unsigned i=0;i<3;++i){const int future=frame+int(i+1)*15;sample(future,q,p);
-      const Vector3 trajectory=(rootAt(future)-origin).Get2D().GetRotated2D(yaw),facing=q[0]*Vector3(0,-1,0);
+    Quaternion turn;turn.SetAngleAxis(yaw,Vector3(0,0,1));
+    for(unsigned i=0;i<3;++i){const int future=frame+int(i+1)*15;
+      // Future trajectory features need only the root and body facing, not
+      // another complete thirteen-joint FK pass for each look-ahead point.
+      Quaternion body;Vector3 unused;clip->GetKeyFrame("body",std::min(future,clip->GetEffectiveFrameCount()),body,unused);
+      const Vector3 trajectory=(rootAt(future)-origin).Get2D().GetRotated2D(yaw),facing=(turn*body)*Vector3(0,-1,0);
       result.trajectory[i]={{trajectory.coords[0],trajectory.coords[1],0}};
       result.facing[i]={{facing.coords[0],facing.coords[1],0}};
     }
@@ -122,6 +130,7 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   auto index=[&](Animation *clip)->const MotionClipIndex&{
     auto found=database.clips.find(clip);
     if(found==database.clips.end()){
+      ++builtClips;
       MotionClipIndex entry;
       for(int frame=0;frame<=std::max(0,clip->GetEffectiveFrameCount()-2);frame+=2){
         MotionFrame row;row.frame=frame;row.feature=motionVector(extract(clip,frame,0));
@@ -195,6 +204,7 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
     if(preferRight&&clip->GetVariable("touch_bodypart")!="right_foot")costs[id]+=10.f;
   }
   std::stable_sort(candidates.begin(),candidates.end(),[&](int a,int b){return costs[a]<costs[b];});
+  if(diagnostics)printf("MOTION_SEARCH_US t=%lu actor=%d us=%lld built=%u candidates=%zu\n",match->GetActualTime_ms(),player->GetID(),static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-searchStart).count()),builtClips,candidates.size());
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("MOTION_MATCH t=%lu actor=%d candidates=%zu indexed=%zu frames=%zu tested=%u choice=%d entry=%d cost=%.6f function=%d adaptive=%d learned=%d source=%s\n",match->GetActualTime_ms(),player->GetID(),candidates.size(),database.clips.size(),database.frames,tested,candidates.front(),MotionEntryFrame(candidates.front()),costs[candidates.front()],int(command.desiredFunctionType),adaptive?1:0,kMotionMetricTrained?1:0,anims->GetAnim(candidates.front())->GetName().c_str());
 }

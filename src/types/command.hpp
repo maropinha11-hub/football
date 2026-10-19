@@ -25,6 +25,9 @@ namespace blunted {
       void Reset();
       bool Handle(void *caller = NULL);
       void Wait();
+      // After stopping task producers, keep notification targets alive until
+      // callbacks of commands already published as ready have returned.
+      static void WaitForCompletionCallbacks();
 
       std::string GetName() const { return name.GetData(); }
 

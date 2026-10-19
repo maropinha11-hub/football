@@ -405,7 +405,7 @@ void Match::UpdatePlayerMatchCamera() {
     cameraNodePosition = trainingPlayer->GetPosition() +
         training::forward(trainingView.yaw) * 0.10f + Vector3(0, 0, trainingPlayer->GetPlayerData()->GetHeight() - 0.10f);
     cameraFOV = clamp(GetConfiguration()->GetReal("firstperson_fov", 78.0f), 55.0f, 100.0f);
-    cameraNearCap = 0.055f;
+    cameraNearCap = training::eyeNearPlane;
     cameraFarCap = 250;
   } else if (trainingCameraMode == 1) {
     cameraOrientation.SetAngleAxis(0.34f * pi, Vector3(1, 0, 0));

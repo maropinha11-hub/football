@@ -3,10 +3,15 @@
 #include "../src/hid/gamepad.hpp"
 #include "managers/usereventmanager.hpp"
 #include "../src/onthepitch/trainingcontrol.hpp"
+#include "../src/utils/animation.hpp"
 #include <SDL2/SDL.h>
 #include <cmath>
 #include <cstdio>
 #include <stdexcept>
+#include <atomic>
+#include <future>
+#include <thread>
+#include <chrono>
 
 namespace {
 class CompletionProbe : public blunted::Command {
@@ -20,6 +25,14 @@ class CompletionProbe : public blunted::Command {
     observedReady = IsReady();
     Wait();
   }
+};
+class BlockingCompletionProbe : public blunted::Command {
+ public:
+  BlockingCompletionProbe() : Command("shutdown-notification-lifetime") {}
+  std::promise<void> entered, release;
+ protected:
+  bool Execute(void *) override { return true; }
+  void OnComplete() override { entered.set_value(); release.get_future().wait(); }
 };
 int checks = 0;
 void require(bool ok, const char *message) {
@@ -51,6 +64,33 @@ int RunControllerTests() {
   SDL_Joystick *virtualPad = nullptr;
   int device = -1;
   try {
+    Quaternion facing, oppositeSign, beforeSeam, afterSeam;
+    facing.SetAngleAxis(1.1f, Vector3(0, 0, 1));
+    oppositeSign = -facing;
+    const auto sameRotation = facing.GetLerped(.5f, oppositeSign);
+    require(std::fabs(sameRotation.GetDotProduct(facing)) > .99999f,
+            "Equivalent quaternion signs must never collapse or flip a rendered joint");
+    beforeSeam.SetAngleAxis(3.13f, Vector3(0, 0, 1));
+    afterSeam.SetAngleAxis(-3.13f, Vector3(0, 0, 1));
+    const Vector3 seamForward = beforeSeam.GetLerped(.5f, afterSeam) * Vector3(0, -1, 0);
+    require(seamForward.coords[1] > .999f,
+            "Interpolating across the heading seam must take the short rotation");
+    TemporalSmoother<Quaternion> renderedHeading;
+    renderedHeading.SetValue(beforeSeam, 100);
+    renderedHeading.SetValue(afterSeam, 110);
+    require((renderedHeading.GetValue(125, 20) * Vector3(0, -1, 0)).coords[1] > .999f,
+            "The render buffer must keep a rear-facing player rear-facing between snapshots");
+    Animation sparse;
+    sparse.SetKeyFrame("player", 0, QUATERNION_IDENTITY, Vector3(0));
+    sparse.SetKeyFrame("player", 20, facing, Vector3(2, 4, 0));
+    Quaternion sampled; Vector3 sampledPosition;
+    sparse.GetKeyFrame("player", 10, sampled, sampledPosition);
+    require((sampledPosition - Vector3(1, 2, 0)).GetLength() < .00001f &&
+            std::fabs(sampled.GetDotProduct(Quaternion(QUATERNION_IDENTITY).GetSlerped(.5f, facing))) > .99999f,
+            "Sparse tracks must interpolate translation and rotation between their neighbours");
+    sparse.GetKeyFrame("player", 30, sampled, sampledPosition);
+    require((sampledPosition - Vector3(3, 6, 0)).GetLength() < .00001f,
+            "Native root motion must keep its authored extrapolation after the last key");
     CompletionProbe completed;
     require(completed.Handle() && completed.observedReady,
             "Completion notifications must observe readiness, outside the command mutex");
@@ -58,6 +98,16 @@ int RunControllerTests() {
     require(!completed.IsReady(), "Reusing a scheduled command must clear its readiness");
     require(completed.Handle() && completed.observedReady,
             "Reused commands must publish readiness before notifying again");
+    BlockingCompletionProbe pending;
+    auto notificationEntered=pending.entered.get_future();
+    std::thread worker([&]{pending.Handle();});
+    notificationEntered.wait();
+    const bool readyWhileNotifying=pending.IsReady();
+    auto drained=std::async(std::launch::async,[]{Command::WaitForCompletionCallbacks();});
+    const bool waitedForCallback=drained.wait_for(std::chrono::milliseconds(10))==std::future_status::timeout;
+    pending.release.set_value();worker.join();drained.get();
+    require(readyWhileNotifying && waitedForCallback,
+            "Shutdown must wait for a ready command's pending callback before freeing the scheduler");
     GetConfiguration()->SetBool("training_mode", true);
     training::View view;
     view.reset(0);
