@@ -7,6 +7,7 @@
 
 #include "defines.hpp"
 #include "../gamedefines.hpp"
+#include "restart_sequence.hpp"
 
 #include "scene/scene3d/scene3d.hpp"
 #include "scene/objects/sound.hpp"
@@ -14,6 +15,7 @@
 using namespace blunted;
 
 class Match;
+class PlayerBase;
 
 struct RefereeBuffer {
   bool active;
@@ -57,6 +59,9 @@ class Referee {
     bool CheckFoul();
     void PhysicalFoul(Player *victim,Player *offender,float severity);
     void PracticeSetPiece(e_SetPiece type,int teamID);
+    bool WaitingForRestart()const{return buffer.active&&restart.isPrepared()&&!restart.authorized();}
+    bool IsRestartTaker(const PlayerBase *actor)const;
+    bool KeepThrowerOutside(const PlayerBase *actor)const{return IsRestartTaker(actor)&&restart.isPrepared()&&!restart.hasReleased()&&buffer.desiredSetPiece==e_SetPiece_ThrowIn;}
 
     Player *GetCurrentFoulPlayer() { return foul.foulPlayer; }
     int GetCurrentFoulType() { return foul.foulType; }
@@ -67,6 +72,7 @@ class Referee {
     boost::shared_ptr<Scene3D> scene3D;
 
     RefereeBuffer buffer;
+    football_rules::RestartSequence restart;
 
     int afterSetPieceRelaxTime_ms; // throw-ins cause immediate new throw-ins, because ball is still outside the lines at the moment of throwing ;)
 

@@ -433,6 +433,12 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
     //printf("%s\n", files.at(i).c_str());
 
+    // Uploaded non-contact captures belong to the physical experiment.
+    // The approved launchers continue loading their existing movement bank.
+    if(files[i].find("/mocap/")!=std::string::npos&&(!TrainingEnabled()||
+       !GetConfiguration()->GetBool("training_physical_rig",false)||
+       !GetConfiguration()->GetBool("training_mocap_locomotion",true)))continue;
+
     if ((omitLuxuryAnims && files.at(i).find("luxury") != std::string::npos) || files.at(i).find("templates") != std::string::npos) {
       //printf ("ignoring\n");
 
@@ -1320,6 +1326,8 @@ void AnimCollection::_PrepareAnim(Animation *animation, boost::intrusive_ptr<Nod
 
 
   animations.push_back(animation);
+  if(animation->GetVariable("imported_mocap")=="true"&&GetConfiguration()->GetBool("training_telemetry",false))
+    printf("MOCAP_CLIP source=%s frames=%d incoming=%.4f outgoing=%.4f\n",animation->GetName().c_str(),animation->GetFrameCount(),animation->GetIncomingVelocity(),animation->GetOutgoingVelocity());
 
   //animation->Save(files.at(i));
 

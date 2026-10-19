@@ -10,6 +10,8 @@
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../controller/humancontroller.hpp"
+#include <sstream>
+#include <iomanip>
 
 namespace {
 football_physics::Vec point(const Vector3 &p){return {{p.coords[0],p.coords[1],p.coords[2]}};}
@@ -319,6 +321,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     input.pelvis=point(contactPositions[0]);input.velocity=point(spatialState.movement);
     input.forward=point(spatialState.bodyDirectionVec);input.upperReception=UpperReceptionActive();
     input.useInertia=GetConfiguration()->GetBool("training_motion_matching",true);
+    input.trackMotion=GetConfiguration()->GetBool("training_motion_tracking",true);
     input.adaptiveMotion=input.useInertia;
     input.motionEpoch=motionEpoch;input.preserveLook=player->GetExternalController()!=nullptr;
     input.ball=point(match->GetBall()->Predict(0)-contactPositions[0]);
@@ -434,6 +437,13 @@ void HumanoidBase::UpdatePhysicalRigPose(){
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
   for(unsigned i=0;i<13;++i){contactLocal[i]=quaternion(physicalRig->pose()[i]);contactGlobal[i]=quaternion(physicalRig->worldRotations()[i]);contactPositions[i]=vector(physicalRig->points()[i]);}
+  if(currentAnim->anim->GetVariable("imported_mocap")=="true"&&GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%50==0)
+    printf("MOCAP_ACTIVE t=%lu actor=%d source=%s frame=%d function=%d root_height=%.5f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->frameNum,int(currentAnim->functionType),contactPositions[0].coords[2]);
+  if(player->GetExternalController()&&GetConfiguration()->GetBool("training_motion_diagnostics",false)){
+    std::ostringstream row;row<<std::fixed<<std::setprecision(7)<<"MOTION_SIM t="<<match->GetActualTime_ms()<<" pose=";
+    for(unsigned i=0;i<13;++i){const auto q=contactLocal[i];row<<(i?";":"")<<q.elements[0]<<','<<q.elements[1]<<','<<q.elements[2]<<','<<q.elements[3];}
+    printf("%s\n",row.str().c_str());
+  }
 }
 
 void HumanoidBase::PhysicalActionContact(const Vector3 &incoming){
@@ -545,12 +555,22 @@ void HumanoidBase::PutPhysicalRig(){
       printf("PHYSICAL_ARM_RENDER t=%lu error=%.7f penetration=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,metrics.armLimitError,metrics.armPenetration);
   };
   if(!fetchedPhysicalRagdoll){
-    humanoidNode->SetPosition(humanoidNode->GetPosition()+fetchedPhysicalRootOffset,false);
+    const bool coherent=fetchedbuf_animApplyBuffer.motionMatched&&GetConfiguration()->GetBool("training_coherent_pose",true);
+    if(coherent){
+      // Interpolate the executed pose once, at the same timestamp as the ball.
+      // Interpolating a source pose and its inverse/additive correction
+      // separately does not reconstruct this pose during a clip transition.
+      const auto &bind=pes3NativeReference.offsets[0];
+      nodeMap.at("body")->SetPosition(Vector3(bind[0],bind[1],bind[2]),false);
+      humanoidNode->SetPosition(fetchedContactRoot+Vector3(0,0,fetchedContactHeight/zMultiplier-bind[2]),false);
+      nodeMap.at("body")->SetRotation(fetchedContactLocal[0],false);
+      for(unsigned i=7;i<13;++i)nodeMap.at(pes3::nativeBoneNames[i])->SetRotation(fetchedContactLocal[i],false);
+    }else humanoidNode->SetPosition(humanoidNode->GetPosition()+fetchedPhysicalRootOffset,false);
     const bool observeSituation=player->GetExternalController() && fetchedSituationState.coords[0]>.001f &&
       GetConfiguration()->GetBool("training_telemetry",false);
     Quaternion nativeUpper[7];
     if(observeSituation)for(unsigned i=1;i<7;++i)nativeUpper[i]=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation();
-    PutTrainingContactPose();
+    if(!coherent)PutTrainingContactPose();
     Vector3 supportLeft,supportRight,supportRoot;
     if(observeSituation){
       humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
@@ -561,7 +581,7 @@ void HumanoidBase::PutPhysicalRig(){
     for(unsigned i:{1u,2u,3u,4u,5u,6u}){
       auto node=nodeMap.at(pes3::nativeBoneNames[i]);
       const Quaternion delta=Quaternion(QUATERNION_IDENTITY).GetSlerped(1-fetchedContactBlend,fetchedPhysicalAdditive[i]);
-      node->SetRotation((delta*node->GetRotation()).GetNormalized(),false);
+      node->SetRotation(coherent?fetchedContactLocal[i]:(delta*node->GetRotation()).GetNormalized(),false);
     }
     float situationFootError=0,situationRootError=0;
     if(observeSituation){
@@ -572,11 +592,20 @@ void HumanoidBase::PutPhysicalRig(){
     for(unsigned i:{7u,8u,9u,10u,11u,12u}){
       auto node=nodeMap.at(pes3::nativeBoneNames[i]);
       const Quaternion delta=Quaternion(QUATERNION_IDENTITY).GetSlerped(1-fetchedContactBlend,fetchedPhysicalAdditive[i]);
-      node->SetRotation((delta*node->GetRotation()).GetNormalized(),false);
+      if(!coherent)node->SetRotation((delta*node->GetRotation()).GetNormalized(),false);
     }
+    if(coherent)PutTrainingContactPose(); // Already identical; retain skin-contact diagnostics.
     limitRenderedArms();
     humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
     PutTrainingHeadLook();
+    if(player->GetExternalController()&&GetConfiguration()->GetBool("training_motion_diagnostics",false)){
+      float lowerError=0;
+      for(unsigned i=7;i<13;++i)lowerError=std::max(lowerError,football_physics::length(football_physics::logarithm(football_physics::productRotation(rotation(nodeMap.at(pes3::nativeBoneNames[i])->GetRotation()),football_physics::inverseRotation(rotation(fetchedContactLocal[i]))))));
+      std::ostringstream row;row<<std::fixed<<std::setprecision(7)<<"MOTION_RENDER t="<<match->GetPreviousPutTime_ms()<<" snapshot="<<fetchedbuf_animApplyBuffer.snapshotTime_ms<<" coherent="<<(coherent?1:0)<<" frame="<<fetchedbuf_animApplyBuffer.frameNum<<" lower_error="<<lowerError<<" pose=";
+      for(unsigned i=0;i<13;++i){const auto q=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation();
+        row<<(i?";":"")<<q.elements[0]<<','<<q.elements[1]<<','<<q.elements[2]<<','<<q.elements[3];}
+      printf("%s\n",row.str().c_str());
+    }
     if(observeSituation){
       float trunk=0,arms=0;
       for(unsigned i:{1u,3u,4u,5u,6u}){

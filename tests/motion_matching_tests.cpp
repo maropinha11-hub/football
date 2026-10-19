@@ -54,6 +54,18 @@ int main(){
   check(inertia.maximumOffset()<1e-5f,"inertial pose offsets must converge instead of leaving a frozen blend");
   check(std::isfinite(largestStep)&&largestStep<.08f,"inertial transition must remain finite and bounded");
   check(out[0]==b[0],"inertial limb smoothing may not change world heading or root motion");
+  PoseInertia tracking;tracking.observe(a,velocity,0);tracking.apply(a,velocity,mask,out);
+  float rawNoise=0,filteredNoise=0;Pose lastFiltered=out,lastRaw=a;
+  for(unsigned tick=0;tick<100;++tick){
+    Pose noisy=a;noisy[8]=exponential({{tick%2?.10f:-.10f,0,0}});
+    tracking.advance(.01f);tracking.apply(noisy,velocity,mask,out);
+    rawNoise+=length(logarithm(productRotation(noisy[8],inverseRotation(lastRaw[8]))));
+    filteredNoise+=length(logarithm(productRotation(out[8],inverseRotation(lastFiltered[8]))));
+    lastRaw=noisy;lastFiltered=out;
+  }
+  check(filteredNoise<rawNoise*.4f,"tracking must attenuate rapid alternating leg noise");
+  mask[8]=0;tracking.apply(b,velocity,mask,out);
+  check(length(logarithm(productRotation(out[8],inverseRotation(b[8]))))<1e-6f,"tracking must not delay the authored ball contact");
   auto incoming=[](unsigned ms){const float t=ms*.001f;return football_reception::Vec{{5-10*t,0,1.8f-.4f*t}};};
   const auto reception=football_reception::predict(incoming,{{0,0,0}},{{0,0,0}},{{-10,0,-.4f}},true);
   check(reception.valid&&reception.gap<.01f&&reception.height>1.5f&&reception.time>.45f,

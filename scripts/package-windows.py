@@ -76,6 +76,11 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
     shutil.copy2(project / "third_party/motion-matching/LICENSE.txt", stage / "MOTION-MATCHING-LICENSE.txt")
     shutil.copy2(project / "scripts/import-pes3.ps1", stage / "import-pes3.ps1")
+    for filename in ("dividir-arquivos.ps1", "dividir-arquivos.bat"):
+        shutil.copy2(project / "scripts" / filename, stage / filename)
+    shutil.copy2(project / "docs/MOVIMENTO-E-COBRANCAS.md",stage / "LEIA-MOVIMENTO.txt")
+    for filename in ("mocap-retarget.json","uploaded-motion-catalog.json"):
+        shutil.copy2(project / "docs" / filename,stage / filename)
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
         ("estudar-pes3.bat", 'gameplayfootball.exe --config training.config --training --pes3-preview %*'),
@@ -297,7 +302,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
-                         "situational-motion-catalog.json"):
+                         "situational-motion-catalog.json","LEIA-MOVIMENTO.txt","mocap-retarget.json",
+                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
             output.write(stage/filename,filename)
@@ -323,4 +329,6 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         if approved_binary is None:
             for path in sorted((stage / "media" / "training").glob("*.*")):
                 output.write(path, path.relative_to(stage))
+            for path in sorted((stage / "media" / "animations" / "mocap").glob("*.anim")):
+                output.write(path,path.relative_to(stage))
     print(f"Created {update} ({update.stat().st_size // 1024 // 1024} MiB)")

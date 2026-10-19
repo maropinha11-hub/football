@@ -15,6 +15,11 @@ referenced fork. The additional DefenseJog_LoopF, Chest_Stand and Chest_Run FBX
 animations were supplied by the repository owner. Their native-rig
 conversions accompany the training packages; source provenance and hashes
 are recorded beside the clips in data/media/training.
+Ten non-contact locomotion cycles were retargeted from the Mocap.zip
+FBX files supplied by the repository owner. Source names, hashes, take
+ranges, native joint mapping and conversion details are recorded in
+docs/mocap-retarget.json and docs/uploaded-motion-catalog.json.
+The Unity C# source package is not redistributed with this project.
 The training packages contain no proprietary PES executable or animation
 bank. Optional local research tools are separate from the native training
 gameplay; Gameplay Football fidelity is not a claim of PES equivalence.

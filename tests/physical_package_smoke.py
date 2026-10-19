@@ -46,6 +46,11 @@ def main():
                   and b'zlib license' in license_text)
             check('camera uses the approved increased sensitivity', b'"firstperson_look_speed" "3.8"' in config)
             check('packaged code implements constrained motion matching', b'MOTION_MATCH t=' in exe)
+            check('Windows embeds authorized contact-based restarts and coherent pose diagnostics',all(token in exe for token in [b'RESTART_AUTHORIZED',b'RESTART_RELEASED',b'RESTART_COMPLETED',b'RESTART_FOOTING',b'MOTION_SIM',b'MOTION_RENDER',b'MOCAP_ACTIVE']))
+            captures=list(Path('data/media/animations/mocap').glob('*.anim'))
+            check('ten converted native captures accompany complete and update packages',len(captures)==10 and all(full.read(prefix+f.relative_to('data').as_posix())==patch.read(f.relative_to('data').as_posix())==f.read_bytes()for f in captures))
+            check('motion guide and source conversion hashes accompany the game',all(full.read(prefix+name)==patch.read(name)for name in ['LEIA-MOVIMENTO.txt','mocap-retarget.json','uploaded-motion-catalog.json']))
+            check('large upload splitter accompanies both portable packages',all(full.read(prefix+name)==patch.read(name)for name in ['dividir-arquivos.bat','dividir-arquivos.ps1']))
             check('Windows includes per-frame matching, inertia, anticipation and reciprocal body duels',all(token in exe
                   for token in [b'MOTION_PHASE_ENTER',b'MOTION_INERTIA',b'PHYSICAL_ADAPTIVE',b'PHYSICAL_BODY_DUEL',b'CPU_AERIAL_DUEL']))
             check('motion matching comparison and aerial drill are documented',b'F12:'in full.read(prefix+'LEIA-FISICA.txt')

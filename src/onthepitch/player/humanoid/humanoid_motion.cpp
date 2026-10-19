@@ -25,6 +25,13 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   if(!PhysicalRigEnabled() || candidates.empty())return;
   using namespace football_physics;
   const bool adaptive=GetConfiguration()->GetBool("training_motion_matching",true);
+  if(command.desiredFunctionType==e_FunctionType_Movement&&command.useDesiredMovement&&command.desiredVelocityFloat<.15f){
+    auto stationary=candidates;
+    stationary.erase(std::remove_if(stationary.begin(),stationary.end(),[&](int id){auto *clip=anims->GetAnim(id);
+      return clip->GetVariable("imported_mocap")=="true"&&std::atof(clip->GetVariable("source_speed_mps").c_str())>.15f;
+    }),stationary.end());
+    if(!stationary.empty())candidates.swap(stationary);
+  }
   const unsigned joints[5]={9,12,2,4,6};
   auto extract=[&](Animation *clip,int frame,float yaw){
     auto rootAt=[&](int f){Quaternion q;Vector3 p;const int end=clip->GetEffectiveFrameCount();
@@ -129,6 +136,7 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
     auto result=index(clip).search(queryVector,metric,phases,earliest);
     if(!std::isfinite(result.cost))result=index(clip).search(queryVector,metric,phases);
     costs[id]=result.cost;motionEntryFrames[id]=result.frame;tested+=result.tested;
+    if(phases&&clip==currentAnim->anim&&GetConfiguration()->GetBool("training_motion_continuity",true))costs[id]*=.95f;
     if(command.useDesiredTripDirection){
       const Vector3 incident=command.desiredTripDirection.GetRotated2D(-spatialState.angle).Get2D().GetNormalized(Vector3(0,-1,0));
       const Vector3 authored=GetVectorFromString(clip->GetVariable("bumpdirection")).Get2D().GetNormalized(incident);
@@ -138,5 +146,5 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   }
   std::stable_sort(candidates.begin(),candidates.end(),[&](int a,int b){return costs[a]<costs[b];});
   if(GetConfiguration()->GetBool("training_telemetry",false))
-    printf("MOTION_MATCH t=%lu actor=%d candidates=%zu indexed=%zu frames=%zu tested=%u choice=%d entry=%d cost=%.6f function=%d adaptive=%d learned=%d\n",match->GetActualTime_ms(),player->GetID(),candidates.size(),database.clips.size(),database.frames,tested,candidates.front(),MotionEntryFrame(candidates.front()),costs[candidates.front()],int(command.desiredFunctionType),adaptive?1:0,kMotionMetricTrained?1:0);
+    printf("MOTION_MATCH t=%lu actor=%d candidates=%zu indexed=%zu frames=%zu tested=%u choice=%d entry=%d cost=%.6f function=%d adaptive=%d learned=%d source=%s\n",match->GetActualTime_ms(),player->GetID(),candidates.size(),database.clips.size(),database.frames,tested,candidates.front(),MotionEntryFrame(candidates.front()),costs[candidates.front()],int(command.desiredFunctionType),adaptive?1:0,kMotionMetricTrained?1:0,anims->GetAnim(candidates.front())->GetName().c_str());
 }

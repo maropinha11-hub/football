@@ -43,7 +43,7 @@ struct Input {
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false;
-  bool useInertia=false,preserveLook=false;
+  bool useInertia=false,preserveLook=false,trackMotion=true;
   bool adaptiveMotion=false,receiving=false,bodyContact=false;
   float receiveTime=0,receiveHeight=0;
   Vec ball{{0,0,0}},ballVelocity{{0,0,0}};

@@ -65,7 +65,10 @@ Referee::~Referee() {
   if (Verbose()) printf("done\n");
 }
 
+bool Referee::IsRestartTaker(const PlayerBase *actor)const{return buffer.active&&buffer.taker==actor;}
+
 void Referee::ResetForKickoff() {
+  restart.reset();
   offsidePlayers.clear();foul.foulType=0;foul.foulPlayer=nullptr;foul.advantage=false;foul.hasBeenProcessed=true;
   afterSetPieceRelaxTime_ms=0;
   buffer.desiredSetPiece=e_SetPiece_KickOff;buffer.teamID=0;
@@ -74,6 +77,7 @@ void Referee::ResetForKickoff() {
 }
 
 void Referee::Process() {
+  restart.sync(buffer.active,buffer.stopTime);
   //printf("%i", match->GetMatchState());
 
   if (match->IsInPlay() && !match->IsInSetPiece()) {
@@ -207,7 +211,7 @@ void Referee::Process() {
         whistle[1]->Poke(e_SystemType_Audio);
       }
 
-      if (buffer.prepareTime == match->GetActualTime_ms()) {
+      if (restart.prepareDue(match->GetActualTime_ms(),buffer.prepareTime)) {
 
         if (buffer.endPhase == true) {
           if (match->GetMatchPhase() == e_MatchPhase_PreMatch) {
@@ -230,26 +234,32 @@ void Referee::Process() {
         }
 
         PrepareSetPiece(buffer.desiredSetPiece);
+        restart.prepare();
+        if(GetConfiguration()->GetBool("training_telemetry",false))printf("RESTART_PREPARED t=%lu type=%d actor=%d start=%lu\n",match->GetActualTime_ms(),int(buffer.desiredSetPiece),buffer.taker?buffer.taker->GetID():-1,buffer.startTime);
       }
 
-      if (buffer.startTime == match->GetActualTime_ms()) {
+      if (restart.startDue(match->GetActualTime_ms(),buffer.startTime)&&buffer.taker) {
         // blow whistle and wait for set piece taker to touch the ball
         whistle[1]->SetGain(0.3 * GetConfiguration()->GetReal("audio_volume", 0.5));
         whistle[1]->Poke(e_SystemType_Audio);
         match->StartPlay();
         match->StartSetPiece();
+        restart.authorize();
+        if(GetConfiguration()->GetBool("training_telemetry",false))printf("RESTART_AUTHORIZED t=%lu type=%d actor=%d\n",match->GetActualTime_ms(),int(buffer.desiredSetPiece),buffer.taker->GetID());
       }
     }
   }
 
   if (match->IsInSetPiece()) {
     // check if set piece has been taken
-    if (buffer.taker->TouchAnim() && !buffer.taker->TouchPending()) {
+    if (restart.hasReleased()) {
+      if(GetConfiguration()->GetBool("training_telemetry",false))printf("RESTART_COMPLETED t=%lu type=%d actor=%d\n",match->GetActualTime_ms(),int(buffer.desiredSetPiece),buffer.taker?buffer.taker->GetID():-1);
       buffer.active = false;
       match->StopSetPiece();
       match->GetTeam(0)->GetController()->PrepareSetPiece(e_SetPiece_None);
       match->GetTeam(1)->GetController()->PrepareSetPiece(e_SetPiece_None);
       afterSetPieceRelaxTime_ms = 400;
+      restart.reset();
       foul.foulPlayer = 0;
       foul.foulType = 0;
 
@@ -278,13 +288,20 @@ void Referee::PrepareSetPiece(e_SetPiece setPiece) {
 }
 
 void Referee::AlterSetPiecePrepareTime(unsigned long newTime_ms) {
-  if (buffer.active) {
+  if (buffer.active&&!restart.isPrepared()) {
     buffer.prepareTime = newTime_ms;
     buffer.startTime = buffer.prepareTime + 2000;
   }
 }
 
 void Referee::BallTouched() {
+  if(buffer.active&&match->IsInSetPiece()&&buffer.taker&&match->GetLastTouchPlayer()==buffer.taker){
+    const auto function=buffer.taker->GetCurrentFunctionType();
+    const bool strike=function==e_FunctionType_ShortPass||function==e_FunctionType_LongPass||function==e_FunctionType_HighPass||function==e_FunctionType_Shot;
+    if(restart.contact(match->GetActualTime_ms(),buffer.startTime,strike&&buffer.taker->HasMadeTouch())){
+      if(GetConfiguration()->GetBool("training_telemetry",false))printf("RESTART_RELEASED t=%lu type=%d actor=%d function=%d position=[%.5f,%.5f]\n",match->GetActualTime_ms(),int(buffer.desiredSetPiece),buffer.taker->GetID(),int(function),buffer.taker->GetPosition().coords[0],buffer.taker->GetPosition().coords[1]);
+    }
+  }
 
   // check for offside player receiving the ball
 
@@ -317,7 +334,7 @@ void Referee::BallTouched() {
 
   if (match->IsInPlay() &&
       (buffer.active == false ||
-       (buffer.active == true && buffer.desiredSetPiece != e_SetPiece_ThrowIn))) {
+       (buffer.active == true && buffer.desiredSetPiece != e_SetPiece_ThrowIn&&buffer.desiredSetPiece!=e_SetPiece_GoalKick&&buffer.desiredSetPiece!=e_SetPiece_Corner))) {
     // check for offside players at moment of touch
     float offside = AI_GetOffsideLine(match, match->GetMentalImage(0), abs(lastTouchTeamID - 1));
     std::vector<Player*> players;
@@ -406,6 +423,7 @@ void Referee::PhysicalFoul(Player *victim,Player *offender,float severity){
 
 void Referee::PracticeSetPiece(e_SetPiece type,int teamID){
   if(!PlayerMatchEnabled() || !GetConfiguration()->GetBool("training_physical_lab",false))return;
+  restart.reset();
   match->StopPlay();match->StopSetPiece();
   match->GetTeam(0)->GetController()->PrepareSetPiece(e_SetPiece_None);
   match->GetTeam(1)->GetController()->PrepareSetPiece(e_SetPiece_None);

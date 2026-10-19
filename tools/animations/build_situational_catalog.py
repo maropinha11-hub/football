@@ -282,6 +282,11 @@ def build_catalog(root=ROOT):
     for path in sorted((root/SOURCE_DIRECTORY).rglob("*.anim")):
         relative = path.relative_to(root).as_posix()
         tracks, events, metadata, raw = parse_source(path, root)
+        # Imported non-contact locomotion has its own retarget manifest and
+        # support/loop checks. It cannot supply a contextual ball action, and
+        # must not invalidate the authored action catalog's source digest.
+        if metadata.get("imported_mocap")=="true" and metadata["type"]=="movement" and not events:
+            continue
         source_hash.update(relative.encode()+b"\0"+raw)
         excluded = "templates" in path.parts or "luxury" in path.parts
         frame_end = max(keys[-1][0] for keys in tracks.values())

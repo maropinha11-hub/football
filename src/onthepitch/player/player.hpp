@@ -42,6 +42,7 @@ class Player : public PlayerBase {
 
     bool TouchPending() { return CastHumanoid()->TouchPending(); }
     bool TouchAnim() { return CastHumanoid()->TouchAnim(); }
+    bool HasMadeTouch(){return CastHumanoid()->HasMadeTouch();}
     Vector3 GetTouchPos() { return CastHumanoid()->GetTouchPos(); }
     int GetTouchFrame() { return CastHumanoid()->GetTouchFrame(); }
     int GetCurrentFrame() { return CastHumanoid()->GetCurrentFrame(); }

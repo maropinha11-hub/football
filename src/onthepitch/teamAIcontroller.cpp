@@ -895,7 +895,10 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
         GetConfiguration()->GetBool("player_match_all_restarts",true) ? match->GetTrainingPlayer() :
       AI_GetClosestPlayer(team, match->GetBall()->Predict(0).Get2D(), false,PlayerMatchEnabled()?match->GetTrainingPlayer():nullptr);
 
-    if (setPiece == e_SetPiece_ThrowIn || setPiece == e_SetPiece_KickOff) {
+    if(setPiece==e_SetPiece_ThrowIn){
+      const Vector3 ball=match->GetBall()->Predict(0).Get2D();
+      taker->ResetPosition(ball+Vector3(0,ball.coords[1]>=0?.45f:-.45f,0),ball);
+    }else if (setPiece == e_SetPiece_KickOff) {
       taker->ResetPosition(match->GetBall()->Predict(0).Get2D() + match->GetBall()->Predict(0).Get2D().GetNormalized(Vector3(0, -team->GetSide(), 0)) * 0.3f, match->GetBall()->Predict(0).Get2D());
     } else if (setPiece == e_SetPiece_FreeKick) {
       taker->ResetPosition(match->GetBall()->Predict(0).Get2D() + Vector3(team->GetSide(), 0, 0) * 2.3f, match->GetBall()->Predict(0).Get2D());

@@ -79,6 +79,18 @@ IController *PlayerBase::GetController() {
 void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (externalController) externalController->RequestCommand(commandQueue);
                      else controller->RequestCommand(commandQueue);
+  auto *referee=match->GetReferee();
+  if(referee->WaitingForRestart()){
+    commandQueue.clear();PlayerCommand wait;
+    wait.desiredFunctionType=e_FunctionType_Movement;
+    wait.useDesiredMovement=wait.useDesiredLookAt=true;
+    wait.desiredDirection=GetDirectionVec();wait.desiredVelocityFloat=idleVelocity;
+    wait.desiredLookAt=GetPosition()+GetDirectionVec()*10.f;commandQueue.push_back(wait);
+  }else if(referee->KeepThrowerOutside(this)){
+    for(auto &command:commandQueue)if(command.desiredFunctionType==e_FunctionType_Movement){
+      command.useDesiredMovement=true;command.desiredVelocityFloat=idleVelocity;
+    }
+  }
 }
 
 void PlayerBase::SetExternalController(IController *externalController) {

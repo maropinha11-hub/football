@@ -8,6 +8,13 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+A revisão atual corrige as cobranças antes do apito e a retomada após o toque,
+sincroniza a pose exibida com os contatos e reduz as oscilações rápidas da
+corrida/strafe. Dez ciclos FBX de locomoção foram convertidos para o modelo
+nativo; 37 clipes Unity e 176 intervalos FBX estão catalogados. Abra `treino-fisico.bat`
+ou `partida-fisica.bat` em uma extração nova do pacote completo. Veja
+[as mudanças e os testes desta revisão](docs/MOVIMENTO-E-COBRANCAS.md).
+
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
 A revisão usa **Bullet 3.25**, motores físicos no tronco e braços, busca por
@@ -67,7 +74,7 @@ A nova **partida com jogador fixo** abre por `jogar-partida.bat`, no
 Você controla o mesmo jogador do treino; os outros dez companheiros e os
 onze adversários usam a CPU original do jogo no **nível máximo**, com
 decisões autônomas de condução, passe e chute também nos companheiros. **RT**, sem bola, pede passe;
-**E** faz o mesmo no teclado. A partida tem dois tempos de três minutos,
+**E** faz o mesmo no teclado. A partida tem dois tempos de 45 minutos reais,
 placar, goleiros e reposições. O treino continua em `run-training.bat`.
 Consulte [os comandos e detalhes da partida](docs/PARTIDA-JOGADOR-FIXO.md).
 

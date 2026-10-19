@@ -28,6 +28,7 @@ class Humanoid : public HumanoidBase {
 
     bool TouchPending() { return currentAnim->frameNum < currentAnim->touchFrame; }
     bool TouchAnim() { return (currentAnim->touchFrame != -1) ? true : false; }
+    bool HasMadeTouch()const{return currentAnim->touchMade;}
     Vector3 GetTouchPos() { return currentAnim->touchPos; }
     int GetTouchFrame() { return currentAnim->touchFrame; }
     int GetCurrentFrame() { return currentAnim->frameNum; }

@@ -168,7 +168,7 @@ void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
   local=input.pose;
-  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.apply(input.pose,input.poseVelocity,input.inertiaMask,local);}
+  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.apply(input.pose,input.poseVelocity,input.inertiaMask,local,input.trackMotion);}
   forwardKinematics();const Vec left=positions[9],right=positions[12];
   activeRootOffset=input.adaptiveMotion&&!input.bodyContact?rootPosture:Vec{{0,0,0}};
   root=addPoint(root,activeRootOffset);forwardKinematics();

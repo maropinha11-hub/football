@@ -2115,7 +2115,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       printf("PHYSICAL_STAGGER_CLIP t=%lu actor=%d clip=%s frames=%d speed=%.3f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->anim->GetFrameCount(),spatialState.floatVelocity);
     }
     currentAnim->frameNum = std::max(0,std::min(MotionEntryFrame(selectedAnimID),int(positions_tmp.size())-2));
-    ++motionEpoch;
+    // A search may select the next samples of the same running cycle.
+    // Its continuation is not a fresh transition to inertialize again.
+    if(!PhysicalRigEnabled()||!GetConfiguration()->GetBool("training_motion_continuity",true)||
+        previousAnim->anim!=currentAnim->anim||currentAnim->frameNum<previousAnim->frameNum||
+        currentAnim->frameNum>previousAnim->frameNum+2)++motionEpoch;
     if(currentAnim->frameNum>0){
       football_physics::phaseRootTrajectory(positions_tmp,currentAnim->frameNum);
       if(GetConfiguration()->GetBool("training_telemetry",false))

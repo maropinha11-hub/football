@@ -532,6 +532,20 @@ void HumanoidBase::UpdateTrainingContactPose() {
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
   UpdatePhysicalRigPose();
+  if(match->GetReferee()->KeepThrowerOutside(player)){
+    const float side=match->GetRefereeBuffer().restartPos.coords[1]>=0?1.f:-1.f;
+    float margin=100;
+    for(unsigned foot:{9u,12u}){
+      Vector3 surface;ContactSurface(contactPositions[foot]+Vector3(0,-side*2.f,0),foot==9?"left_foot":"right_foot",contactGlobal,contactPositions,&surface);
+      margin=std::min(margin,side*surface.coords[1]-pitchHalfH);
+    }
+    if(margin<.025f){
+      const Vector3 correction(0,side*(.025f-margin),0);
+      OffsetPosition(correction);for(auto &position:contactPositions)position+=correction;
+    }
+    if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%50==0)
+      printf("RESTART_FOOTING t=%lu actor=%d margin=%.6f correction=%.6f\n",match->GetActualTime_ms(),player->GetID(),std::max(.025f,margin),std::max(0.f,.025f-margin));
+  }
   if(!UsesTrainingContacts())return;
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?

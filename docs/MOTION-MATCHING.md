@@ -1,5 +1,8 @@
 # Busca de poses e interação corporal
 
+A revisão seguinte acrescenta ciclos FBX e corrige fluidez/cobranças;
+consulte [MOVIMENTO-E-COBRANCAS.md](MOVIMENTO-E-COBRANCAS.md) para o estado atual.
+
 Extraia o ZIP completo em uma pasta nova e abra `treino-fisico.bat`.
 Use R3/Tab para observar o corpo. F12 compara a busca de quadros e as
 transições desta revisão; F7 compara a camada física inteira.
