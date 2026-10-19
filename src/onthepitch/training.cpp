@@ -26,12 +26,6 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
     printf("PHYSICAL_IMPACT_DIRECTION t=%lu direction=%u\n",time,direction);
   }
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
-  if(events.ConsumeKeyPress(SDLK_F12)){
-    const bool enabled=!GetConfiguration()->GetBool("training_motion_matching",true);
-    GetConfiguration()->SetBool("training_motion_matching",enabled);
-    match->SpamMessage(enabled?"Motion matching e transicoes inerciais: ligados":"Motion matching por inicio de clip: comparacao",3500);
-    printf("MOTION_MATCH_TOGGLE t=%lu enabled=%d\n",time,enabled?1:0);
-  }
   if(events.ConsumeKeyPress(SDLK_F1)){
     const bool enabled=!GetConfiguration()->GetBool("training_situational_motion",true);
     GetConfiguration()->SetBool("training_situational_motion",enabled);

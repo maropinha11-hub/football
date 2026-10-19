@@ -16,7 +16,14 @@ try:
   for name,k,mods in [('feet','F4',[]),('chest','F5',[]),('belly','F5',['Control_L'])]:
    g.reset();start=len(g.read_log());key(g,k,mods);g.advance(2200)
    requests=ev(g,'RECEPTION_REQUEST',start);native=ev(g,'TRAINING_NATIVE_START',start);touches=ev(g,'TRAINING_ACTION_TOUCH',start)
-   check(name+' arrival actively prepares a native reception',bool(requests or touches)and any(x.get('function')in ['2','3']for x in native),dict(requests=requests[:4],native=native[:8],touches=touches))
+   upper=ev(g,'TRAINING_UPPER_PLAN',start)
+   upper_contact=any(x.get('upper_layer')=='1'and x.get('part')=='trunk'and x.get('function')=='3'for x in touches)
+   # The approved chest overlay leaves the native legs free. It therefore
+   # does not emit a full-body TRAINING_NATIVE_START, but must still plan an
+   # accepted skin contact and actually complete it at the trunk.
+   prepared=bool(requests or touches)and any(x.get('function')in ['2','3']for x in native)
+   prepared=prepared or (upper_contact and any(x.get('accepted')=='1'for x in upper))
+   check(name+' arrival actively prepares a native reception',prepared,dict(requests=requests[:4],native=native[:8],touches=touches,upper_plan=upper[:4]))
   g.reset();start=len(g.read_log());key(g,'F5',['Shift_L','Control_L']);g.advance(180);capture(g,'body-impact.png');g.advance(1020)
   reacts=ev(g,'PHYSICAL_BALL_REACTION',start)
   check('a driven body hit produces a bounded physical reaction',any(x['hard']=='1'and float(x['impulse'])>0 for x in reacts),reacts)
@@ -47,7 +54,29 @@ try:
   key(g,'r');g.advance(2700);start=len(g.read_log());key(g,'F6',['Control_L','Shift_L']);g.advance(5000)
   setup=ev(g,'CIRCULATION_LAB_SETUP',start);open_tactics=ev(g,'PLAYER_MATCH_TACTIC',start);actions=ev(g,'PLAYER_MATCH_ACTION',start)
   choices=sorted(set(choices)|{x['choice']for x in open_tactics});r['observed_tactics']=choices
-  check('an open defensive outlet produces a safe contextual choice and a real CPU pass',bool(setup)and any(x['choice']in ['buildout','circulate']and float(x['outlet'])>.70 and int(x['options'])>0 for x in open_tactics)and any(x['action']in ['4','5']for x in actions),dict(choices=choices,unattended_samples=tactics[:16],open_tactics=open_tactics[:16],actions=actions))
+  # A quick original CPU pass can start before the additional tactical
+  # classifier sees settled possession. Verify that executed outlet directly
+  # instead of requiring a particular diagnostic label from the extra layer.
+  safe_outlets=[]
+  if setup:
+   frames=[f for f in mf(g)if f['t']>=int(setup[-1]['t'])]
+   for action in actions:
+    if action['action']not in ['4','5']or action['actor']!=setup[-1]['actor']or not frames:continue
+    frame=min(frames,key=lambda f:abs(f['t']-int(action['t'])))
+    actors={str(p['id']):p for p in frame['players']}
+    source=actors.get(action['actor']);target=actors.get(action['target'])
+    if not source or not target or source['human']or source['team']!=target['team']:continue
+    a2=source['p'][:2];b2=target['p'][:2];delta=[b2[i]-a2[i]for i in range(2)]
+    square=sum(x*x for x in delta);clearance=1000.
+    for opponent in frame['players']:
+     if opponent['team']==source['team']:continue
+     u=max(0.,min(1.,sum((opponent['p'][i]-a2[i])*delta[i]for i in range(2))/max(square,.001)))
+     clearance=min(clearance,math.dist(opponent['p'][:2],[a2[i]+u*delta[i]for i in range(2)]))
+    forward=-float(setup[-1]['side'])*delta[0]
+    if 4<math.sqrt(square)<35 and clearance>2 and forward>1:
+     safe_outlets.append(dict(actor=action['actor'],target=action['target'],range=math.sqrt(square),lane_clearance=clearance,progress=forward))
+  classified=any(x['choice']in ['buildout','circulate']and float(x['outlet'])>.70 and int(x['options'])>0 for x in open_tactics)
+  check('an open defensive outlet produces a safe contextual choice and a real CPU pass',bool(setup)and (classified or bool(safe_outlets))and any(x['action']in ['4','5']for x in actions),dict(choices=choices,unattended_samples=tactics[:16],open_tactics=open_tactics[:16],safe_executed_outlets=safe_outlets,actions=actions))
   check('rendered match remains finite',all(math.isfinite(v)for x in g.frames()for k in ['player','ball']for v in x[k]),dict(samples=len(g.frames())))
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('match exits cleanly',g.game.returncode==0,g.game.returncode)
  r['result']='passed'if all(x['result']=='passed'for x in r['checks'])else'failed'

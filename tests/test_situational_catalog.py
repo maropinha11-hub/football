@@ -7,6 +7,7 @@ import ctypes
 import importlib.util
 import json
 import math
+import random
 from pathlib import Path
 import shutil
 import subprocess
@@ -157,7 +158,7 @@ class CatalogSources(unittest.TestCase):
             expected = (catalogue.KIND_VALUES[profile["kind"]]*128+
                         profile["effort"]*27+profile["pressure"]*9+
                         profile["turn"]*3+profile["reach"])
-            self.assertEqual(profile["id"], expected*32+profile["pattern"])
+            self.assertEqual(profile["id"], expected*32+(profile["pattern"] if profile["pattern"]<32 else (1<<20)+profile["pattern"]-32))
             for field in ("trunkGain", "armGain", "followThroughGain"):
                 self.assertGreaterEqual(profile[field], .7)
                 self.assertLessEqual(profile[field], 1.2)
@@ -214,6 +215,16 @@ extern "C" unsigned query(int kind,float effort,float pressure,float turn,float 
                                         profile["effort"]*.5, profile["pressure"]*.5,
                                         profile["turn"]*.5, profile["reach"]*.5, profile["pattern"]),
                              profile["id"])
+
+    def test_direct_lookup_matches_exhaustive_fractional_queries(self):
+        generator=random.Random(4812)
+        profiles=catalogue.profiles()
+        for _ in range(500):
+            kind=generator.randrange(1,6);pattern=generator.randrange(48)
+            query=[ctypes.c_float(generator.random()).value for _ in range(4)]
+            candidates=[p for p in profiles if catalogue.KIND_VALUES[p['kind']]==kind and p['pattern']==pattern]
+            expected=min(candidates,key=lambda p:sum((x*2-p[axis])**2 for x,axis in zip(query,['effort','pressure','turn','reach'])))['id'] if candidates else 0
+            self.assertEqual(self.query(kind,*query,pattern),expected)
 
     def test_category_constraints_clamp_unsupported_extremes(self):
         indexed = {p["id"]: p for p in catalogue.profiles()}

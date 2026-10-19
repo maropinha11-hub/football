@@ -2,8 +2,11 @@
 
 O artefato `artifacts/football-training-windows-x86_64.zip` é um pacote x64
 portátil. Extraia-o para uma pasta local, conecte o controle Xbox Series S por
-USB ou Bluetooth e execute `run-training.bat`. O lançador abre diretamente o
-centro de treinamento com `config/training.config` e os recursos do jogo.
+USB ou Bluetooth e execute `treino-fisico.bat` para esta revisão, ou
+`partida-fisica.bat` para a partida. `run-training.bat` abre a movimentação
+aprovada com a camada física adicional desligada. Os lançadores usam o
+`training.config` e os recursos da própria pasta. Veja a
+[base recuperada](BASE-APROVADA.md).
 
 Para estudar as animações PES3 dentro do campo, execute `importar-pes3.bat`,
 selecione seu `fpsoccer-pes-nucleo-v14.zip` e execute `estudar-pes3.bat`.

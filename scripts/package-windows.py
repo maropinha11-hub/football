@@ -78,11 +78,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "scripts/import-pes3.ps1", stage / "import-pes3.ps1")
     for filename in ("dividir-arquivos.ps1", "dividir-arquivos.bat"):
         shutil.copy2(project / "scripts" / filename, stage / filename)
-    shutil.copy2(project / "docs/MOVIMENTO-E-COBRANCAS.md",stage / "LEIA-MOVIMENTO.txt")
-    shutil.copy2(project / "docs/CONTINUIDADE-E-PASSES.md",stage / "LEIA-CONTINUIDADE.txt")
-    shutil.copy2(project / "docs/CAMERA-E-TRANSICOES.md",stage / "LEIA-CAMERA.txt")
-    for filename in ("mocap-retarget.json","uploaded-motion-catalog.json"):
-        shutil.copy2(project / "docs" / filename,stage / filename)
+    shutil.copy2(project / "docs/BASE-APROVADA.md",stage / "LEIA-BASE-APROVADA.txt")
+    shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
         ("estudar-pes3.bat", 'gameplayfootball.exe --config training.config --training --pes3-preview %*'),
@@ -137,9 +134,11 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
         "Correcao desta revisao: rotacoes pelo arco curto, camera presa a\n"
-        "cabeca renderizada e leitura direta dos quadros. Leia LEIA-CAMERA.txt.\n\n"
+        "cabeca renderizada e leitura direta dos quadros. Leia LEIA-BASE-APROVADA.txt.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
-        "F12: comparar busca por quadros de pose e transicoes suaves ligada/desligada.\n"
+        "Base restaurada: fa0dfa6, correspondente ao executavel enviado.\n"
+        "Sem os clipes de locomocao importados e sem busca por fase.\n"
+        "Leia LEIA-BASE-APROVADA.txt.\n"
         "F1: comparar variacoes corporais de passes/chutes ligadas/desligadas.\n"
         "RT fica reservado no treino; os gestos de sola foram removidos.\n"
         "Na recepcao, mire com o analogico esquerdo e prepare A/X/Y/B antes\n"
@@ -176,8 +175,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "tronco e bracos conforme direcao, velocidade, bola e adversario.\n"
         "Teste um passe parado e outro para o lado durante a corrida com RB.\n"
         "A camada nova preserva os pes e o contato original com a bola.\n"
-        "O catalogo inclui 6274 perfis procedurais sobre as animacoes existentes;\n"
-        "as 28.632 combinacoes auditadas nao sao novas capturas nem uma\n"
+        "O catalogo inclui 7723 perfis procedurais sobre as animacoes existentes;\n"
+        "as 36.888 combinacoes de metadados nao sao novas capturas nem uma\n"
         "validacao exaustiva. Consulte situational-motion-catalog.json.\n"
         "Na partida, LT/L2 ou H/N tambem tentam agarrar/proteger; M disputa.\n"
         "F2 na partida: aproxima um adversario para ensaio de contato.\n"
@@ -225,7 +224,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Centro de treinamento Gameplay Football — Windows 11 x64\n\n"
         "Extraia este ZIP para uma pasta nova. Para testar esta atualizacao,\n"
         "abra treino-fisico.bat; partida-fisica.bat testa os mesmos movimentos\n"
-        "com os dois times. R3/Tab mostra o corpo; F12 compara as novas transicoes.\n"
+        "com os dois times. R3/Tab mostra o corpo; F1 compara as variacoes corporais.\n"
         "jogar-partida.bat: partida 11 x 11 com a base aprovada.\n"
         "run-training.bat: treino aprovado. RT/E sem bola: pedir passe. Conecte o\n"
         "controle Xbox Series S por USB ou Bluetooth antes de iniciar.\n"
@@ -307,8 +306,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
-                         "situational-motion-catalog.json","LEIA-MOVIMENTO.txt","mocap-retarget.json",
-                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1","LEIA-CONTINUIDADE.txt","LEIA-CAMERA.txt"):
+                         "situational-motion-catalog.json","LEIA-BASE-APROVADA.txt","approved-base.json",
+                         "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
             output.write(stage/filename,filename)

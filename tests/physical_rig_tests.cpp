@@ -1,7 +1,6 @@
 // Numerical and behavioral checks for the native articulated-body experiment.
 #include "onthepitch/player/humanoid/physical_rig.hpp"
 #include "onthepitch/player/humanoid/motion_matching.hpp"
-#include "onthepitch/player/humanoid/body_contest.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -37,11 +36,12 @@ Input sourcePose(const std::string &path){
 int main(int argc,char **argv){
   const auto bind=bindPose();
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
-  float maximumBoneError=0,peakLean=0;
+  float maximumBoneError=0,peakLean=0,peakCounterbalance=0;
   rig.step(input);const Vec initialLeft=rig.points()[9],initialRight=rig.points()[12];
   rig.impulse({{65,0,0}});
-  for(unsigned step=0;step<300;++step){rig.step(input);peakLean=std::max(peakLean,rig.metrics().lean);maximumBoneError=std::max(maximumBoneError,boneError(rig,bind));}
+  for(unsigned step=0;step<300;++step){rig.step(input);peakCounterbalance=std::max(peakCounterbalance,rig.metrics().counterbalance);peakLean=std::max(peakLean,rig.metrics().lean);maximumBoneError=std::max(maximumBoneError,boneError(rig,bind));}
   check(rig.mode()==Mode::Active && peakLean>.02f,"a light impulse disturbs balance without dropping the body");
+  check(peakCounterbalance>.005f && rig.metrics().counterbalance<.001f,"external momentum recruits bounded upper-body counterbalance and settles");
   check(rig.metrics().lean<.003f,"damped balance returns to rest");
   check(length(subtractPoint(initialLeft,rig.points()[9]))<.012f && length(subtractPoint(initialRight,rig.points()[12]))<.012f,"stance feet remain anchored during a recoverable push");
   float minimumPelvis=10;unsigned fell=0,recovered=0;Mode previous=rig.mode();
@@ -100,34 +100,6 @@ int main(int argc,char **argv){
   check(motionCost(query,near)<motionCost(query,far),"motion matching prefers the requested future trajectory");
   far=query;far.positions[0]={{.4f,0,0}};check(motionCost(query,near)<motionCost(query,far),"motion matching preserves the current support-foot pose");
   far=query;far.velocities[0]={{0,5,0}};check(motionCost(query,near)<motionCost(query,far),"motion matching penalizes discontinuous limb velocity");
-  PhysicalRig adaptive;Input shield=standing();adaptive.configure(bind,1);adaptive.step(shield);
-  const Vec anchorLeft=adaptive.points()[9],anchorRight=adaptive.points()[12];
-  shield.adaptiveMotion=true;shield.opponent={{1,0,0}};shield.opponentDistance=.7f;shield.protect=true;
-  for(unsigned i=0;i<100;++i)adaptive.step(shield);
-  check(adaptive.rootOffset()[0]<-.01f&&adaptive.rootOffset()[2]<-.01f&&length(adaptive.rootOffset())<.066f,
-    "shielding shifts and lowers the pelvis away from a nearby challenger");
-  check(length(subtractPoint(anchorLeft,adaptive.points()[9]))<.012f&&length(subtractPoint(anchorRight,adaptive.points()[12]))<.012f,
-    "a physical shielding stance retains both authored support-foot contacts");
-  shield.bodyContact=true;adaptive.evaluate(shield);
-  check(length(adaptive.rootOffset())<1e-7f,"authored chest or head contact suppresses procedural root displacement");
-  shield.bodyContact=false;shield.receiving=true;shield.receiveTime=.3f;shield.receiveHeight=1.6f;shield.ball={{0,-.3f,1.6f}};
-  for(unsigned i=0;i<60;++i)adaptive.step(shield);
-  check(adaptive.metrics().receiveAnticipation>.5f&&finite(adaptive),"an approaching pass visibly prepares the torso and arms before native contact");
-  shield.action=true;adaptive.evaluate(shield);
-  check(adaptive.metrics().receiveAnticipation==0,"preparation yields completely to the authored kick or receiving action");
-  for(unsigned i=0;i<60;++i)adaptive.step(shield);
-  shield.action=false;adaptive.step(shield);
-  check(adaptive.metrics().receiveAnticipation<.11f,"reception preparation cannot accumulate invisibly behind another action");
-  shield.handTargetActive=true;adaptive.evaluate(shield);
-  check(adaptive.metrics().receiveAnticipation==0,"a hand braced on the opponent takes priority over free-arm receiving preparation");
-  const auto first=bodyProxies(adaptive.points(),adaptive.worldRotations(),1);
-  auto close=first,farBody=first;for(auto &p:close)p.center[0]+=.3f;for(auto &p:farBody)p.center[0]+=3;
-  const auto duel=bodyContact(first,close);
-  check(duel.touching&&duel.penetration>0&&duel.penetration<=.08f&&std::fabs(length(duel.normal)-1)<1e-5f&&duel.normal[2]==0,
-    "a real posed body overlap yields a bounded horizontal contact normal");
-  check(!bodyContact(first,farBody).touching,"separated bodies cannot manufacture duel force");
-  check(bodyPressure(.04f,1)>100&&bodyPressure(.08f,12)==260&&bodyPressure(0,-1)==0,
-    "body pressure respects penetration, closing speed and the force ceiling");
   std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<",\"parameter_contexts\":"<<contexts<<",\"unsafe_cut_contexts\":"<<unsafeCuts<<",\"maximum_bone_error_m\":"<<std::max(matrixError,maximumBoneError)<<",\"minimum_pelvis_height_m\":"<<minimumPelvis<<",\"pelvis_rotation_rad\":"<<accumulatedRotation<<",\"peak_angular_speed_rad_s\":"<<peakAngular<<",\"peak_joint_error_m\":"<<peakJointError<<",\"maximum_foot_step_m\":"<<maximumFootStep<<"}\n";
   return failures?1:0;
 }

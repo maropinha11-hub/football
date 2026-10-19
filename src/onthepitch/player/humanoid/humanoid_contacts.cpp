@@ -145,6 +145,16 @@ void HumanoidBase::CaptureContactMesh() {
         ContactForwardKinematics(local,global,positions);
       }
       Vector3 probe=entry.second.position;probe.coords[2]*=zMultiplier;
+      if(animation->GetVariable("physical_heel")=="true") {
+        // A rear pass contacts the heel side of the shoe. Projecting an old
+        // proxy marker onto its toe made the preparation step hit the ball
+        // before the intended back-swing. Let the native whole-body approach
+        // aim the real heel at the ball; do not enlarge the contact window.
+        const unsigned ankle=part=="left_foot"?9:12;
+        const Vector3 outward=GetVectorFromString(animation->GetVariable("balldirection")).Get2D().GetNormalized(Vector3(0,1,0));
+        const float height=probe.coords[2];
+        probe=positions[ankle]+outward*.45f;probe.coords[2]=height;
+      }
       if(animation->GetVariable("training_dribble")=="true") {
         const unsigned ankle=part=="left_foot"?9:12;
         probe=positions[ankle]+Vector3(0,-.45f,0);probe.coords[2]=.11f;
@@ -440,8 +450,13 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   if(match->GetBallRetainer()) {contactPreviousBallValid=false;return;}
   Ball *ball=match->GetBall();
   const Vector3 current=ball->Predict(0),incoming=ball->GetMovement();
-  const Vector3 previous=contactPreviousBallValid && (current-contactPreviousBall).GetLength()<1.f?
+  const bool previousValid=contactPreviousBallValid && (current-contactPreviousBall).GetLength()<1.f;
+  const Vector3 previous=previousValid?
     contactPreviousBall:current-incoming*.01f;
+  Quaternion priorLocal[13];
+  for(unsigned i=0;i<13;++i){priorLocal[i]=previousValid?contactPreviousSkinLocal[i]:contactLocal[i];contactPreviousSkinLocal[i]=contactLocal[i];}
+  const Vector3 priorRoot=previousValid?contactPreviousSkinRoot:contactPositions[0];
+  contactPreviousSkinRoot=contactPositions[0];
   contactPreviousBall=current;contactPreviousBallValid=true;
   float bodyRange=(current-spatialState.position-Vector3(0,0,1)).GetLength();
   if(PhysicalRigBusy())for(auto &position:contactPositions)bodyRange=std::min(bodyRange,(current-position).GetLength());
@@ -457,18 +472,27 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   Quaternion local[13],global[13];Vector3 positions[13];
   std::copy(contactLocal,contactLocal+13,local);std::copy(contactPositions,contactPositions+13,positions);
   ContactForwardKinematics(local,global,positions);
+  auto sampleSkin=[&](float u){
+    for(unsigned i=0;i<13;++i)local[i]=priorLocal[i].GetSlerped(u,contactLocal[i]).GetNormalized();
+    positions[0]=priorRoot*(1-u)+contactPositions[0]*u;
+    ContactForwardKinematics(local,global,positions);
+  };
+  const float relativeTravel=((current-previous)-(contactPositions[0]-priorRoot)).GetLength();
+  const unsigned sweepSamples=std::max(8u,std::min(24u,unsigned(std::ceil(relativeTravel/.035f))));
   Vector3 point,surface;std::string part;float fraction=-1;
-  for(unsigned sample=0;sample<=8;++sample) {
-    const float u=sample/8.0f;point=previous*(1-u)+current*u;
+  for(unsigned sample=0;sample<=sweepSamples;++sample) {
+    const float u=float(sample)/sweepSamples;point=previous*(1-u)+current*u;sampleSkin(u);
     if(ContactSurface(point,"",global,positions,&surface,&part)<=.0005f) {fraction=u;break;}
   }
   if(fraction<0)return;
-  float low=std::max(0.0f,fraction-.125f),high=fraction;
+  float low=std::max(0.0f,fraction-1.f/sweepSamples),high=fraction;
   for(unsigned iteration=0;iteration<16;++iteration) {
     const float u=(low+high)*.5f;
+    sampleSkin(u);
     if(ContactSurface(previous*(1-u)+current*u,"",global,positions)>.0005f)low=u;else high=u;
   }
   point=previous*(1-high)+current*high;
+  sampleSkin(high);
   ContactSurface(point,"",global,positions,&surface,&part);
   Vector3 normal=(point-surface).GetNormalized(spatialState.bodyDirectionVec);
   // The nearest triangle distance is unsigned. If a moving torso has already
@@ -484,14 +508,21 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   const Vector3 axis=b-a;
   const Vector3 centre=a+axis*clamp((surface-a).GetDotProduct(axis)/std::max(.00001f,axis.GetSquaredLength()),0.f,1.f);
   if(normal.GetDotProduct(surface-centre)<0)normal=-normal;
-  const Vector3 relative=incoming-player->GetMovement();
+  unsigned struckBone=part=="middle"?1:part=="neck"?2:0;
+  for(unsigned i=3;i<13;++i)if(part==pes3::nativeBoneNames[i])struckBone=i;
+  const Vector3 localSurface=global[struckBone].GetInverse()*(surface-positions[struckBone]);
+  sampleSkin(0);const Vector3 beforeSurface=positions[struckBone]+global[struckBone]*localSurface;
+  sampleSkin(1);const Vector3 afterSurface=positions[struckBone]+global[struckBone]*localSurface;
+  Vector3 surfaceVelocity=(afterSurface-beforeSurface)*100;
+  surfaceVelocity=surfaceVelocity.GetNormalized(Vector3(0))*std::min(18.f,surfaceVelocity.GetLength());
+  const Vector3 relative=incoming-surfaceVelocity;
   const float inward=relative.GetDotProduct(normal);
   if(inward>=-.2f)return;
-  const Vector3 outgoing=(relative-normal*inward)*.8f-normal*inward*.3f+player->GetMovement();
+  const Vector3 outgoing=(relative-normal*inward)*.8f-normal*inward*.3f+surfaceVelocity;
   const Vector3 resolved=surface+normal*.1105f+outgoing*(1-high)*.01f;
   // A fast ball can cross more than 12 cm in a simulation step. Rejecting
   // that correction allowed it through the torso. Bound it by this sweep.
-  if((resolved-current).GetLength()>(current-previous).GetLength()+.15f)return;
+  if((resolved-current).GetLength()>(current-previous).GetLength()+(afterSurface-beforeSurface).GetLength()+.15f)return;
   ball->ResolveBodyContact(resolved,outgoing);bodyContactUntil_ms=match->GetActualTime_ms()+10;
   contactPreviousBall=resolved;
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,e_TouchType_Accidental);
@@ -503,8 +534,8 @@ void HumanoidBase::ProcessTrainingBodyContact() {
     if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());
   }
   if(GetConfiguration()->GetBool("training_telemetry",false))
-    printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f actor=%d\n",
-      match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength(),player->GetID());
+    printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f actor=%d moving_skin=1 samples=%u skin_speed=%.5f\n",
+      match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength(),player->GetID(),sweepSamples,surfaceVelocity.GetLength());
 }
 
 void HumanoidBase::UpdateTrainingContactPose() {
@@ -531,8 +562,6 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const float angle=startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*end;
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
-  BlendMotionPose(contactLocal,contactPositions[0]);
-  ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
   UpdatePhysicalRigPose();
   if(match->GetReferee()->KeepThrowerOutside(player)){
     const float side=match->GetRefereeBuffer().restartPos.coords[1]>=0?1.f:-1.f;

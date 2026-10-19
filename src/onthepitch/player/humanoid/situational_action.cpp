@@ -149,6 +149,62 @@ void ActionLayer::step(const Context &c,float dt) {
     if(c.pattern==18&&c.contactMade&&incomingLoad>.85f)
       target[1][0]-=trunk*.40f*before;
   }
+  if(c.pattern>=32&&c.pattern<48){
+    // Preparation bend, recovery bend, counter-rotation, arm span. Each row
+    // is a different support strategy; continuous load/direction still drive it.
+    static constexpr float strategy[16][4]={
+      {.08f,-.04f,.12f,.06f},{-.04f,.08f,-.16f,.10f},
+      {-.08f,.16f,.08f,.08f},{-.18f,.04f,-.10f,.20f},
+      {.19f,-.06f,.06f,.16f},{-.14f,-.08f,.04f,.14f},
+      {.02f,.10f,.22f,.18f},{-.12f,.12f,-.04f,.09f},
+      {-.06f,.04f,.16f,.22f},{.16f,.02f,-.12f,.12f},
+      {-.20f,-.12f,.02f,.24f},{.10f,-.08f,.24f,.07f},
+      {-.10f,.06f,-.24f,.11f},{-.16f,.18f,.14f,.19f},
+      {.06f,.14f,.28f,.13f},{.14f,-.10f,-.18f,.23f}};
+    const auto &plan=strategy[c.pattern-32];
+    target[1][0]+=trunk*(plan[0]*before+plan[1]*after);
+    target[1][2]+=trunk*plan[2]*(.6f*foot+.4f*turn)*(before-.6f*after);
+    const float opening=effort*plan[3]*(before+after);
+    target[3][1]-=opening;target[5][1]+=opening;
+    target[3][0]+=opening*.45f*foot;target[5][0]-=opening*.45f*foot;
+  }
+  // Distinct load/cushion strategies around the existing clip, rather than
+  // swapping locomotion or inventing a contact with another body part.
+  const float recruit=trunk*.7f,brace=effort*.10f*(before+after);
+  switch(c.style){
+    case ContactStyle::Inside:
+      target[1][2]+=recruit*foot*(.10f*before-.08f*after);break;
+    case ContactStyle::Outside:
+      target[1][1]-=recruit*foot*.09f*plant;
+      target[1][2]-=recruit*foot*.14f*(before-after);break;
+    case ContactStyle::Instep:
+      target[1][0]+=recruit*.10f*(after-.4f*before);break;
+    case ContactStyle::Volley:
+      target[1][0]-=recruit*.15f*before;
+      target[1][2]+=recruit*foot*.10f*(after-before);
+      target[3][1]-=brace;target[5][1]+=brace;break;
+    case ContactStyle::HalfVolley:
+      target[1][0]+=recruit*.14f*plant;
+      target[3][0]-=brace;target[5][0]+=brace;break;
+    case ContactStyle::HeadCushion:
+      target[1][0]-=recruit*.14f*headerRelease*after;
+      target[3][1]-=brace*.7f;target[5][1]+=brace*.7f;break;
+    case ContactStyle::HeadRedirect:
+      target[1][2]+=recruit*.16f*turn*headerRelease*after;break;
+    case ContactStyle::Chest:
+      target[1][0]+=recruit*(-.11f*before+.08f*after);break;
+    case ContactStyle::Thigh:
+      target[1][1]-=recruit*foot*.10f*plant;
+      target[1][0]-=recruit*.07f*before;
+      target[3][1]-=brace;target[5][1]+=brace;break;
+    case ContactStyle::Shin:
+      target[1][0]+=recruit*.11f*plant;
+      target[1][2]+=recruit*.08f*incomingSide*after;break;
+    case ContactStyle::DrivenImpact:
+      target[1][0]-=recruit*.18f*incomingLoad*after;
+      target[3][1]-=brace;target[5][1]+=brace;break;
+    default:break;
+  }
   for(unsigned i:{3u,4u,5u,6u})target[i]=bounded(pes3::scalePoint(target[i],clamp(c.armGain,0,1.25f)),.48f);
 
   // Critically damped, acceleration- and speed-bounded filters. Unlike a
@@ -162,7 +218,7 @@ void ActionLayer::step(const Context &c,float dt) {
     acceleration=bounded(acceleration,36.f);
     velocity_[i]=bounded(pes3::addPoint(velocity_[i],pes3::scalePoint(acceleration,dt)),2.1f);
     offset_[i]=pes3::addPoint(offset_[i],pes3::scalePoint(velocity_[i],dt));
-    offset_[i]=bounded(offset_[i],i==1?.58f:.49f);
+    offset_[i]=bounded(offset_[i],i==1?.52f:.49f);
     if(i==1) {
       offset_[i][0]=clamp(offset_[i][0],-.30f,.36f);
       offset_[i][1]=clamp(offset_[i][1],-.20f,.20f);

@@ -8,6 +8,10 @@
 namespace football_situations {
 
 enum class ActionKind { None=0, Pass=1, Shot=2, Cross=3, Header=4, Control=5 };
+// Recruitment of the upper chain around the native contacting animation.
+// These never substitute a foot/head for a different contacting body part.
+enum class ContactStyle { Native=0, Inside, Outside, Instep, Volley, HalfVolley,
+  HeadCushion, HeadRedirect, Chest, Thigh, Shin, DrivenImpact };
 
 struct Context {
   ActionKind kind=ActionKind::None;
@@ -18,7 +22,8 @@ struct Context {
   float phase=0, contactPhase=.5f, difficulty=0;
   float trunkGain=1, armGain=1, followThroughGain=1;
   int supportSide=-1;
-  unsigned pattern=0; // Thirty-two contextual curves; the catalog restricts eligibility per action.
+  unsigned pattern=0; // Forty-eight support strategies, with action-specific eligibility.
+  ContactStyle style=ContactStyle::Native;
   bool rightFoot=true, contactMade=false, preserveHead=true, enabled=true;
 };
 

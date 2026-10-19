@@ -57,6 +57,9 @@ try:
      # In a live match an opponent may intercept the delivery. Its real skin contact counts too.
      check(('match 'if match else'solo ')+name+' ball meets an actual skin contact',bool(body or actions),dict(body=body,actions=actions))
      check(('match 'if match else'solo ')+name+' body resolution remains finite and sweep bounded',all(math.isfinite(float(x['correction'])) and float(x['correction'])<.6 for x in body),body)
+     check(('match 'if match else'solo ')+name+' uses the moving skin sweep for accidental contacts',
+       (match or name!='driven_chest' or bool(body)) and all(x.get('moving_skin')=='1' and 8<=int(x['samples'])<=24
+         and math.isfinite(float(x['skin_speed'])) and 0<=float(x['skin_speed'])<=18.001 for x in body),body)
  elif a.mode in ['rules','tackle']:
   with NativeTraining(a.build,a.output/'match',display=a.display,analog_pad=True,camera=1,config_overrides=config(True))as g:
    g.advance(2600);locked=mf(g)[-1]['locked_id']

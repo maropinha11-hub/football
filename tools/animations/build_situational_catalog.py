@@ -221,14 +221,14 @@ def profiles():
                         if kind == "Control" and (effort == 2 or reach == 2):
                             continue
                         e, p, t, r = (x*.5 for x in (effort, pressure, turn, reach))
-                        for pattern in range(1 if kind == "None" else 32):
+                        for pattern in range(1 if kind == "None" else 48):
                             eligible={9: {"Control"}, 10: {"Control"}, 11: {"Header"},
                                       12: {"Pass", "Shot", "Cross"}, 13: {"Pass", "Shot"},
-                                      14: {"Shot", "Cross"},15: {"Control"},16: {"Control"},17: {"Header"},18: {"Control"},19: {"Control","Pass"},20: {"Pass","Shot","Cross"},21: {"Shot","Cross"},22: {"Control","Pass"},23: {"Header"},24: {"Pass","Cross"},25: {"Pass","Shot"},26: {"Control"},27: {"Control"}}
+                                      14: {"Shot", "Cross"},15: {"Control"},16: {"Control"},17: {"Header"},18: {"Control"},19: {"Control","Pass"},20: {"Pass","Shot","Cross"},21: {"Shot","Cross"},22: {"Control","Pass"},23: {"Header"},24: {"Pass","Cross"},25: {"Pass","Shot"},26: {"Control"},27: {"Control"},32: {"Control"},33: {"Control"},34: {"Shot","Cross"},35: {"Pass","Shot","Cross"},36: {"Pass","Shot","Cross"},37: {"Header"},38: {"Header"},39: {"Control"},40: {"Control"},41: {"Control"},42: {"Control"},43: {"Control"},44: {"Control"},45: {"Cross"},46: {"Pass"},47: {"Pass","Shot","Cross"}}
                             if pattern in eligible and kind not in eligible[pattern]:
                                 continue
                             output.append({
-                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*32+pattern,
+                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*32+(pattern if pattern<32 else (1<<20)+pattern-32),
                                 "kind": kind, "effort": effort, "pressure": pressure,
                                 "turn": turn, "reach": reach, "pattern": pattern,
                                 "trunkGain": round(.78+e*.12+t*.13+r*.11+p*.04, 5),
@@ -262,7 +262,7 @@ def matching_profiles(record, all_profiles):
     for profile in all_profiles:
         if profile["kind"] != action:
             continue
-        if profile["pattern"] in (2,12) and contact["ball"][2] < .45:
+        if profile["pattern"] in (2,12,35) and contact["ball"][2] < .45:
             continue
         if profile["effort"]*.5 > maximum_power+.000001:
             continue
@@ -356,7 +356,7 @@ def summary(catalog):
                         "pressure": "opponent proximity/physical pressure, normalized 0..1",
                         "turn": "abs(signed body-local action turn)/pi",
                         "reach": "min(1, horizontal ball offset from pelvis / 0.85m)",
-                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace", "cushioned_control", "directed_control", "reactive_header", "volley", "outside_strike", "instep_power", "shoulder_cushion", "thigh_cushion", "head_cushion", "chest_absorption", "low_reach_balance", "lateral_release", "full_follow_through", "soft_inside", "braced_header", "overlap_rotation", "plant_release", "outside_control", "recovery_control", "late_balance", "near_pressure", "soft_follow", "long_counter"]},
+                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace", "cushioned_control", "directed_control", "reactive_header", "volley", "outside_strike", "instep_power", "shoulder_cushion", "thigh_cushion", "head_cushion", "chest_absorption", "low_reach_balance", "lateral_release", "full_follow_through", "soft_inside", "braced_header", "overlap_rotation", "plant_release", "outside_control", "recovery_control", "late_balance", "near_pressure", "soft_follow", "long_counter", "inside_receive", "outside_receive", "instep_release", "air_volley_support", "half_volley_compression", "head_soft_absorb", "head_side_release", "chest_release", "thigh_support", "shin_late_brace", "hard_body_recoil", "cut_inside_load", "cut_outside_load", "running_cross_load", "backward_turn_release", "late_first_time_brace"]},
         "constraints": [
             "Native function, contact part, event frame, foot and special/retainer-state eligibility stay authoritative",
             "Header has no full-turn torso profile; Control excludes maximum effort and maximum reach profiles",
@@ -379,7 +379,7 @@ def cpp_header(catalog):
         "// Procedural gain profiles, not captured clips. Native contact eligibility remains authoritative.",
         "#pragma once", "", '#include "situational_action.hpp"', "#include <cmath>",
         "#include <algorithm>", "#include <cstddef>", "#include <cstdint>", "", "namespace football_situations {", "",
-        "struct Profile {", "  std::uint16_t id;", "  ActionKind kind;",
+        "struct Profile {", "  std::uint32_t id;", "  ActionKind kind;",
         "  std::uint8_t effort, pressure, turn, reach, pattern;",
         "  float trunkGain, armGain, followThroughGain;", "};", "",
         f'constexpr const char *kCatalogSourceDigest="{catalog["source_digest"]}";',
@@ -391,21 +391,33 @@ def cpp_header(catalog):
         values = ",".join(str(profile[key]) for key in ("effort", "pressure", "turn", "reach", "pattern"))
         gains = ",".join(f'{profile[key]:.5f}f' for key in ("trunkGain", "armGain", "followThroughGain"))
         lines.append(f'  {{{profile["id"]},ActionKind::{profile["kind"]},{values},{gains}}},')
-    lines.extend((
-        "};", "constexpr std::size_t kProfileCount=sizeof(kProfiles)/sizeof(kProfiles[0]);", "",
-        "inline float profileUnit(float x){ return std::isfinite(x)?(x<0?0:(x>1?1:x)):0; }", "",
+    lines.extend(("};", "constexpr std::size_t kProfileCount=sizeof(kProfiles)/sizeof(kProfiles[0]);", ""))
+    # Nearest valid gain profile on the independent three-bin axes. Invalid
+    # header/control extremes map to their original constrained neighbour.
+    # This is the same query as the exhaustive runtime scan, done at build time.
+    grouped = {}
+    for index, profile in enumerate(catalog["profiles"]):
+        grouped.setdefault((KIND_VALUES[profile["kind"]], profile["pattern"]), []).append((index, profile))
+    lookup = []
+    for kind in range(6):
+        for pattern in range(48):
+            candidates = grouped.get((kind,pattern), [])
+            for effort in range(3):
+                for pressure in range(3):
+                    for turn in range(3):
+                        for reach in range(3):
+                            query=(effort,pressure,turn,reach)
+                            best=min(candidates,key=lambda row:sum((q-row[1][axis])**2 for q,axis in zip(query,("effort","pressure","turn","reach"))))[0] if candidates else 0
+                            lookup.append(best)
+    lines.append("constexpr std::uint16_t kProfileLookup[]={")
+    for start in range(0,len(lookup),81):lines.append("  "+",".join(map(str,lookup[start:start+81]))+",")
+    lines.extend(("};", "inline float profileUnit(float x){ return std::isfinite(x)?(x<0?0:(x>1?1:x)):0; }",
+        "inline unsigned profileBin(float x){x=profileUnit(x)*2;return x>1.5f?2u:x>.5f?1u:0u;}",
         "inline const Profile &profileFor(ActionKind kind,float effort,float pressure,float turn,float reach,unsigned pattern=0){",
-        "  const float query[4]={profileUnit(effort)*2,profileUnit(pressure)*2,",
-        "                        profileUnit(turn)*2,profileUnit(reach)*2};",
-        "  const Profile *best=&kProfiles[0]; float bestCost=1e9f;",
-        "  for(const Profile &profile:kProfiles){",
-        "    if(profile.kind!=kind || profile.pattern!=std::min(pattern,31u))continue;",
-        "    const float delta[4]={query[0]-profile.effort,query[1]-profile.pressure,",
-        "                          query[2]-profile.turn,query[3]-profile.reach};",
-        "    const float cost=delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]+delta[3]*delta[3];",
-        "    if(cost<bestCost){bestCost=cost;best=&profile;}",
-        "  }", "  return *best;", "}", "", "} // namespace football_situations", "",
-    ))
+        "  if(unsigned(kind)>5)return kProfiles[0];",
+        "  const unsigned bins=((profileBin(effort)*3+profileBin(pressure))*3+profileBin(turn))*3+profileBin(reach);",
+        "  return kProfiles[kProfileLookup[(unsigned(kind)*48+std::min(pattern,47u))*81+bins]];",
+        "}", "", "} // namespace football_situations", ""))
     return "\n".join(lines)
 
 

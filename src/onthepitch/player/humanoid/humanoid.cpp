@@ -27,7 +27,6 @@
 #include "../../match.hpp"
 #include "../../keeper_trajectory.hpp"
 #include "../../physical_match_rules.hpp"
-#include "motion_matching.hpp"
 
 #include "../../../main.hpp"
 
@@ -195,8 +194,6 @@ void Humanoid::Process() {
 
     }
 
-    if(PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_motion_matching",true)&&currentAnim->functionType==e_FunctionType_Movement)
-      frameNumPredicate=frameNumPredicate||match->GetActualTime_ms()%(player->GetExternalController()?20:80)==0;
     if(UsesTrainingContacts() && player->GetExternalController() &&
        static_cast<HumanController*>(player->GetExternalController())->GetActionMode()==2 &&
        match->TrainingReceivingBall() && match->GetBall()->Predict(0).coords[2]>1.2f){
@@ -216,8 +213,7 @@ void Humanoid::Process() {
   if (mayReQueue) {
 
     float ballDistance = (currentMentalImage->GetBallPrediction(500).Get2D() - spatialState.position).GetLength();
-    if (( (currentAnim->functionType == e_FunctionType_Movement && PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_motion_matching",true)) ||
-          (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
+    if (( (currentAnim->functionType == e_FunctionType_Movement && !CastPlayer()->HasPossession() && ballDistance < 16.0f) ||
           (currentAnim->functionType == e_FunctionType_Movement && CastPlayer()->HasPossession()) || // passes / shot
           (currentAnim->functionType == e_FunctionType_Trap && TouchPending()) ||
           (currentAnim->functionType == e_FunctionType_BallControl && TouchPending()) ) &&
@@ -1378,18 +1374,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
 
   if (localInterruptAnim == e_InterruptAnim_ReQueue) {
-    const bool matchedMovement=PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_motion_matching",true)&&
-      currentAnim->functionType==e_FunctionType_Movement&&command.desiredFunctionType==e_FunctionType_Movement;
-    const Vector3 wanted=command.desiredDirection*command.desiredVelocityFloat;
-    const float velocityChange=(wanted-currentAnim->originatingCommand.desiredDirection*currentAnim->originatingCommand.desiredVelocityFloat).GetLength();
-    const Vector3 look=(command.desiredLookAt-spatialState.position).Get2D().GetNormalized(spatialState.bodyDirectionVec);
-    const bool newFacing=command.useDesiredLookAt&&look.GetDotProduct(spatialState.bodyDirectionVec)<.98f;
-    if(matchedMovement&&velocityChange<.25f&&!newFacing)return false;
 
     float focusDistance = (match->GetDesignatedPossessionPlayer()->GetPosition() - spatialState.position).GetLength();
 
     if (currentAnim->functionType != e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) return false;
-    if (!matchedMovement&&currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
+    if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (CastPlayer()->HasPossession()/* || team->GetTeamPossessionAmount() >= 1.0f*/ || focusDistance > 12.0f)) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && currentAnim->frameNum + minRemainingMovementReQueueFrames > currentAnim->anim->GetEffectiveFrameCount()) return false;
     if (currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement && (!allowMovementReQueue || reQueueDelayFrames > 0)) return false;
     if (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl && (!allowBallControlReQueue || currentAnim->frameNum > maxBallControlReQueueFrame || reQueueDelayFrames > 0)) return false;
@@ -1398,13 +1387,13 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     if (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl && (!allowTrapReQueue || currentAnim->frameNum + minRemainingTrapReQueueFrames > currentAnim->touchFrame || reQueueDelayFrames > 0)) return false;
 
     // too similar to what we are already trying to accomplish
-    if (!matchedMovement&&currentAnim->originatingCommand.desiredFunctionType == command.desiredFunctionType &&
+    if (currentAnim->originatingCommand.desiredFunctionType == command.desiredFunctionType &&
         ((currentAnim->originatingCommand.desiredDirection * currentAnim->originatingCommand.desiredVelocityFloat) - (command.desiredDirection * command.desiredVelocityFloat)).GetLength() < 1.5f) {
       return false;
     }
 
     // requeue not needed?
-    if ((!matchedMovement&&currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
+    if ((currentAnim->functionType == e_FunctionType_Movement && command.desiredFunctionType == e_FunctionType_Movement) ||
         (currentAnim->functionType == e_FunctionType_BallControl && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_BallControl) ||
         (currentAnim->functionType == e_FunctionType_Trap && command.desiredFunctionType == e_FunctionType_Trap)) {
@@ -2122,7 +2111,6 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     }
     */
 
-    BeginMotionBlend(selectedAnimID,command.desiredFunctionType,MotionEntryFrame(selectedAnimID));
     *previousAnim = *currentAnim;
 
     currentAnim->anim = anims->GetAnim(selectedAnimID);
@@ -2132,17 +2120,9 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       physicalStaggerUntil=match->GetActualTime_ms()+currentAnim->anim->GetFrameCount()*10+200;
       printf("PHYSICAL_STAGGER_CLIP t=%lu actor=%d clip=%s frames=%d speed=%.3f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->anim->GetFrameCount(),spatialState.floatVelocity);
     }
-    currentAnim->frameNum = std::max(0,std::min(MotionEntryFrame(selectedAnimID),int(positions_tmp.size())-2));
-    // A search may select the next samples of the same running cycle.
-    // Its continuation is not a fresh transition to inertialize again.
-    if(!PhysicalRigEnabled()||!GetConfiguration()->GetBool("training_motion_continuity",true)||
-        previousAnim->anim!=currentAnim->anim||currentAnim->frameNum<previousAnim->frameNum||
-        currentAnim->frameNum>previousAnim->frameNum+2)++motionEpoch;
-    if(currentAnim->frameNum>0){
-      football_physics::phaseRootTrajectory(positions_tmp,currentAnim->frameNum);
-      if(GetConfiguration()->GetBool("training_telemetry",false))
-        printf("MOTION_PHASE_ENTER t=%lu actor=%d clip=%d frame=%d function=%d root_step=%.6f\n",match->GetActualTime_ms(),player->GetID(),selectedAnimID,currentAnim->frameNum,int(command.desiredFunctionType),positions_tmp[currentAnim->frameNum].GetLength());
-    }
+    currentAnim->frameNum = 0;
+    if(UsesTrainingContacts()&&GetConfiguration()->GetBool("training_telemetry",false))
+      printf("NATIVE_APPROVED_SELECT t=%lu actor=%d function=%d entry=%d imported=%d source=%s\n",match->GetActualTime_ms(),player->GetID(),int(command.desiredFunctionType),currentAnim->frameNum,currentAnim->anim->GetVariable("imported_mocap")=="true"?1:0,currentAnim->anim->GetName().c_str());
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->touchMade = false;
     if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))

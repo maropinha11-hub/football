@@ -21,7 +21,7 @@ using namespace blunted;
 
 class PlayerBase;
 class Match;
-namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;struct NativeMotionBank;}
+namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -164,7 +164,6 @@ struct AnimApplyBuffer {
     dribbleTrialFunction = src.dribbleTrialFunction;
     dribbleTrialFacing = src.dribbleTrialFacing;
     upperReception = src.upperReception; upperPhase=src.upperPhase; upperWeight=src.upperWeight; upperArmWeight=src.upperArmWeight;
-    motionMatched=src.motionMatched;
   }
   Animation *anim;
   int frameNum;
@@ -177,7 +176,6 @@ struct AnimApplyBuffer {
   std::map < std::string, BiasedOffset > offsets;
   Animation *upperReception=nullptr;
   float upperPhase=0,upperWeight=0,upperArmWeight=0;
-  bool motionMatched=false;
   float trainingTouchBlend = 0;
   Vector3 trainingTouchTarget;
   bool trainingTouchLeft = false;
@@ -416,6 +414,8 @@ class HumanoidBase {
     std::unique_ptr<Animation> chestAnimation;
     float chestContactFrame = 33.333f;
     Vector3 contactPreviousBall;
+    Quaternion contactPreviousSkinLocal[13];
+    Vector3 contactPreviousSkinRoot;
     Animation *upperReceptionClip=nullptr;
     unsigned long upperReceptionStarted_ms=0;
     float upperReceptionPhase=0,upperReceptionWeight=0,upperReceptionArmWeight=0,upperReceptionArmRelease=-1;
@@ -460,26 +460,9 @@ class HumanoidBase {
     bool physicalHandTargetActive=false;
     unsigned physicalSituationProfile=0;
     TemporalSmoother<Vector3> buf_situationState;
-    TemporalSmoother<Vector3> buf_physicalRootOffset;
-    Vector3 fetchedPhysicalRootOffset{0};
     Vector3 fetchedSituationState{0};
     void BuildSituationalInput(football_physics::Input &input);
     void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
-    void BeginMotionBlend(int incomingId,e_FunctionType function,int entry);
-    void BlendMotionPose(Quaternion *pose,Vector3 &root);
-    bool MotionMixerActive()const;
-    Animation *motionBlendFrom=nullptr;
-    float motionBlendFrame=0,motionBlendFacing=0,motionBlendHeight=0;
-    unsigned long motionBlendStart=0;
-    Quaternion motionBlendCarry[13];
-    Vector3 motionPreviousPositions[6],motionCurrentPositions[6],motionJointVelocities[5];
-    unsigned long motionSampleTime=0;
-    bool motionSampleValid=false;
-    float motionSampleRate=100;
-    int MotionEntryFrame(int id)const;
-    std::map<int,int> motionEntryFrames;
-    std::shared_ptr<football_physics::NativeMotionBank> motionBank;
-    unsigned long motionEpoch=0;
 
     AnimApplyBuffer animApplyBuffer;
 

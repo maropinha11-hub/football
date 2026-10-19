@@ -8,13 +8,15 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
-A revisão atual corrige a torção de joelhos e cotovelos na conversão dos dez
-ciclos FBX e mistura movimentos em avanço, sem reiniciar a fase do mesmo ciclo.
-Paradas e mudanças de direção respondem também longe da bola. Um passe curto
-e fraco para trás prefere o calcanhar; carregando mais, o corpo vira para passar.
+A revisão atual recupera a movimentação do executável aprovado enviado pelo
+usuário, identificado byte a byte como a versão `fa0dfa6`. Os ciclos de
+locomoção Unity foram retirados. A suavização nativa das transições usa um
+intervalo um pouco maior, preservando as velocidades e os quadros de entrada
+originais. Um passe curto e fraco para trás prefere o calcanhar; carregando
+mais, o corpo vira para passar. O contato mira a parte correta da chuteira.
 Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacote
-completo. Veja [as correções e os testes](docs/CONTINUIDADE-E-PASSES.md) e
-[o catálogo e a revisão anterior](docs/MOVIMENTO-E-COBRANCAS.md).
+completo. Veja [a base recuperada e os controles](docs/BASE-APROVADA.md) e
+[o relatório de validação](docs/approved-base-validation.json).
 
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
@@ -41,26 +43,24 @@ reduzir o avanço do parceiro. Consulte [os controles, a pesquisa, os testes e
 os limites desta revisão](docs/BRACOS-E-JOGADAS-DE-PRIMEIRA.md).
 O treino e a partida aprovados continuam nos atalhos anteriores.
 
-O experimento agora procura quadros dentro dos ciclos de movimento por pose,
-velocidade dos membros, apoios e trajetória prevista. A métrica foi treinada
-com **27.206 quadros do banco nativo**, incluindo espelhamentos; isso não
-representa milhares de novas capturas. As trocas conservam a pose e a
-velocidade de saída, enquanto ações com a bola mantêm a preparação e o
-contato nativos. **F12** permite comparar essa revisão. **Alt+F2** na partida
-física prepara uma disputa aérea. Veja [implementação, pesquisa e limites](docs/MOTION-MATCHING.md).
+O seletor recuperado classifica entradas das animações nativas por pose,
+velocidade e trajetória, mantendo seus quadros iniciais. As ações com bola
+conservam a preparação e o contato nativos. **Alt+F2** na partida física
+prepara uma disputa aérea. A pesquisa da revisão anterior permanece no
+[histórico de motion matching](docs/MOTION-MATCHING.md).
 
 RT fica reservado no treino. Os gestos de sola foram retirados.
 Na chegada de uma bola, a mira dos passes e cabeceios funciona em todas as
 direções, separada da assistência que posiciona o jogador para recebê-la.
 Veja [a revisão de mira e movimento corporal](docs/MIRA-E-CORPO.md).
 
-O experimento também acrescenta **6.274 perfis procedurais de tronco e braços**
+O experimento também acrescenta **7.723 perfis procedurais de tronco e braços**
 para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
 rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
 contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
-somente essa camada. O catálogo audita 28.632 pares candidatos incluindo
-espelhamentos, sem contar essas combinações como capturas novas. Veja
-[como testar e os limites das variações situacionais](docs/MIRA-E-CORPO.md).
+somente essa camada. Há 48 famílias e 12 estilos de contato; o catálogo audita
+36.888 pares candidatos incluindo espelhamentos, sem contar essas combinações
+como capturas novas. Veja [como testar e os limites](docs/BASE-APROVADA.md).
 
 A revisão atual inclui gramado irregular com previsão da trajetória, recepção
 lateral, cobranças pelo jogador fixo, decisões contextuais da CPU e disputas

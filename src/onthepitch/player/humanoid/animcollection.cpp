@@ -433,11 +433,9 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
     //printf("%s\n", files.at(i).c_str());
 
-    // Uploaded non-contact captures belong to the physical experiment.
-    // The approved launchers continue loading their existing movement bank.
-    if(files[i].find("/mocap/")!=std::string::npos&&(!TrainingEnabled()||
-       !GetConfiguration()->GetBool("training_physical_rig",false)||
-       !GetConfiguration()->GetBool("training_mocap_locomotion",true)))continue;
+    // Restore the native bank approved in fa0dfa6. Reject leftovers too when
+    // an old installation still contains the later uploaded locomotion pack.
+    if(files[i].find("/mocap/")!=std::string::npos)continue;
 
     if ((omitLuxuryAnims && files.at(i).find("luxury") != std::string::npos) || files.at(i).find("templates") != std::string::npos) {
       //printf ("ignoring\n");
