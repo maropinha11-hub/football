@@ -15,6 +15,9 @@ inline bool incomingReception(float gap,float height,float closing,float speed,b
 inline bool rareHeel(float facing,float speed,float power,float pressure,float ownGoal,unsigned long elapsed){
   return facing<-.55f&&speed<3.f&&power<.48f&&pressure<.75f&&ownGoal>26.f&&elapsed>=30000;
 }
+inline bool userBackheel(float facing,float speed,unsigned charge){
+  return std::isfinite(facing)&&std::isfinite(speed)&&facing<-.55f&&speed<3.f&&charge<=160;
+}
 inline bool excessiveHold(float seconds,float force,bool fallen){
   return std::isfinite(seconds)&&std::isfinite(force)&&
     ((fallen&&force>30)||(seconds>.75f&&force>140)||(seconds>1.5f&&force>70));

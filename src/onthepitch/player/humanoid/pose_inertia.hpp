@@ -12,12 +12,12 @@ class PoseInertia {
  public:
   using Pose=pes3::NativeRotations;using Vec=pes3::Point;using Quat=pes3::Rotation;
   void reset(){ready=false;epoch=~0ul;offset={};velocity={};previousVelocity={};trackingOrigin={};trackingDecay=0;}
-  void observe(const Pose &target,const std::array<Vec,13> &targetVelocity,unsigned long key){
+  void observe(const Pose &target,const std::array<Vec,13> &targetVelocity,unsigned long key,bool transition=true){
     if(!ready){last=trackingOrigin=target;epoch=key;ready=true;return;}
     if(epoch==key)return;
     for(unsigned i=1;i<13;++i){
-      offset[i]=log(pes3::productRotation(last[i],pes3::inverseRotation(target[i])));
-      velocity[i]=cap(pes3::subtractPoint(previousVelocity[i],targetVelocity[i]),12.f);
+      offset[i]=transition?log(pes3::productRotation(last[i],pes3::inverseRotation(target[i]))):Vec{{0,0,0}};
+      velocity[i]=transition?cap(pes3::subtractPoint(previousVelocity[i],targetVelocity[i]),12.f):Vec{{0,0,0}};
     }
     epoch=key;
   }

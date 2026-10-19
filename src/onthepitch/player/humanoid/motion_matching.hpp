@@ -53,14 +53,14 @@ class MotionClipIndex {
       blocks.push_back(block);
     }
   }
-  MotionResult search(const MotionVector &query,const MotionMetric &metric,bool phases,int earliest=0)const{
+  MotionResult search(const MotionVector &query,const MotionMetric &metric,bool phases,int earliest=0,int latest=std::numeric_limits<int>::max())const{
     MotionResult best;
     for(const auto &block:blocks){
       float lower=0;
       for(unsigned i=0;i<motionDimensions;++i){const float d=std::max(block.lo[i]-query[i],std::max(0.f,query[i]-block.hi[i]))*metric.scale[i];lower+=d*d;}
       if(lower>best.cost)continue;
       for(unsigned row=block.start;row<block.end;++row){
-        const auto &entry=frames[row];if((!phases&&entry.frame!=0)||entry.frame<earliest)continue;
+        const auto &entry=frames[row];if((!phases&&entry.frame!=0)||entry.frame<earliest||entry.frame>latest)continue;
         const float cost=motionCost(query,entry.feature,metric);++best.tested;
         if(cost<best.cost){best.frame=entry.frame;best.cost=cost;}
       }

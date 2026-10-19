@@ -322,6 +322,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     input.forward=point(spatialState.bodyDirectionVec);input.upperReception=UpperReceptionActive();
     input.useInertia=GetConfiguration()->GetBool("training_motion_matching",true);
     input.trackMotion=GetConfiguration()->GetBool("training_motion_tracking",true);
+    input.inertialTransition=!MotionMixerActive();
     input.adaptiveMotion=input.useInertia;
     input.motionEpoch=motionEpoch;input.preserveLook=player->GetExternalController()!=nullptr;
     input.ball=point(match->GetBall()->Predict(0)-contactPositions[0]);
@@ -437,6 +438,20 @@ void HumanoidBase::UpdatePhysicalRigPose(){
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
   for(unsigned i=0;i<13;++i){contactLocal[i]=quaternion(physicalRig->pose()[i]);contactGlobal[i]=quaternion(physicalRig->worldRotations()[i]);contactPositions[i]=vector(physicalRig->points()[i]);}
+  const unsigned observed[6]={0,9,12,2,4,6};
+  const unsigned long sampleTime=match->GetActualTime_ms();
+  if(motionSampleTime!=sampleTime){
+    for(unsigned i=0;i<6;++i)motionPreviousPositions[i]=motionCurrentPositions[i];
+    motionSampleValid=motionSampleTime>0&&sampleTime-motionSampleTime<=20;
+    motionSampleRate=1000.f/std::max(1ul,sampleTime-motionSampleTime);
+    motionSampleTime=sampleTime;
+  }
+  for(unsigned i=0;i<6;++i)motionCurrentPositions[i]=contactPositions[observed[i]];
+  if(motionSampleValid)for(unsigned i=0;i<5;++i){
+    const Vector3 relative=((motionCurrentPositions[i+1]-motionCurrentPositions[0])-(motionPreviousPositions[i+1]-motionPreviousPositions[0]))*(motionSampleRate/zMultiplier);
+    const Vector3 v=relative+(motionCurrentPositions[0]-motionPreviousPositions[0])*motionSampleRate;
+    motionJointVelocities[i]=v.GetNormalized(Vector3(0))*std::min(30.f,v.GetLength());
+  }
   if(currentAnim->anim->GetVariable("imported_mocap")=="true"&&GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%50==0)
     printf("MOCAP_ACTIVE t=%lu actor=%d source=%s frame=%d function=%d root_height=%.5f\n",match->GetActualTime_ms(),player->GetID(),currentAnim->anim->GetName().c_str(),currentAnim->frameNum,int(currentAnim->functionType),contactPositions[0].coords[2]);
   if(player->GetExternalController()&&GetConfiguration()->GetBool("training_motion_diagnostics",false)){

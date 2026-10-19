@@ -1339,6 +1339,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
 }
 
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
+  motionBlendFrom=nullptr;motionSampleValid=false;motionSampleTime=0;
   ResetPhysicalRig();
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
   contactPoseBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;

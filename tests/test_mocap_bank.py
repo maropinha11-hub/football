@@ -21,12 +21,21 @@ class MocapBank(unittest.TestCase):
     tracks={x.split(',')[0]:x.split(',')[1:]for x in raw.decode().splitlines()if ','in x and not x.startswith('<')}
     self.assertIn('<type>movement</type>',raw.decode());self.assertIn('<touchframe>-1</touchframe>',raw.decode())
     root=tracks['player'];count=len(root)//4;self.assertEqual(count,clip['samples'])
+    self.assertTrue(clip['hinge_frames_from_bend_planes'])
+    velocity=[tuple((float(root[(i+1)*4+1+c])-float(root[i*4+1+c]))*100 for c in range(2))for i in range(count-1)]
+    self.assertLess(max(math.dist(velocity[0],v)for v in velocity),.0001)
     poses=[]
     for bone in rig['bones']:
      values=tracks[bone['name']];self.assertEqual(len(values),count*5)
      quats=[tuple(float(v)for v in values[i+1:i+5])for i in range(0,len(values),5)]
      self.assertLess(max(abs(sum(v*v for v in q)-1)for q in quats),.00001)
      self.assertLess(1-abs(sum(a*b for a,b in zip(quats[0],quats[-1]))),.00001);poses.append(quats)
+    for joint in [8,11,4,6]:
+     lateral=max(2*math.asin(min(1,math.hypot(q[1],q[2])))for q in poses[joint])
+     self.assertLess(lateral,.12,'knee/elbow axial roll would deform the skinned model')
+     angles=[math.remainder(2*math.atan2(q[0],q[3]),2*math.pi)for q in poses[joint]]
+     if joint in [8,11]:self.assertGreater(min(angles),-.12);self.assertLess(max(angles),2.8)
+     else:self.assertGreater(min(angles),-2.8);self.assertLess(max(angles),.12)
     for frame in range(count):
      position=[(0,0,float(root[frame*4+3])+rig['bones'][0]['offset'][2])];rotation=[]
      for i,bone in enumerate(rig['bones']):

@@ -72,6 +72,10 @@ try:
    for button in ([1,2]if a.mode=='tackle'else[]):
     key(g,'r');g.advance(2700);yaw=g.frames()[-1]['player_yaw'];g.pad(math.cos(yaw),-math.sin(yaw),sprint=True);g.advance(650 if button==2 else 0);yaw=g.frames()[-1]['player_yaw'];pre=[]
     if button==2:
+     # B is a cross while in possession. Assign the opponent the ball before
+     # requesting the slide, then place it again with the final contact
+     # fixture. Otherwise the test can queue a cross before changing sides.
+     key(g,'F11');g.advance(100)
      g.pad(math.cos(yaw),-math.sin(yaw),buttons=button,sprint=True);pre=g.advance(100)
     # Capture before setup: telemetry acknowledgement may span a 100ms frame,
     # during which the already-running native slide can legitimately hit.

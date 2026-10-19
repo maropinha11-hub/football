@@ -50,6 +50,7 @@ def main():
             captures=list(Path('data/media/animations/mocap').glob('*.anim'))
             check('ten converted native captures accompany complete and update packages',len(captures)==10 and all(full.read(prefix+f.relative_to('data').as_posix())==patch.read(f.relative_to('data').as_posix())==f.read_bytes()for f in captures))
             check('motion guide and source conversion hashes accompany the game',all(full.read(prefix+name)==patch.read(name)for name in ['LEIA-MOVIMENTO.txt','mocap-retarget.json','uploaded-motion-catalog.json']))
+            check('advancing pose transitions and charge-sensitive rear passes ship with their guide',b'MOTION_MIXER t='in exe and b'heel=%d'in exe and full.read(prefix+'LEIA-CONTINUIDADE.txt')==patch.read('LEIA-CONTINUIDADE.txt'))
             check('large upload splitter accompanies both portable packages',all(full.read(prefix+name)==patch.read(name)for name in ['dividir-arquivos.bat','dividir-arquivos.ps1']))
             check('Windows includes per-frame matching, inertia, anticipation and reciprocal body duels',all(token in exe
                   for token in [b'MOTION_PHASE_ENTER',b'MOTION_INERTIA',b'PHYSICAL_ADAPTIVE',b'PHYSICAL_BODY_DUEL',b'CPU_AERIAL_DUEL']))

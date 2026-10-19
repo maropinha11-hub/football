@@ -75,6 +75,15 @@ try:
   matches=[json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PLAYER_MATCH_FRAME ')]
   check('aerial and body duels retain both teams and the single locked human',
         bool(matches)and all(len(x['players'])==22 and x['human_count']==1 and x['selected_id']==x['locked_id']for x in matches),dict(samples=len(matches)))
+  # A correctly contested header can separate the bodies without overlap.
+  # Exercise the independent body-contact fixture as well, rather than
+  # requiring the aerial fixture to produce a collision accidentally.
+  key(g,'F2')
+  latest=[json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PLAYER_MATCH_FRAME ')][-1]
+  human=next(x for x in latest['players']if x['id']==latest['locked_id'])
+  opponent=min((x for x in latest['players']if x['team']!=human['team']),key=lambda x:math.dist(x['p'][:2],human['p'][:2]))
+  delta=[opponent['p'][i]-human['p'][i]for i in range(2)];length=max(.001,math.hypot(*delta))
+  g.pad(delta[0]/length,-delta[1]/length,left_trigger=1);g.advance(850);g.pad(0,0);g.advance(350)
   pressure=ev(g,'PHYSICAL_BODY_DUEL',start)
   check('physical match uses the same reciprocal body-contact layer as training',bool(pressure),pressure[:4])
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('match clean exit',g.game.returncode==0,g.game.returncode)

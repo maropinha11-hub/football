@@ -58,16 +58,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.010104882489132903,
+      "maximum_elbow_lateral_rotation_rad": 0.03029407992709036,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.8628224721001747e-07,
-      "maximum_source_loop_angle_error_rad": 0.32156407833099365,
+      "maximum_source_loop_angle_error_rad": 0.29335370659828186,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.7903103232383728,
       "native_root_height_range_m": [
-        0.880672975063324,
-        0.994468255519867
+        0.8825226860046387,
+        0.9940973954200745
       ],
-      "output_sha256": "f7899e8d9b040be113a27005f0cc3a47d300925aeda7bff77dd877e0f49bd960",
+      "output_sha256": "e012e25afb821f471caa0f7705894294dba59fa9bbcf85ffc0855e47fdbcd386",
       "export_name": "24_runcycle_neutral_01"
     },
     {
@@ -128,16 +132,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.029749131092175377,
+      "maximum_elbow_lateral_rotation_rad": 0.06628511658529387,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 4.1725188846321805e-07,
-      "maximum_source_loop_angle_error_rad": 0.14787408709526062,
+      "maximum_source_loop_angle_error_rad": 0.34755533933639526,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.2071053683757782,
       "native_root_height_range_m": [
-        0.9180133180618286,
-        1.0100538568496704
+        0.9171031551361084,
+        1.010023458480835
       ],
-      "output_sha256": "bca8319076117eecedf80276c272388fe1b1b32c3351a4a1e1116b588c68cd89",
+      "output_sha256": "746923eac461873c32321e29052e98f74f6d48b6ab11175f7ece6905275e5f6b",
       "export_name": "24_walkstraight"
     },
     {
@@ -198,16 +206,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 2.5831402913747535e-07,
+      "maximum_elbow_lateral_rotation_rad": 0.030294103974140348,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 4.2991609352456776e-07,
-      "maximum_source_loop_angle_error_rad": 0.5358330607414246,
+      "maximum_source_loop_angle_error_rad": 0.4813927114009857,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.6804419755935669,
       "native_root_height_range_m": [
-        0.8843801455497742,
-        1.0070503787994385
+        0.8840571479797363,
+        1.0069707469940186
       ],
-      "output_sha256": "37944d45c68f352122c8a84f6fd345414cbe4275294d40a37c6edae8bc2ef20a",
+      "output_sha256": "9ffbc69380256e75c0217796f8e0480a9f7d699197ec0d7e917e6a9a37c12d1a",
       "export_name": "sprintloop"
     },
     {
@@ -268,16 +280,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.023216904029773038,
+      "maximum_elbow_lateral_rotation_rad": 0.05865491756309587,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.5824821234259925e-07,
-      "maximum_source_loop_angle_error_rad": 0.2719387114048004,
+      "maximum_source_loop_angle_error_rad": 0.3029925525188446,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.5444020628929138,
       "native_root_height_range_m": [
-        0.9065347151756287,
-        0.9885479645729065
+        0.9069517092704773,
+        0.9885723428726196
       ],
-      "output_sha256": "b91c7f434e43416bb09ad1b5586e1c90c5e91c581e5af7107830a021fa984dd8",
+      "output_sha256": "08a648d3c0e35308a0eb620b92b514050eb2b18c2a8531dffe55715d7bcdde05",
       "export_name": "strafe_walk_loopright"
     },
     {
@@ -338,16 +354,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.017449149056764875,
+      "maximum_elbow_lateral_rotation_rad": 0.07366504123572946,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.68935418222545e-07,
-      "maximum_source_loop_angle_error_rad": 0.33994820713996887,
+      "maximum_source_loop_angle_error_rad": 0.361729234457016,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": 0.05305697023868561,
       "native_root_height_range_m": [
-        0.9153158502578735,
-        0.9835631685256958
+        0.914794011592865,
+        0.9835640029907227
       ],
-      "output_sha256": "0760c0d19f67b60d5ede5575b06f934b621bbe80ff398726842128a5f822584d",
+      "output_sha256": "21f38e0b047422f99d3651c41e87fe675c206545ed9d0f7610ea598bfbef0412",
       "export_name": "strafe_walk_loop135l"
     },
     {
@@ -408,16 +428,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.012269747929484471,
+      "maximum_elbow_lateral_rotation_rad": 0.0669778727885043,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.384893146634265e-07,
-      "maximum_source_loop_angle_error_rad": 0.1832730770111084,
+      "maximum_source_loop_angle_error_rad": 0.5878687500953674,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.1931605488061905,
       "native_root_height_range_m": [
-        0.9226840572357178,
-        1.010384066581726
+        0.9219283895492554,
+        1.0124745206832886
       ],
-      "output_sha256": "96685c0e36f40867554243e1252952b2c8f2d206e9c341a66e1cc06b95c1dfdb",
+      "output_sha256": "dc07a467288c4eaf3d9d027781283947caafe08cab94dcf189120c4e6cd0e10c",
       "export_name": "strafe_walk_loopforward"
     },
     {
@@ -478,16 +502,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 6.01032290692591e-07,
+      "maximum_elbow_lateral_rotation_rad": 0.03029402048115908,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.271475195899628e-07,
-      "maximum_source_loop_angle_error_rad": 0.3761366307735443,
+      "maximum_source_loop_angle_error_rad": 0.37601739168167114,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.47082939743995667,
       "native_root_height_range_m": [
-        0.8997783498764038,
-        0.9822778539657593
+        0.8990826444625855,
+        0.9808973507881165
       ],
-      "output_sha256": "245d221e2519b969a65d0ae1f5e9206694bc0448de122133f5362b4883561bdd",
+      "output_sha256": "141d0b7f5c776e21fa765f95eb4ca2f8c603ff99ef04cb0a83c6929f8a3d4aa3",
       "export_name": "strafe_run_left"
     },
     {
@@ -548,16 +576,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.0016902710352945318,
+      "maximum_elbow_lateral_rotation_rad": 0.03029393228229063,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.615358368244218e-07,
-      "maximum_source_loop_angle_error_rad": 0.3353429436683655,
+      "maximum_source_loop_angle_error_rad": 0.3259868621826172,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.8127861618995667,
       "native_root_height_range_m": [
-        0.8769814805984497,
-        0.9756253795623779
+        0.8789294199943543,
+        0.9772464470863342
       ],
-      "output_sha256": "70710e3e3e909631af00269243539324c68ccbab5d4f00445175c68a5f2732b4",
+      "output_sha256": "6f020f594b7f79f5f6e8abea27777ca56dab88d577e171662722a7dd603a33a3",
       "export_name": "strafe_run_right45"
     },
     {
@@ -618,16 +650,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 2.87122916439624e-07,
+      "maximum_elbow_lateral_rotation_rad": 0.03029398210926979,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.591767189858541e-07,
-      "maximum_source_loop_angle_error_rad": 0.6765214204788208,
+      "maximum_source_loop_angle_error_rad": 0.6709101796150208,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": -0.3443078398704529,
       "native_root_height_range_m": [
-        0.9303084449768066,
+        0.9301007823944092,
         0.9704506831169128
       ],
-      "output_sha256": "b6d72774fbfa357b38701a4ac4ed3977adb2bbeb90265d551e612fdef202cc8d",
+      "output_sha256": "2f166ddb745acf94614acd632515ac255e7871603f0b17ac469bcf796daf67f4",
       "export_name": "strafe_run_backloop"
     },
     {
@@ -688,16 +724,20 @@
         "Spine2": "UpperChest"
       },
       "loop_correction": true,
+      "hinge_frames_from_bend_planes": true,
+      "cycle_root_velocity_normalized": true,
+      "maximum_knee_lateral_rotation_rad": 0.0025815824577717344,
+      "maximum_elbow_lateral_rotation_rad": 0.03166658930969899,
       "contact_marker_origin": null,
       "maximum_segment_direction_error": 3.650024149988857e-07,
-      "maximum_source_loop_angle_error_rad": 0.03028947301208973,
+      "maximum_source_loop_angle_error_rad": 0.03787935897707939,
       "minimum_foot_clearance_m": 0.008000000000000007,
       "minimum_toe_forward_dot": 0.9008709788322449,
       "native_root_height_range_m": [
-        0.988445921421051,
-        0.9931429462432861
+        0.9884399609565735,
+        0.9931226806640625
       ],
-      "output_sha256": "82a4a392b69f5d6317d70da1cbe727f055098be571e0f76c587e30998c94bfc1",
+      "output_sha256": "2c3d703149a199f505594b22496d564b9b241b5853bc152a7a3330621e1f1478",
       "export_name": "01_idleloop"
     }
   ],

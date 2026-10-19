@@ -43,7 +43,7 @@ struct Input {
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false;
-  bool useInertia=false,preserveLook=false,trackMotion=true;
+  bool useInertia=false,preserveLook=false,trackMotion=true,inertialTransition=true;
   bool adaptiveMotion=false,receiving=false,bodyContact=false;
   float receiveTime=0,receiveHeight=0;
   Vec ball{{0,0,0}},ballVelocity{{0,0,0}};
@@ -87,6 +87,7 @@ class PhysicalRig {
   void evaluate(const Input &input);
   void alignRecoverySurface(float minimumHeight){if(state==Mode::Recovering){root[2]+=bounded(.003f-minimumHeight,-.10f,.10f);forwardKinematics();}}
   const Pose &pose()const{return local;}
+  const Pose &motionPose()const{return trackedMotion;}
   const Points &points()const{return positions;}
   const Pose &worldRotations()const{return world;}
   Mode mode()const{return state;}
@@ -106,7 +107,7 @@ class PhysicalRig {
   void recover(const Input &input);
   void groundRecovery();
   pes3::NativeBind reference{};
-  Pose local{},world{};
+  Pose local{},world{},trackedMotion{};
   Pose additive{};
   std::unique_ptr<ArticulatedBody> articulated;
   std::unique_ptr<BalanceController> balance;

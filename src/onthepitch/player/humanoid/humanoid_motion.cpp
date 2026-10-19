@@ -20,6 +20,50 @@ int HumanoidBase::MotionEntryFrame(int id)const{
   return found==motionEntryFrames.end()?0:found->second;
 }
 
+bool HumanoidBase::MotionMixerActive()const{
+  return motionBlendFrom&&currentAnim->functionType==e_FunctionType_Movement&&PhysicalRigEnabled()&&
+    GetConfiguration()->GetBool("training_motion_matching",true)&&GetConfiguration()->GetBool("training_motion_mixer",true);
+}
+
+void HumanoidBase::BeginMotionBlend(int incomingId,e_FunctionType function,int entry){
+  if(!PhysicalRigEnabled()||!GetConfiguration()->GetBool("training_motion_matching",true)||
+      !GetConfiguration()->GetBool("training_motion_mixer",true)||function!=e_FunctionType_Movement||
+      currentAnim->functionType!=e_FunctionType_Movement||!physicalRig||!physicalRig->initialized()){
+    motionBlendFrom=nullptr;return;
+  }
+  if(incomingId==currentAnim->id&&entry>=currentAnim->frameNum&&entry<=currentAnim->frameNum+2)return;
+  motionBlendFrom=currentAnim->anim;motionBlendFrame=std::max(0,currentAnim->frameNum-1);
+  motionBlendStart=match->GetActualTime_ms();
+  const float begin=std::min(1.f,(motionBlendFrame+1)/std::min(16.f,float(motionBlendFrom->GetEffectiveFrameCount()+1)));
+  motionBlendFacing=startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*begin;
+  Quaternion local[13],global[13];Vector3 positions[13];
+  SampleContactAnimation(motionBlendFrom,motionBlendFrame,spatialState.position,motionBlendFacing,false,local,global,positions);
+  for(unsigned i=0;i<13;++i){const auto &q=physicalRig->motionPose()[i];
+    motionBlendCarry[i]=(Quaternion(q[0],q[1],q[2],q[3])*local[i].GetInverse()).GetNormalized();}
+  motionBlendHeight=contactPositions[0].coords[2]-physicalRig->rootOffset()[2]-positions[0].coords[2];
+}
+
+void HumanoidBase::BlendMotionPose(Quaternion *pose,Vector3 &root){
+  if(!MotionMixerActive())return;
+  const unsigned long elapsed=match->GetActualTime_ms()-motionBlendStart;
+  if(elapsed>=140)return;
+  const float weight=std::sin(.5f*pi*elapsed/140.f);
+  float phase=motionBlendFrame+elapsed*.1f;
+  const float end=motionBlendFrom->GetEffectiveFrameCount();
+  if(motionBlendFrom->GetVariable("loop")=="true"&&end>0)phase=std::fmod(phase,end);
+  else phase=std::min(phase,end);
+  Quaternion local[13],global[13];Vector3 positions[13];
+  SampleContactAnimation(motionBlendFrom,phase,root,motionBlendFacing,false,local,global,positions);
+  for(unsigned i=0;i<13;++i){
+    const Quaternion carry=motionBlendCarry[i].GetSlerped(weight,QUATERNION_IDENTITY);
+    const Quaternion outgoing=(carry*local[i]).GetNormalized();
+    pose[i]=outgoing.GetSlerped(weight,pose[i]).GetNormalized();
+  }
+  root.coords[2]=root.coords[2]*weight+(positions[0].coords[2]+motionBlendHeight*(1-weight))*(1-weight);
+  if(GetConfiguration()->GetBool("training_telemetry",false)&&elapsed%20==0)
+    printf("MOTION_MIXER t=%lu actor=%d age=%lu weight=%.6f source_phase=%.4f source=%s\n",match->GetActualTime_ms(),player->GetID(),elapsed,weight,phase,motionBlendFrom->GetName().c_str());
+}
+
 void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &command){
   motionEntryFrames.clear();
   if(!PhysicalRigEnabled() || candidates.empty())return;
@@ -106,6 +150,10 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   for(unsigned i=0;i<5;++i){
     const Vector3 p=((contactPositions[joints[i]]-contactPositions[0])/zMultiplier).GetRotated2D(-spatialState.angle);
     query.positions[i]={{p.coords[0],p.coords[1],p.coords[2]}};
+    if(motionSampleValid){const Vector3 v=motionJointVelocities[i].GetRotated2D(-spatialState.angle);
+      query.velocities[i]={{v.coords[0],v.coords[1],v.coords[2]}};
+      if(i<2)query.contacts[i]=clamp((.13f-contactPositions[joints[i]].coords[2]/zMultiplier)/.09f,0.f,1.f)*clamp((1.4f-v.Get2D().GetLength())/1.4f,0.f,1.f);
+    }
   }
   const Vector3 desired=(command.useDesiredMovement?command.desiredDirection*command.desiredVelocityFloat:spatialState.movement).GetRotated2D(-spatialState.angle);
   const Vector3 velocity=spatialState.movement.GetRotated2D(-spatialState.angle);
@@ -129,12 +177,14 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
       clip->GetIncomingVelocity()>.5f&&std::fabs(clip->GetIncomingVelocity()-clip->GetOutgoingVelocity())<.15f&&
       std::fabs(clip->GetOutgoingAngle())<.025f&&std::fabs(clip->GetIncomingBodyAngle()-clip->GetOutgoingBodyAngle())<.05f;
     int earliest=0;
+    const int latest=std::max(0,clip->GetEffectiveFrameCount()-std::min(14,clip->GetEffectiveFrameCount()/2));
     if(phases&&clip==currentAnim->anim){
-      if(currentAnim->frameNum<clip->GetEffectiveFrameCount()-1)earliest=currentAnim->frameNum;
+      if(currentAnim->frameNum<=latest)earliest=currentAnim->frameNum;
       else phases=false;
     }
-    auto result=index(clip).search(queryVector,metric,phases,earliest);
-    if(!std::isfinite(result.cost))result=index(clip).search(queryVector,metric,phases);
+    auto result=index(clip).search(queryVector,metric,phases,earliest,phases?latest:0);
+    if(!std::isfinite(result.cost))result=index(clip).search(queryVector,metric,false);
+    if(phases&&clip==currentAnim->anim)result.frame=currentAnim->frameNum;
     costs[id]=result.cost;motionEntryFrames[id]=result.frame;tested+=result.tested;
     if(phases&&clip==currentAnim->anim&&GetConfiguration()->GetBool("training_motion_continuity",true))costs[id]*=.95f;
     if(command.useDesiredTripDirection){

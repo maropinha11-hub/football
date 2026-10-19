@@ -6,6 +6,7 @@
 #include "humancontroller.hpp"
 
 #include "../../AIsupport/AIfunctions.hpp"
+#include "../../physical_match_rules.hpp"
 
 #include "../../../main.hpp"
 #include "../../../hid/gamepad.hpp"
@@ -490,16 +491,22 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       if(pass.desiredFunctionType!=e_FunctionType_ShortPass && pass.desiredFunctionType!=e_FunctionType_LongPass)continue;
       const Vector3 direction=pass.touchInfo.desiredDirection.Get2D().GetNormalized(player->GetBodyDirectionVec());
       const bool close=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.25f && match->GetBall()->Predict(0).coords[2]<.45f;
-      if(!turningPass && close && direction.GetDotProduct(player->GetBodyDirectionVec())<-.20f){
+      const float facing=direction.GetDotProduct(player->GetBodyDirectionVec());
+      const bool lightHeel=pass.desiredFunctionType==e_FunctionType_ShortPass&&football_rules::userBackheel(facing,player->GetMovement().GetLength(),gauge_ms);
+      if(lightHeel)turningPass=false;
+      if(!turningPass && !lightHeel && close && facing<-.20f){
         turningPass=true;turningPassDirection=direction;turningPassUntil=match->GetActualTime_ms()+1400;
         if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_PASS_TURN t=%lu state=begin\n",match->GetActualTime_ms());
       }
       if(turningPass){
-        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.35f;
+        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.70f;
         if(!aligned && close && match->GetActualTime_ms()<turningPassUntil){
-          auto &movement=commandQueue.back();movement.useDesiredLookAt=true;movement.useDesiredMovement=true;
-          movement.desiredLookAt=player->GetPosition()+turningPassDirection*10.f;
-          movement.desiredDirection=turningPassDirection;movement.desiredVelocityFloat=.8f;
+          for(auto &movement:commandQueue)if(movement.desiredFunctionType==e_FunctionType_Movement||movement.desiredFunctionType==e_FunctionType_BallControl){
+            movement.useDesiredLookAt=true;movement.useDesiredMovement=true;
+            movement.desiredLookAt=player->GetPosition()+turningPassDirection*10.f;
+            movement.desiredDirection=turningPassDirection;
+            movement.desiredVelocityFloat=movement.desiredFunctionType==e_FunctionType_BallControl?idleDribbleSwitch+.1f:.9f;
+          }
           commandQueue.erase(commandQueue.begin()+i);
         }else{
           pass.touchInfo.desiredDirection=turningPassDirection;turningPass=false;

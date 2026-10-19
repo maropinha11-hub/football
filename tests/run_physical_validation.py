@@ -11,13 +11,15 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
 p.add_argument('--display-base',type=int,default=164)
-p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match','pitch_turf','pitch_receive','pitch_rules','pitch_body','pitch_tackle','cpu_grip','toggle_stress','tactical_receptions','hud_stress','motion_matching','restart_lifecycle','motion_fluency','mocap_bank'])
+p.add_argument('--only',nargs='+',choices=['control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match','pitch_turf','pitch_receive','pitch_rules','pitch_body','pitch_tackle','cpu_grip','toggle_stress','tactical_receptions','hud_stress','motion_matching','restart_lifecycle','motion_fluency','mocap_bank','motion_transitions','startup_cycles','pass_turn_fps'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
 env['LD_LIBRARY_PATH']=str(native/'lib/x86_64-linux-gnu')+':'+env.get('LD_LIBRARY_PATH','')
 env['FOOTBALL_TEST_GL_THREADS']='1'
-cases=[('mocap_bank','training_mocap_bank_smoke.py',[]),
+cases=[('startup_cycles','training_startup_smoke.py',[]),
+       ('motion_transitions','training_motion_transitions_smoke.py',[]),
+       ('mocap_bank','training_mocap_bank_smoke.py',[]),
        ('restart_lifecycle','training_restart_lifecycle_smoke.py',[]),
        ('motion_fluency','training_motion_fluency_smoke.py',[]),
        ('control_hop_comparison','training_control_hop_smoke.py',[]),
@@ -32,6 +34,7 @@ cases=[('mocap_bank','training_mocap_bank_smoke.py',[]),
        ('physical_quality','training_physical_quality_smoke.py',[]),
        ('contact_lab','training_contact_lab_smoke.py',[]),
        ('pass_turn','training_pass_turn_smoke.py',[]),
+       ('pass_turn_fps','training_pass_turn_smoke.py',['--camera','2']),
        ('balance_lab','training_balance_control_smoke.py',[]),
        ('aerial_taps','training_aerial_taps_smoke.py',[]),
        ('aerial_direction_fps','training_aerial_direction_smoke.py',[]),

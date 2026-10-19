@@ -531,6 +531,8 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const float angle=startAngle+currentAnim->rotationSmuggle.begin*(1-begin)+currentAnim->rotationSmuggle.end*end;
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
+  BlendMotionPose(contactLocal,contactPositions[0]);
+  ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
   UpdatePhysicalRigPose();
   if(match->GetReferee()->KeepThrowerOutside(player)){
     const float side=match->GetRefereeBuffer().restartPos.coords[1]>=0?1.f:-1.f;

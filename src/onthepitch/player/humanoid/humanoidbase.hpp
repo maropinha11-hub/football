@@ -465,6 +465,17 @@ class HumanoidBase {
     Vector3 fetchedSituationState{0};
     void BuildSituationalInput(football_physics::Input &input);
     void RankMotionMatches(DataSet &candidates,const PlayerCommand &command);
+    void BeginMotionBlend(int incomingId,e_FunctionType function,int entry);
+    void BlendMotionPose(Quaternion *pose,Vector3 &root);
+    bool MotionMixerActive()const;
+    Animation *motionBlendFrom=nullptr;
+    float motionBlendFrame=0,motionBlendFacing=0,motionBlendHeight=0;
+    unsigned long motionBlendStart=0;
+    Quaternion motionBlendCarry[13];
+    Vector3 motionPreviousPositions[6],motionCurrentPositions[6],motionJointVelocities[5];
+    unsigned long motionSampleTime=0;
+    bool motionSampleValid=false;
+    float motionSampleRate=100;
     int MotionEntryFrame(int id)const;
     std::map<int,int> motionEntryFrames;
     std::shared_ptr<football_physics::NativeMotionBank> motionBank;

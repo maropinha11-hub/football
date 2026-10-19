@@ -79,6 +79,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     for filename in ("dividir-arquivos.ps1", "dividir-arquivos.bat"):
         shutil.copy2(project / "scripts" / filename, stage / filename)
     shutil.copy2(project / "docs/MOVIMENTO-E-COBRANCAS.md",stage / "LEIA-MOVIMENTO.txt")
+    shutil.copy2(project / "docs/CONTINUIDADE-E-PASSES.md",stage / "LEIA-CONTINUIDADE.txt")
     for filename in ("mocap-retarget.json","uploaded-motion-catalog.json"):
         shutil.copy2(project / "docs" / filename,stage / filename)
     for filename, command in [
@@ -156,7 +157,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Ctrl+F6 na partida fisica: ensaiar cara a cara, bola no angulo e recuo ao goleiro.\n"
         "Ctrl+Shift+F6: saida curta com linhas livres para observar a CPU.\n"
         "Mudancas bruscas em velocidade exigem equilibrio; conduzir devagar continua estavel.\n"
-        "Calcanhares sao restritos a emergencias leves, longe do proprio gol, com intervalo.\n"
+        "Na CPU, calcanhares sao restritos a emergencias leves, longe do proprio gol.\n"
+        "Passe curto humano para tras: toque breve prefere calcanhar; carga maior gira o corpo.\n"
         "Shift/Ctrl+F4: passe rasteiro deslocado para cada lado.\n"
         "Shift+F5: bola forte no peito; Ctrl+F5: bola na barriga.\n"
         "Shift+Ctrl+F5: bolada forte alta para testar a reacao fisica.\n"
@@ -303,7 +305,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","LEIA-MOVIMENTO.txt","mocap-retarget.json",
-                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1"):
+                         "uploaded-motion-catalog.json","dividir-arquivos.bat","dividir-arquivos.ps1","LEIA-CONTINUIDADE.txt"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
             output.write(stage/filename,filename)
@@ -314,7 +316,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
             "2. Extraia este ZIP DENTRO da pasta atual do jogo, onde ja ficam\r\n"
             "   gameplayfootball.exe, run-training.bat, as DLLs e a pasta media.\r\n"
             "3. Aceite substituir os arquivos.\r\n"
-            "4. Abra run-training.bat.\r\n\r\n"
+            "4. Para a revisao fisica, abra treino-fisico.bat ou partida-fisica.bat.\r\n"
+            "   run-training.bat continua disponivel para o modo aprovado sem a camada fisica.\r\n\r\n"
             + ("Restaurada a base aprovada 37a5543.\r\n" if approved_binary is not None else
              "Conducao aprovada como padrao, sem toggle em L3/T.\r\n"
              "R3 alterna as cameras para ver o corpo completo.\r\n"

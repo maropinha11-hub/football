@@ -52,7 +52,7 @@ PhysicalRig::PhysicalRig():balance(new BalanceController){}
 PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &input,float dt){
   dt=bounded(dt,.001f,.02f);
-  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.advance(dt);}
+  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch,input.inertialTransition);poseInertia.advance(dt);}
   else poseInertia.reset();
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
@@ -168,7 +168,8 @@ void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
   local=input.pose;
-  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch);poseInertia.apply(input.pose,input.poseVelocity,input.inertiaMask,local,input.trackMotion);}
+  if(input.useInertia){poseInertia.observe(input.pose,input.poseVelocity,input.motionEpoch,input.inertialTransition);poseInertia.apply(input.pose,input.poseVelocity,input.inertiaMask,local,input.trackMotion);}
+  trackedMotion=local;
   forwardKinematics();const Vec left=positions[9],right=positions[12];
   activeRootOffset=input.adaptiveMotion&&!input.bodyContact?rootPosture:Vec{{0,0,0}};
   root=addPoint(root,activeRootOffset);forwardKinematics();
@@ -240,8 +241,12 @@ void PhysicalRig::evaluate(const Input &input){
   for(unsigned ankle:{9u,12u})if(length(reachOffsets[ankle])>1e-6f)
     solveLeg(ankle-2,addPoint(positions[ankle],reachOffsets[ankle]));
   {
-    Vec upperReach=rotatePoint(inverseRotation(world[0]),capped(addPoint(reachOffsets[1],reachOffsets[2]),.03f));
-    const Vec bend=capped(crossPoint({{0,0,1}},scalePoint(upperReach,1/.45f)),.10f);
+    // A contested header needs a little more whole-trunk reach than a chest
+    // cushion. Keep the gradual 0.28 m/s controller and planted feet; the
+    // forehead still has to meet the actual ball surface to make contact.
+    const bool heading=input.reachBone==2;
+    Vec upperReach=rotatePoint(inverseRotation(world[0]),capped(addPoint(reachOffsets[1],reachOffsets[2]),heading?.06f:.03f));
+    const Vec bend=capped(crossPoint({{0,0,1}},scalePoint(upperReach,1/.45f)),heading?.14f:.10f);
     local[1]=normalized(productRotation(exponential(bend),local[1]));
     forwardKinematics();
   }

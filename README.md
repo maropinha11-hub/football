@@ -8,12 +8,13 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
-A revisão atual corrige as cobranças antes do apito e a retomada após o toque,
-sincroniza a pose exibida com os contatos e reduz as oscilações rápidas da
-corrida/strafe. Dez ciclos FBX de locomoção foram convertidos para o modelo
-nativo; 37 clipes Unity e 176 intervalos FBX estão catalogados. Abra `treino-fisico.bat`
-ou `partida-fisica.bat` em uma extração nova do pacote completo. Veja
-[as mudanças e os testes desta revisão](docs/MOVIMENTO-E-COBRANCAS.md).
+A revisão atual corrige a torção de joelhos e cotovelos na conversão dos dez
+ciclos FBX e mistura movimentos em avanço, sem reiniciar a fase do mesmo ciclo.
+Paradas e mudanças de direção respondem também longe da bola. Um passe curto
+e fraco para trás prefere o calcanhar; carregando mais, o corpo vira para passar.
+Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacote
+completo. Veja [as correções e os testes](docs/CONTINUIDADE-E-PASSES.md) e
+[o catálogo e a revisão anterior](docs/MOVIMENTO-E-COBRANCAS.md).
 
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).

@@ -1,6 +1,7 @@
 #include "onthepitch/player/humanoid/motion_matching.hpp"
 #include "onthepitch/player/humanoid/pose_inertia.hpp"
 #include "onthepitch/reception_prediction.hpp"
+#include "onthepitch/physical_match_rules.hpp"
 #include <iostream>
 #include <random>
 
@@ -24,6 +25,8 @@ int main(){
   }
   check(exact,"blocked feature search differs from exhaustive nearest neighbours");
   check(restricted,"continuations may not rewind an unfinished gait");
+  const auto bounded=index.search(index.frames[145].feature,MotionMetric{},true,80,120);
+  check(bounded.frame>=80&&bounded.frame<=120,"search may not enter the exhausted tail of a locomotion cycle");
   check(entryOnly,"contact actions must retain their authored entry frame");
   check(index.search(index.frames[71].feature,MotionMetric{},true).frame==142,"matching fails to select an interior frame");
   MotionFeature pose,other;other.contacts[0]=1;
@@ -54,6 +57,13 @@ int main(){
   check(inertia.maximumOffset()<1e-5f,"inertial pose offsets must converge instead of leaving a frozen blend");
   check(std::isfinite(largestStep)&&largestStep<.08f,"inertial transition must remain finite and bounded");
   check(out[0]==b[0],"inertial limb smoothing may not change world heading or root motion");
+  inertia.observe(a,velocity,2,false);inertia.apply(a,velocity,mask,out);
+  check(inertia.maximumOffset()<1e-6f,"a continuously advancing source mixer must not restart a frozen pose offset");
+  check(football_rules::userBackheel(-.9f,1.f,160)&&!football_rules::userBackheel(-.9f,1.f,161),
+    "rear short-pass charge must distinguish a light heel from a body-turning pass");
+  check(!football_rules::userBackheel(.9f,1.f,80)&&!football_rules::userBackheel(-.9f,4.f,80)&&
+    !football_rules::userBackheel(std::numeric_limits<float>::quiet_NaN(),1.f,80),
+    "heel preference must not apply to forward, running or invalid commands");
   PoseInertia tracking;tracking.observe(a,velocity,0);tracking.apply(a,velocity,mask,out);
   float rawNoise=0,filteredNoise=0;Pose lastFiltered=out,lastRaw=a;
   for(unsigned tick=0;tick<100;++tick){

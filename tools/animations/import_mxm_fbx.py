@@ -95,6 +95,15 @@ def torso(matrices, lower, upper, left_name, right_name):
     x = (x-z*x.dot(z)).normalized()
     y = z.cross(x).normalized()
     return Matrix((x,y,z)).transposed().to_quaternion()
+def hinge_frame(axis,target,normal):
+    # Aim alone leaves the bone's axial roll underdetermined. Solve it from
+    # the actual bend plane so the native knee/elbow remains a hinge instead
+    # of twisting its skinned vertices around an arbitrary FBX bone axis.
+    q=axis.rotation_difference(target)
+    current=q @ Vector((1,0,0));current=(current-target*current.dot(target)).normalized()
+    normal=(normal-target*normal.dot(target)).normalized()
+    angle=math.atan2(target.dot(current.cross(normal)),current.dot(normal))
+    return (Quaternion(target,angle) @ q).normalized()
 aligned = [axes[i].rotation_difference(direction(rest,pair)) if pair else Quaternion()
            for i,pair in enumerate(segments)]
 all_poses = []
@@ -114,6 +123,21 @@ for sample in range(count+1):
         q.normalize()
         globals_.append(q)
         if segments[i]:direction_errors.append(((q @ axes[i])-direction(matrices,segments[i])).length)
+    if args.rig=='mxm':
+        anatomical_left=(point(matrices,'LThigh')-point(matrices,'RThigh')).normalized()
+        for upper,lower,a,b,c,sign in [(7,8,'LThigh','LCalf','LFoot',1),(10,11,'RThigh','RCalf','RFoot',1),
+                                      (3,4,'LUpperArm','LForearm','LHand',-1),(5,6,'RUpperArm','RForearm','RHand',-1)]:
+            du=(point(matrices,b)-point(matrices,a)).normalized()
+            dl=(point(matrices,c)-point(matrices,b)).normalized()
+            preferred=(anatomical_left-du*anatomical_left.dot(du)).normalized()
+            normal=du.cross(dl)*sign
+            # The bend plane is undefined at a straight joint. Fade to the
+            # anatomical lateral axis there, instead of flipping axial roll
+            # when a nearly straight captured knee crosses the singularity.
+            confidence=min(1,normal.length/.18)
+            normal=(normal.normalized()*confidence+preferred*(1-confidence)).normalized()
+            globals_[upper]=hinge_frame(axes[upper],du,normal)
+            globals_[lower]=hinge_frame(axes[lower],dl,normal)
     local = [(globals_[parents[i]].inverted() @ q if parents[i]>=0 else q).normalized()
              for i,q in enumerate(globals_)]
     positions = [Vector((0,0,0))]
@@ -132,6 +156,10 @@ for sample in range(count+1):
         for i,q in enumerate(local):
             if q.dot(all_poses[-1]['q'][i]) < 0:q.negate()
     motion=point(matrices,'Pelvis')-point(start,'Pelvis') if args.root_motion else Vector((0,0,0))
+    if args.movement and not args.non_loop:
+        # Pelvis sway is pose detail, not acceleration of the whole player.
+        # A periodic gait needs the same cycle velocity at both boundaries.
+        motion=(basis @ travel)*(sample/count)
     all_poses.append({'q':local,'height':height,'motion':motion,'positions':[list(p+Vector((0,0,height))) for p in positions]})
 # Close the exported loop explicitly; source endpoints are the same biped pose
 # to floating-point tolerance. Never import FBX horizontal root displacement.
@@ -139,7 +167,7 @@ for a,b in zip(all_poses[0]['q'],all_poses[-1]['q']):loop_errors.append(a.rotati
 if not args.non_loop:
     if max(loop_errors) > .03 and not args.close_loop:raise ValueError('Source clip is not a seamless locomotion loop')
     if args.close_loop:
-        if max(loop_errors)>1.0:raise ValueError('Endpoint mismatch exceeds one radian; choose another cycle')
+        if max(loop_errors)>1.0:raise ValueError('Endpoint mismatch exceeds one radian; choose another cycle: '+repr(loop_errors))
         for i,pose in enumerate(all_poses):
             t=i/count;weight=t*t*(3-2*t)
             for bone,q in enumerate(pose['q']):
@@ -186,6 +214,10 @@ metadata={'source':args.source.name,'source_sha256':hashlib.sha256(args.source.r
           'native_player_height_is_offset':args.movement,
           'loop':not args.non_loop,'contact_source_frame':args.contact_frame,
           'source_rig':args.rig,'source_action':action.name,'source_joint_map':joint_names,'loop_correction':args.close_loop,
+          'hinge_frames_from_bend_planes':args.rig=='mxm',
+          'cycle_root_velocity_normalized':args.movement and not args.non_loop,
+          'maximum_knee_lateral_rotation_rad':max(2*math.asin(min(1,math.hypot(p['q'][i].y,p['q'][i].z)))for p in all_poses for i in [8,11]),
+          'maximum_elbow_lateral_rotation_rad':max(2*math.asin(min(1,math.hypot(p['q'][i].y,p['q'][i].z)))for p in all_poses for i in [4,6]),
           'contact_marker_origin':'integration marker; FBX contains no ball track' if args.contact_frame is not None else None,
           'maximum_segment_direction_error':max(direction_errors),
           'maximum_source_loop_angle_error_rad':max(loop_errors),
