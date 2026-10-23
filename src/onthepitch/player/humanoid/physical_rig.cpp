@@ -16,7 +16,7 @@ void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){refe
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 void PhysicalRig::forwardKinematics(){
@@ -68,10 +68,40 @@ void PhysicalRig::step(const Input &input,float dt){
   filteredTurn+=(bounded(turn,-6,6)-filteredTurn)*(1-std::exp(-6*dt));
   previousVelocity=input.velocity;lastForward=input.forward;
   debug.turnRate=filteredTurn;debug.effort=bounded(length(filteredAcceleration)/12+std::fabs(filteredTurn)*length(input.velocity)/55,0,1);
+  // Plant one support shoe during native sideways/backward steps. The
+  // anchor is a ground contact, never a target ball position. Release before
+  // swing, excessive stretch or a queued action; bound the correction so a
+  // different gait cannot drag a planted limb across the pitch.
+  Points source;Pose sourceWorld;
+  source[0]=input.pelvis;
+  for(unsigned bone=0;bone<13;++bone){const int parent=pes3::nativeParents[bone];
+    sourceWorld[bone]=parent<0?input.pose[bone]:normalized(productRotation(sourceWorld[parent],input.pose[bone]));
+    if(parent>=0)source[bone]=addPoint(source[parent],rotatePoint(sourceWorld[parent],scalePoint(reference.offsets[bone],scale)));
+  }
+  for(unsigned side=0;side<2;++side){
+    const unsigned ankle=side?12:9;const Vec foot=source[ankle];
+    const Vec footVelocity=sourceFeetReady?scalePoint(subtractPoint(foot,sourceFeet[side]),1/dt):Vec{{0,0,0}};
+    const bool allowed=input.grounding&&!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering&&state==Mode::Active;
+    if(!allowed||foot[2]>plantHeight[side]+.045f||length(subtractPoint(foot,plantAnchor[side]))>.07f||plantAge[side]>.24f)plantAge[side]=0;
+    if(allowed&&plantAge[side]==0&&sourceFeetReady&&foot[2]<.18f&&foot[2]<=source[side?9:12][2]+.015f&&
+       std::fabs(footVelocity[2])<.20f&&length(footVelocity)<3.f){
+      plantAnchor[side]=addPoint(foot,plantOffset[side]);plantHeight[side]=foot[2];plantAge[side]=dt;
+    }
+    Vec wanted{{0,0,0}};
+    if(allowed&&plantAge[side]>0){plantAge[side]+=dt;wanted=capped(subtractPoint(plantAnchor[side],foot),.055f);wanted[2]=0;}
+    plantOffset[side]=addPoint(plantOffset[side],capped(subtractPoint(wanted,plantOffset[side]),.7f*dt));
+    sourceFeet[side]=foot;
+  }
+  sourceFeetReady=true;
   const float impulseSize=length(pendingImpulse);
   bool lostBalance=false;
   if(state==Mode::Active){
     balance->addImpulse(pendingImpulse,pendingTorque);
+    if(!input.action&&!input.upperReception&&!input.staggering&&length(input.velocity)>1.5f){
+      // Acceleration and a hard change of direction load the support even
+      // without an external collision. Integrated forces, not random falls.
+      balance->addImpulse(scalePoint(filteredAcceleration,mass*.12f*dt),{{0,0,0}});
+    }
     const float stance=length(subtractPoint(positions[9],positions[12]));
     lostBalance=balance->step(dt,input.pelvis[2],stance,length(input.velocity),input.protect,input.gripped);
     debug.balanceRisk=balance->risk;debug.balancePhase=balance->phase;debug.stepDemand=balance->stepDemand;debug.supportMargin=balance->margin;
@@ -196,12 +226,21 @@ void PhysicalRig::evaluate(const Input &input){
     debug.supportKnee=std::max(length(subtractPoint(leftKnee,positions[8])),length(subtractPoint(rightKnee,positions[11])));
     debug.supportFootError=std::max(length(subtractPoint(left,positions[9])),length(subtractPoint(right,positions[12])));
   }
+  if(input.grounding&&!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering){
+    for(unsigned side=0;side<2;++side)if(length(plantOffset[side])>1e-6f){
+      const unsigned ankle=side?12:9;
+      solveLeg(ankle-2,addPoint(positions[ankle],plantOffset[side]),1e-5f);
+      debug.plantedCorrection=std::max(debug.plantedCorrection,length(plantOffset[side]));
+    }
+  }
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
   leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),counterTilt),.38f);
   const float actionBias=input.upperReception || input.situation.kind==football_situations::ActionKind::Header?0.f:input.action?.35f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
-  Pose target=input.pose;
+  // Retain the solved support chain. Reinitializing from input.pose here
+  // discarded knee/foot planting before the final pose reached rendering.
+  Pose target=local;
   debug.counterbalance=length(counterTilt);
   if(balanceChoice>=0 && !input.staggering && !input.action && !input.upperReception){
     const auto &motion=balanceMotions[balanceChoice];
@@ -254,6 +293,17 @@ void PhysicalRig::evaluate(const Input &input){
     const Vec bend=capped(crossPoint({{0,0,1}},scalePoint(upperReach,1/.45f)),heading?.14f:.10f);
     local[1]=normalized(productRotation(exponential(bend),local[1]));
     forwardKinematics();
+  }
+  // Small anticipatory save corrections rotate the real shoulder chain.
+  // The same damped reach envelope used by feet limits approach and release;
+  // no limb is stretched and the ball still needs a measured skin contact.
+  for(unsigned elbow:{4u,6u})if(length(reachOffsets[elbow])>1e-6f){
+    const unsigned shoulder=elbow-1;
+    const Vec tip=addPoint(positions[elbow],rotatePoint(world[elbow],{{0,0,-.25f*scale}}));
+    const Vec lever=subtractPoint(tip,positions[shoulder]);
+    const Quat turn=pes3::swingRotation(unit(lever),unit(addPoint(lever,reachOffsets[elbow])));
+    const Quat goal=normalized(productRotation(exponential(capped(logarithm(turn),.16f)),world[shoulder]));
+    local[shoulder]=normalized(productRotation(inverseRotation(world[1]),goal));forwardKinematics();
   }
   if(physicalUpperValid && !input.action && !input.upperReception){
     for(unsigned i=1;i<=6;++i){

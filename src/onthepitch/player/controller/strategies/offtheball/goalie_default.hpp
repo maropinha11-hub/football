@@ -20,6 +20,9 @@ class GoalieDefaultStrategy : public Strategy {
   protected:
     bool ballBoundForGoal;
     float ballBoundForGoal_ycoord;
+    unsigned long backpassStamp=~0ul;
+    int backpassActor=-1;
+    float backpassPlane=0;
 
 };
 

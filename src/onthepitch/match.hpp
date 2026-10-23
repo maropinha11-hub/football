@@ -427,10 +427,7 @@ class Match {
 
     boost::intrusive_ptr<Sound> crowd01;
     boost::intrusive_ptr<Sound> crowd02;
-    boost::intrusive_ptr<Sound> fieldSteps[4],fieldBreath,fieldAir;
-    struct FootAudio {float height[2]={0,0};unsigned long last[2]={0,0};bool ready=false;};
-    std::map<int,FootAudio> fieldFootHistory;
-    unsigned fieldStepVoice=0;
+    boost::intrusive_ptr<Sound> fieldBreath,fieldAir;
     float fieldEffort=0;
 
     std::vector<ReplaySpatial*> replay;

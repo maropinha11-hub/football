@@ -3,6 +3,13 @@
 #include <algorithm>
 #include <cmath>
 namespace football_keeper {
+// A diving pose is useful when the ball arrives at its reaching plane, not
+// merely because it will eventually cross the goal. Keep lateral reach and
+// height in the animation solver; synchronize its preparation with flight.
+inline bool saveWindow(float authoredForward,float predictedForward,float forwardSpeed){
+ if(!std::isfinite(authoredForward)||!std::isfinite(predictedForward)||!std::isfinite(forwardSpeed))return false;
+ return std::fabs(predictedForward-authoredForward)<=std::max(.50f,std::min(1.15f,std::fabs(forwardSpeed)*.065f));
+}
 inline float closeAngleDepth(float goalDistance,float attackerDistance,float defenderDistance){
  if(!std::isfinite(goalDistance)||!std::isfinite(attackerDistance)||!std::isfinite(defenderDistance)||attackerDistance>1.6f||goalDistance>24||goalDistance<1||defenderDistance<3)return 0;
  return std::max(1.5f,std::min(8.f,goalDistance*.43f));

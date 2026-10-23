@@ -17,6 +17,7 @@
 
 // Football Training: only apply opponent shielding when an opponent exists.
 #include "humanoid.hpp"
+#include "native_contact_timing.hpp"
 
 #include <cmath>
 
@@ -878,14 +879,7 @@ void Humanoid::Process() {
 
     // smooth version
     assert(currentAnim->touchFrame > 0.0f);
-    float value =
-        std::cos((currentAnim->frameNum / (float)(currentAnim->touchFrame + 1) -
-                  0.5f) *
-                 pi * 2.0f) +
-        1.0f;
-    //if (player->GetDebug()) printf("cos: %f\n", value);
-    // add some linearity
-    value = value * 0.1f + 0.9f;
+    const float value=football_contact::approachWeight(currentAnim->frameNum,currentAnim->touchFrame+1);
     spatialState.actionSmuggleMovement = (currentAnim->actionSmuggle / (float)(currentAnim->touchFrame + 1)) * value * 100.0f;
     currentAnim->actionSmuggleOffset += spatialState.actionSmuggleMovement / 100.0f;
 
@@ -1564,8 +1558,9 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
-  if(dataSet.empty()&&PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
+  if(PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
      CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK&&!command.onlyDeflectAnimsThatPickupBall){
+    dataSet.clear();
     query.byIncomingVelocity=false;query.byIncomingBodyDirection=false;query.bySide=false;
     anims->CrudeSelection(dataSet,query);
   }
@@ -2003,7 +1998,8 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       Vector3 point;int frame;
       if(!ext||!ext->GetFirstTouch(point,frame))continue;
       const Vector3 target=(match->GetBall()->Predict(frame*10)-spatialState.position).GetRotated2D(-spatialState.angle);
-      if(std::fabs(target.coords[0])>.35f&&std::fabs(point.coords[0])>.20f&&target.coords[0]*point.coords[0]<0)continue;
+      const float authored=clip->GetVariable("keeper_authored_side").empty()?point.coords[0]:std::atof(clip->GetVariable("keeper_authored_side").c_str());
+      if(std::fabs(target.coords[0])>.35f&&std::fabs(authored)>.20f&&target.coords[0]*authored<0)continue;
       directed.push_back(id);
     }
     dataSet=directed;
@@ -2054,7 +2050,8 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
     if(selectedAnimID<0&&PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
        CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK&&match->GetActualTime_ms()>=physicalKeeperAttemptUntil&&
-       currentAnim->functionType!=e_FunctionType_Deflect&&!command.onlyDeflectAnimsThatPickupBall&&
+       currentAnim->functionType!=e_FunctionType_Deflect&&(currentAnim->touchFrame<0||currentAnim->touchMade)&&
+       !command.onlyDeflectAnimsThatPickupBall&&
        match->GetBall()->GetMovement().GetLength()>5.f){
       Vector3 previous=match->GetBall()->Predict(0);bool threatened=false;Vector3 crossing;
       for(unsigned ms=20;ms<=900;ms+=20){const Vector3 next=match->GetBall()->Predict(ms);float y=0;
@@ -2062,21 +2059,38 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
           threatened=true;crossing=Vector3(team->GetSide()*pitchHalfW,y,next.coords[2]);break;
         }previous=next;
       }
+      // A central arrival can still be met by an authored standing catch,
+      // foot clearance or a real body block. A speculative sideways dive
+      // must not carry that receiver out of the ball's path.
+      const float lateral=(crossing-spatialState.position).Get2D().GetDotProduct(spatialState.bodyDirectionVec.GetRotated2D(.5f*pi));
+      if(std::fabs(lateral)<1.35f&&crossing.coords[2]<1.75f)threatened=false;
       float best=1e9f;Vector3 local=(crossing-spatialState.position).GetRotated2D(-spatialState.angle);
+      float selectedForwardError=0;int selectedFrame=0;
       if(threatened)for(int id:dataSet){auto *clip=anims->GetAnim(id);
         if(!clip->GetVariable("outgoing_retain_state").empty())continue;
         auto ext=boost::static_pointer_cast<FootballAnimationExtension>(clip->GetExtension("football"));Vector3 point;int frame;
         if(!ext||!ext->GetFirstTouch(point,frame))continue;
+        std::vector<Vector3> savePositions;radian saveRotation=0;
+        CalculatePhysicsVector(clip,false,Vector3(0),false,desiredBodyDirectionRel,savePositions,saveRotation);
+        if(unsigned(frame)>=savePositions.size())continue;
+        Quaternion ignored;Vector3 authoredRoot;clip->GetKeyFrame("player",frame,ignored,authoredRoot);
+        const float authoredHeight=point.coords[2];
+        point=(point-authoredRoot).GetRotated2D(allowPreTouchRotationSmuggle?saveRotation*frame/float(clip->GetEffectiveFrameCount()):0)+savePositions[frame].GetRotated2D(-spatialState.angle);
+        point.coords[2]=authoredHeight;
         const Vector3 target=(match->GetBall()->Predict(frame*10)-spatialState.position).GetRotated2D(-spatialState.angle);
-        if(std::fabs(target.coords[0])>.35f&&std::fabs(point.coords[0])>.20f&&point.coords[0]*target.coords[0]<0)continue;
-        const float score=std::fabs(point.coords[0]-target.coords[0])+1.7f*std::fabs(point.coords[2]-target.coords[2]);
-        if(score<best){best=score;selectedAnimID=id;}
+        const float authored=clip->GetVariable("keeper_authored_side").empty()?point.coords[0]:std::atof(clip->GetVariable("keeper_authored_side").c_str());
+        if(std::fabs(target.coords[0])>.35f&&std::fabs(authored)>.20f&&authored*target.coords[0]<0)continue;
+        if(std::fabs(authored)>std::fabs(target.coords[0])+.65f)continue;
+        const Vector3 flight=match->GetBall()->GetMovement().GetRotated2D(-spatialState.angle);
+        if(!football_keeper::saveWindow(point.coords[1],target.coords[1],flight.coords[1]))continue;
+        if(std::fabs(point.coords[2]*zMultiplier-target.coords[2])>.42f)continue;
+        const float score=std::fabs(point.coords[0]-target.coords[0])+1.7f*std::fabs(point.coords[2]-target.coords[2])+3.f*std::fabs(point.coords[1]-target.coords[1]);
+        if(score<best){best=score;selectedAnimID=id;local=target;selectedForwardError=target.coords[1]-point.coords[1];selectedFrame=frame;positions_tmp=savePositions;rotationSmuggle_tmp=saveRotation;}
       }
       if(selectedAnimID>=0){
         touchFrame_tmp=-1;fullActionSmuggle_tmp=Vector3(0);actionSmuggle_tmp=Vector3(0);
-        CalculatePhysicsVector(anims->GetAnim(selectedAnimID),false,Vector3(0),false,desiredBodyDirectionRel,positions_tmp,rotationSmuggle_tmp);
         physicalKeeperAttemptUntil=match->GetActualTime_ms()+1800;
-        if(GetConfiguration()->GetBool("training_telemetry",false))printf("KEEPER_DIVE_ATTEMPT t=%lu actor=%d clip=%s contact=0 target_side=%.6f\n",match->GetActualTime_ms(),player->GetID(),anims->GetAnim(selectedAnimID)->GetName().c_str(),local.coords[0]);
+        if(GetConfiguration()->GetBool("training_telemetry",false))printf("KEEPER_DIVE_ATTEMPT t=%lu actor=%d clip=%s contact=0 target_side=%.6f forward_error=%.6f contact_frame=%d\n",match->GetActualTime_ms(),player->GetID(),anims->GetAnim(selectedAnimID)->GetName().c_str(),local.coords[0],selectedForwardError,selectedFrame);
       }
     }
     if(selectedAnimID<0 && command.desiredFunctionType==e_FunctionType_Interfere && PlayerMatchEnabled() &&
@@ -2574,10 +2588,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       // now pick the ballPos from the previous 9ms that is closest to animBallPos. this is to emulate a continuous 'close enough?'-check instead of a 'single moment' check.
       // Real mesh contacts must aim at the same physics instant as the pose.
       // The legacy +/- millisecond proxy shifts a fast ball beyond the shoe.
-      const bool exactBodyStrike=UsesTrainingContacts() &&
-        (anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos || anim->GetVariable("touch_bodypart")=="head") &&
-        (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
-         functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot);
+      const bool exactBodyStrike=UsesTrainingContacts();
       if (useContinuousBallCheck && !exactBodyStrike) {
         Line ballLine(ballPos - ballMovement * 0.006f, ballPos + ballMovement * 0.003f);
         float u = clamp(ballLine.GetClosestToPoint(animBallPos), 0.0f, 1.0f);
@@ -2587,6 +2598,12 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       //if (CastPlayer()->GetDebug()) printf("ball height / anim ball height: %f / %f\n", ballPos.coords[2], animBallPos.coords[2]);
       Vector3 actionSmuggleVec3D = ballPos - animBallPos;
       Vector3 actionSmuggleVec2D = actionSmuggleVec3D.Get2D();
+
+      if(PlayerMatchEnabled() && functionType==e_FunctionType_Deflect &&
+         CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK && ballMovement.GetLength()>5.f &&
+         !football_keeper::saveWindow(animBallPos.coords[1],ballPos.coords[1],ballMovement.coords[1])){
+        touchNum++;continue;
+      }
 
 
       // ball height
@@ -2695,9 +2712,11 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
           // height. Spread this small correction over the native approach;
           // never stretch a limb or apply an impulse without a real runtime contact.
           const std::string part=anim->GetVariable("touch_bodypart");
-          if(UsesTrainingContacts() && (part.find("foot")!=std::string::npos || part=="head") &&
+          const bool originalStrike=(part.find("foot")!=std::string::npos || part=="head") &&
               (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
-               functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot)) {
+               functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot);
+          const bool bodyReception=!part.empty()&&(functionType==e_FunctionType_Trap||functionType==e_FunctionType_Deflect);
+          if(UsesTrainingContacts() && match->GetBallRetainer()!=player && (originalStrike||bodyReception)) {
             Quaternion local[13],global[13];Vector3 joints[13],surface;
             Vector3 root=spatialState.position+positions_ret.at(animTouchFrame)+
               actionSmuggleVec2D.GetRotated2D(spatialState.angle);
@@ -2706,7 +2725,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
             // A header may need a modest whole-body step to meet the ball.
             // Distribute it over the native preparation, at <= 0.45 m/s.
             // The foot allowance and exact final skin-contact gate stay.
-            const float approachAllowance=part=="head"?std::min(.18f,animTouchFrame*.01f*.45f):.08f;
+            const float approachAllowance=bodyReception?std::min(.24f,animTouchFrame*.01f*.65f):
+              part=="head"?std::min(.18f,animTouchFrame*.01f*.45f):.08f;
             float gap=100;
             for(unsigned iteration=0;iteration<8;++iteration) {
               SampleContactAnimation(anim,float(animTouchFrame),root,spatialState.angle,false,local,global,joints);

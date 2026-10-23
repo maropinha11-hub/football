@@ -41,7 +41,7 @@ struct Input {
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
-  bool staggering=false,passiveTracking=false,touchPending=false;
+  bool staggering=false,passiveTracking=false,touchPending=false,grounding=false;
   football_situations::Context situation;
 };
 struct Metrics {
@@ -54,6 +54,7 @@ struct Metrics {
   float muscleEffort=0,supportTorque=0;
   float counterbalance=0;
   float supportSink=0,supportTilt=0,supportKnee=0,supportFootError=0;
+  float plantedCorrection=0;
   football_situations::ActionMetrics situation;
   float situationTrunk=0,situationArms=0,situationFootError=0,situationRootError=0;
   int balancePhase=0,balanceChoice=-1;
@@ -123,6 +124,9 @@ class PhysicalRig {
   Vec counterTilt{{0,0,0}},counterTiltVelocity{{0,0,0}};
   Vec supportTilt{{0,0,0}},supportTiltVelocity{{0,0,0}};
   float supportSink=0,supportSinkVelocity=0;
+  Vec sourceFeet[2]{},plantAnchor[2]{},plantOffset[2]{};
+  float plantAge[2]={0,0},plantHeight[2]={0,0};
+  bool sourceFeetReady=false;
   Vec pendingImpulse{{0,0,0}},pendingTorque{{0,0,0}},reachOffset{{0,0,0}};
   std::array<Vec,13> reachOffsets{};
   Vec recoveryStart{{0,0,0}};

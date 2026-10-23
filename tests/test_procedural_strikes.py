@@ -17,9 +17,9 @@ class NativeStrikeVariants(unittest.TestCase):
         cls.bank = json.loads((ROOT/'config/procedural-strikes.json').read_text())
 
     def test_bank_records_real_native_sources(self):
-        self.assertEqual(self.bank['generated_files'], 26)
+        self.assertEqual(self.bank['generated_files'], 56)
         self.assertEqual(self.bank['new_captures'], 0)
-        self.assertEqual(len({r['path'] for r in self.bank['clips']}), 26)
+        self.assertEqual(len({r['path'] for r in self.bank['clips']}), 56)
         for row in self.bank['clips']:
             original = ROOT/'data/media/animations'/row['source']
             self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(), row['source_sha256'])

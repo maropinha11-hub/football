@@ -17,9 +17,9 @@ struct Profile {
   float trunkGain, armGain, followThroughGain;
 };
 
-constexpr const char *kCatalogSourceDigest="0d459a196815f3ba7f495bbc83465116fabb0cd55d8fab4822b940028293f4c7";
-constexpr std::size_t kCatalogSourceFiles=319;
-constexpr std::size_t kCatalogCompatiblePairs=65718;
+constexpr const char *kCatalogSourceDigest="d9ff641cf5cc642c0c73b1b8ac9738a00530a55c690c21063045427b92478abd";
+constexpr std::size_t kCatalogSourceFiles=349;
+constexpr std::size_t kCatalogCompatiblePairs=80118;
 constexpr Profile kProfiles[]={
   {0,ActionKind::None,0,0,0,0,0,0.78000f,0.76000f,0.80000f},
   {4096,ActionKind::Pass,0,0,0,0,0,0.78000f,0.76000f,0.80000f},

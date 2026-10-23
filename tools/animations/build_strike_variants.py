@@ -9,7 +9,10 @@ from build_situational_catalog import ROOT,parse_source,sample,qmul,qnormalize,u
 
 SOURCES=['pass/idle/000.anim','pass/walk/000.anim','pass/walk/045.anim','pass/sprint/000.anim',
  'shot/idle/020.anim','shot/walk/010_short.anim','shot/sprint/030.anim',
- 'highpass/walk/000.anim','highpass/walk/080.anim','highpass/idle/020.anim']
+ 'highpass/walk/000.anim','highpass/walk/080.anim','highpass/idle/020.anim',
+ 'pass/idle/090.anim','pass/walk/090.anim','pass/walk/135.anim','pass/sprint/045.anim','pass/sprint/090.anim',
+ 'shot/idle/090.anim','shot/walk/090_2step.anim','shot/sprint/090_2step.anim','shot/walk/180_turn.anim',
+ 'highpass/sprint/090.anim','highpass/walk/180_turn.anim']
 STYLES={'inside':(0.,0.,-.15),'outside':(0.,0.,.18),'toe':(-.14,0.,0.),'knuckle':(-.075,.025,0.)}
 def exp(v):
  n=math.sqrt(sum(x*x for x in v));return (*[x*math.sin(n/2)/max(n,1e-12)for x in v],math.cos(n/2))

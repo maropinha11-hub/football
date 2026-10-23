@@ -12,9 +12,9 @@ inline Choice choose(const Situation &s){
  if(s.defender&&s.ownGoal<26&&s.pressureDistance<1.5f&&s.outletOdds<.45f)return Choice::Clearance;
  if(s.returnRunner&&s.returnOdds>.76f&&s.pressureDistance>1.2f)return Choice::Combination;
  if(s.width>15&&s.goal<37&&s.boxReceiver&&s.crossOdds>.62f)return Choice::Cross;
- if(s.goal>18&&s.goal<31&&s.width<13&&s.shotOdds>.78f&&s.pressureDistance>1.6f)return Choice::LongShot;
+ if(s.goal>18&&s.goal<31&&s.width<13&&s.shotOdds>.74f&&s.pressureDistance>1.6f)return Choice::LongShot;
  if(s.defender&&s.ownGoal<34&&s.outletOdds>.70f)return Choice::BuildOut;
- if(s.possessionSeconds>.65f&&s.outletOdds>.74f&&(s.goal>25||s.pressureDistance<3.f))return Choice::Circulate;
+ if(s.possessionSeconds>.45f&&s.outletOdds>.74f&&(s.goal>25||s.pressureDistance<3.f))return Choice::Circulate;
  return Choice::Native;
 }
 inline const char *name(Choice c){const char *names[]={"native","buildout","clearance","cross","long_shot","combination","circulate"};return names[int(c)];}

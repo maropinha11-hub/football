@@ -81,6 +81,13 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
                      else controller->RequestCommand(commandQueue);
   auto *referee=match->GetReferee();
   if(referee->WaitingForRestart()){
+    // Authorization blocks a ball action, not the other twenty-one players.
+    // Preserve legal off-ball movement instead of wiping the controller's
+    // runs along with the taker's premature kick.
+    if(!referee->IsRestartTaker(this)){
+      commandQueue.erase(std::remove_if(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &command){return command.desiredFunctionType!=e_FunctionType_Movement;}),commandQueue.end());
+      if(!commandQueue.empty())return;
+    }
     commandQueue.clear();PlayerCommand wait;
     wait.desiredFunctionType=e_FunctionType_Movement;
     wait.useDesiredMovement=wait.useDesiredLookAt=true;

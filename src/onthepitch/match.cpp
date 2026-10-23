@@ -475,7 +475,6 @@ void Match::Exit() {
 
   scene3D->DeleteObject(crowd01);
   scene3D->DeleteObject(crowd02);
-  for(auto &sound:fieldSteps)if(sound)scene3D->DeleteObject(sound);
   if(fieldBreath)scene3D->DeleteObject(fieldBreath);
   if(fieldAir)scene3D->DeleteObject(fieldAir);
 

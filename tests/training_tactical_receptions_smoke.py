@@ -39,9 +39,18 @@ try:
   key(g,'r');g.advance(2700);start=len(g.read_log());key(g,'F6',['Control_L']);g.advance(80);capture(g,'keeper-attempt.png');g.advance(920)
   dives=ev(g,'KEEPER_DIVE_ATTEMPT',start)
   check('an unreachable goal-bound corner shot still produces a real dive attempt',bool(dives)and all(x['contact']=='0'for x in dives),dives)
-  key(g,'r');g.advance(2700);start=len(g.read_log());key(g,'F6',['Control_L']);keeper=ev(g,'KEEPER_LAB_SETUP',start)[-1]['actor'];g.advance(1900)
+  key(g,'r');g.advance(2700);start=len(g.read_log());key(g,'F6',['Control_L']);setup=ev(g,'KEEPER_LAB_SETUP',start)[-1];keeper=setup['actor'];side=float(setup['side']);g.advance(1900)
   touches=[x for x in ev(g,'TRAINING_ACTION_TOUCH',start)if x.get('actor')==keeper]
-  check('keeper controls an intentional backpass with an authored foot contact',any(x.get('function')in ['2','3','4','5','6']and 'foot'in x.get('part','')for x in touches),touches)
+  arrival=[f for f in mf(g)if f['t']>=int(setup['t'])]
+  decisions=[x for x in ev(g,'KEEPER_DECISION',start)if x['actor']==keeper]
+  emergency=[]
+  for touch in touches:
+   if touch.get('function')!='11'or 'foot'not in touch.get('part',''):continue
+   before=[f for f in arrival if f['t']<=int(touch['t'])];after=[f for f in arrival if f['t']>=int(touch['t'])+300]
+   if before and after and after[-1]['ball'][0]*side<before[-1]['ball'][0]*side-.4 and any(x['bound']=='1'and int(x['t'])<=int(touch['t'])for x in decisions):emergency.append(touch)
+  controlled=any(x.get('function')in ['2','3','4','5','6']and 'foot'in x.get('part','')for x in touches)
+  check('keeper intercepts an intentional backpass with an authored foot contact and prevents an own goal',
+        bool(arrival)and all(f['home']==0 and f['away']==0 for f in arrival)and (controlled or bool(emergency)),dict(touches=touches,emergency_clearances=emergency,scores=[[f['home'],f['away']]for f in arrival]))
   check('keeper never invents a hand catch on that backpass',all('elbow'not in x.get('part','')and 'hand'not in x.get('part','')for x in touches),touches)
   frames=mf(g);check('all goalkeeper drills retain 22 players and one fixed human',bool(frames)and all(len(x['players'])==22 and x['selected_id']==x['locked_id']and x['human_count']==1 for x in frames),dict(frames=len(frames)))
   key(g,'r');g.advance(2700);start=len(g.read_log())

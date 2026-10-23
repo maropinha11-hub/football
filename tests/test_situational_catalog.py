@@ -128,7 +128,7 @@ class CatalogSources(unittest.TestCase):
         self.assertEqual(counts["metadata_compatible_pairs_including_native_mirrors"], candidates*2)
         self.assertEqual(counts["authored_source_files"], len(self.sources))
         self.assertLess(candidates, len(self.sources)*len(self.profiles)//10)
-        self.assertEqual(counts["new_baked_animation_files"], 26)
+        self.assertEqual(counts["new_baked_animation_files"], 56)
         self.assertEqual(counts["new_captured_clips"], 0)
         self.assertEqual(counts["exhaustively_rendered_contexts"], 0)
 

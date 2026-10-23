@@ -59,13 +59,16 @@ para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
 rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
 contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
 somente essa camada. Há 80 famílias e 15 estilos de contato; o catálogo audita
-65.718 pares candidatos incluindo espelhamentos, sem contar essas combinações
+80.118 pares candidatos incluindo espelhamentos, sem contar essas combinações
 como capturas novas. Veja [como testar e os limites](docs/BASE-APROVADA.md).
 
-Há 26 variantes geradas dos passes, chutes e cruzamentos nativos, sem alterar
+Há 56 variantes geradas dos passes, chutes e cruzamentos nativos, sem alterar
 os arquivos originais. Esta revisão também ajusta caminhada pelo analógico,
 força do passe curto, recepções da CPU, recuos e mergulhos dos goleiros,
-deslocamentos antes das cobranças, recuperação após quedas e sons de campo.
+deslocamentos antes do apito, recuperação após quedas e apoio dos pés. O som
+artificial dos passos foi removido. As recepções amortecem contatos reais,
+e os goleiros conservam uma linha de recepção nos recuos e sincronizam as
+tentativas de defesa com a trajetória. A CPU também pode oferecer ultrapassagens.
 
 A revisão atual inclui gramado irregular com previsão da trajetória, recepção
 lateral, cobranças pelo jogador fixo, decisões contextuais da CPU e disputas

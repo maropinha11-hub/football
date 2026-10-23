@@ -1,6 +1,8 @@
 // Contacts on the same weighted skin and native skeleton used for rendering.
 #include "humanoidbase.hpp"
 #include "situational_action.hpp"
+#include "anatomical_arms.hpp"
+#include "native_contact_timing.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../controller/humancontroller.hpp"
@@ -128,6 +130,10 @@ void HumanoidBase::CaptureContactMesh() {
     auto extension=boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"));
     const std::string part=animation->GetVariable("touch_bodypart");
     if(!extension || part.empty() || extension->GetTouchCount()==0)continue;
+    if(animation->GetAnimType()=="deflect"&&animation->GetVariable("keeper_authored_side").empty()){
+      Vector3 original;int frame;
+      if(extension->GetFirstTouch(original,frame))animation->SetVariable("keeper_authored_side",real_to_str(original.coords[0]));
+    }
     for(auto &entry:extension->GetAnimation()) {
       Quaternion local[13],global[13];Vector3 positions[13],root;Quaternion unused;
       animation->GetKeyFrame("player",entry.first,unused,root);
@@ -334,6 +340,18 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
   if(!source && animation->GetVariable("added_chest")!="true")
     BlendUpperReception(upperReceptionClip,upperReceptionPhase,upperReceptionWeight,facing,local,upperReceptionArmWeight);
   ContactForwardKinematics(local,global,positions);
+  if(PhysicalRigEnabled()&&animation->GetAnimType()=="deflect"){
+    // Save markers and reach planning must use the same anatomical arms as
+    // the active rig and renderer. Projecting only after selection moved a
+    // correctly timed hand away from the ball by several centimetres.
+    football_physics::Pose constrained;
+    for(unsigned bone=0;bone<13;++bone)for(unsigned axis=0;axis<4;++axis)constrained[bone][axis]=local[bone].elements[axis];
+    football_physics::Metrics metrics;
+    football_physics::constrainArmPose(pes3NativeReference,zMultiplier,constrained,
+      {{positions[0].coords[0],positions[0].coords[1],positions[0].coords[2]}},metrics);
+    for(unsigned bone=0;bone<13;++bone)local[bone]=Quaternion(constrained[bone][0],constrained[bone][1],constrained[bone][2],constrained[bone][3]);
+    ContactForwardKinematics(local,global,positions);
+  }
   if(UsesTrainingContacts() && player->GetExternalController()) {
     const Quaternion authored=local[2];
     AimTrainingHead(local,global,positions,match->GetTrainingLookDirection());
@@ -465,7 +483,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   contactPreviousSkinRoot=contactPositions[0];
   contactPreviousBall=current;contactPreviousBallValid=true;
   float bodyRange=(current-spatialState.position-Vector3(0,0,1)).GetLength();
-  if(PhysicalRigBusy())for(auto &position:contactPositions)bodyRange=std::min(bodyRange,(current-position).GetLength());
+  for(auto &position:contactPositions)bodyRange=std::min(bodyRange,(current-position).GetLength());
   auto *actor=static_cast<Player*>(player);
   const bool plannedFootContact=currentAnim->touchFrame>=0 && !currentAnim->touchMade &&
     currentAnim->anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos;
@@ -524,21 +542,43 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   const Vector3 relative=incoming-surfaceVelocity;
   const float inward=relative.GetDotProduct(normal);
   if(inward>=-.2f)return;
-  const Vector3 outgoing=(relative-normal*inward)*.8f-normal*inward*.3f+surfaceVelocity;
+  const bool legalPart=part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||
+    part.find("knee")!=std::string::npos||part.find("ankle")!=std::string::npos;
+  const Vector3 toBall=(point-spatialState.position).Get2D().GetNormalized(spatialState.bodyDirectionVec);
+  const bool busyStrike=currentAnim->touchFrame>=0&&!currentAnim->touchMade&&
+    currentAnim->functionType>=e_FunctionType_ShortPass&&currentAnim->functionType<=e_FunctionType_Shot;
+  const bool cushioning=legalPart&&!PhysicalRigBusy()&&!busyStrike&&-inward<18.f&&
+    toBall.GetDotProduct(spatialState.bodyDirectionVec)>-.25f&&
+    (!match->GetLastTouchPlayer()||match->GetLastTouchPlayer()!=actor||actor->GetLastTouchType()==e_TouchType_Accidental);
+  // Only a swept, real skin contact can absorb the pass. A soft receiver
+  // withdraws the contacted surface; this is not a proximity possession or
+  // an invisible barrier in front of the chest.
+  Vector3 outgoing=(relative-normal*inward)*(cushioning?.30f:.8f)-normal*inward*(cushioning?.055f:.3f)+
+    (cushioning?spatialState.movement*.70f:surfaceVelocity);
+  if(cushioning){
+    const float maxLead=std::max(1.3f,spatialState.movement.Get2D().GetLength()+.75f);
+    const Vector3 flat=outgoing.Get2D();
+    if(flat.GetLength()>maxLead){const Vector3 limited=flat.GetNormalized(0)*maxLead;outgoing.coords[0]=limited.coords[0];outgoing.coords[1]=limited.coords[1];}
+    outgoing.coords[2]=clamp(outgoing.coords[2],-2.2f,.8f);
+    const float separating=(outgoing-surfaceVelocity).GetDotProduct(normal);
+    if(separating<.05f)outgoing+=normal*(.05f-separating);
+  }
   const Vector3 resolved=surface+normal*.1105f+outgoing*(1-high)*.01f;
   // A fast ball can cross more than 12 cm in a simulation step. Rejecting
   // that correction allowed it through the torso. Bound it by this sweep.
   if((resolved-current).GetLength()>(current-previous).GetLength()+(afterSurface-beforeSurface).GetLength()+.15f)return;
   ball->ResolveBodyContact(resolved,outgoing);bodyContactUntil_ms=match->GetActualTime_ms()+10;
   contactPreviousBall=resolved;
-  auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,e_TouchType_Accidental);
+  auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
   if(PhysicalRigEnabled()&&(part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||part.find("knee")!=std::string::npos)){
-    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
+    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;physicalBallImpactPart=part;
     const Vector3 impulse=(incoming-outgoing)*.43f;
     if(-inward>14.f)AddPhysicalImpulse(impulse,point-contactPositions[0]);
     if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());
   }
+  if(cushioning&&GetConfiguration()->GetBool("training_telemetry",false))
+    printf("RECEPTION_CUSHION t=%lu actor=%d part=%s incoming=%.5f outgoing=%.5f skin_gap=%.6f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),incoming.GetLength(),outgoing.GetLength(),(point-surface).GetLength()-.11f);
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f actor=%d moving_skin=1 samples=%u skin_speed=%.5f\n",
       match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength(),player->GetID(),sweepSamples,surfaceVelocity.GetLength());
@@ -551,7 +591,7 @@ void HumanoidBase::PlanHeelPreparation() {
   const float count=end+1.f;
   std::vector<Vector3> approach(end+1);Vector3 sum(0);
   for(int frame=0;frame<=end;++frame){
-    sum+=currentAnim->actionSmuggle*((.9f-.1f*std::cos(2*pi*frame/count))/count);
+    sum+=currentAnim->actionSmuggle*(football_contact::approachWeight(frame,unsigned(count))/count);
     approach[frame]=sum;
   }
   auto envelope=[&](int frame){const float s=std::sin(pi*float(frame)/end);return s*s;};

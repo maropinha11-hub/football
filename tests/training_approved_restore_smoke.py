@@ -39,6 +39,9 @@ try:
                       dict(alignment=alignment,travel=math.dist(before['player'][:2],frames[-1]['player'][:2]),with_ball=before['with_ball']))
                 if camera==2 and name=='backward':
                     check('backward off-ball movement preserves forward body facing',math.cos(frames[-1]['player_yaw']-before['yaw'])>.5,dict(body_yaw=frames[-1]['player_yaw'],view_yaw=before['yaw']))
+            plants=[dict(re.findall(r'(\w+)=([^\s]+)',line))for line in g.read_log().splitlines()if line.startswith('PHYSICAL_FOOT_PLANT ')]
+            if camera==2:
+                check('sideways and backward movement recruits bounded grounded support',bool(plants)and max(float(x['correction'])for x in plants)>.002 and all(float(x['correction'])<=.0551 for x in plants),dict(samples=len(plants),peak=max([float(x['correction'])for x in plants]or[0])))
             selected=[dict(re.findall(r'(\w+)=([^\s]+)',line))for line in g.read_log().splitlines()if line.startswith('NATIVE_APPROVED_SELECT ')]
             check('camera '+str(camera)+' selects only native frame-zero clips despite an old mocap setting',
                   len(selected)>15 and all(x['entry']=='0'and x['imported']=='0'for x in selected),dict(selections=len(selected)))

@@ -1,5 +1,5 @@
 {
-  "generated_files": 26,
+  "generated_files": 56,
   "new_captures": 0,
   "clips": [
     {
@@ -209,6 +209,246 @@
       "foot": "left_foot",
       "contact_frame": 25,
       "source_sha256": "0e3dece8f038eaec9ade78c5e2e0699623d636fabaaa66a03aba651e0ddfb712"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_idle_090_inside.anim",
+      "source": "pass/idle/090.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 31,
+      "source_sha256": "923d5f0f9f4609d4d1b782a847e9b1961efcde9ee7c4f56057ca6ef4e09c64da"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_idle_090_outside.anim",
+      "source": "pass/idle/090.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 31,
+      "source_sha256": "923d5f0f9f4609d4d1b782a847e9b1961efcde9ee7c4f56057ca6ef4e09c64da"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_walk_090_inside.anim",
+      "source": "pass/walk/090.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 35,
+      "source_sha256": "9e203e0a275a4115233f7c5aa45befb6926e2a481d1b3eb4507702e8204c0e55"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_walk_090_outside.anim",
+      "source": "pass/walk/090.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 35,
+      "source_sha256": "9e203e0a275a4115233f7c5aa45befb6926e2a481d1b3eb4507702e8204c0e55"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_walk_135_inside.anim",
+      "source": "pass/walk/135.anim",
+      "technique": "inside",
+      "foot": "right_foot",
+      "contact_frame": 17,
+      "source_sha256": "ea9d059bfdd075ed936288cbf677287a75be6b0a25d97535f724ceef998fdd68"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_walk_135_outside.anim",
+      "source": "pass/walk/135.anim",
+      "technique": "outside",
+      "foot": "right_foot",
+      "contact_frame": 17,
+      "source_sha256": "ea9d059bfdd075ed936288cbf677287a75be6b0a25d97535f724ceef998fdd68"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_sprint_045_inside.anim",
+      "source": "pass/sprint/045.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 27,
+      "source_sha256": "95318452e1a09dd0f6e1084121cc769b0ae4fe7229f0a63d9a2de74f6fc13e89"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_sprint_045_outside.anim",
+      "source": "pass/sprint/045.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 27,
+      "source_sha256": "95318452e1a09dd0f6e1084121cc769b0ae4fe7229f0a63d9a2de74f6fc13e89"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_sprint_090_inside.anim",
+      "source": "pass/sprint/090.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 35,
+      "source_sha256": "5f4a987a968e63b56148fa459a987dd3861b09f11c9b144ff0642a1daaf0c747"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/pass_sprint_090_outside.anim",
+      "source": "pass/sprint/090.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 35,
+      "source_sha256": "5f4a987a968e63b56148fa459a987dd3861b09f11c9b144ff0642a1daaf0c747"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_idle_090_inside.anim",
+      "source": "shot/idle/090.anim",
+      "technique": "inside",
+      "foot": "right_foot",
+      "contact_frame": 24,
+      "source_sha256": "78e1bcbd278ae63bdb08bd810f1c7b16208ee0f4bfe469e2c38822a65ae3e817"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_idle_090_outside.anim",
+      "source": "shot/idle/090.anim",
+      "technique": "outside",
+      "foot": "right_foot",
+      "contact_frame": 24,
+      "source_sha256": "78e1bcbd278ae63bdb08bd810f1c7b16208ee0f4bfe469e2c38822a65ae3e817"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_idle_090_toe.anim",
+      "source": "shot/idle/090.anim",
+      "technique": "toe",
+      "foot": "right_foot",
+      "contact_frame": 24,
+      "source_sha256": "78e1bcbd278ae63bdb08bd810f1c7b16208ee0f4bfe469e2c38822a65ae3e817"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_idle_090_knuckle.anim",
+      "source": "shot/idle/090.anim",
+      "technique": "knuckle",
+      "foot": "right_foot",
+      "contact_frame": 24,
+      "source_sha256": "78e1bcbd278ae63bdb08bd810f1c7b16208ee0f4bfe469e2c38822a65ae3e817"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_090_2step_inside.anim",
+      "source": "shot/walk/090_2step.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 28,
+      "source_sha256": "7905b9a05158b7ade4349542caf5efcb378ee1be5a4679cc8245e39b9c3e8460"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_090_2step_outside.anim",
+      "source": "shot/walk/090_2step.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 28,
+      "source_sha256": "7905b9a05158b7ade4349542caf5efcb378ee1be5a4679cc8245e39b9c3e8460"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_090_2step_toe.anim",
+      "source": "shot/walk/090_2step.anim",
+      "technique": "toe",
+      "foot": "left_foot",
+      "contact_frame": 28,
+      "source_sha256": "7905b9a05158b7ade4349542caf5efcb378ee1be5a4679cc8245e39b9c3e8460"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_090_2step_knuckle.anim",
+      "source": "shot/walk/090_2step.anim",
+      "technique": "knuckle",
+      "foot": "left_foot",
+      "contact_frame": 28,
+      "source_sha256": "7905b9a05158b7ade4349542caf5efcb378ee1be5a4679cc8245e39b9c3e8460"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_sprint_090_2step_inside.anim",
+      "source": "shot/sprint/090_2step.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 29,
+      "source_sha256": "3921aedd337e0ca1da17ab715c4594dfe5cde9a6b36363dcd2bcbc56bb4d7efe"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_sprint_090_2step_outside.anim",
+      "source": "shot/sprint/090_2step.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 29,
+      "source_sha256": "3921aedd337e0ca1da17ab715c4594dfe5cde9a6b36363dcd2bcbc56bb4d7efe"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_sprint_090_2step_toe.anim",
+      "source": "shot/sprint/090_2step.anim",
+      "technique": "toe",
+      "foot": "left_foot",
+      "contact_frame": 29,
+      "source_sha256": "3921aedd337e0ca1da17ab715c4594dfe5cde9a6b36363dcd2bcbc56bb4d7efe"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_sprint_090_2step_knuckle.anim",
+      "source": "shot/sprint/090_2step.anim",
+      "technique": "knuckle",
+      "foot": "left_foot",
+      "contact_frame": 29,
+      "source_sha256": "3921aedd337e0ca1da17ab715c4594dfe5cde9a6b36363dcd2bcbc56bb4d7efe"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_180_turn_inside.anim",
+      "source": "shot/walk/180_turn.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "8c44559bd9f79e43a3b826eb55606ba3704eba3b83cfe8ebf28bac80b1411424"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_180_turn_outside.anim",
+      "source": "shot/walk/180_turn.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "8c44559bd9f79e43a3b826eb55606ba3704eba3b83cfe8ebf28bac80b1411424"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_180_turn_toe.anim",
+      "source": "shot/walk/180_turn.anim",
+      "technique": "toe",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "8c44559bd9f79e43a3b826eb55606ba3704eba3b83cfe8ebf28bac80b1411424"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/shot_walk_180_turn_knuckle.anim",
+      "source": "shot/walk/180_turn.anim",
+      "technique": "knuckle",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "8c44559bd9f79e43a3b826eb55606ba3704eba3b83cfe8ebf28bac80b1411424"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/highpass_sprint_090_inside.anim",
+      "source": "highpass/sprint/090.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 30,
+      "source_sha256": "ba8d69fb69ba04fd025b89121df3ba8bd08668ca9a2bf53c1b8c1e6ed18fc55a"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/highpass_sprint_090_outside.anim",
+      "source": "highpass/sprint/090.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 30,
+      "source_sha256": "ba8d69fb69ba04fd025b89121df3ba8bd08668ca9a2bf53c1b8c1e6ed18fc55a"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/highpass_walk_180_turn_inside.anim",
+      "source": "highpass/walk/180_turn.anim",
+      "technique": "inside",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "24b86fccf576992a8faace918586a7532aabf0ed0ecf6ec0e929dad847d741ab"
+    },
+    {
+      "path": "data/media/animations/procedural_actions/highpass_walk_180_turn_outside.anim",
+      "source": "highpass/walk/180_turn.anim",
+      "technique": "outside",
+      "foot": "left_foot",
+      "contact_frame": 36,
+      "source_sha256": "24b86fccf576992a8faace918586a7532aabf0ed0ecf6ec0e929dad847d741ab"
     }
   ]
 }

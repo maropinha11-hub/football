@@ -38,7 +38,7 @@ voleio, absorção/saída de cabeça e peito, apoio de coxa/canela, cortes,
 passe virando e cruzamento em corrida. Quinze estilos de contato ajustam a
 recrutação de tronco e braços conforme a jogada, mantendo as pernas, o
 evento de contato e o deslocamento nativos. Não são 11.323 capturas novas.
-As 65.718 combinações de metadados, incluindo espelhamentos nativos, são
+As 80.118 combinações de metadados, incluindo espelhamentos nativos, são
 candidatos compatíveis, não uma validação visual exaustiva.
 
 O equilíbrio recebe uma resposta gradual adicional do tronco e dos braços
@@ -55,7 +55,7 @@ mantêm esforço muscular e os braços procuram apoio no chão.
 É um protótipo próprio de comportamento físico ativo com Bullet, inspirado
 nesse tipo de reação corporal; não incorpora a tecnologia Euphoria do GTA IV.
 
-Há também **26 variantes geradas de ações nativas**, com contato de parte
+Há também **56 variantes geradas de ações nativas**, com contato de parte
 interna/externa da chuteira, bico e peito do pé com pouco giro. Elas ajustam
 tornozelo, tronco e ombros; preservam raiz, quadril, joelhos e tempo de contato.
 O seletor mantém as ações originais como alternativas e só confirma o toque
@@ -63,14 +63,16 @@ quando a superfície da chuteira alcança a bola. As variantes não são captura
 
 O analógico leve permite caminhar com a bola; a velocidade com o analógico
 todo puxado e a corrida com RB foram mantidas. O toque breve no A fica mais
-fraco, com aumento gradual conforme a carga. Passadas no gramado, respiração,
-ambiente e impacto da bola têm canais e volumes separados.
+fraco, com aumento gradual conforme a carga. O som artificial dos passos foi retirado; respiração, ambiente e impacto da bola
+continuam ativos.
 
 Nas bolas paradas, os jogadores fazem deslocamentos curtos para oferecer
 opções antes da cobrança. O goleiro procura a trajetória dos recuos para
 receber com os pés; a escolha do mergulho considera o lado da bola no
-instante em que a animação pode alcançá-la. Ctrl+F6 na partida alterna sete
-ensaios: cara a cara, ângulo, três recuos e duas finalizações laterais.
+instante em que a animação pode alcançá-la, incluindo seu deslocamento durante
+a preparação. Ctrl+F6 na partida alterna onze ensaios: cara a cara, ângulo,
+três recuos próximos, duas finalizações laterais, duas centrais e dois recuos
+mais rápidos e deslocados.
 
 A volta da animação de levantar preserva o histórico de pose e de contato,
 evitando uma amostra inválida do esqueleto na transição para ficar em pé.
@@ -82,3 +84,29 @@ O relatório técnico `docs/approved-base-validation.json`, no repositório,
 registra os testes executados e suas limitações. Os testes gráficos usam
 Linux com controle Xbox virtual; o pacote é compilado e verificado para
 Windows, e a avaliação com o controle físico continua sendo feita no seu PC.
+
+Nesta revisão, o apoio resolvido das pernas é preservado até a pose final;
+a camada de tronco não pode mais sobrescrever os joelhos e os pés. Nos passos
+laterais e para trás, um apoio curto no chão limita o deslizamento sem mover
+a raiz ou prender o pé durante uma ação com bola. A aceleração também carrega
+o controlador de equilíbrio, além dos impactos externos.
+
+Recepções reais na pele podem amortecer a bola com coxa, canela, peito,
+cabeça e chuteira. A resposta depende da velocidade e da orientação; bolas
+fortes ou fora do alcance continuam podendo escapar. A previsão de recepção não cria
+um toque por proximidade: o impulso de domínio exige contato na geometria.
+
+A autorização do árbitro bloqueia a ação do cobrador, preservando as corridas
+dos demais jogadores desde a preparação. O goleiro procura uma linha estável
+para receber o recuo, sem avançar demais e passar da bola. As tentativas de
+defesa consideram lado, altura e tempo de chegada; o mergulho especulativo
+não deve cancelar uma interceptação com os pés já preparada.
+
+A CPU recebeu uma opção de ultrapassagem pelo lateral no lado da bola,
+respeitando a linha de impedimento. A circulação segura pode sair antes,
+e há um pouco mais de abertura para chutar de longe com espaço.
+
+O alcance final da defesa permite uma pequena correção gradual do ombro para
+acompanhar a bola, com comprimento do braço e limites articulares preservados.
+O planejamento e a execução usam a mesma curva de aproximação do corpo;
+a tolerância de aceitação do contato não foi ampliada.

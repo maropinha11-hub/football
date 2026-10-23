@@ -37,7 +37,7 @@ try:
    check('releases visibly recruit the pelvis and knees with bounded planted-foot error',bool(support)and max(float(x['knee'])for x in support)>.002 and all(float(x['foot_error'])<.005 and float(x['sink'])<=.0221 and float(x['tilt'])<=.0451 for x in support),dict(samples=len(support),peak_knee=max([float(x['knee'])for x in support]or[0]),peak_foot_error=max([float(x['foot_error'])for x in support]or[0])))
    g.reset();start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(1700);g.pad(0,0)
    steps=ev(g,'FIELD_STEP',start);audio=ev(g,'FIELD_AUDIO',start)
-   check('planted running feet trigger bounded turf sounds',len(steps)>=2 and all(0<float(x['gain'])<=1 for x in steps),steps[:12])
+   check('running produces no removed turf footstep sounds',not steps and bool(audio)and all(x.get('footsteps')=='0'for x in audio),dict(steps=steps,audio=audio))
    check('breathing follows exertion while the ambience is active',bool(audio)and max(float(x['effort'])for x in audio)>.3 and all(0<float(x['breath'])<.4 for x in audio),audio)
    for direction in range(2):
     g.reset();key(g,'F3');start=len(g.read_log());key(g,'F9');g.advance(10000)
@@ -57,6 +57,14 @@ try:
      first={x['id']:x for x in rows[0]['players']};last=rows[-1]
      moved=[x['id']for x in last['players']if x['id']!=last['locked_id']and math.dist(first[x['id']]['p'][:2],x['p'][:2])>.18]
     if name!='penalty':check(name+' players make real off-ball runs before release',len(moved)>=2 and bool(ev(g,'RESTART_RUN',start)),dict(moved=moved,run_samples=len(ev(g,'RESTART_RUN',start))))
+    if name!='penalty':
+     prepared=ev(g,'RESTART_PREPARED',start);authorized=ev(g,'RESTART_AUTHORIZED',start)
+     before=[f for f in mf(g)if prepared and authorized and int(prepared[0]['t'])<=f['t']<int(authorized[0]['t'])]
+     active=[]
+     if len(before)>1:
+      poses={x['id']:x for x in before[0]['players']}
+      active=[x['id']for x in before[-1]['players']if x['id']!=before[-1]['locked_id']and math.dist(poses[x['id']]['p'][:2],x['p'][:2])>.08]
+     check(name+' runs already occur during preparation before the whistle',len(active)>=2,dict(moved=active,frames=len(before)))
     check(name+' keeps the ball waiting for the taker',not ev(g,'RESTART_RELEASED',start),ev(g,'RESTART_RELEASED',start))
    key(g,'r');g.advance(2800)
    for trial in range(7):

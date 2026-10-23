@@ -85,6 +85,12 @@ int main(int argc,char **argv){
   const Vec freshFoot=rig.points()[12];for(unsigned i=0;i<20;++i)rig.evaluate(strike);
   check(length(subtractPoint(freshFoot,rig.points()[12]))<1e-6f && rig.age()==age,
     "repeated pose evaluation is idempotent within one physics tick");
+  PhysicalRig reachingSave;reachingSave.configure(bind,1);Input save=standing();save.action=true;reachingSave.step(save);
+  const Vec oldElbow=reachingSave.points()[4];save.reachBone=4;save.reachWeight=1;save.reach={{.04f,-.03f,0}};
+  float saveHandStep=0;Vec oldHand=reachingSave.points()[4];
+  for(unsigned tick=0;tick<50;++tick){reachingSave.step(save);saveHandStep=std::max(saveHandStep,length(subtractPoint(reachingSave.points()[4],oldHand)));oldHand=reachingSave.points()[4];}
+  check(length(subtractPoint(reachingSave.points()[4],oldElbow))>.002f&&saveHandStep<.01f&&boneError(reachingSave,bind)<1e-5f,
+    "a save shoulder follows a small contact correction smoothly without stretching its arm");
   unsigned contexts=0,unsafeCuts=0;float matrixError=0;
   PhysicalRig supported;supported.configure(bind,1);Input planted=standing();planted.action=true;
   planted.situation.enabled=true;planted.situation.kind=football_situations::ActionKind::Pass;
@@ -105,6 +111,18 @@ int main(int argc,char **argv){
   planted.touchPending=true;for(unsigned tick=0;tick<200;++tick)supported.step(planted);
   check(supported.metrics().supportSink<.0001f&&supported.metrics().supportTilt<.0001f,"preparing the next ball contact gradually restores the original support pose");
   supported.reset();supported.step(standing());check(supported.metrics().supportSink==0&&supported.metrics().supportTilt==0,"reset clears support compression and its velocities");
+  PhysicalRig sourceSupport;sourceSupport.configure(bind,1);Input sourceInput=standing();sourceInput.action=true;sourceSupport.step(sourceInput);
+  planted.touchPending=false;planted.situation.phase=.5f;
+  for(unsigned tick=0;tick<80;++tick)supported.step(planted);
+  check(length(subtractPoint(supported.points()[9],sourceSupport.points()[9]))<.0035f&&length(subtractPoint(supported.points()[12],sourceSupport.points()[12]))<.0035f,
+    "final evaluated feet retain solved support after the upper-body layers, rather than restoring the old leg pose");
+  PhysicalRig stepping;stepping.configure(bind,1);Input sideStep=standing();sideStep.grounding=true;sideStep.velocity={{.2f,0,0}};
+  stepping.step(sideStep);const Vec stanceFoot=stepping.points()[9];float peakPlant=0;
+  for(unsigned tick=1;tick<=30;++tick){sideStep.pelvis[0]=tick*.002f;stepping.step(sideStep);peakPlant=std::max(peakPlant,stepping.metrics().plantedCorrection);}
+  check(peakPlant>.01f&&length(subtractPoint(stepping.points()[9],stanceFoot))<.055f,"side-step stance reduces shoe sliding while the pelvis advances");
+  check(boneError(stepping,bind)<1e-5f&&peakPlant<=.0551f,"planted support preserves segment lengths and bounds foot adjustment");
+  sideStep.touchPending=true;stepping.step(sideStep);
+  check(stepping.metrics().plantedCorrection==0,"a queued ball action immediately regains its authored foot trajectory");
   bool matrixFinite=true;
   const std::string root=argc>1?argv[1]:"data/media/animations";
   std::array<Input,3> bases{{sourcePose(root+"/ballcontrol/walk/000.anim"),sourcePose(root+"/shot/idle/020.anim"),sourcePose(root+"/trap/idle/000_IB000.anim")}};

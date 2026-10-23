@@ -105,32 +105,32 @@
   "counts": {
     "action_sources_per_kind": {
       "Control": 59,
-      "Cross": 18,
+      "Cross": 22,
       "Header": 10,
-      "Pass": 32,
-      "Shot": 26
+      "Pass": 42,
+      "Shot": 42
     },
-    "action_sources_with_compatible_profiles": 145,
-    "authored_source_files": 319,
+    "action_sources_with_compatible_profiles": 175,
+    "authored_source_files": 349,
     "exhaustively_rendered_contexts": 0,
-    "metadata_compatible_pairs_including_native_mirrors": 65718,
-    "metadata_compatible_source_profile_pairs": 32859,
+    "metadata_compatible_pairs_including_native_mirrors": 80118,
+    "metadata_compatible_source_profile_pairs": 40059,
     "native_loader_excluded_files": 10,
-    "native_loader_source_files": 309,
+    "native_loader_source_files": 339,
     "native_source_types": {
       "ballcontrol": 45,
       "deflect": 28,
-      "highpass": 21,
+      "highpass": 25,
       "interfere": 7,
       "movement": 65,
-      "shortpass": 45,
-      "shot": 29,
+      "shortpass": 55,
+      "shot": 45,
       "sliding": 6,
       "special": 4,
       "trap": 40,
       "trip": 19
     },
-    "new_baked_animation_files": 26,
+    "new_baked_animation_files": 56,
     "new_captured_clips": 0,
     "profiles": 11323,
     "profiles_per_kind": {
@@ -146,5 +146,5 @@
   "inspect_sources": "python3 tools/animations/build_situational_catalog.py --inventory /tmp/situational-inventory.json",
   "reproduce": "python3 tools/animations/build_situational_catalog.py --check",
   "schema": 2,
-  "source_digest": "0d459a196815f3ba7f495bbc83465116fabb0cd55d8fab4822b940028293f4c7"
+  "source_digest": "d9ff641cf5cc642c0c73b1b8ac9738a00530a55c690c21063045427b92478abd"
 }

@@ -265,11 +265,23 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage *mentalImage, Vector3
     Player *last=match->GetLastTouchPlayer();
     const bool backpass=last&&last!=player&&last->GetTeamID()==team->GetID()&&last->GetLastTouchType()==e_TouchType_Intentional_Kicked;
     if(backpass){
-      for(unsigned ms=100;ms<=1200;ms+=50){
+      // Establish a receiving plane, then meet the lateral arrival. Chasing
+      // successive earliest reachable points made a running keeper overrun
+      // the return pass just as it crossed his feet.
+      if(backpassStamp!=last->GetLastTouchTime_ms()||backpassActor!=last->GetID()){
+        backpassStamp=last->GetLastTouchTime_ms();backpassActor=last->GetID();
+        backpassPlane=clamp(player->GetPosition().coords[0]*side-.35f,pitchHalfW-16.f,pitchHalfW-.65f);
+      }
+      float best=1000;Vector3 intercept;
+      for(unsigned ms=40;ms<=1600;ms+=20){
         const Vector3 arrival=match->GetBall()->Predict(ms);
-        if(arrival.coords[0]*side<pitchHalfW-18.f||arrival.coords[0]*side>pitchHalfW-.25f||std::fabs(arrival.coords[1])>20.f||arrival.coords[2]>2.1f)continue;
-        if((arrival-player->GetPosition()).Get2D().GetLength()>.60f+player->GetMaxVelocity()*ms*.001f)continue;
-        targetPos=arrival.Get2D();maxVelocity=sprintVelocity;mode="backpass_foot";break;
+        if(std::fabs(arrival.coords[1])>20.f||arrival.coords[2]>1.9f)continue;
+        const float error=std::fabs(arrival.coords[0]*side-backpassPlane);
+        if(error<best){best=error;intercept=arrival;}
+      }
+      if(best<.45f){
+        targetPos=Vector3(side*(backpassPlane+.35f),intercept.coords[1],0);
+        maxVelocity=sprintVelocity;mode="backpass_foot";
       }
     }
     if(!std::isfinite(targetPos.coords[0])||!std::isfinite(targetPos.coords[1]))targetPos=goalPos-Vector3(side*.7f,0,0);

@@ -82,7 +82,7 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
     }
   }
 
-  if(PlayerMatchEnabled() && match->IsInSetPiece()){
+  if(PlayerMatchEnabled() && (match->IsInSetPiece() || match->GetReferee()->WaitingForRestart())){
     const auto &restart=match->GetRefereeBuffer();
     const bool movingRestart=restart.desiredSetPiece==e_SetPiece_Corner||restart.desiredSetPiece==e_SetPiece_FreeKick||restart.desiredSetPiece==e_SetPiece_ThrowIn||restart.desiredSetPiece==e_SetPiece_GoalKick;
     if(movingRestart && restart.active && match->GetActualTime_ms()>=restart.prepareTime &&
@@ -331,13 +331,13 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
 
   else if (match->IsInPlay() && !match->IsInSetPiece() && CastPlayer()->GetFormationEntry().role == e_PlayerRole_GK) {
     // keeper's mental image for deflections is near-instant; let's just call it premonition ;)
-    const MentalImage *keeperMentalImage = _mentalImage;
+    const MentalImage *keeperMentalImage = PlayerMatchEnabled()?match->GetMentalImage(0):_mentalImage;
     static_cast<GoalieDefaultStrategy*>(goalieStrategy)->CalculateIfBallIsBoundForGoal(keeperMentalImage);
     bool boundForGoal = static_cast<GoalieDefaultStrategy*>(goalieStrategy)->IsBallBoundForGoal();
     if (boundForGoal) manualMovement = true;
     if (CastPlayer() != match->GetDesignatedPossessionPlayer()) manualMovement = true;
     goalieStrategy->RequestInput(keeperMentalImage, manualMovementDirection, manualMovementVelocityFloat);
-    if(PlayerMatchEnabled())manualMovement=true;
+    if(PlayerMatchEnabled()){manualMovement=true;_SetInput(manualMovementDirection,manualMovementVelocityFloat);}
     Player *last=match->GetLastTouchPlayer();
     if(PlayerMatchEnabled()&&last&&last!=player&&last->GetTeamID()==team->GetID()&&last->GetLastTouchType()==e_TouchType_Intentional_Kicked){
       _TrapCommand(commandQueue,false,false);
@@ -854,6 +854,19 @@ Vector3 ElizaController::GetSupportPosition_ForceField(const MentalImage *mental
   if(PlayerMatchEnabled()&&team->HasPossession()){
     const Vector3 ball=match->GetBall()->Predict(400);
     const auto role=CastPlayer()->GetDynamicFormationEntry().role;
+    // A wide defender offers an outside lane to a winger instead of standing
+    // behind the same marking line. Only the defender on the ball's flank
+    // leaves the back line; the original offside/field constraints follow.
+    const float side=-team->GetSide(),progress=(mainManPos.coords[0]-currentPos.coords[0])*side;
+    if((role==e_PlayerRole_LB||role==e_PlayerRole_RB)&&std::fabs(mainManPos.coords[1])>14.f&&
+       currentPos.coords[1]*mainManPos.coords[1]>0&&progress>-4.f&&progress<16.f&&
+       designatedPlayer!=player&&designatedPlayer->HasPossession()){
+      Vector3 overlap=mainManPos+Vector3(side*7.f,signSide(mainManPos.coords[1])*4.5f,0);
+      overlap.coords[1]=clamp(overlap.coords[1],-pitchHalfH+2.f,pitchHalfH-2.f);
+      forceFieldPosition=forceFieldPosition*.35f+overlap*.65f;
+      if(GetConfiguration()->GetBool("training_telemetry",false)&&(match->GetActualTime_ms()+player->GetID()*10)%400==0)
+        printf("TACTICAL_OVERLAP t=%lu actor=%d carrier=%d\n",match->GetActualTime_ms(),player->GetID(),designatedPlayer->GetID());
+    }
     if(std::fabs(ball.coords[1])>16.f&&ball.coords[0]*(-team->GetSide())>pitchHalfW-30.f&&
        (role==e_PlayerRole_CF||role==e_PlayerRole_AM)){
       const float lane=(player->GetID()%2?1.f:-1.f)*(role==e_PlayerRole_CF?3.5f:7.f);
