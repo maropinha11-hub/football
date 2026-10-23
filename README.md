@@ -54,13 +54,18 @@ Na chegada de uma bola, a mira dos passes e cabeceios funciona em todas as
 direções, separada da assistência que posiciona o jogador para recebê-la.
 Veja [a revisão de mira e movimento corporal](docs/MIRA-E-CORPO.md).
 
-O experimento também acrescenta **7.723 perfis procedurais de tronco e braços**
+O experimento também acrescenta **11.323 perfis procedurais de tronco e braços**
 para passes, chutes, cruzamentos e cortes. A resposta considera a bola, a
 rotação atual do corpo, a corrida e a pressão do adversário; a seleção e os
 contatos nativos continuam responsáveis pelos pés e pela bola. **F1** compara
-somente essa camada. Há 48 famílias e 12 estilos de contato; o catálogo audita
-36.888 pares candidatos incluindo espelhamentos, sem contar essas combinações
+somente essa camada. Há 80 famílias e 15 estilos de contato; o catálogo audita
+65.718 pares candidatos incluindo espelhamentos, sem contar essas combinações
 como capturas novas. Veja [como testar e os limites](docs/BASE-APROVADA.md).
+
+Há 26 variantes geradas dos passes, chutes e cruzamentos nativos, sem alterar
+os arquivos originais. Esta revisão também ajusta caminhada pelo analógico,
+força do passe curto, recepções da CPU, recuos e mergulhos dos goleiros,
+deslocamentos antes das cobranças, recuperação após quedas e sons de campo.
 
 A revisão atual inclui gramado irregular com previsão da trajetória, recepção
 lateral, cobranças pelo jogador fixo, decisões contextuais da CPU e disputas

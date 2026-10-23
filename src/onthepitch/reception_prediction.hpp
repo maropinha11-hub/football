@@ -19,7 +19,12 @@ template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec veloc
      (approach/std::max(.1f,gap)<.15f&&!(relative[2]<-.8f&&gap<1.05f)))return best;
   float score=std::numeric_limits<float>::infinity();
   for(unsigned ms=40;ms<=900;ms+=20){const Vec p=ball(ms);const float time=ms*.001f;
-    const float x=p[0]-actor[0]-velocity[0]*time,y=p[1]-actor[1]-velocity[1]*time,height=p[2]-actor[2];
+    const float horizontalSpeed=std::hypot(velocity[0],velocity[1]);
+    // A receiver brakes for a pass. Extrapolating its old running velocity
+    // for 900 ms ignored balls that reach the body after the player stops.
+    const float stoppingTime=horizontalSpeed/7.f;
+    const float travelTime=horizontalSpeed>.01f?(time<stoppingTime?time-3.5f*time*time/horizontalSpeed:horizontalSpeed/14.f):0;
+    const float x=p[0]-actor[0]-velocity[0]*travelTime,y=p[1]-actor[1]-velocity[1]*travelTime,height=p[2]-actor[2];
     const float distance=std::sqrt(x*x+y*y);
     if(!std::isfinite(distance)||!std::isfinite(height)||distance>1.05f||height<.055f||height>2.35f)continue;
     const float rating=distance+.12f*time;

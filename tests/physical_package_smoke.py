@@ -70,7 +70,7 @@ def main():
             check('Windows embeds contextual body actions and independent F1 comparison',all(token in exe
                   for token in [b'PHYSICAL_SITUATION_BANK',b'PHYSICAL_SITUATION_RENDER',b'PHYSICAL_SITUATION_TOGGLE']))
             check('F1 and honest procedural profile counts accompany both packages',all(token in full.read(prefix+'LEIA-FISICA.txt')
-                  for token in [b'F1:',b'7723 perfis procedurais',b'36.888 combinacoes',b'nao sao novas capturas']))
+                  for token in [b'F1:',b'11323 perfis procedurais',b'65.718 combinacoes',b'nao sao novas capturas']))
             catalog=full.read(prefix+'situational-motion-catalog.json')
             check('packaged catalog equals generated source and update manifest', catalog == patch.read('situational-motion-catalog.json')
                   and catalog == Path('config/situational-motion-catalog.json').read_bytes())
@@ -81,6 +81,11 @@ def main():
             check('Windows includes physical tackles, referee, receiver and keeper decisions',all(token in exe for token in [b'PHYSICAL_TACKLE',b'PHYSICAL_FOUL',b'TURF_FORECAST',b'TRAINING_RECEIVE_ASSIST',b'KEEPER_DECISION',b'PLAYER_MATCH_TAKER',b'PLAYER_MATCH_TACTIC',b'PHYSICAL_AI_GRIP']))
             recovery_files=['media/animations/movement_special/idle/special/000_stand_up_from_'+side+'.anim'for side in ['front','back']]
             check('both original get-up animations are included unchanged', all(full.read(prefix+path)==(Path('data')/path).read_bytes()for path in recovery_files))
+            check('Windows includes recovery continuity, active leg support, grounded footsteps, charge and restart diagnostics',all(token in exe for token in [b'PHYSICAL_RECOVERY_HANDOFF',b'PHYSICAL_SUPPORT_COMPLIANCE',b'FIELD_STEP',b'FIELD_AUDIO',b'HUMAN_PASS_POWER',b'RESTART_RUN',b'backpass_foot',b'target_side=']))
+            strikes=json.loads(full.read(prefix+'procedural-strikes.json'))
+            check('all 26 generated native actions accompany the complete game',strikes['generated_files']==26 and strikes['new_captures']==0 and all(full.read(prefix+row['path'].removeprefix('data/'))==(Path(row['path'])).read_bytes()for row in strikes['clips']))
+            check('new action and audio assets also accompany the update',all(full.read(prefix+name)==patch.read(name)for name in [*[row['path'].removeprefix('data/')for row in strikes['clips']],*['media/sounds/'+name for name in ['turfstep0.wav','turfstep1.wav','breathing.wav','fieldair.wav']]]))
+            check('new outdoor sound files are real PCM WAVE files',all(full.read(prefix+'media/sounds/'+name)[:4]==b'RIFF'for name in ['turfstep0.wav','turfstep1.wav','breathing.wav','fieldair.wav']))
             report.update(entries=len(full.namelist()), dlls=sum(n.lower().endswith('.dll') for n in full.namelist()),
                           bytes=archive.stat().st_size, executable_sha256=hashlib.sha256(exe).hexdigest())
         report['result'] = 'passed' if all(c['result'] == 'passed' for c in report['checks']) else 'failed'

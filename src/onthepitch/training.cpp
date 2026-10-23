@@ -349,6 +349,7 @@ void Match::ProcessTraining() {
     teams[0]->Process();
     if(trainingPartner)trainingPartner->GetHumanoid()->ProcessPhysicalPartner();
     trainingPlayer->RelaxFatigue(1.0f);
+    ProcessFieldAudio();
     actualTime_ms += 10;
     matchTime_ms = actualTime_ms;
 
@@ -505,7 +506,7 @@ void Match::ProcessPlayerMatchInput() {
         }
       }
       else{
-        static unsigned nextKeeperTrial=0;const unsigned trial=nextKeeperTrial++%3;
+        static unsigned nextKeeperTrial=0;const unsigned trial=nextKeeperTrial++%7;
         Player *keeper=nullptr,*defender=nullptr;std::vector<Player*> opponents;teams[1-trainingPlayer->GetTeamID()]->GetActivePlayers(opponents);
         for(auto *actor:opponents)if(actor->GetFormationEntry().role==e_PlayerRole_GK)keeper=actor;else defender=actor;
         if(keeper){
@@ -522,11 +523,18 @@ void Match::ProcessPlayerMatchInput() {
             trainingPlayer->ResetPosition(start.Get2D()-forward,goal);ball->SetPosition(start);
             ball->SetMomentum(Vector3(side*13/.42f,5.05f/.42f,(2.12f+.5f*9.81f*.42f*.42f)/.42f));
             trainingPlayer->GetTeam()->SetLastTouchPlayer(trainingPlayer,e_TouchType_Intentional_Kicked);
+          }else if(trial>=5){
+            const float sideAim=trial==5?-1.f:1.f,flight=.65f,height=trial==5?1.15f:2.12f;
+            const Vector3 start=goal-forward*12+Vector3(0,-sideAim*.8f,.20f);
+            keeper->ResetPosition(goal-forward*.85f,start);trainingPlayer->ResetPosition(start.Get2D()-forward,goal);
+            ball->SetPosition(start);ball->SetMomentum(Vector3(side*12/flight,sideAim*3.6f/flight,(height-.2f+.5f*9.81f*flight*flight)/flight));
+            trainingPlayer->GetTeam()->SetLastTouchPlayer(trainingPlayer,e_TouchType_Intentional_Kicked);
           }else if(defender){
-            const Vector3 start=goal-forward*8+Vector3(0,.5f,.11f);
-            keeper->ResetPosition(goal-forward*2+Vector3(0,.5f,0),start);
+            const float offset=trial==2?.5f:trial==3?-1.2f:1.2f;
+            const Vector3 start=goal-forward*8+Vector3(0,offset,.11f);
+            keeper->ResetPosition(goal-forward*(trial==2?2.f:1.4f)+Vector3(0,trial==2?.5f:0.f,0),start);
             trainingPlayer->ResetPosition(Vector3(0,-20,0),goal);
-            ball->SetPosition(start);ball->SetMomentum(forward*8);
+            ball->SetPosition(start);ball->SetMomentum(forward*8+Vector3(0,trial==2?0:-offset,0));
             defender->GetTeam()->SetLastTouchPlayer(defender,e_TouchType_Intentional_Kicked);
           }
           printf("KEEPER_LAB_SETUP t=%lu mode=%u actor=%d side=%.0f\n",actualTime_ms,trial,keeper->GetID(),side);

@@ -1,5 +1,6 @@
 #include "humanoidbase.hpp"
 #include "motion_matching.hpp"
+#include "strike_technique.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include <map>
@@ -51,6 +52,11 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   if(databaseOwner.lock()!=anims){database.clear();databaseOwner=anims;}
   std::map<int,float> costs;
   const bool preferRight=command.desiredFunctionType==e_FunctionType_BallControl;
+  const bool strike=command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||command.desiredFunctionType==e_FunctionType_Shot||command.desiredFunctionType==e_FunctionType_HighPass;
+  const Vector3 ballLocal=(match->GetBall()->Predict(100)-spatialState.position).GetRotated2D(-spatialState.angle);
+  const Vector3 aim=command.touchInfo.desiredDirection.GetRotated2D(-spatialState.angle);
+  const float opening=std::atan2(aim.coords[0],-aim.coords[1]);
+  const auto technique=football_strike::choose(command.touchInfo.desiredPower,opening,ballLocal.coords[0],spatialState.floatVelocity,command.desiredFunctionType==e_FunctionType_Shot);
   for(int id:candidates){auto *clip=anims->GetAnim(id);
     auto found=database.find(clip);if(found==database.end())found=database.emplace(clip,extract(clip,0,0)).first;
     costs[id]=motionCost(query,found->second);
@@ -63,6 +69,11 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
       costs[id]+=80.f*(1.f-incident.GetDotProduct(authored));
     }
     if(preferRight && clip->GetVariable("touch_bodypart")!="right_foot")costs[id]+=10.f;
+    if(strike && clip->GetVariable("touch_bodypart").find("foot")!=std::string::npos){
+      if(clip->GetVariable("touch_bodypart")=="left_foot")costs[id]+=2.f;
+      const auto style=clip->GetVariable("physical_technique");
+      if(!style.empty())costs[id]+=style==football_strike::name(technique)?-4.f:8.f;
+    }
   }
   std::stable_sort(candidates.begin(),candidates.end(),[&](int a,int b){return costs[a]<costs[b];});
   if(GetConfiguration()->GetBool("training_telemetry",false))

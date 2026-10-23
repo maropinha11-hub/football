@@ -16,7 +16,7 @@ void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){refe
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){situationLayer.reset();counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 void PhysicalRig::forwardKinematics(){
@@ -28,13 +28,13 @@ void PhysicalRig::forwardKinematics(){
   }
 }
 
-void PhysicalRig::solveLeg(unsigned hip,Vec target){
+void PhysicalRig::solveLeg(unsigned hip,Vec target,float edgeMargin){
   const unsigned knee=hip+1,ankle=hip+2;
   const Vec upper=subtractPoint(positions[knee],positions[hip]),lower=subtractPoint(positions[ankle],positions[knee]);
   const float a=length(upper),b=length(lower);
   if(a<.05f||b<.05f)return;
   Vec direction=unit(subtractPoint(target,positions[hip]));
-  const float distance=bounded(length(subtractPoint(target,positions[hip])),std::fabs(a-b)+.003f,a+b-.003f);
+  const float distance=bounded(length(subtractPoint(target,positions[hip])),std::fabs(a-b)+edgeMargin,a+b-edgeMargin);
   target=addPoint(positions[hip],scalePoint(direction,distance));
   Vec pole=unit(subtractPoint(upper,scalePoint(direction,dotPoint(upper,direction))),rotatePoint(world[0],{{0,-1,0}}));
   const float along=(a*a-b*b+distance*distance)/(2*distance);
@@ -55,6 +55,7 @@ void PhysicalRig::step(const Input &input,float dt){
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
   debug={};
+  if(state!=Mode::Active){supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;}
   auto situation=input.situation;
   if(input.upperReception || input.staggering || state!=Mode::Active)situation.enabled=false;
   situationLayer.step(situation,dt);
@@ -99,6 +100,26 @@ void PhysicalRig::step(const Input &input,float dt){
     const Vec response=capped(subtractPoint(scalePoint(subtractPoint(wanted,counterTilt),144.f),scalePoint(counterTiltVelocity,24.f)),12.f);
     counterTiltVelocity=capped(addPoint(counterTiltVelocity,scalePoint(response,dt)),.9f);
     counterTilt=capped(addPoint(counterTilt,scalePoint(counterTiltVelocity,dt)),.16f);
+    // Muscular support compresses the stance under load. The animation still
+    // owns travel and timing; this response is integrated once per physics
+    // tick, then both animated shoes are pinned by two-bone IK in evaluate().
+    const auto &c=input.situation;
+    const float phase=bounded(c.phase,0,1),at=bounded(c.contactPhase,.12f,.88f);
+    const float release=c.enabled&&c.kind!=football_situations::ActionKind::None&&c.contactMade?
+      smooth((phase-at+.08f)/.20f)*smooth((1-phase)/.30f):0;
+    const float load=release*(.25f+.75f*bounded(std::max(c.power,c.difficulty),0,1));
+    const float plant=1-smooth((std::min(positions[9][2],positions[12][2])-.14f)/.12f);
+    const float freedom=input.upperReception||input.staggering||input.touchPending?0.f:plant;
+    Vec wantedSupport=addPoint(scalePoint(balance->lean(),.20f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.0025f));
+    const Vec localRelease{{-.015f*load,.020f*load*bounded(c.signedTurn,-1,1),0}};
+    wantedSupport=capped(scalePoint(addPoint(wantedSupport,rotatePoint(input.pose[0],localRelease)),freedom),.045f);
+    const Vec supportAcceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedSupport,supportTilt),100),scalePoint(supportTiltVelocity,20)),3.f);
+    supportTiltVelocity=capped(addPoint(supportTiltVelocity,scalePoint(supportAcceleration,dt)),.22f);
+    supportTilt=capped(addPoint(supportTilt,scalePoint(supportTiltVelocity,dt)),.045f);
+    const float wantedSink=freedom*std::min(.022f,.014f*load+.012f*debug.balanceRisk+.002f*debug.effort);
+    const float sinkAcceleration=bounded(100*(wantedSink-supportSink)-20*supportSinkVelocity,-.5f,.5f);
+    supportSinkVelocity=bounded(supportSinkVelocity+sinkAcceleration*dt,-.055f,.055f);
+    supportSink=bounded(supportSink+supportSinkVelocity*dt,0,.022f);
   }
   if(state==Mode::Active && (forcedFall || lostBalance)){
     state=Mode::Falling;stateAge=settled=0;
@@ -163,6 +184,18 @@ void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
   local=input.pose;forwardKinematics();const Vec left=positions[9],right=positions[12];
+  if(!input.upperReception&&!input.staggering&&(supportSink>1e-6f||length(supportTilt)>1e-6f)){
+    const Vec leftKnee=positions[8],rightKnee=positions[11];
+    const Quat leftShoe=world[9],rightShoe=world[12];
+    root[2]-=supportSink;
+    local[0]=normalized(productRotation(exponential(supportTilt),local[0]));forwardKinematics();
+    solveLeg(7,left,1e-5f);solveLeg(10,right,1e-5f);
+    local[9]=normalized(productRotation(inverseRotation(world[8]),leftShoe));
+    local[12]=normalized(productRotation(inverseRotation(world[11]),rightShoe));forwardKinematics();
+    debug.supportSink=supportSink;debug.supportTilt=length(supportTilt);
+    debug.supportKnee=std::max(length(subtractPoint(leftKnee,positions[8])),length(subtractPoint(rightKnee,positions[11])));
+    debug.supportFootError=std::max(length(subtractPoint(left,positions[9])),length(subtractPoint(right,positions[12])));
+  }
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
   leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),counterTilt),.38f);

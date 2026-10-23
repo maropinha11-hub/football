@@ -485,23 +485,24 @@ void AnimCollection::Load(boost::filesystem::path directory) {
     for(Animation *source:originals) {
       const std::string name=source->GetName();
       if(name!="media/animations/ballcontrol/walk/000.anim" && name!="media/animations/ballcontrol/walk/000.anim_mirror")continue;
-      for(const std::string kind:{"movement","ballcontrol"}) {
+      for(int stretch:{2,3,4,6})for(const std::string kind:{"movement","ballcontrol"}) {
         Animation *animation=new Animation(*source);
-        const int end=(source->GetFrameCount()-1)*2;
+        const int end=(source->GetFrameCount()-1)*stretch;
         for(auto *node:animation->GetNodeAnimations()) {
           const auto track=node->animation;node->animation.clear();
-          for(const auto &entry:track)node->animation[entry.first*2]=entry.second;
+          for(const auto &entry:track)node->animation[entry.first*stretch]=entry.second;
         }
         Quaternion q;Vector3 v;source->GetKeyFrame("player",source->GetFrameCount()-1,q,v);
         animation->SetKeyFrame("player",end,q,v);
         auto extension=boost::shared_ptr<FootballAnimationExtension>(new FootballAnimationExtension(animation));
         if(kind=="ballcontrol") {
           auto old=boost::static_pointer_cast<FootballAnimationExtension>(source->GetExtension("football"));
-          for(const auto &entry:old->GetAnimation())extension->GetAnimation()[entry.first*2]=entry.second;
+          for(const auto &entry:old->GetAnimation())extension->GetAnimation()[entry.first*stretch]=entry.second;
         }
         animation->GetExtensions()["football"]=extension;
         animation->SetVariable("type",kind);animation->SetVariable("training_slow_dribble","true");
-        animation->SetName(name+"_slow_"+kind);
+        animation->SetVariable("training_walk_stretch",int_to_str(stretch));
+        animation->SetName(name+"_slow_"+kind+int_to_str(stretch));
         _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
       }
     }
@@ -602,10 +603,18 @@ void AnimCollection::CrudeSelection(DataSet &dataSet, const CrudeSelectionQuery 
         if(animations.at(i)->GetVariable("reception_mode")=="forward" &&
             query.incomingVelocity!=e_Velocity_Sprint)
           animIncomingVelocity=query.incomingVelocity;
-        // BallControl queries intentionally use the walk input class. The
-        // slow copy retains that compatibility with a slower physical track.
+        // Gentle walking remains in the idle velocity class. Admit its
+        // retimed control gait too; reach and real shoe contact still decide
+        // whether it can replace the initial native stationary touch.
         if(animations.at(i)->GetVariable("training_slow_dribble")=="true" &&
-            animations.at(i)->GetAnimType()=="ballcontrol")animIncomingVelocity=e_Velocity_Walk;
+            animations.at(i)->GetAnimType()=="ballcontrol" && query.incomingVelocity!=e_Velocity_Sprint)
+          animIncomingVelocity=query.incomingVelocity;
+        // Continuous walking must be able to start below the original
+        // idle/dribble boundary. The physical root still accelerates from
+        // the current speed and contact feasibility is checked afterward.
+        if(animations.at(i)->GetVariable("training_slow_dribble")=="true" &&
+            query.incomingVelocity==e_Velocity_Idle &&
+            animations.at(i)->GetAnimType()=="movement")animIncomingVelocity=e_Velocity_Idle;
 
         if (query.incomingVelocity_Strict == false) {
 

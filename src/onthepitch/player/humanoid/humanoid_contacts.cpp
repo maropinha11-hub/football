@@ -145,6 +145,12 @@ void HumanoidBase::CaptureContactMesh() {
         ContactForwardKinematics(local,global,positions);
       }
       Vector3 probe=entry.second.position;probe.coords[2]*=zMultiplier;
+      const std::string technique=animation->GetVariable("physical_technique");
+      if(!technique.empty() && part.find("foot")!=std::string::npos){
+        const unsigned ankle=part=="right_foot"?12:9;const float side=part=="right_foot"?1.f:-1.f;
+        const Vector3 face=technique=="inside"?Vector3(side*.45f,0,0):technique=="outside"?Vector3(-side*.45f,0,0):Vector3(0,-.45f,0);
+        const float height=probe.coords[2];probe=positions[ankle]+global[ankle]*face;probe.coords[2]=height;
+      }
       if(animation->GetVariable("physical_heel")=="true") {
         // A rear pass contacts the heel side of the shoe. Projecting an old
         // proxy marker onto its toe made the preparation step hit the ball
@@ -536,6 +542,48 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_BODY_TOUCH t=%lu part=%s correction=%.6f sweep=%.5f speed_before=%.5f speed_after=%.5f actor=%d moving_skin=1 samples=%u skin_speed=%.5f\n",
       match->GetActualTime_ms(),part.c_str(),(resolved-current).GetLength(),high,incoming.GetLength(),outgoing.GetLength(),player->GetID(),sweepSamples,surfaceVelocity.GetLength());
+}
+
+void HumanoidBase::PlanHeelPreparation() {
+  if(!PhysicalRigEnabled() || currentAnim->anim->GetVariable("physical_heel")!="true" ||
+      currentAnim->touchFrame<20 || currentAnim->positions.empty())return;
+  const int end=currentAnim->touchFrame;
+  const float count=end+1.f;
+  std::vector<Vector3> approach(end+1);Vector3 sum(0);
+  for(int frame=0;frame<=end;++frame){
+    sum+=currentAnim->actionSmuggle*((.9f-.1f*std::cos(2*pi*frame/count))/count);
+    approach[frame]=sum;
+  }
+  auto envelope=[&](int frame){const float s=std::sin(pi*float(frame)/end);return s*s;};
+  auto clearance=[&](const Vector3 &offset){
+    float least=100;Quaternion local[13],global[13];Vector3 positions[13];
+    for(int frame=2;frame<end-3;frame+=2){
+      const Vector3 root=spatialState.position+currentAnim->positions[frame]+approach[frame]+offset*envelope(frame);
+      const float begin=std::min(1.f,(frame+1.f)/16.f);
+      const float yaw=spatialState.angle+currentAnim->rotationSmuggle.begin*(1-begin);
+      SampleContactAnimation(currentAnim->anim,frame,root,yaw,false,local,global,positions);
+      const Vector3 ball=match->GetBall()->Predict(frame*10);
+      least=std::min(least,std::min(ContactSurface(ball,"left_foot",global,positions),ContactSurface(ball,"right_foot",global,positions)));
+    }
+    return least;
+  };
+  const float before=clearance(Vector3(0));if(before>=.006f)return;
+  const Vector3 front=spatialState.bodyDirectionVec.Get2D().GetNormalized(Vector3(1,0,0));
+  const Vector3 side=front.GetRotated2D(.5f*pi);
+  Vector3 chosen(0);float after=before;
+  for(float amplitude:{.04f,.08f,.12f,.16f,.20f,.24f}){
+    for(const Vector3 direction:{side,-side,-front,front}){
+      const Vector3 offset=direction*amplitude;const float gap=clearance(offset);
+      if(gap>after){after=gap;chosen=offset;}
+    }
+    if(after>=.006f)break;
+  }
+  // A bounded whole-player support step avoids kicking the ball during
+  // preparation. Both endpoints and the authored heel contact stay fixed;
+  // feet are never warped independently and no collision is suppressed.
+  for(int frame=1;frame<end;++frame)currentAnim->positions[frame]+=chosen*envelope(frame);
+  if(GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_HEEL_CLEARANCE t=%lu before=%.6f after=%.6f offset=%.6f\n",match->GetActualTime_ms(),before,after,chosen.GetLength());
 }
 
 void HumanoidBase::UpdateTrainingContactPose() {

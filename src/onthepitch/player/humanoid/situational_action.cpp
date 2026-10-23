@@ -168,9 +168,31 @@ void ActionLayer::step(const Context &c,float dt) {
     target[3][1]-=opening;target[5][1]+=opening;
     target[3][0]+=opening*.45f*foot;target[5][0]-=opening*.45f*foot;
   }
+  if(c.pattern>=48&&c.pattern<80){
+    static constexpr float supportPlans[32][4]={
+      {.10f,.12f,.12f,.10f},{.06f,.21f,.04f,.08f},{-.04f,.16f,.24f,.15f},{.03f,.14f,-.26f,.17f},
+      {-.09f,.24f,.06f,.19f},{-.16f,.22f,.16f,.25f},{-.22f,.18f,.08f,.29f},{.20f,-.07f,-.12f,.23f},
+      {.04f,.06f,.19f,.22f},{.02f,.07f,.07f,.06f},{.17f,-.06f,-.08f,.13f},{-.03f,.18f,.27f,.21f},
+      {.07f,.22f,-.29f,.24f},{-.19f,.10f,.03f,.16f},{.21f,.03f,.09f,.18f},{.12f,.19f,-.17f,.11f},
+      {.08f,.11f,.23f,.14f},{.09f,.13f,-.23f,.16f},{-.20f,.05f,.02f,.26f},{.19f,.08f,.11f,.07f},
+      {.16f,-.04f,-.21f,.27f},{.11f,.23f,.05f,.09f},{-.18f,.25f,.12f,.28f},{.15f,.26f,-.18f,.30f},
+      {.18f,-.09f,.25f,.20f},{-.02f,.19f,.28f,.12f},{.04f,.20f,-.28f,.18f},{-.17f,.13f,-.20f,.29f},
+      {.13f,.27f,.30f,.28f},{.12f,.14f,.14f,.13f},{-.23f,.19f,-.14f,.32f},{.18f,-.10f,.18f,.31f}};
+    const auto &curve=supportPlans[c.pattern-48];
+    const float connected=trunk*(.65f+.35f*incomingLoad);
+    target[1][0]+=connected*(curve[0]*before+curve[1]*after);
+    target[1][1]+=connected*curve[2]*.24f*support*plant;
+    target[1][2]+=connected*curve[2]*(.7f*foot+.3f*turn)*(after-.65f*before);
+    const float opening=effort*curve[3]*(before+after);
+    target[3][0]+=opening*(.55f+.2f*foot);target[5][0]-=opening*(.55f-.2f*foot);
+    target[3][1]-=opening;target[5][1]+=opening;
+    target[4][0]-=opening*.38f;target[6][0]-=opening*.44f;
+  }
   // Distinct load/cushion strategies around the existing clip, rather than
   // swapping locomotion or inventing a contact with another body part.
   const float recruit=trunk*.7f,brace=effort*.10f*(before+after);
+  if(c.kind==ActionKind::Header&&c.contactMade)
+    target[2]={{effort*.10f*headerRelease*after,0,effort*.06f*turn*headerRelease*after}};
   switch(c.style){
     case ContactStyle::Inside:
       target[1][2]+=recruit*foot*(.10f*before-.08f*after);break;
@@ -203,6 +225,13 @@ void ActionLayer::step(const Context &c,float dt) {
     case ContactStyle::DrivenImpact:
       target[1][0]-=recruit*.18f*incomingLoad*after;
       target[3][1]-=brace;target[5][1]+=brace;break;
+    case ContactStyle::Toe:
+      target[1][0]+=recruit*.14f*after;target[4][0]-=brace;break;
+    case ContactStyle::Placed:
+      target[1][2]+=recruit*foot*(.19f*before-.16f*after);
+      target[3][1]-=brace;target[5][1]+=brace;break;
+    case ContactStyle::Knuckle:
+      target[1][0]+=recruit*.18f*after;target[3][0]-=brace;target[5][0]+=brace;break;
     default:break;
   }
   for(unsigned i:{3u,4u,5u,6u})target[i]=bounded(pes3::scalePoint(target[i],clamp(c.armGain,0,1.25f)),.48f);
@@ -261,6 +290,8 @@ void ActionLayer::evaluate(const Context &c,const pes3::NativeBind &bind,float s
   }
   for(unsigned i:{3u,4u,5u,6u})
     if(!pes3::unitRotation(pes3::productRotation(exponential(offset_[i]),pose[i]),result[i]))return;
+  if(kind==ActionKind::Header&&c.contactMade)
+    if(!pes3::unitRotation(pes3::productRotation(exponential(offset_[2]),result[2]),result[2]))return;
   pose=result;
 }
 

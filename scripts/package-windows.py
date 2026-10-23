@@ -71,6 +71,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "config" / "training.config", stage / "training.config")
     shutil.copy2(project / "config" / "situational-motion-catalog.json",
                  stage / "situational-motion-catalog.json")
+    shutil.copy2(project / "config" / "procedural-strikes.json", stage / "procedural-strikes.json")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
@@ -175,9 +176,17 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "tronco e bracos conforme direcao, velocidade, bola e adversario.\n"
         "Teste um passe parado e outro para o lado durante a corrida com RB.\n"
         "A camada nova preserva os pes e o contato original com a bola.\n"
-        "O catalogo inclui 7723 perfis procedurais sobre as animacoes existentes;\n"
-        "as 36.888 combinacoes de metadados nao sao novas capturas nem uma\n"
+        "O catalogo inclui 11323 perfis procedurais sobre as animacoes existentes;\n"
+        "as 65.718 combinacoes de metadados nao sao novas capturas nem uma\n"
         "validacao exaustiva. Consulte situational-motion-catalog.json.\n"
+        "26 variantes geradas de passe/chute/cruzamento preservam raiz, pernas e eventos.\n"
+        "Analogico leve permite caminhar; todo puxado e RB conservam a velocidade aprovada.\n"
+        "Toque curto no A ficou mais fraco e a carga aumenta a forca gradualmente.\n"
+        "Bolas paradas: jogadores se movimentam antes da cobranca, sem tocar antes do apito.\n"
+        "Goleiros interceptam recuos com os pes e escolhem o lado do mergulho pela trajetoria.\n"
+        "Audio: passos no gramado, respiracao, ambiente e impacto da bola.\n"
+        "Apoio ativo: quadril cede sob carga e os joelhos compensam, mantendo as chuteiras apoiadas.\n"
+        "F8 testa a recuperacao de apoio; F9 testa queda com esforco muscular e protecao.\n"
         "Na partida, LT/L2 ou H/N tambem tentam agarrar/proteger; M disputa.\n"
         "F2 na partida: aproxima um adversario para ensaio de contato.\n"
         "Ctrl+F2: aproxima pela frente para testar botes/carrinhos.\n"
@@ -306,7 +315,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
-                         "situational-motion-catalog.json","LEIA-BASE-APROVADA.txt","approved-base.json",
+                         "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):
@@ -332,6 +341,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage / "training.config", "training.config")
         output.write(stage / "jogar-partida.bat", "jogar-partida.bat")
         if approved_binary is None:
+            for path in sorted((stage / "media" / "animations" / "procedural_actions").glob("*.anim")):
+                output.write(path,path.relative_to(stage))
+            for name in ["turfstep0.wav","turfstep1.wav","breathing.wav","fieldair.wav"]:
+                output.write(stage / "media" / "sounds" / name, "media/sounds/"+name)
             for path in sorted((stage / "media" / "training").glob("*.*")):
                 output.write(path, path.relative_to(stage))
             for path in sorted((stage / "media" / "animations" / "mocap").glob("*.anim")):

@@ -128,7 +128,7 @@ class CatalogSources(unittest.TestCase):
         self.assertEqual(counts["metadata_compatible_pairs_including_native_mirrors"], candidates*2)
         self.assertEqual(counts["authored_source_files"], len(self.sources))
         self.assertLess(candidates, len(self.sources)*len(self.profiles)//10)
-        self.assertEqual(counts["new_baked_animation_files"], 0)
+        self.assertEqual(counts["new_baked_animation_files"], 26)
         self.assertEqual(counts["new_captured_clips"], 0)
         self.assertEqual(counts["exhaustively_rendered_contexts"], 0)
 
@@ -158,7 +158,7 @@ class CatalogSources(unittest.TestCase):
             expected = (catalogue.KIND_VALUES[profile["kind"]]*128+
                         profile["effort"]*27+profile["pressure"]*9+
                         profile["turn"]*3+profile["reach"])
-            self.assertEqual(profile["id"], expected*32+(profile["pattern"] if profile["pattern"]<32 else (1<<20)+profile["pattern"]-32))
+            self.assertEqual(profile["id"], expected*32+((profile["pattern"]//32)*(1<<20)+profile["pattern"]%32))
             for field in ("trunkGain", "armGain", "followThroughGain"):
                 self.assertGreaterEqual(profile[field], .7)
                 self.assertLessEqual(profile[field], 1.2)
@@ -220,7 +220,7 @@ extern "C" unsigned query(int kind,float effort,float pressure,float turn,float 
         generator=random.Random(4812)
         profiles=catalogue.profiles()
         for _ in range(500):
-            kind=generator.randrange(1,6);pattern=generator.randrange(48)
+            kind=generator.randrange(1,6);pattern=generator.randrange(80)
             query=[ctypes.c_float(generator.random()).value for _ in range(4)]
             candidates=[p for p in profiles if catalogue.KIND_VALUES[p['kind']]==kind and p['pattern']==pattern]
             expected=min(candidates,key=lambda p:sum((x*2-p[axis])**2 for x,axis in zip(query,['effort','pressure','turn','reach'])))['id'] if candidates else 0

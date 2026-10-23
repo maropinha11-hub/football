@@ -157,7 +157,7 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
     // Retain joint muscle tone during a fall. These are internal equal and
     // opposite torques: they cannot lift or suspend the complete body.
     const float height=s.bodies[1]->getCenterOfMassPosition().z();
-    const float tone=.12f+.88f*std::exp(-s.age/1.1f);
+    const float tone=.20f+.80f*std::exp(-s.age/1.3f);
     Pose targets=s.muscleTarget;
     const float tuck=smooth((.85f-height)/.55f);
     for(unsigned i:{8u,11u})targets[i]=blended(targets[i],exponential({{.85f,0,0}}),tuck*.65f);
@@ -166,9 +166,10 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
     // flexion to absorb it. The shoulder and its parent receive opposite work.
     const Vec velocity=vec(s.bodies[1]->getLinearVelocity());
     const Quat trunk=quat(s.bodies[2]->getWorldTransform().getRotation());
-    if(height>.28f && velocity[2]<-.15f){
+    if(height>.24f && (velocity[2]<-.15f || (height<.85f&&dotPoint(velocity,velocity)>1.5f))){
       for(unsigned i:{3u,5u}){
-        const Vec direction=unit({{velocity[0]*.28f+(i==3?.20f:-.20f),velocity[1]*.28f,-1.f}});
+        const Vec side=rotatePoint(trunk,{{i==3?.20f:-.20f,0,0}});
+        const Vec direction=unit({{velocity[0]*.28f+side[0],velocity[1]*.28f+side[1],-1.f}});
         const Quat desired=normalized(productRotation(pes3::swingRotation(rotatePoint(trunk,{{0,0,-1}}),direction),trunk));
         targets[i]=blended(targets[i],normalized(productRotation(inverseRotation(trunk),desired)),.7f);
       }

@@ -85,6 +85,10 @@ int main(){
   check(!football_reception::predict(incoming,{{0,0,0}},{{0,0,0}},{{-10,0,-.4f}},false).valid,
     "a controlled ball must not trigger another player's free-ball receiving plan");
   auto descending=[](unsigned ms){return football_reception::Vec{{.2f,0,3-4*ms*.001f}};};
+  auto toBrakingRunner=[](unsigned ms){return football_reception::Vec{{5-6*ms*.001f,0,1.2f}};};
+  const auto braking=football_reception::predict(toBrakingRunner,{{0,0,0}},{{4,0,0}},{{-6,0,0}},true);
+  check(braking.valid&&braking.time>.6f&&braking.gap<.12f,
+    "receiving prediction includes braking instead of extrapolating the old running velocity");
   check(football_reception::predict(descending,{{0,0,0}},{{0,0,0}},{{0,0,-4}},true).valid,
     "a vertically descending ball must be anticipated despite zero horizontal approach speed");
   auto receding=[](unsigned ms){return football_reception::Vec{{3+ms*.004f,0,.12f}};};

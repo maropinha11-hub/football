@@ -221,14 +221,14 @@ def profiles():
                         if kind == "Control" and (effort == 2 or reach == 2):
                             continue
                         e, p, t, r = (x*.5 for x in (effort, pressure, turn, reach))
-                        for pattern in range(1 if kind == "None" else 48):
+                        for pattern in range(1 if kind == "None" else 80):
                             eligible={9: {"Control"}, 10: {"Control"}, 11: {"Header"},
                                       12: {"Pass", "Shot", "Cross"}, 13: {"Pass", "Shot"},
-                                      14: {"Shot", "Cross"},15: {"Control"},16: {"Control"},17: {"Header"},18: {"Control"},19: {"Control","Pass"},20: {"Pass","Shot","Cross"},21: {"Shot","Cross"},22: {"Control","Pass"},23: {"Header"},24: {"Pass","Cross"},25: {"Pass","Shot"},26: {"Control"},27: {"Control"},32: {"Control"},33: {"Control"},34: {"Shot","Cross"},35: {"Pass","Shot","Cross"},36: {"Pass","Shot","Cross"},37: {"Header"},38: {"Header"},39: {"Control"},40: {"Control"},41: {"Control"},42: {"Control"},43: {"Control"},44: {"Control"},45: {"Cross"},46: {"Pass"},47: {"Pass","Shot","Cross"}}
+                                      14: {"Shot", "Cross"},15: {"Control"},16: {"Control"},17: {"Header"},18: {"Control"},19: {"Control","Pass"},20: {"Pass","Shot","Cross"},21: {"Shot","Cross"},22: {"Control","Pass"},23: {"Header"},24: {"Pass","Cross"},25: {"Pass","Shot"},26: {"Control"},27: {"Control"},32: {"Control"},33: {"Control"},34: {"Shot","Cross"},35: {"Pass","Shot","Cross"},36: {"Pass","Shot","Cross"},37: {"Header"},38: {"Header"},39: {"Control"},40: {"Control"},41: {"Control"},42: {"Control"},43: {"Control"},44: {"Control"},45: {"Cross"},46: {"Pass"},47: {"Pass","Shot","Cross"},48:{"Pass"},49:{"Pass","Shot"},50:{"Pass","Shot"},51:{"Pass","Shot","Cross"},52:{"Shot"},53:{"Header"},54:{"Header"},55:{"Header"},56:{"Control"},57:{"Control"},58:{"Control"},59:{"Pass","Cross"},60:{"Cross"},61:{"Shot","Cross"},62:{"Shot","Pass"},63:{"Pass","Shot"},64:{"Pass","Shot","Cross"},65:{"Pass","Shot","Cross"},66:{"Control"},67:{"Control"},68:{"Control","Pass"},69:{"Shot","Pass"},70:{"Cross"},71:{"Shot"},72:{"Control"},73:{"Pass","Shot"},74:{"Pass","Shot"},75:{"Cross"},76:{"Shot"},77:{"Pass"},78:{"Header"},79:{"Header","Pass","Shot"}}
                             if pattern in eligible and kind not in eligible[pattern]:
                                 continue
                             output.append({
-                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*32+(pattern if pattern<32 else (1<<20)+pattern-32),
+                                "id": (kind_value*128+effort*27+pressure*9+turn*3+reach)*32+((pattern//32)*(1<<20)+pattern%32),
                                 "kind": kind, "effort": effort, "pressure": pressure,
                                 "turn": turn, "reach": reach, "pattern": pattern,
                                 "trunkGain": round(.78+e*.12+t*.13+r*.11+p*.04, 5),
@@ -349,14 +349,14 @@ def summary(catalog):
             "action_sources_per_kind": dict(sorted(Counter(r["action_kind"] for r in contextual).items())),
             "metadata_compatible_source_profile_pairs": pairs,
             "metadata_compatible_pairs_including_native_mirrors": pairs*2,
-            "new_captured_clips": 0, "new_baked_animation_files": 0,
+            "new_captured_clips": 0, "new_baked_animation_files": sum(r["metadata"].get("generated_action")=="true" for r in records),
             "exhaustively_rendered_contexts": 0,
         },
         "coordinates": {"effort": "max(power,difficulty), normalized 0..1",
                         "pressure": "opponent proximity/physical pressure, normalized 0..1",
                         "turn": "abs(signed body-local action turn)/pi",
                         "reach": "min(1, horizontal ball offset from pelvis / 0.85m)",
-                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace", "cushioned_control", "directed_control", "reactive_header", "volley", "outside_strike", "instep_power", "shoulder_cushion", "thigh_cushion", "head_cushion", "chest_absorption", "low_reach_balance", "lateral_release", "full_follow_through", "soft_inside", "braced_header", "overlap_rotation", "plant_release", "outside_control", "recovery_control", "late_balance", "near_pressure", "soft_follow", "long_counter", "inside_receive", "outside_receive", "instep_release", "air_volley_support", "half_volley_compression", "head_soft_absorb", "head_side_release", "chest_release", "thigh_support", "shin_late_brace", "hard_body_recoil", "cut_inside_load", "cut_outside_load", "running_cross_load", "backward_turn_release", "late_first_time_brace"]},
+                        "bins": [0, .5, 1], "patterns": ["compact", "open_lateral", "airborne_counterbalance", "low_drive", "inside_sweep", "lofted_release", "back_turn", "first_time", "pressure_brace", "cushioned_control", "directed_control", "reactive_header", "volley", "outside_strike", "instep_power", "shoulder_cushion", "thigh_cushion", "head_cushion", "chest_absorption", "low_reach_balance", "lateral_release", "full_follow_through", "soft_inside", "braced_header", "overlap_rotation", "plant_release", "outside_control", "recovery_control", "late_balance", "near_pressure", "soft_follow", "long_counter", "inside_receive", "outside_receive", "instep_release", "air_volley_support", "half_volley_compression", "head_soft_absorb", "head_side_release", "chest_release", "thigh_support", "shin_late_brace", "hard_body_recoil", "cut_inside_load", "cut_outside_load", "running_cross_load", "backward_turn_release", "late_first_time_brace", "soft_pass_release", "toe_release", "placed_release", "outside_release", "central_low_spin", "running_header", "jump_header", "header_landing", "shielded_dribble", "walking_control", "braking_control", "open_side_pass", "rear_cross_release", "chip_release", "low_half_volley", "quick_first_time", "left_support", "right_support", "fast_chest_recovery", "low_cushion", "late_support_reach", "toe_snap_release", "high_cross_support", "pressured_shot", "stopped_cut", "running_inside", "running_outside", "lofted_outside", "rear_shot_release", "simple_connected_pass", "aerial_duel", "one_touch_rebalance"]},
         "constraints": [
             "Native function, contact part, event frame, foot and special/retainer-state eligibility stay authoritative",
             "Header has no full-turn torso profile; Control excludes maximum effort and maximum reach profiles",
@@ -400,7 +400,7 @@ def cpp_header(catalog):
         grouped.setdefault((KIND_VALUES[profile["kind"]], profile["pattern"]), []).append((index, profile))
     lookup = []
     for kind in range(6):
-        for pattern in range(48):
+        for pattern in range(80):
             candidates = grouped.get((kind,pattern), [])
             for effort in range(3):
                 for pressure in range(3):
@@ -416,7 +416,7 @@ def cpp_header(catalog):
         "inline const Profile &profileFor(ActionKind kind,float effort,float pressure,float turn,float reach,unsigned pattern=0){",
         "  if(unsigned(kind)>5)return kProfiles[0];",
         "  const unsigned bins=((profileBin(effort)*3+profileBin(pressure))*3+profileBin(turn))*3+profileBin(reach);",
-        "  return kProfiles[kProfileLookup[(unsigned(kind)*48+std::min(pattern,47u))*81+bins]];",
+        "  return kProfiles[kProfileLookup[(unsigned(kind)*80+std::min(pattern,79u))*81+bins]];",
         "}", "", "} // namespace football_situations", ""))
     return "\n".join(lines)
 

@@ -82,6 +82,30 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
     }
   }
 
+  if(PlayerMatchEnabled() && match->IsInSetPiece()){
+    const auto &restart=match->GetRefereeBuffer();
+    const bool movingRestart=restart.desiredSetPiece==e_SetPiece_Corner||restart.desiredSetPiece==e_SetPiece_FreeKick||restart.desiredSetPiece==e_SetPiece_ThrowIn||restart.desiredSetPiece==e_SetPiece_GoalKick;
+    if(movingRestart && restart.active && match->GetActualTime_ms()>=restart.prepareTime &&
+       !match->GetReferee()->IsRestartTaker(player)){
+      if(restartMovementStamp!=restart.prepareTime){restartMovementStamp=restart.prepareTime;restartMovementAnchor=player->GetPosition();}
+      const float phase=(match->GetActualTime_ms()-restart.prepareTime)*.001f+player->GetID()*.71f;
+      const bool attacking=team->GetID()==restart.teamID;
+      const bool keeper=CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK;
+      const float range=keeper?.18f:attacking?1.9f:1.1f;
+      Vector3 target=restartMovementAnchor+Vector3(std::sin(phase*.9f)*range,std::sin(phase*.65f+.8f)*range,0);
+      const Vector3 away=(target-restart.restartPos).Get2D();
+      const float exclusion=attacking?1.8f:restart.desiredSetPiece==e_SetPiece_ThrowIn?2.1f:9.25f;
+      if(away.GetLength()<exclusion)target=restart.restartPos+away.GetNormalized(player->GetDirectionVec())*exclusion;
+      target.coords[0]=clamp(target.coords[0],-pitchHalfW+.3f,pitchHalfW-.3f);target.coords[1]=clamp(target.coords[1],-pitchHalfH+.3f,pitchHalfH-.3f);
+      const Vector3 delta=(target-player->GetPosition()).Get2D();
+      PlayerCommand move;move.desiredFunctionType=e_FunctionType_Movement;move.useDesiredMovement=move.useDesiredLookAt=true;
+      move.desiredDirection=delta.GetNormalized(player->GetDirectionVec());move.desiredVelocityFloat=delta.GetLength()>.32f?std::min(2.25f,delta.GetLength()*2.f):0;
+      move.desiredLookAt=restart.restartPos.Get2D();commandQueue.push_back(move);
+      if(GetConfiguration()->GetBool("training_telemetry",false)&&(match->GetActualTime_ms()+player->GetID()*10)%300==0)
+        printf("RESTART_RUN t=%lu actor=%d attacking=%d speed=%.5f ball_gap=%.5f\n",match->GetActualTime_ms(),player->GetID(),attacking?1:0,move.desiredVelocityFloat,(player->GetPosition()-restart.restartPos).Get2D().GetLength());
+      return;
+    }
+  }
   FormationEntry entry = CastPlayer()->GetDynamicFormationEntry();
   float mindSet = AI_GetMindSet(entry.role);
 
@@ -314,6 +338,15 @@ void ElizaController::RequestCommand(PlayerCommandQueue &commandQueue) {
     if (CastPlayer() != match->GetDesignatedPossessionPlayer()) manualMovement = true;
     goalieStrategy->RequestInput(keeperMentalImage, manualMovementDirection, manualMovementVelocityFloat);
     if(PlayerMatchEnabled())manualMovement=true;
+    Player *last=match->GetLastTouchPlayer();
+    if(PlayerMatchEnabled()&&last&&last!=player&&last->GetTeamID()==team->GetID()&&last->GetLastTouchType()==e_TouchType_Intentional_Kicked){
+      _TrapCommand(commandQueue,false,false);
+      _BallControlCommand(commandQueue,false,false);
+      if(boundForGoal&&(match->GetBall()->Predict(150)-player->GetPosition()).Get2D().GetLength()<2.3f&&match->GetBall()->Predict(150).coords[2]<.65f){
+        PlayerCommand block;block.desiredFunctionType=e_FunctionType_Interfere;block.useDesiredMovement=block.useDesiredLookAt=false;
+        commandQueue.push_back(block);
+      }
+    }
 
     //if (boundForGoal && hasUniquePossession) printf("has unique possession, so no deflect anims (poss: %f)\n", possessionAmount);
     if (!hasUniquePossession || possessionAmount < 3.4f) {
@@ -1115,7 +1148,7 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand> &commandQu
   if(PlayerMatchEnabled()&&hasPossession){
     float pressure=100;for(const auto &opponent:opponentPlayerImages)pressure=std::min(pressure,(opponent.position-player->GetPosition()).Get2D().GetLength());
     const float goalRange=(player->GetPosition()-Vector3(-team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength();
-    if(pressure>1.8f&&goalRange>24.f)rawInputVelocityFloat=std::min(rawInputVelocityFloat,walkVelocity+.5f);
+    if(pressure>1.8f&&goalRange>24.f)rawInputVelocityFloat=std::min(rawInputVelocityFloat,dribbleVelocity+.3f);
   }
   if(turnForPass){rawInputDirection=passFacing;rawInputVelocityFloat=.8f;}
   if(PlayerMatchEnabled() && GetConfiguration()->GetBool("training_telemetry",false) &&

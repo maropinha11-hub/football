@@ -267,6 +267,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   crowd02->SetLoop(true);
   crowd02->Poke(e_SystemType_Audio);
   GetScene3D()->AddObject(crowd02);
+  InitFieldAudio();
 
 
   // match params
@@ -474,6 +475,9 @@ void Match::Exit() {
 
   scene3D->DeleteObject(crowd01);
   scene3D->DeleteObject(crowd02);
+  for(auto &sound:fieldSteps)if(sound)scene3D->DeleteObject(sound);
+  if(fieldBreath)scene3D->DeleteObject(fieldBreath);
+  if(fieldAir)scene3D->DeleteObject(fieldAir);
 
   radar->Exit();
   delete radar;
@@ -1006,6 +1010,7 @@ void Match::Process() {
 
     if (IsInPlay() && !IsInSetPiece()) matchTime_ms += 10 * (1.0f / matchDurationFactor);
     actualTime_ms += 10;
+    ProcessFieldAudio();
     if (IsGoalScored()) goalScoredTimer += 10; else goalScoredTimer = 0;
 
     if (IsInPlay() && !IsInSetPiece()) GetMatchData()->AddPossessionTime_10ms(designatedPossessionPlayer->GetTeamID());

@@ -249,7 +249,8 @@ class HumanoidBase {
     void TogglePhysicalRig();
     void AddPhysicalImpulse(const Vector3 &impulse, const Vector3 &lever=Vector3(0,0,.35f),bool forceFall=false);
     void PhysicalCollision(const Vector3 &velocityChange);
-    void ResetPhysicalRig();
+  void ResetPhysicalRig(bool clearHistory=true);
+  void PlanHeelPreparation();
     void UpdatePhysicalRigPose();
     void ProcessPhysicalMotion();
     void ProcessPhysicalPartner();
@@ -307,7 +308,8 @@ class HumanoidBase {
     Vector3 GetGeomPosition() { return humanoidNode->GetPosition(); }
 
     int GetIdleMovementAnimID();
-    void ResetPosition(const Vector3 &newPos, const Vector3 &focusPos);
+    void ResetPosition(const Vector3 &newPos, const Vector3 &focusPos, bool recovering=false);
+    Vector3 GetContactFootPosition(unsigned side)const{return contactPositions[side?12:9];}
     void OffsetPosition(const Vector3 &offset);
     void TripMe(const Vector3 &tripVector, int tripType);
 

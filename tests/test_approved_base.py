@@ -26,7 +26,7 @@ class ApprovedBase(unittest.TestCase):
         for key,value in {'training_walk_speed_scale':'0.72',
                           'training_sprint_speed_scale':'0.90',
                           'training_animation_time_scale':'1.12',
-                          'training_transition_frames':'14'}.items():
+                          'training_transition_frames':'16'}.items():
             self.assertEqual(values[key],value)
         self.assertNotIn('training_motion_matching',values)
 

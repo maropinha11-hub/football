@@ -175,6 +175,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         float inputPower = clamp(pow(gaugeFactor, 0.7f), 0.01f, 1.0f);
         command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
+        command.touchInfo.charge_ms=std::max(10,gauge_ms);
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_shortpass_autodirection", _default_ShortPass_AutoDirection);
         command.touchInfo.autoPowerBias = GetConfiguration()->GetReal("gameplay_shortpass_autopower", _default_ShortPass_AutoPower);
         AI_GetPass(CastPlayer(), command.desiredFunctionType, command.touchInfo.inputDirection, command.touchInfo.inputPower, command.touchInfo.autoDirectionBias, command.touchInfo.autoPowerBias, command.touchInfo.desiredDirection, command.touchInfo.desiredPower, command.touchInfo.targetPlayer);
@@ -289,6 +290,15 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   // delay direction input until we have chosen a steady direction.
   // this is because humans can only move an analog stick so fast, and we don't want requeues to happen mid-analogstick-movement.
   Vector3 inputDirectionSaveNonsteady = inputDirection;
+  // A stationary rear tap prepares a heel contact. Do not let the receiving
+  // magnet first walk the planted player through the ball while A is held.
+  // Longer charges and all moving/aerial passes retain their normal approach.
+  const bool preparingRearTap=player->GetHumanoid()->PhysicalRigEnabled() &&
+    actionMode==2 && actionButton==e_ButtonFunction_ShortPass && !actionCommitted &&
+    hid->GetButton(actionButton) && gauge_ms<=140 && !match->IsInSetPiece() &&
+    !match->TrainingReceivingBall() && player->GetMovement().GetLength()<1.3f &&
+    inputDirectionSaveNonsteady.GetDotProduct(player->GetBodyDirectionVec())<-.55f &&
+    (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<.9f;
   //SetGreenDebugPilon(player->GetPosition() + inputDirection * (inputVelocityFloat * 0.5f + 0.5f));
   inputDirection = steadyDirection;
   //SetBlueDebugPilon(player->GetPosition() + inputDirection * (inputVelocityFloat * 0.5f + 0.6f));
@@ -319,7 +329,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     // ball control?
     bool keepCurrentBodyDirection = false;
     // sidestep dribble disabled for now, too quirky: if (hid->GetButton(e_ButtonFunction_Dribble)) keepCurrentBodyDirection = true;
-    if(actionMode!=1&&!holdTarget)_BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
+    if(actionMode!=1&&!holdTarget&&!preparingRearTap)_BallControlCommand(commandQueue, idleTurnToOpponentGoal, knockOn, true, keepCurrentBodyDirection);
 
     // trap?
     if(actionMode!=1&&!holdTarget)_TrapCommand(commandQueue, idleTurnToOpponentGoal, knockOn);
@@ -350,12 +360,27 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
   if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0 &&
       !player->GetHumanoid()->UpperReceptionActive())forceMagnet=true;
   _MovementCommand(commandQueue, forceMagnet, extraHaste);
+  if(preparingRearTap && !commandQueue.empty()){
+    auto &movement=commandQueue.back();movement.desiredVelocityFloat=0;
+    movement.useDesiredLookAt=true;movement.desiredLookAt=player->GetPosition()+player->GetBodyDirectionVec()*10.f;
+  }
 
   if (commandQueue.size() > 0) {
     PlayerCommand &command = commandQueue.at(commandQueue.size() - 1);
     assert(command.desiredFunctionType == e_FunctionType_Movement); // make sure this is the movement command (is probably guaranteed, check out _MovementCommand)
 
     if (TrainingEnabled()) {
+      if(actionMode==0 && match->TrainingHasBall() && !match->TrainingReceivingBall() &&
+          !player->GetHumanoid()->UpperReceptionActive() && !hid->GetButton(e_ButtonFunction_Sprint) &&
+          hid->GetDirection().GetLength()>.01f && hid->GetDirection().GetLength()<=.72f &&
+          (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.05f){
+        // The original ball-control magnet quantizes gentle walking as idle.
+        // Keep its real contact commands, but retain continuous manual travel
+        // inside the controlled-ball corridor instead of stopping the root.
+        command.desiredDirection=inputDirection;
+        command.desiredVelocityFloat=rawInputVelocityFloat;
+        command.desiredLookAt=player->GetPosition()+inputDirection*10.f;
+      }
       // Assistance may request a faster interception than the raw stick.
       // Keep small reception adjustments small, and do not let that fallback
       // sprint after every forward-loop touch while RB is released.
@@ -499,7 +524,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_PASS_TURN t=%lu state=begin\n",match->GetActualTime_ms());
       }
       if(turningPass){
-        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.70f;
+        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.40f;
         if(!aligned && close && match->GetActualTime_ms()<turningPassUntil){
           for(auto &movement:commandQueue)if(movement.desiredFunctionType==e_FunctionType_Movement||movement.desiredFunctionType==e_FunctionType_BallControl){
             movement.useDesiredLookAt=true;movement.useDesiredMovement=true;
@@ -755,7 +780,7 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     // a light on-ball stick in its slow native gait instead of holding still.
     if(TrainingEnabled() && match->TrainingHasBall() && !match->TrainingReceivingBall() &&
         !hid->GetButton(e_ButtonFunction_Sprint) && rawInputVelocityFloat>.05f)
-      rawInputVelocityFloat=std::max(rawInputVelocityFloat,idleDribbleSwitch+.05f);
+      rawInputVelocityFloat=std::max(rawInputVelocityFloat,.65f);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize(); // hid should do this, but still
   }

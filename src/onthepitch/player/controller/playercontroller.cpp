@@ -322,6 +322,13 @@ void PlayerController::_BallControlCommand(PlayerCommandQueue &commandQueue, boo
     if (quantizeDirection) QuantizeDirection(command.desiredDirection, GetQuantizedDirectionBias());
     command.desiredVelocityFloat = inputVelocityFloat;
 
+    if(receiving && !player->GetExternalController()){
+      const Vector3 point=match->GetBall()->Predict(120).Get2D();
+      const Vector3 approach=point-player->GetPosition().Get2D();
+      command.desiredDirection=approach.GetNormalized(player->GetBodyDirectionVec());
+      command.desiredVelocityFloat=std::min(2.6f,std::max(0.f,(approach.GetLength()-.40f)*3.f));
+    }
+
     if (FloatToEnumVelocity(command.desiredVelocityFloat) == e_Velocity_Idle && idleTurnToOpponentGoal) {
       command.desiredDirection = Vector3(-team->GetSide(), 0, 0);
     }
@@ -375,6 +382,11 @@ void PlayerController::_TrapCommand(PlayerCommandQueue &commandQueue, bool idleT
     if (quantizeDirection) QuantizeDirection(command.desiredDirection, GetQuantizedDirectionBias());
 
     command.desiredVelocityFloat = inputVelocityFloat;
+    if(receiving&&!player->GetExternalController()){
+      const Vector3 approach=match->GetBall()->Predict(120).Get2D()-player->GetPosition().Get2D();
+      command.desiredDirection=approach.GetNormalized(player->GetBodyDirectionVec());
+      command.desiredVelocityFloat=std::min(2.6f,std::max(0.f,(approach.GetLength()-.40f)*3.f));
+    }
     if (CastPlayer()->GetFormationEntry().role == e_PlayerRole_GK && !team->IsHumanControlled(player->GetID())) {
       command.desiredDirection = Vector3(-team->GetSide(), 0, 0);
       command.desiredVelocityFloat = idleVelocity;

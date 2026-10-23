@@ -115,6 +115,8 @@ class Match {
     void ResetTraining(int exercise, bool ballAtPlayer = false);
     void LaunchTrainingBall(int delivery);
     void ProcessTraining();
+    void InitFieldAudio();
+    void ProcessFieldAudio();
     Player *GetTrainingPlayer() const { return trainingPlayer; }
     Player *GetTrainingPartner() const { return trainingPartner; }
     void SetTrainingPartner(Player *value) { trainingPartner=value; }
@@ -425,6 +427,11 @@ class Match {
 
     boost::intrusive_ptr<Sound> crowd01;
     boost::intrusive_ptr<Sound> crowd02;
+    boost::intrusive_ptr<Sound> fieldSteps[4],fieldBreath,fieldAir;
+    struct FootAudio {float height[2]={0,0};unsigned long last[2]={0,0};bool ready=false;};
+    std::map<int,FootAudio> fieldFootHistory;
+    unsigned fieldStepVoice=0;
+    float fieldEffort=0;
 
     std::vector<ReplaySpatial*> replay;
     boost::circular_buffer<ReplayBallTouchesNetFrame> replayBallTouchesNetFrames;

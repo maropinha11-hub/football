@@ -86,6 +86,25 @@ int main(int argc,char **argv){
   check(length(subtractPoint(freshFoot,rig.points()[12]))<1e-6f && rig.age()==age,
     "repeated pose evaluation is idempotent within one physics tick");
   unsigned contexts=0,unsafeCuts=0;float matrixError=0;
+  PhysicalRig supported;supported.configure(bind,1);Input planted=standing();planted.action=true;
+  planted.situation.enabled=true;planted.situation.kind=football_situations::ActionKind::Pass;
+  planted.situation.power=.8f;planted.situation.difficulty=.6f;planted.situation.contactPhase=.35f;
+  planted.situation.contactMade=true;planted.situation.signedTurn=.8f;
+  float supportSinkPeak=0,supportKneePeak=0,supportFootPeak=0,supportKneeStep=0;Vec priorKnee{};
+  for(unsigned tick=0;tick<100;++tick){
+    planted.situation.phase=.36f+.005f*tick;supported.step(planted);
+    supportSinkPeak=std::max(supportSinkPeak,supported.metrics().supportSink);
+    supportKneePeak=std::max(supportKneePeak,supported.metrics().supportKnee);
+    supportFootPeak=std::max(supportFootPeak,supported.metrics().supportFootError);
+    if(tick)supportKneeStep=std::max(supportKneeStep,length(subtractPoint(priorKnee,supported.points()[8])));
+    priorKnee=supported.points()[8];
+  }
+  check(supportSinkPeak>.002f&&supportKneePeak>.003f,"a grounded release recruits the pelvis and knees instead of a rigid lower body");
+  check(supportFootPeak<.0035f&&supportKneeStep<.008f&&boneError(supported,bind)<1e-5f,"support bends smoothly while preserving planted shoes and bone lengths");
+  check(std::hypot(supported.points()[0][0],supported.points()[0][1])<1e-6f,"support compliance never replaces the commanded horizontal root travel");
+  planted.touchPending=true;for(unsigned tick=0;tick<200;++tick)supported.step(planted);
+  check(supported.metrics().supportSink<.0001f&&supported.metrics().supportTilt<.0001f,"preparing the next ball contact gradually restores the original support pose");
+  supported.reset();supported.step(standing());check(supported.metrics().supportSink==0&&supported.metrics().supportTilt==0,"reset clears support compression and its velocities");
   bool matrixFinite=true;
   const std::string root=argc>1?argv[1]:"data/media/animations";
   std::array<Input,3> bases{{sourcePose(root+"/ballcontrol/walk/000.anim"),sourcePose(root+"/shot/idle/020.anim"),sourcePose(root+"/trap/idle/000_IB000.anim")}};

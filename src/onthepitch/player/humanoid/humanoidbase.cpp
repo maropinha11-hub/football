@@ -1334,13 +1334,13 @@ int HumanoidBase::GetIdleMovementAnimID() {
   return *dataSet.begin();
 }
 
-void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
-  ResetPhysicalRig();
+void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos,bool recovering) {
+  ResetPhysicalRig(!recovering);
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
   contactPoseBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
   buf_trainingLook.Clear();
-  buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();
-  for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;buf_contactLocal[i].Clear();}
+  if(!recovering){buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();}
+  for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;if(!recovering)buf_contactLocal[i].Clear();}
   dribbleTrialPhase=0;dribbleTrialBlend=0;
   for(unsigned side=0;side<2;++side){dribbleFootOffsets[side]=Vector3(0);buf_dribbleFootOffsets[side].Clear();}
   buf_dribbleRoot.Clear();
@@ -1370,6 +1370,7 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos)
   currentAnim->positions.clear();
   currentAnim->positions = match->GetAnimPositionCache(currentAnim->anim);
   currentAnim->frameNum = random(0, currentAnim->anim->GetEffectiveFrameCount() - 1);
+  if(recovering)currentAnim->frameNum=0;
   currentAnim->radiusOffset = 0.0;
   currentAnim->touchFrame = -1;
   currentAnim->originatingInterrupt = e_InterruptAnim_None;
@@ -1414,8 +1415,8 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos)
   humanoidNode->SetPosition(startPos, false);
 
   animApplyBuffer.anim = currentAnim->anim;
-  animApplyBuffer.smooth = false;
-  animApplyBuffer.smoothFactor = 0.0f;
+  animApplyBuffer.smooth = recovering;
+  animApplyBuffer.smoothFactor = recovering?1.f:0.f;
   animApplyBuffer.position = startPos;
   animApplyBuffer.orientation = startAngle;
   animApplyBuffer.offsets.clear();

@@ -156,6 +156,7 @@ struct TouchInfo {
 
   Vector3         inputDirection;
   float           inputPower;
+  unsigned        charge_ms=0;
 
   float           autoDirectionBias;
   float           autoPowerBias;

@@ -596,7 +596,7 @@ Vector3 Ball::GetAveragePosition(unsigned int duration_ms) const {
 }
 
 void Ball::TriggerBallTouchSound(float gain) {
-  float finalGain = gain * 0.6f * GetConfiguration()->GetReal("audio_volume", 0.5f);
+  float finalGain = clamp((.08f+.92f*gain) * GetConfiguration()->GetReal("audio_ball_gain",1.15f) * GetConfiguration()->GetReal("audio_volume", 0.5f),0.f,1.f);
   if (finalGain > 0.01f) {
     sound->SetPitch(0.9f + random(0.0f, 0.2f));
     sound->SetGain(finalGain);

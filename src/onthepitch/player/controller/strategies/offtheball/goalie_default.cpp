@@ -262,6 +262,16 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage *mentalImage, Vector3
         }
       }
     }
+    Player *last=match->GetLastTouchPlayer();
+    const bool backpass=last&&last!=player&&last->GetTeamID()==team->GetID()&&last->GetLastTouchType()==e_TouchType_Intentional_Kicked;
+    if(backpass){
+      for(unsigned ms=100;ms<=1200;ms+=50){
+        const Vector3 arrival=match->GetBall()->Predict(ms);
+        if(arrival.coords[0]*side<pitchHalfW-18.f||arrival.coords[0]*side>pitchHalfW-.25f||std::fabs(arrival.coords[1])>20.f||arrival.coords[2]>2.1f)continue;
+        if((arrival-player->GetPosition()).Get2D().GetLength()>.60f+player->GetMaxVelocity()*ms*.001f)continue;
+        targetPos=arrival.Get2D();maxVelocity=sprintVelocity;mode="backpass_foot";break;
+      }
+    }
     if(!std::isfinite(targetPos.coords[0])||!std::isfinite(targetPos.coords[1]))targetPos=goalPos-Vector3(side*.7f,0,0);
     if(GetConfiguration()->GetBool("training_telemetry",false))
       printf("KEEPER_DECISION t=%lu actor=%d mode=%s target=[%.4f,%.4f] bound=%d\n",match->GetActualTime_ms(),player->GetID(),mode,targetPos.coords[0],targetPos.coords[1],IsBallBoundForGoal()?1:0);

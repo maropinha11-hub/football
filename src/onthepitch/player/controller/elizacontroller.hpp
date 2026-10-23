@@ -69,6 +69,8 @@ class ElizaController : public PlayerController {
     Vector3 passFacing{0};
     Vector3 lastDesiredDirection;
     float lastDesiredVelocity;
+    unsigned long restartMovementStamp=~0ul;
+    Vector3 restartMovementAnchor;
 
 };
 

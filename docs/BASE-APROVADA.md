@@ -22,24 +22,58 @@ Passe curto para trás com toque breve prefere o calcanhar; carregando mais,
 o jogador vira para passar. A bola continua exigindo contato real.
 O ponto de contato do calcanhar mira a parte traseira da chuteira, evitando
 que o passo de preparação desloque a bola antes do passe.
+Quando a trajetória prevista ainda cruza a bola durante essa preparação,
+o corpo faz um pequeno ajuste lateral planejado, de até 24 cm. O ajuste
+começa e termina em zero e conserva o contato final; a colisão continua ativa
+e a perna não é esticada independentemente para alcançar a bola.
 
 A colisão de recepção considera a bola **e o corpo em movimento** durante
 o passo de simulação, incluindo a velocidade da superfície atingida. A
 condução já controlada no chão continua com a lógica aprovada para evitar
 introduzir as antigas rebatidas entre as próprias pernas.
 
-O catálogo contém **7.723 perfis procedurais**, em **48 famílias**, sobre as
+O catálogo contém **11.323 perfis procedurais**, em **80 famílias**, sobre as
 animações nativas. As novas estratégias incluem apoio no voleio e meio
 voleio, absorção/saída de cabeça e peito, apoio de coxa/canela, cortes,
-passe virando e cruzamento em corrida. Doze estilos de contato ajustam a
+passe virando e cruzamento em corrida. Quinze estilos de contato ajustam a
 recrutação de tronco e braços conforme a jogada, mantendo as pernas, o
-evento de contato e o deslocamento nativos. Não são 7.723 capturas novas.
-As 36.888 combinações de metadados, incluindo espelhamentos nativos, são
+evento de contato e o deslocamento nativos. Não são 11.323 capturas novas.
+As 65.718 combinações de metadados, incluindo espelhamentos nativos, são
 candidatos compatíveis, não uma validação visual exaustiva.
 
 O equilíbrio recebe uma resposta gradual adicional do tronco e dos braços
 em cortes rápidos e impactos, sem substituir a passada. Quando o apoio é
 superado, o ragdoll e as animações originais de levantar continuam atuando.
+
+O apoio também recruta quadril e joelhos após a ação e sob perturbações:
+uma compressão muscular amortecida cede sob o peso e recompõe a postura.
+IK de duas articulações conserva a posição e a orientação das chuteiras,
+sem substituir a direção, a passada ou a velocidade horizontal comandada.
+A preparação do próximo toque reduz essa resposta; os domínios de peito
+conservam sua composição específica. Nas quedas, os motores articulares
+mantêm esforço muscular e os braços procuram apoio no chão.
+É um protótipo próprio de comportamento físico ativo com Bullet, inspirado
+nesse tipo de reação corporal; não incorpora a tecnologia Euphoria do GTA IV.
+
+Há também **26 variantes geradas de ações nativas**, com contato de parte
+interna/externa da chuteira, bico e peito do pé com pouco giro. Elas ajustam
+tornozelo, tronco e ombros; preservam raiz, quadril, joelhos e tempo de contato.
+O seletor mantém as ações originais como alternativas e só confirma o toque
+quando a superfície da chuteira alcança a bola. As variantes não são capturas.
+
+O analógico leve permite caminhar com a bola; a velocidade com o analógico
+todo puxado e a corrida com RB foram mantidas. O toque breve no A fica mais
+fraco, com aumento gradual conforme a carga. Passadas no gramado, respiração,
+ambiente e impacto da bola têm canais e volumes separados.
+
+Nas bolas paradas, os jogadores fazem deslocamentos curtos para oferecer
+opções antes da cobrança. O goleiro procura a trajetória dos recuos para
+receber com os pés; a escolha do mergulho considera o lado da bola no
+instante em que a animação pode alcançá-la. Ctrl+F6 na partida alterna sete
+ensaios: cara a cara, ângulo, três recuos e duas finalizações laterais.
+
+A volta da animação de levantar preserva o histórico de pose e de contato,
+evitando uma amostra inválida do esqueleto na transição para ficar em pé.
 
 F4: passe recebido; F5: bola no peito; F6: cruzamento alto. F8/Shift+F8/Ctrl+F8
 testam impactos; F9 testa queda. F10 na partida prepara as bolas paradas.
