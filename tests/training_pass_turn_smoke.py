@@ -22,7 +22,13 @@ try:
    elif name.startswith('behind')or name=='strong_behind':
     before=[x for x in g.frames()if contact-100<=x['t']<=contact];facing=math.cos(before[-1]['player_yaw'])if before else 1
     check(name+' turns the body instead of selecting a heel',bool(selected)and all(x['heel']=='0'for x in selected)and facing<-.35,dict(turn=turn,selected=selected,facing_dot_original_forward=facing,release_to_contact_ms=contact-release))
-    check(name+' completes the pivot and kick without a long input lock',bool(hits)and 0<contact-release<=1100,dict(release_to_contact_ms=contact-release))
+    # A direction changed on release can require the current control step
+    # followed by a native pivot and the authored kicking wind-up. Measure
+    # idle delay separately instead of treating all that motion as a lock.
+    chosen=selected[-1]if selected else {};begin=int(chosen.get('t',0));windup=int(chosen.get('contact_frame',0))*10
+    ready=[int(x['t'])for x in turn if x.get('state')=='release'and x.get('aligned')=='1'and int(x['t'])<=begin]
+    handoff=begin-ready[-1]if ready else 0
+    check(name+' finishes its native pivot and wind-up without an extra input lock',bool(hits)and bool(selected)and 0<contact-release<=1400 and 0<=begin-release<=950 and abs(contact-begin-windup)<=40 and handoff<=120,dict(release_to_contact_ms=contact-release,pivot_preparation_ms=begin-release,authored_windup_ms=windup,actual_windup_ms=contact-begin,aligned_handoff_ms=handoff))
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)
  r['result']='passed'if all(c['result']=='passed'for c in r['checks'])else'failed'
 except BaseException as e:r.update(result='failed',error=str(e));raise

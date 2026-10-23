@@ -326,6 +326,11 @@ void Player::Process() {
     Vector3 posAfter = CastHumanoid()->GetPosition();
 
     float distance = (posAfter - posBefore).GetLength();
+    if(TrainingEnabled()){
+      sprintEnergy.step(.01f,GetMovement().Get2D().GetLength(),sprintRequested,GetStaminaStat(),match->IsInPlay());
+      if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%500==0)
+        printf("SPRINT_ENERGY t=%lu actor=%d human=%d energy=%.5f speed=%.5f limit=%.5f requested=%d depleted=%d\n",match->GetActualTime_ms(),GetID(),externalController?1:0,sprintEnergy.value,GetMovement().Get2D().GetLength(),GetMaxVelocity(),sprintRequested?1:0,sprintEnergy.depleted?1:0);
+    }
     fatigueFactorInv -= distance * 0.00003f * (2.0f - GetStaminaStat()) * (1.0f / match->GetMatchDurationFactor());
     fatigueFactorInv = clamp(fatigueFactorInv, 0.01f, 1.0f);
     //if (GetDebug() && match->GetActualTime_ms() % 1000 == 0) printf("fatigue: %f\n", GetFatigueFactorInv());

@@ -8,6 +8,7 @@
 #include "humanoid/humanoidbase.hpp"
 #include "../../data/playerdata.hpp"
 #include "controller/icontroller.hpp"
+#include "sprint_energy.hpp"
 
 #include "scene/scene3d/node.hpp"
 
@@ -77,6 +78,8 @@ class PlayerBase {
     virtual float GetStat(const char *name) const;
     float GetVelocityMultiplier() const;
     float GetMaxVelocity() const;
+    float GetSprintEnergy() const { return sprintEnergy.value; }
+    bool IsSprintDepleted() const { return sprintEnergy.depleted; }
 
     const Anim *GetCurrentAnim() { return humanoid->GetCurrentAnim(); }
     const Anim *GetPreviousAnim() { return humanoid->GetPreviousAnim(); }
@@ -117,6 +120,8 @@ class PlayerBase {
     static int playerCount;
 
     float fatigueFactorInv;
+    football_condition::SprintEnergy sprintEnergy;
+    bool sprintRequested=false;
     float confidenceFactor;
 
     float averageStat;

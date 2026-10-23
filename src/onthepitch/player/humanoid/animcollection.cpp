@@ -16,6 +16,7 @@
 #include "humanoid_utils.hpp"
 
 #include "humanoid.hpp"
+#include "walking_gait.hpp"
 
 #include "main.hpp"
 
@@ -368,6 +369,12 @@ void AnimCollection::Load(boost::filesystem::path directory) {
 
   std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap;
   FillNodeMap(playerNode, nodeMap);
+  pes3::NativeBind walkingBind;
+  for(unsigned bone=0;bone<13;++bone){const auto node=nodeMap.at(pes3::nativeBoneNames[bone]);
+    const auto offset=node->GetPosition();const auto rotation=node->GetRotation();
+    for(unsigned axis=0;axis<3;++axis)walkingBind.offsets[bone][axis]=offset.coords[axis];
+    for(unsigned axis=0;axis<4;++axis)walkingBind.rotations[bone][axis]=rotation.elements[axis];
+  }
 
 
   // base anim with default angles - all anims' joints will be inversely rotated by the joints in this anim. this way, the fullbody mesh doesn't need to have 0 degree angles
@@ -503,6 +510,28 @@ void AnimCollection::Load(boost::filesystem::path directory) {
         animation->SetVariable("type",kind);animation->SetVariable("training_slow_dribble","true");
         animation->SetVariable("training_walk_stretch",int_to_str(stretch));
         animation->SetName(name+"_slow_"+kind+int_to_str(stretch));
+        {
+          const Animation authored=*animation;
+          // Bake overlapping support into the selected slow gait itself.
+          // Preserve the native leg chain through ball contact and return
+          // smoothly to walking in the rest of the control cycle.
+          const float stride=clamp(v.Get2D().GetLength()*.50f,.20f,.60f);
+          int contact=-1;if(kind=="ballcontrol"&&!extension->GetAnimation().empty())contact=extension->GetAnimation().begin()->first;
+          for(int frame=0;frame<=end;++frame){
+            football_physics::Pose pose;Quaternion q;Vector3 root,unused;
+            authored.GetKeyFrame("player",frame,q,root);
+            for(unsigned bone=0;bone<13;++bone){authored.GetKeyFrame(pes3::nativeBoneNames[bone],frame,q,unused);
+              for(unsigned axis=0;axis<4;++axis)pose[bone][axis]=q.elements[axis];}
+            const auto native=pose;
+            // Player track Z is an offset from the model's bind pelvis.
+            football_walk::pose(walkingBind,pose,{{root.coords[0],root.coords[1],root.coords[2]+walkingBind.offsets[0][2]}},float(frame)/end,stride);
+            const float fade=clamp((std::fabs(float(frame-contact))-4.f)/18.f,0.f,1.f);
+            const float preserve=contact<0?0.f:1-fade*fade*(3-2*fade);
+            for(unsigned bone=7;bone<13;++bone)pose[bone]=football_physics::blended(pose[bone],native[bone],preserve);
+            for(unsigned bone=7;bone<13;++bone)animation->SetKeyFrame(pes3::nativeBoneNames[bone],frame,Quaternion(pose[bone][0],pose[bone][1],pose[bone][2],pose[bone][3]),Vector3(0));
+          }
+          animation->SetVariable("training_walk_support","overlap");animation->DirtyCache();
+        }
         _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
       }
     }

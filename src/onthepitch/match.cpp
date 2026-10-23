@@ -348,6 +348,10 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   messageCaption = new Gui2Caption(menuTask->GetWindowManager(), "game_messages", 0, 0, 80, TrainingEnabled() ? 3.2f : 8.0f, "");
   messageCaption->SetTransparency(0.3f);
   root->AddView(messageCaption);
+  if(TrainingEnabled()){
+    staminaCaption=new Gui2Caption(menuTask->GetWindowManager(),"sprint_energy",3,88,45,2.4f,"");
+    staminaCaption->SetTransparency(.22f);root->AddView(staminaCaption);
+  }
   messageCaptionRemoveTime_ms = actualTime_ms + 5000;
 
   // for usage in destructor
@@ -459,6 +463,7 @@ void Match::Exit() {
   fullbodyNode.reset();
 
   messageCaption->Hide();
+  if(staminaCaption)staminaCaption->Hide();
 
   // remove, don't delete, because main.cpp is owner
   GetDynamicNode()->RemoveObject(GetGreenDebugPilon());
@@ -1191,6 +1196,7 @@ bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& re
 }
 
 void Match::PreparePutBuffers() {
+  if(trainingPlayer)buf_stamina=int(std::round(trainingPlayer->GetSprintEnergy()*100.f));
   buf_messageText=messageText;buf_messageSerial=messageSerial;
   buf_messageRemoveTime=messageCaptionRemoveTime_ms;
   for(int side=0;side<2;++side)buf_goalCount[side]=matchData->GetGoalCount(side);
@@ -1248,6 +1254,7 @@ void Match::FetchPutBuffers() {
   fetchedbuf_matchTime_ms = buf_matchTime_ms;
   fetchedbuf_actualTime_ms = buf_actualTime_ms;
   fetchedbuf_messageText=buf_messageText;fetchedbuf_messageSerial=buf_messageSerial;
+  fetchedbuf_stamina=buf_stamina;
   fetchedbuf_messageRemoveTime=buf_messageRemoveTime;
   for(int side=0;side<2;++side)fetchedbuf_goalCount[side]=buf_goalCount[side];
   if (pes3Preview) pes3Preview->fetch();
@@ -1268,6 +1275,12 @@ void Match::FetchPutBuffers() {
 }
 
 void Match::Put() {
+  if(staminaCaption&&renderedStamina!=fetchedbuf_stamina){
+    const int filled=std::max(0,std::min(20,(fetchedbuf_stamina+4)/5));
+    staminaCaption->SetCaption("FOLEGO ["+std::string(filled,'|')+std::string(20-filled,'.')+"] "+int_to_str(fetchedbuf_stamina)+"%");
+    staminaCaption->SetPosition(3,88);
+    staminaCaption->Show();renderedStamina=fetchedbuf_stamina;
+  }
   // SDL_ttf/FreeType font faces are shared with the clock captions. Redrawing
   // messages or goals on the simulation thread races those graphics calls.
   if(renderedMessageSerial!=fetchedbuf_messageSerial){

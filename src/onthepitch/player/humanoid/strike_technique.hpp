@@ -4,7 +4,7 @@
 #include <string>
 namespace football_strike {
 enum class Technique { Instep, Inside, Outside, Toe, Knuckle };
-inline float shortPassSpeed(unsigned charge){return 3.2f+19.f*std::pow(std::min(650u,charge)/650.f,1.3f);}
+inline float shortPassSpeed(unsigned charge){return 5.0f+17.2f*std::pow(std::min(650u,charge)/650.f,1.18f);}
 inline const char *name(Technique t){return t==Technique::Inside?"inside":t==Technique::Outside?"outside":t==Technique::Toe?"toe":t==Technique::Knuckle?"knuckle":"instep";}
 // Body-local lateral ball position and requested opening. A preferred foot
 // may reach across the body, but the native feasibility solver still owns it.

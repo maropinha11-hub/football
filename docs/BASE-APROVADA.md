@@ -61,10 +61,35 @@ tornozelo, tronco e ombros; preservam raiz, quadril, joelhos e tempo de contato.
 O seletor mantém as ações originais como alternativas e só confirma o toque
 quando a superfície da chuteira alcança a bola. As variantes não são capturas.
 
-O analógico leve permite caminhar com a bola; a velocidade com o analógico
-todo puxado e a corrida com RB foram mantidas. O toque breve no A fica mais
-fraco, com aumento gradual conforme a carga. O som artificial dos passos foi retirado; respiração, ambiente e impacto da bola
+O analógico leve usa uma passada de caminhada entre os toques, com apoio
+sobreposto dos pés e pouca elevação durante o balanço. Essa passada é gerada
+no esqueleto nativo; os clipes que acertam a bola conservam seus contatos.
+A velocidade com o analógico todo puxado e a corrida com RB continuam iguais
+enquanto há fôlego. O toque breve no A ganhou força inicial (aproximadamente
+5–7 m/s), com aumento gradual até cerca de 22 m/s conforme a carga.
+O som artificial dos passos foi retirado; respiração, ambiente e impacto da bola
 continuam ativos.
+
+A barra **FOLEGO** aparece embaixo. RB gasta a reserva de sprint tanto do
+jogador quanto dos 21 atletas da CPU. Quando ela acaba, a velocidade máxima
+cai gradualmente; caminhar ou parar recupera mais rápido do que trotar.
+Não é necessário esperar encher tudo para voltar a correr. Uma pequena faixa
+de recuperação evita alternar corrida e trote a cada quadro ao segurar RB.
+A CPU poupa fôlego em deslocamentos de apoio longe da disputa imediata.
+
+Passes, cruzamentos, finalizações, voleios e cabeceios na física experimental
+derivam a rotação do ponto real da superfície atingida e do impulso aplicado.
+Contatos laterais opostos produzem curvas opostas; bater acima ou abaixo
+muda o efeito vertical. A previsão e o voo usam a mesma integração existente.
+Não é uma simulação aerodinâmica perfeita nem uma reprodução do Euphoria.
+As conduções e mudanças de direção recrutam mais tronco e braços, com as
+mesmas restrições anatômicas e sem alterar o instante do toque.
+
+A CPU também pode disputar de cabeça perto do gol quando não há outra
+finalização já preparada. Um contato corporal real durante a disputa aérea
+carrega mais o equilíbrio; a perda de apoio decide se ocorre queda. Bolas
+alcançáveis numa animação de agarrar podem ficar nas mãos do goleiro; boladas
+mais fortes exigem espalmar. O desvio procura tirar a bola do centro do gol.
 
 Nas bolas paradas, os jogadores fazem deslocamentos curtos para oferecer
 opções antes da cobrança. O goleiro procura a trajetória dos recuos para

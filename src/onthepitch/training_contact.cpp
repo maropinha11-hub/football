@@ -14,7 +14,12 @@ void Match::ApplyPhysicalBodyDuel(Player *first,Player *second){
   Vector3 point,normal;float depth=0;
   if(!a->BodyContestContact(*b,point,normal,depth))return;
   const Vector3 relative=first->GetMovement()-second->GetMovement();
-  const float force=football_physics::bodyPressure(depth,relative.GetDotProduct(normal));
+  const bool aerial=ball->Predict(0).coords[2]>1.15f&&
+    (first->GetCurrentAnim()->anim->GetVariable("touch_bodypart")=="head"||second->GetCurrentAnim()->anim->GetVariable("touch_bodypart")=="head");
+  // A raised/jumping support has less authority to absorb an actual shoulder
+  // collision. Keep reciprocal forces and let the balance solver decide loss
+  // of support; proximity to a cross alone never knocks a player down.
+  const float force=football_physics::bodyPressure(depth,relative.GetDotProduct(normal))*(aerial?1.35f:1.f);
   if(force<1.f)return;
   Vector3 friction=relative-normal*relative.GetDotProduct(normal);
   friction=friction.GetNormalized(0)*std::min(force*.32f,friction.GetLength()*45.f);
@@ -22,6 +27,8 @@ void Match::ApplyPhysicalBodyDuel(Player *first,Player *second){
   a->AddPhysicalTraction(-onSecond);b->AddPhysicalTraction(onSecond);
   a->AddPhysicalImpulse(-onSecond*.01f,point-first->GetPosition()-Vector3(0,0,.96f));
   b->AddPhysicalImpulse(onSecond*.01f,point-second->GetPosition()-Vector3(0,0,.96f));
+  if(aerial&&GetConfiguration()->GetBool("training_telemetry",false)&&actualTime_ms%50==0)
+    printf("PHYSICAL_AERIAL_CONTACT t=%lu actor=%d opponent=%d force=%.5f penetration=%.6f\n",actualTime_ms,first->GetID(),second->GetID(),force,depth);
   if(GetConfiguration()->GetBool("training_telemetry",false)&&actualTime_ms%50==0)
     printf("PHYSICAL_BODY_DUEL t=%lu actor=%d opponent=%d normal_force=%.5f friction=%.5f penetration=%.6f point=[%.4f,%.4f,%.4f] reciprocal=1\n",actualTime_ms,first->GetID(),second->GetID(),force,friction.GetLength(),depth,point.coords[0],point.coords[1],point.coords[2]);
 }

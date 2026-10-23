@@ -585,7 +585,12 @@ void HumanoidBase::ProcessTrainingBodyContact() {
 }
 
 void HumanoidBase::PlanHeelPreparation() {
-  if(!PhysicalRigEnabled() || currentAnim->anim->GetVariable("physical_heel")!="true" ||
+  const bool heel=currentAnim->anim->GetVariable("physical_heel")=="true";
+  const bool kick=currentAnim->functionType==e_FunctionType_ShortPass||currentAnim->functionType==e_FunctionType_LongPass||
+    currentAnim->functionType==e_FunctionType_HighPass||currentAnim->functionType==e_FunctionType_Shot;
+  const bool stationary=kick&&currentAnim->anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos&&
+    match->GetBall()->Predict(0).coords[2]<.22f&&match->GetBall()->GetMovement().GetLength()<2.f;
+  if(!PhysicalRigEnabled() || (!heel&&!stationary) ||
       currentAnim->touchFrame<20 || currentAnim->positions.empty())return;
   const int end=currentAnim->touchFrame;
   const float count=end+1.f;
@@ -619,11 +624,13 @@ void HumanoidBase::PlanHeelPreparation() {
     if(after>=.006f)break;
   }
   // A bounded whole-player support step avoids kicking the ball during
-  // preparation. Both endpoints and the authored heel contact stay fixed;
+  // preparation. Both endpoints and the authored ball contact stay fixed;
   // feet are never warped independently and no collision is suppressed.
   for(int frame=1;frame<end;++frame)currentAnim->positions[frame]+=chosen*envelope(frame);
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_HEEL_CLEARANCE t=%lu before=%.6f after=%.6f offset=%.6f\n",match->GetActualTime_ms(),before,after,chosen.GetLength());
+  if(!heel&&GetConfiguration()->GetBool("training_telemetry",false))
+    printf("TRAINING_KICK_CLEARANCE t=%lu before=%.6f after=%.6f offset=%.6f\n",match->GetActualTime_ms(),before,after,chosen.GetLength());
 }
 
 void HumanoidBase::UpdateTrainingContactPose() {

@@ -63,6 +63,8 @@ def main():
                   for token in [b'F10',b'F11',b'LT/L2',b'L3 nao',b'M:']))
             check('Windows code includes the shirt constraint and rendered recovery support', all(token in exe
                   for token in [b'PHYSICAL_GRIP_FORCE',b'PHYSICAL_CLOTH',b'PHYSICAL_RENDER_SUPPORT',b'PHYSICAL_PASS_TURN',b'PHYSICAL_BALANCE_BANK',b'PHYSICAL_EYE']))
+            check('Windows includes reserve depletion, measured spin and a visible stamina HUD',all(token in exe for token in [b'SPRINT_ENERGY',b'CONTACT_FLIGHT',b'FOLEGO [',b'training_walk_support']))
+            check('both full and update guides explain sprint spending and partial recovery',all(token in full.read(prefix+'LEIA-FISICA.txt')and token in patch.read('LEIA-FISICA.txt')for token in [b'FOLEGO:',b'RB gasta sprint',b'andar/parar recupera']))
             check('Windows includes final rendered arm limits and graded unforced impact tests',all(token in exe
                   for token in [b'PHYSICAL_ARM_RENDER',b'PHYSICAL_ARM_LIMITS',b'PHYSICAL_IMPACT_TEST',b'intended_speed=',b'actual_speed=']))
             check('all three impact levels are documented in the portable game',all(token in full.read(prefix+'LEIA-FISICA.txt')

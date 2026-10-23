@@ -64,6 +64,8 @@ como capturas novas. Veja [como testar e os limites](docs/BASE-APROVADA.md).
 
 Há 56 variantes geradas dos passes, chutes e cruzamentos nativos, sem alterar
 os arquivos originais. Esta revisão também ajusta caminhada pelo analógico,
+barra de fôlego com gasto/recuperação compartilhados pela CPU, rotação da bola
+derivada do contato real, disputas aéreas perto do gol e reações de equilíbrio,
 força do passe curto, recepções da CPU, recuos e mergulhos dos goleiros,
 deslocamentos antes do apito, recuperação após quedas e apoio dos pés. O som
 artificial dos passos foi removido. As recepções amortecem contatos reais,

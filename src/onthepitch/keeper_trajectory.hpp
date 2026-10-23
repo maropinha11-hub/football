@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 namespace football_keeper {
+inline bool catchable(float relativeSpeed,float reactionDifficulty){
+ if(!std::isfinite(relativeSpeed)||!std::isfinite(reactionDifficulty)||relativeSpeed>17.5f||relativeSpeed<0)return false;
+ const float speed=std::min(1.f,relativeSpeed/40.f),reaction=std::max(0.f,std::min(1.f,reactionDifficulty));
+ return (1-.65f*speed)*(1-.30f*reaction)>=.58f;
+}
 // A diving pose is useful when the ball arrives at its reaching plane, not
 // merely because it will eventually cross the goal. Keep lateral reach and
 // height in the animation solver; synchronize its preparation with flight.

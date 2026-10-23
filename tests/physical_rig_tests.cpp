@@ -1,6 +1,7 @@
 // Numerical and behavioral checks for the native articulated-body experiment.
 #include "onthepitch/player/humanoid/physical_rig.hpp"
 #include "onthepitch/player/humanoid/motion_matching.hpp"
+#include "onthepitch/player/humanoid/walking_gait.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -35,6 +36,19 @@ Input sourcePose(const std::string &path){
 }
 int main(int argc,char **argv){
   const auto bind=bindPose();
+  {
+    bool support=true,links=true;float maxLift=0;Pose start{},end{};
+    for(int f=0;f<=200;++f){const float t=f/200.f;
+      const auto a=football_walk::foot(t,.45f,.09f),b=football_walk::foot(t+.5f,.45f,-.09f);
+      support&=std::min(a[2],b[2])<.00001f;maxLift=std::max(maxLift,std::max(a[2],b[2]));
+      auto pose=bind.rotations;football_walk::pose(bind,pose,{{0,0,.92f}},t,.45f);
+      if(f==0)start=pose;if(f==200)end=pose;
+      for(const auto &q:pose){float n=0;for(float x:q)n+=x*x;links&=std::isfinite(n)&&std::fabs(n-1)<.001f;}
+    }
+    float seam=0;for(unsigned b=7;b<13;++b)seam=std::max(seam,length(logarithm(productRotation(start[b],inverseRotation(end[b])))));
+    check(support&&maxLift>.04f&&maxLift<.05f,"walking has overlapping ground support with a low lifted swing rather than a jogging flight phase");
+    check(links&&seam<.001f,"the derived walking leg cycle stays finite and loops continuously on the native skeleton");
+  }
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
   float maximumBoneError=0,peakLean=0,peakCounterbalance=0;
   rig.step(input);const Vec initialLeft=rig.points()[9],initialRight=rig.points()[12];

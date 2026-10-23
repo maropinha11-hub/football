@@ -359,7 +359,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
     context.pattern=profile.pattern;
     physicalSituationProfile=profile.id;context.trunkGain=profile.trunkGain;context.armGain=profile.armGain;context.followThroughGain=profile.followThroughGain;
     if(context.kind==ActionKind::Pass){context.trunkGain=std::max(context.trunkGain,1.15f);context.armGain=std::max(context.armGain,1.12f);}
-    if(context.kind==ActionKind::Control&&turn<.18f&&context.pressure<.4f){context.trunkGain*=.45f;context.armGain*=.45f;}
+    if(context.kind==ActionKind::Control&&turn<.18f&&context.pressure<.4f){context.trunkGain*=.80f;context.armGain*=.78f;}
   }
 }
 

@@ -32,7 +32,7 @@ try:
     hits=[x for x in ev(g,'TRAINING_ACTION_TOUCH',start)if x['function']=='4'];power=ev(g,'HUMAN_PASS_POWER',start)
     check(str(hold)+' ms pass makes a real, charge-dependent contact',len(hits)==1 and len(power)==1,dict(hits=hits,power=power))
     powers.append(float(power[0]['speed'])if power else 0)
-   check('brief A stays gentle and longer presses progressively strengthen it',0<powers[0]<6 and powers[-1]>19 and all(b>a for a,b in zip(powers,powers[1:])),powers)
+   check('brief A is useful nearby and longer presses progressively strengthen it',5<powers[0]<7 and powers[-1]>19 and all(b>a for a,b in zip(powers,powers[1:])),powers)
    support=ev(g,'PHYSICAL_SUPPORT_COMPLIANCE')
    check('releases visibly recruit the pelvis and knees with bounded planted-foot error',bool(support)and max(float(x['knee'])for x in support)>.002 and all(float(x['foot_error'])<.005 and float(x['sink'])<=.0221 and float(x['tilt'])<=.0451 for x in support),dict(samples=len(support),peak_knee=max([float(x['knee'])for x in support]or[0]),peak_foot_error=max([float(x['foot_error'])for x in support]or[0])))
    g.reset();start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(1700);g.pad(0,0)

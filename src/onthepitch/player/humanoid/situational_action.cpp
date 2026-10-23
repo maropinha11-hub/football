@@ -95,7 +95,7 @@ void ActionLayer::step(const Context &c,float dt) {
   float type=1;
   if(c.kind==ActionKind::Shot)type=1.18f;
   if(c.kind==ActionKind::Cross)type=1.10f;
-  if(c.kind==ActionKind::Control)type=.72f;
+  if(c.kind==ActionKind::Control)type=.90f;
   std::array<Point,7> target{};
   const float effort=load*type*envelope;
   const float trunk=effort*clamp(c.trunkGain,0,1.25f);

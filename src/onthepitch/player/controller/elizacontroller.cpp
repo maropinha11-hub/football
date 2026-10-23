@@ -541,6 +541,14 @@ float ElizaController::GetLazyVelocity(float desiredVelocityFloat) {
   breathLeftFactor = clamp(breathLeftFactor * 1.2f, 0.0f, 1.0f); // make sure beginning of sprint is full speed
   breathLeftFactor = breathLeftFactor * lazyFactor + 1.0f * (1.0f - lazyFactor); // sometimes, we really need to force it
   resultingVelocityFloat = std::min(resultingVelocityFloat, sprintVelocity * breathLeftFactor);
+  if(PlayerMatchEnabled()){
+    // Recover away from the immediate contest instead of sprinting every
+    // support run. The current carrier still uses native tactical choices.
+    const bool possession=team->HasPossession();
+    const bool urgent=CastPlayer()->GetTimeNeededToGetToBall_ms()<700||actionDistance<8.f;
+    if(!urgent&&player->GetSprintEnergy()<.55f)resultingVelocityFloat=std::min(resultingVelocityFloat,possession?3.4f:4.1f);
+    resultingVelocityFloat=std::min(resultingVelocityFloat,player->GetMaxVelocity());
+  }
 
   return resultingVelocityFloat;
 }
@@ -1289,14 +1297,15 @@ void ElizaController::_QueueAerialDuel(PlayerCommandQueue &queue){
   if(std::any_of(queue.begin(),queue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_ShortPass||c.desiredFunctionType==e_FunctionType_LongPass||c.desiredFunctionType==e_FunctionType_HighPass||c.desiredFunctionType==e_FunctionType_Shot;}))return;
   if(match->GetLastTouchPlayer()==player&&CastPlayer()->GetLastTouchType()!=e_TouchType_Accidental)return;
   const Vector3 position=player->GetPosition(),goal(-team->GetSide()*pitchHalfW,0,0);
-  if((goal-position).Get2D().GetLength()<18.f)return; // preserve native finishing choices
+  // Native finishing commands above keep priority; a defender or receiver
+  // inside the box must still be allowed to compete for a high ball.
   std::vector<PlayerImage> opponents;_mentalImage->GetTeamPlayerImages(1-team->GetID(),-1,opponents);
   float pressure=100;for(const auto &opponent:opponents)pressure=std::min(pressure,(opponent.position-position).Get2D().GetLength());
-  if(pressure>1.65f)return;
+  if(pressure>2.1f)return;
   float arrival=0,height=0,best=100;
-  for(unsigned ms=80;ms<=650;ms+=20){const Vector3 ball=match->GetBall()->Predict(ms);
+  for(unsigned ms=80;ms<=800;ms+=20){const Vector3 ball=match->GetBall()->Predict(ms);
     const float gap=(ball-position-player->GetMovement()*(ms*.001f)).Get2D().GetLength();
-    if(ball.coords[2]<1.25f||ball.coords[2]>2.45f||gap>.90f)continue;
+    if(ball.coords[2]<1.25f||ball.coords[2]>2.65f||gap>1.05f)continue;
     const float score=gap+.18f*std::fabs(ball.coords[2]-1.75f)+ms*.0001f;
     if(score<best){best=score;arrival=ms*.001f;height=ball.coords[2];}
   }

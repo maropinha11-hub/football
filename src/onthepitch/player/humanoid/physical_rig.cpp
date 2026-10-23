@@ -123,8 +123,8 @@ void PhysicalRig::step(const Input &input,float dt){
     // The approved root trajectory, lower-body pose and cadence are untouched.
     Vec wanted{{0,0,0}};
     if(!input.action&&!input.upperReception&&!input.staggering){
-      const float cut=length(input.velocity)>3.f?bounded((std::fabs(filteredTurn)-1.4f)/3.f,0,1):0;
-      wanted=addPoint(scalePoint(crossPoint({{0,0,1}},filteredAcceleration),cut*.014f),scalePoint(balance->lean(),.45f));
+      const float cut=length(input.velocity)>1.5f?bounded((std::fabs(filteredTurn)-.8f)/3.f,0,1):0;
+      wanted=addPoint(scalePoint(crossPoint({{0,0,1}},filteredAcceleration),cut*.022f),scalePoint(balance->lean(),.60f));
       wanted=capped(wanted,.16f);
     }
     const Vec response=capped(subtractPoint(scalePoint(subtractPoint(wanted,counterTilt),144.f),scalePoint(counterTiltVelocity,24.f)),12.f);
@@ -235,7 +235,7 @@ void PhysicalRig::evaluate(const Input &input){
   }
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
-  leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.14f),sway),balance->lean()),counterTilt),.38f);
+  leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.24f),sway),balance->lean()),counterTilt),.38f);
   const float actionBias=input.upperReception || input.situation.kind==football_situations::ActionKind::Header?0.f:input.action?.35f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
   // Retain the solved support chain. Reinitializing from input.pose here

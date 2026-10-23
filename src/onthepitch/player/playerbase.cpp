@@ -79,6 +79,13 @@ IController *PlayerBase::GetController() {
 void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (externalController) externalController->RequestCommand(commandQueue);
                      else controller->RequestCommand(commandQueue);
+  if(TrainingEnabled()){
+    sprintRequested=false;
+    for(auto &command:commandQueue)if(command.useDesiredMovement){
+      sprintRequested|=command.desiredVelocityFloat>4.5f;
+      command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,GetMaxVelocity());
+    }
+  }
   auto *referee=match->GetReferee();
   if(referee->WaitingForRestart()){
     // Authorization blocks a ball action, not the other twenty-one players.
@@ -149,7 +156,8 @@ float PlayerBase::GetStat(const char *name) const {
 
 float PlayerBase::GetMaxVelocity() const {
   // see humanoidbase's physics function
-  return sprintVelocity * GetVelocityMultiplier();
+  const float maximum=sprintVelocity * GetVelocityMultiplier();
+  return TrainingEnabled()?sprintEnergy.speedLimit(maximum):maximum;
 }
 
 float PlayerBase::GetVelocityMultiplier() const {

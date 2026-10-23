@@ -351,6 +351,8 @@ class Match {
     Gui2Radar *radar;
     Gui2TacticsDebug *tacticsDebug;
     Gui2Caption *messageCaption;
+    Gui2Caption *staminaCaption=nullptr;
+    int buf_stamina=100,fetchedbuf_stamina=100,renderedStamina=-1;
     unsigned long messageCaptionRemoveTime_ms;
     // Text rendering owns shared font state. Simulation publishes plain data;
     // only the graphics phase may redraw captions, including after a restart.

@@ -31,6 +31,7 @@
 
 #include "../../../main.hpp"
 #include "strike_technique.hpp"
+#include "contact_flight.hpp"
 
 #include "../../AIsupport/AIfunctions.hpp"
 
@@ -686,11 +687,14 @@ void Humanoid::Process() {
         radian xRot = touchVec.GetNormalized(0).coords[1] * (clamp(touchVec.GetLength(), 0.0, 15.0) * forwardness);
         radian yRot = touchVec.GetNormalized(0).coords[0] * (clamp(touchVec.GetLength(), 0.0, 15.0) * forwardness);
         match->GetBall()->SetRotation(xRot, yRot, zcurve, 0.9f * (1.0f - bumpyRideBias));
-        if(PhysicalRigEnabled()&&!currentAnim->anim->GetVariable("physical_technique").empty()){
+        if(PhysicalRigEnabled()){
           Vector3 surface;ContactSurface(match->GetBall()->Predict(0),currentAnim->anim->GetVariable("touch_bodypart"),contactGlobal,contactPositions,&surface);
           const Vector3 lever=surface-match->GetBall()->Predict(0);
-          const Vector3 spin=lever.GetCrossProduct(touchVec-currentBallVec)*9.f;
-          match->GetBall()->SetAngularVelocity(Vector3(spin.coords[0],spin.coords[1],clamp(spin.coords[2],-7.f,7.f)));
+          const Vector3 delta=touchVec-currentBallVec;
+          const bool head=currentAnim->anim->GetVariable("touch_bodypart")=="head";
+          const auto spin=football_flight::contactSpin({{lever.coords[0],lever.coords[1],lever.coords[2]}},{{delta.coords[0],delta.coords[1],delta.coords[2]}},head);
+          match->GetBall()->SetAngularVelocity(Vector3(spin[0],spin[1],spin[2]));
+          if(GetConfiguration()->GetBool("training_telemetry",false))printf("CONTACT_FLIGHT t=%lu actor=%d function=%d part=%s speed=%.5f spin=[%.5f,%.5f,%.5f] lever=[%.5f,%.5f,%.5f]\n",match->GetActualTime_ms(),player->GetID(),int(currentAnim->functionType),currentAnim->anim->GetVariable("touch_bodypart").c_str(),touchVec.GetLength(),spin[0],spin[1],spin[2],lever.coords[0],lever.coords[1],lever.coords[2]);
         }
 
         team->SetLastTouchPlayer(CastPlayer(), GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
@@ -748,13 +752,10 @@ void Humanoid::Process() {
           Vector3 surface;Ball *ball=match->GetBall();
           ContactSurface(ball->Predict(0),currentAnim->anim->GetVariable("touch_bodypart"),contactGlobal,contactPositions,&surface);
           const Vector3 lever=surface-ball->Predict(0);
-          spin=lever.GetCrossProduct(touchVec-currentBallVec)*8.0f;
-          const Vector3 side=Vector3(0,0,1).GetCrossProduct(direction);
-          const float transverse=chip?-4.0f:clamp(spin.GetDotProduct(side),-6.0f,6.0f);
-          spin=side*transverse+Vector3(0,0,clamp(spin.coords[2],-18.0f,18.0f));
-          const auto technique=currentAnim->anim->GetVariable("physical_technique");
-          if(technique=="toe")spin*=.65f;
-          lowSpin=!chip && charge>.65f && spin.GetLength()<(technique=="knuckle"?4.f:3.f);
+          const Vector3 delta=touchVec-currentBallVec;
+          const auto contactSpin=football_flight::contactSpin({{lever.coords[0],lever.coords[1],lever.coords[2]}},{{delta.coords[0],delta.coords[1],delta.coords[2]}});
+          spin=Vector3(contactSpin[0],contactSpin[1],contactSpin[2]);
+          lowSpin=!chip&&football_flight::knuckle(contactSpin,touchVec.GetLength());
           physicalShot=true;
           if(GetConfiguration()->GetBool("training_telemetry",false))
             printf("TRAINING_SHOT t=%lu charge=%.5f chip=%d speed=%.5f elevation=%.5f spin=[%.5f,%.5f,%.5f] lever=[%.5f,%.5f,%.5f] low_spin=%d\n",
@@ -764,6 +765,16 @@ void Humanoid::Process() {
 
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (shot): %f\n", bumpyRideBias);
+        if(PhysicalRigEnabled()){
+          Vector3 surface;const Vector3 centre=match->GetBall()->Predict(0);
+          const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
+          ContactSurface(centre,part,contactGlobal,contactPositions,&surface);
+          const Vector3 lever=surface-centre,delta=touchVec-currentBallVec;
+          const auto result=football_flight::contactSpin({{lever.coords[0],lever.coords[1],lever.coords[2]}},{{delta.coords[0],delta.coords[1],delta.coords[2]}},part=="head");
+          spin=Vector3(result[0],result[1],result[2]);physicalShot=true;
+          lowSpin=part.find("foot")!=std::string::npos&&!(currentAnim->originatingCommand.modifier&e_PlayerCommandModifier_Chip)&&football_flight::knuckle(result,touchVec.GetLength());
+          if(GetConfiguration()->GetBool("training_telemetry",false))printf("CONTACT_FLIGHT t=%lu actor=%d function=%d part=%s speed=%.5f spin=[%.5f,%.5f,%.5f] lever=[%.5f,%.5f,%.5f]\n",match->GetActualTime_ms(),player->GetID(),int(currentAnim->functionType),part.c_str(),touchVec.GetLength(),result[0],result[1],result[2],lever.coords[0],lever.coords[1],lever.coords[2]);
+        }
 
         if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))
           printf("TRAINING_ACTION_AIM t=%lu function=%d part=%s requested=[%.6f,%.6f] actual=[%.6f,%.6f]\n",match->GetActualTime_ms(),int(currentAnim->functionType),currentAnim->anim->GetVariable("touch_bodypart").c_str(),ballDirection.coords[0],ballDirection.coords[1],touchVec.coords[0],touchVec.coords[1]);
@@ -807,7 +818,8 @@ void Humanoid::Process() {
                            1200 - player->GetStat("physical_reaction") * 400),
                        0.6f);
         }
-        if ((1.0f - veloDifficulty) * (1.0f - reactionDifficulty) < 0.3f) canRetain = false; // too hard!
+        if(PhysicalRigEnabled())canRetain=canRetain&&football_keeper::catchable((match->GetBall()->GetMovement()-player->GetMovement()).GetLength(),reactionDifficulty);
+        else if ((1.0f - veloDifficulty) * (1.0f - reactionDifficulty) < 0.3f) canRetain = false;
         if (Verbose()) printf("deflect: velodiff: %f, reactiondiff: %f, total diff inv: %f\n", veloDifficulty, reactionDifficulty, (1.0f - veloDifficulty) * (1.0f - reactionDifficulty));
 
         if (canRetain) {
@@ -815,7 +827,10 @@ void Humanoid::Process() {
         } else {
           Vector3 currentBallMovement = match->GetBall()->GetMovement().Get2D();
           Vector3 playerMovement = spatialState.movement;
-          Vector3 touchVec = (-currentBallMovement * 0.1f + playerMovement * 2.0f + Vector3(-team->GetSide(), 0, 0) * 4.0f + Vector3(0, random(-1, 1), 0)).GetNormalized(0) * (currentBallMovement.GetLength() * 0.3f + playerMovement.GetLength() * 2.5f);
+          // Parry away from the central goal mouth. The actual hand contact
+          // supplies the side, rather than an independent random direction.
+          const float side=match->GetBall()->Predict(0).coords[1]>=spatialState.position.coords[1]?1.f:-1.f;
+          Vector3 touchVec = (-currentBallMovement * 0.1f + playerMovement * 1.2f + Vector3(-team->GetSide(),side*1.4f,0)*4.f).GetNormalized(0) * (currentBallMovement.GetLength() * 0.3f + playerMovement.GetLength() * 2.5f);
           touchVec.coords[2] += 1.2f;
 
           touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
@@ -824,6 +839,7 @@ void Humanoid::Process() {
           match->GetBall()->Touch(touchVec);
           match->GetBall()->SetRotation(0, 0, 0, 0.2f * (1.0f - bumpyRideBias));
         }
+        if(PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_telemetry",false))printf("KEEPER_HAND_CONTACT t=%lu actor=%d catch=%d speed=%.5f part=%s\n",match->GetActualTime_ms(),player->GetID(),canRetain?1:0,currentBallVec.GetLength(),currentAnim->anim->GetVariable("touch_bodypart").c_str());
         team->SetLastTouchPlayer(CastPlayer(), e_TouchType_Accidental);
       }
 
@@ -1618,7 +1634,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     const bool locomotion=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
       match->TrainingHasBall() && !match->TrainingReceivingBall();
     preferSlowGait=locomotion && strength>.01f && strength<=.72f;
-    preferredWalkStretch=strength<.25f?6:(strength<.40f?4:(strength<.55f?3:2));
+    preferredWalkStretch=strength<.28f?6:(strength<.48f?4:(strength<.65f?3:2));
     if(preferSlowGait&&command.desiredFunctionType==e_FunctionType_Movement&&GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0){
       unsigned slow=0;for(int id:dataSet)slow+=anims->GetAnim(id)->GetVariable("training_slow_dribble")=="true";
       printf("TRAINING_WALK_SELECT t=%lu stage=crude candidates=%zu slow=%u stretch=%d strength=%.5f desired=%.5f direction=[%.4f,%.4f] look=[%.4f,%.4f] velocity=%d\n",match->GetActualTime_ms(),dataSet.size(),slow,preferredWalkStretch,strength,command.desiredVelocityFloat,command.desiredDirection.coords[0],command.desiredDirection.coords[1],command.desiredLookAt.coords[0]-spatialState.position.coords[0],command.desiredLookAt.coords[1]-spatialState.position.coords[1],int(spatialState.enumVelocity));
@@ -2200,11 +2216,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
         currentAnim->anim->GetVariable("training_dribble")=="true"?1:0,currentAnim->anim->GetVariable("added_chest")=="true"?1:0,
         currentAnim->anim->GetVariable("reception_mode").c_str(),int(command.desiredFunctionType));
     if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false) && touchFrame_tmp>=0)
-      printf("TRAINING_NATIVE_START t=%lu function=%d contact_frame=%d added_chest=%d name=%s frames=%d mode=%s previous_frame=%d previous_frames=%d heel=%d\n",
+      printf("TRAINING_NATIVE_START t=%lu function=%d contact_frame=%d added_chest=%d name=%s frames=%d mode=%s previous_frame=%d previous_frames=%d heel=%d walk_support=%s\n",
         match->GetActualTime_ms(),int(command.desiredFunctionType),touchFrame_tmp,
         currentAnim->anim->GetVariable("added_chest")=="true"?1:0,currentAnim->anim->GetName().c_str(),
         currentAnim->anim->GetFrameCount(),currentAnim->anim->GetVariable("reception_mode").c_str(),
-        previousAnim->frameNum,previousAnim->anim->GetFrameCount(),currentAnim->anim->GetVariable("physical_heel")=="true"?1:0);
+        previousAnim->frameNum,previousAnim->anim->GetFrameCount(),currentAnim->anim->GetVariable("physical_heel")=="true"?1:0,currentAnim->anim->GetVariable("training_walk_support").c_str());
     currentAnim->originatingInterrupt = localInterruptAnim;
     currentAnim->radiusOffset = radiusOffset_tmp;
     currentAnim->touchPos = touchPos_tmp;
