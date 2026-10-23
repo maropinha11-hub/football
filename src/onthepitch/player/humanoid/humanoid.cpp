@@ -31,6 +31,7 @@
 
 #include "../../../main.hpp"
 #include "strike_technique.hpp"
+#include "../analog_locomotion.hpp"
 #include "contact_flight.hpp"
 
 #include "../../AIsupport/AIfunctions.hpp"
@@ -1632,9 +1633,11 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     auto *human=static_cast<HumanController*>(player->GetExternalController());
     const float strength=human->GetHIDevice()->GetDirection().GetLength();
     const bool locomotion=human->GetActionMode()==0 && !human->GetHIDevice()->GetButton(e_ButtonFunction_Sprint) &&
-      match->TrainingHasBall() && !match->TrainingReceivingBall();
-    preferSlowGait=locomotion && strength>.01f && strength<=.72f;
-    preferredWalkStretch=strength<.28f?6:(strength<.48f?4:(strength<.65f?3:2));
+      !match->TrainingReceivingBall();
+    preferSlowGait=locomotion && strength>.01f && strength<=football_input::walkingStickLimit;
+    // Keep a normal walking cadence even at light input. A sixfold cycle
+    // outlasts the slow ball's roll, making the approach assist backtrack.
+    preferredWalkStretch=4;
     if(preferSlowGait&&command.desiredFunctionType==e_FunctionType_Movement&&GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0){
       unsigned slow=0;for(int id:dataSet)slow+=anims->GetAnim(id)->GetVariable("training_slow_dribble")=="true";
       printf("TRAINING_WALK_SELECT t=%lu stage=crude candidates=%zu slow=%u stretch=%d strength=%.5f desired=%.5f direction=[%.4f,%.4f] look=[%.4f,%.4f] velocity=%d\n",match->GetActualTime_ms(),dataSet.size(),slow,preferredWalkStretch,strength,command.desiredVelocityFloat,command.desiredDirection.coords[0],command.desiredDirection.coords[1],command.desiredLookAt.coords[0]-spatialState.position.coords[0],command.desiredLookAt.coords[1]-spatialState.position.coords[1],int(spatialState.enumVelocity));

@@ -35,7 +35,10 @@ try:
   partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT with the ball shields the body',any(x['trigger']=='1'and x['with_ball']=='1'and x['shield']=='1'for x in partner),partner[-8:])
   check('LT with the ball does not attach a shirt hold',not any(x['state']=='begin'for x in events(g,'PHYSICAL_GRIP',start)),events(g,'PHYSICAL_GRIP',start))
-  g.pad(0,0);g.advance(500);key(g,'F11');start=len(g.read_log())
+  # Start the independent off-ball grip fixture from a settled native pose.
+  # Otherwise the preceding shield/contact trial leaves a pose-dependent
+  # shoulder/partner arrangement, which can be outside real shirt reach.
+  g.reset();key(g,'F11');start=len(g.read_log())
   g.pad(0,0,left_trigger=1);g.advance(2000);capture(g,'lt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start);partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT without the ball reaches then grips actual shirt surface',any(x['state']=='begin'and float(x['hand_gap'])<.10 for x in grips)and any(x['with_ball']=='0'and x['reaching']=='1'for x in partner),grips)

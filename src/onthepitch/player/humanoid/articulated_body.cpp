@@ -1,4 +1,5 @@
 #include "articulated_body.hpp"
+#include "learned_muscle_policy.hpp"
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #include <vector>
@@ -31,6 +32,9 @@ struct ArticulatedBody::World {
   std::vector<std::unique_ptr<btGeneric6DofSpring2Constraint>> joints;
   std::array<btVector3,13> centers;
   Pose muscleTarget{};
+  Pose previousReference{};
+  std::array<Vec,13> previousReferenceVelocity{};
+  bool referenceReady=false;
   float age=0;
   bool tracking=false;
   World(){
@@ -123,12 +127,20 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
 void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics){
   if(!state || !state->tracking)start(bind,scale,target,pelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},true);
   auto &s=*state;std::array<btTransform,13> desired,previous;
+  std::array<Vec,13> referenceVelocity{},referenceAcceleration{};
   for(unsigned i=0;i<13;++i){int parent=pes3::nativeParents[i];
     desired[i]=parent<0?btTransform(bq(target[i]),bv(pelvis)):
       desired[parent]*btTransform(bq(target[i]),bv(scalePoint(bind.offsets[i],scale)));
     auto &body=*s.bodies[i+1];
     previous[i]=body.getWorldTransform();
+    const Quat reference=quat(desired[i].getRotation());
+    if(s.referenceReady){
+      referenceVelocity[i]=capped(scalePoint(logarithm(productRotation(reference,inverseRotation(s.previousReference[i]))),1/dt),8.f);
+      referenceAcceleration[i]=capped(scalePoint(subtractPoint(referenceVelocity[i],s.previousReferenceVelocity[i]),1/dt),45.f);
+    }
+    s.previousReference[i]=reference;s.previousReferenceVelocity[i]=referenceVelocity[i];
   }
+  s.referenceReady=true;
   if(length(impulse)>0)s.bodies[2]->applyImpulse(bv(scalePoint(impulse,.35f)),btVector3(0,0,.12f));
   for(unsigned sub=0;sub<2;++sub){
     for(unsigned i=0;i<13;++i)if(i==0 || i>=7){
@@ -143,7 +155,12 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
     }
     for(unsigned i=1;i<=6;++i){auto &body=*s.bodies[i+1];
       const Vec error=logarithm(quat(desired[i].getRotation()*body.getWorldTransform().getRotation().inverse()));
-      const Vec acceleration=capped(subtractPoint(scalePoint(error,625.f),scalePoint(vec(body.getAngularVelocity()),50.f)),140.f);
+      const Vec relative=subtractPoint(referenceVelocity[i],vec(body.getAngularVelocity()));
+      Vec wanted;
+      for(unsigned axis=0;axis<3;++axis)wanted[axis]=football_muscle::acceleration(error[axis],relative[axis])+referenceAcceleration[i][axis];
+      const Vec acceleration=capped(wanted,140.f);
+      metrics.motorError=std::max(metrics.motorError,length(error));
+      metrics.motorAcceleration=std::max(metrics.motorAcceleration,length(acceleration));++metrics.neuralMotorSamples;
       const btVector3 torque=body.getInvInertiaTensorWorld().inverse()*bv(acceleration);
       body.applyTorque(bv(capped(vec(torque),i==1?90.f:12.f)));body.activate();
     }
@@ -182,7 +199,13 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
       const Vec relative=vec(child.getAngularVelocity()-base.getAngularVelocity());
       const float stiffness=i<=2?30.f:i>=7?22.f:12.f;
       const float limit=(i<=2?32.f:i>=7?26.f:9.f)*tone;
-      const Vec torque=capped(subtractPoint(scalePoint(error,stiffness*tone),scalePoint(relative,2.f*std::sqrt(tone))),limit);
+      Vec muscle=subtractPoint(scalePoint(error,stiffness*tone),scalePoint(relative,2.f*std::sqrt(tone)));
+      if(i<=6){
+        Vec acceleration;for(unsigned axis=0;axis<3;++axis)acceleration[axis]=football_muscle::acceleration(error[axis],-relative[axis]);
+        muscle=scalePoint(vec(child.getInvInertiaTensorWorld().inverse()*bv(acceleration)),tone);
+        metrics.motorError=std::max(metrics.motorError,length(error));++metrics.neuralMotorSamples;
+      }
+      const Vec torque=capped(muscle,limit);
       child.applyTorque(bv(torque));base.applyTorque(-bv(torque));
       child.activate();base.activate();metrics.muscleEffort+=length(torque)*dt;
     }

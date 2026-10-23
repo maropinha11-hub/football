@@ -30,7 +30,10 @@ try:
    start=len(g.read_log());g.advance(4500);recovery=[x for x in ev(g,'SPRINT_ENERGY',start)if x['human']=='1']
    check('standing recovers usable reserve without a full refill',bool(recovery)and float(recovery[-1]['energy'])>float(recovery[0]['energy'])+.20 and float(recovery[-1]['energy'])<1,dict(first=recovery[:2],last=recovery[-2:]))
    g.pad(0,-1,sprint=True);g.advance(1500);g.pad(0,0);resumed=[x for x in ev(g,'SPRINT_ENERGY',start)if x['human']=='1'and x['requested']=='1']
-   check('a partially recovered reserve funds another sprint',bool(resumed)and min(float(x['energy'])for x in resumed)<float(recovery[-1]['energy']),resumed[-4:])
+   # Acceleration from rest can recover reserve before sprint speed is
+   # reached; 500 ms energy telemetry can also straddle the button event.
+   # Observe actual spending between two moving RB samples instead.
+   check('a partially recovered reserve funds another sprint',len(resumed)>=2 and float(resumed[-1]['energy'])<float(resumed[0]['energy'])-.01 and max(float(x['speed'])for x in resumed)>4.5 and max(float(x['limit'])for x in resumed)>4.36 and max(float(x['energy'])for x in resumed)<.8,resumed[-4:])
    for label,button,hold in [('pass',1,160),('cross',2,380),('shot',4,560)]:
     g.reset();start=len(g.read_log());g.pad(0,0,buttons=button);g.advance(hold);g.pad(0,0);g.advance(2600)
     flights=ev(g,'CONTACT_FLIGHT',start);touches=ev(g,'TRAINING_ACTION_TOUCH',start)

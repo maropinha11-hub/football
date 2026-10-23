@@ -19,7 +19,7 @@ void Match::ApplyPhysicalBodyDuel(Player *first,Player *second){
   // A raised/jumping support has less authority to absorb an actual shoulder
   // collision. Keep reciprocal forces and let the balance solver decide loss
   // of support; proximity to a cross alone never knocks a player down.
-  const float force=football_physics::bodyPressure(depth,relative.GetDotProduct(normal))*(aerial?1.35f:1.f);
+  const float force=football_physics::bodyPressure(depth,relative.GetDotProduct(normal))*(aerial?1.35f:1.f)*(first->GetTeamID()==second->GetTeamID()?.50f:1.f);
   if(force<1.f)return;
   Vector3 friction=relative-normal*relative.GetDotProduct(normal);
   friction=friction.GetNormalized(0)*std::min(force*.32f,friction.GetLength()*45.f);
@@ -184,11 +184,9 @@ void Match::ProcessPlayerMatchContact(){
     if(actualTime_ms%100==0 || (laboratory && actualTime_ms%20==0))printf("PHYSICAL_AI_GRIP_FORCE t=%lu actor=%d victim=%d force=%.4f age=%.4f gap=%.5f\n",actualTime_ms,actor->GetID(),victim->GetID(),force.GetLength(),age,hand);
   }
   for(unsigned i=0;i<actors.size();++i)for(unsigned j=i+1;j<actors.size();++j){
-    if(actors[i]->GetTeamID()==actors[j]->GetTeamID()||
-       actors[i]->GetFormationEntry().role==e_PlayerRole_GK||actors[j]->GetFormationEntry().role==e_PlayerRole_GK||
+    if(actors[i]->GetFormationEntry().role==e_PlayerRole_GK||actors[j]->GetFormationEntry().role==e_PlayerRole_GK||
        (occupied.count(actors[i]->GetID())&&occupied.count(actors[j]->GetID())))continue;
-    const Vector3 midpoint=(actors[i]->GetPosition()+actors[j]->GetPosition())*.5f;
-    if((ball->Predict(250)-midpoint).Get2D().GetLength()<3.f)ApplyPhysicalBodyDuel(actors[i],actors[j]);
+    ApplyPhysicalBodyDuel(actors[i],actors[j]);
   }
   if(actualTime_ms%100==0 && GetConfiguration()->GetBool("training_telemetry",false))
     printf("PHYSICAL_MATCH_CONTACT t=%lu opponent=%d distance=%.4f shield=%d reaching=%d grip=%d hand_gap=%.5f\n",actualTime_ms,opponent->GetID(),distance,shield?1:0,gripKey?1:0,trainingGrip?1:0,gap);

@@ -14,7 +14,8 @@ Vec tip(unsigned i){if(i==2)return {{0,0,.17f}};if(i==4||i==6)return {{0,0,-.27f
 
 void PhysicalRig::configure(const pes3::NativeBind &bind,float heightScale){reference=bind;scale=bounded(heightScale,.7f,1.3f);reset();}
 void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){recoveryFront=std::move(front);recoveryBack=std::move(back);}
-void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
+void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
+void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
 void PhysicalRig::reset(){sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
@@ -105,15 +106,16 @@ void PhysicalRig::step(const Input &input,float dt){
     const float stance=length(subtractPoint(positions[9],positions[12]));
     lostBalance=balance->step(dt,input.pelvis[2],stance,length(input.velocity),input.protect,input.gripped);
     debug.balanceRisk=balance->risk;debug.balancePhase=balance->phase;debug.stepDemand=balance->stepDemand;debug.supportMargin=balance->margin;
-    if(impulseSize>15 && !balanceMotions.empty() && (balanceChoice<0 || balanceMotionTime>.3f)){
+    const float accumulatedLoad=std::max(impulseSize,length(balance->remainingImpulse()));
+    if(accumulatedLoad>20 && !balanceMotions->empty() && (balanceChoice<0 || balanceMotionTime>.55f)){
       // Match incident direction, native entry pose and movement speed. The
       // selected reference remains additive; it never moves a foot to a ball.
-      const Vec incident=rotatePoint(inverseRotation(input.pose[0]),unit(pendingImpulse));
+      const Vec incident=rotatePoint(inverseRotation(input.pose[0]),unit(impulseSize>15?pendingImpulse:balance->remainingImpulse()));
       float best=1e9f;
-      for(unsigned m=0;m<balanceMotions.size();++m){const auto &candidate=balanceMotions[m];if(candidate.frames.empty())continue;
+      for(unsigned m=0;m<balanceMotions->size();++m){const auto &candidate=(*balanceMotions)[m];if(candidate.frames.empty())continue;
         float cost=2.f*(1-dotPoint(incident,candidate.push))+.08f*std::fabs(length(input.velocity)-candidate.speed);
         for(unsigned bone:{1u,3u,5u})cost+=.10f*length(logarithm(productRotation(candidate.frames.front().pose[bone],inverseRotation(input.pose[bone]))));
-        cost+=.18f*std::fabs(candidate.gain-bounded(impulseSize/100.f,.5f,1.25f));
+        cost+=.18f*std::fabs(candidate.gain-bounded(accumulatedLoad/100.f,.5f,1.25f));
         cost+=3.f*std::fabs(candidate.lateral-.035f*incident[0]);
         if(cost<best){best=cost;balanceChoice=int(m);balanceMotionTime=0;}
       }
@@ -243,11 +245,11 @@ void PhysicalRig::evaluate(const Input &input){
   Pose target=local;
   debug.counterbalance=length(counterTilt);
   if(balanceChoice>=0 && !input.staggering && !input.action && !input.upperReception){
-    const auto &motion=balanceMotions[balanceChoice];
+    const auto &motion=(*balanceMotions)[balanceChoice];
     const float frame=balanceMotionTime/.016f;
     if(frame<float(motion.frames.size()-1)){
       const unsigned a=unsigned(frame),b=std::min(a+1,unsigned(motion.frames.size()-1));
-      const float envelope=smooth(balanceMotionTime/.12f)*smooth((motion.frames.size()-1-frame)/12.f)*.22f*motion.gain;
+      const float envelope=smooth(balanceMotionTime/.16f)*smooth((motion.frames.size()-1-frame)/12.f)*.44f*motion.gain;
       for(unsigned bone:{1u,3u,4u,5u,6u}){
         const Quat q=blended(motion.frames[a].pose[bone],motion.frames[b].pose[bone],frame-a);
         const Vec delta=capped(logarithm(productRotation(q,inverseRotation(motion.frames[0].pose[bone]))),.65f);
@@ -311,8 +313,8 @@ void PhysicalRig::evaluate(const Input &input){
       // a freely lagging forearm made the elbow look dislocated even when
       // Bullet's own constraint was valid. Free falls still use full dynamics.
       const bool arm=i>=3;
-      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.14f:i==1?.22f:.20f);
-      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.20f:.65f)),local[i]));
+      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.22f:i==1?.28f:.18f);
+      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.48f:.80f)),local[i]));
     }
     forwardKinematics();
   }

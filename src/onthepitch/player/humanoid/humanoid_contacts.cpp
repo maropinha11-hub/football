@@ -572,7 +572,8 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
   if(PhysicalRigEnabled()&&(part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||part.find("knee")!=std::string::npos)){
-    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;physicalBallImpactPart=part;
+    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
+    physicalBallImpactPart=toBall.GetDotProduct(spatialState.bodyDirectionVec)<-.25f?"back":part;
     const Vector3 impulse=(incoming-outgoing)*.43f;
     if(-inward>14.f)AddPhysicalImpulse(impulse,point-contactPositions[0]);
     if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());

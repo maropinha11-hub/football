@@ -46,7 +46,12 @@ void HumanoidBase::ConfigurePhysicalRig(){
   // Do not duplicate the large optional additive bank for every teammate.
   if(PlayerMatchEnabled() && !player->GetExternalController()){
     printf("PHYSICAL_MATCH_ACTOR actor=%d team=%d skin_contacts=%d\n",player->GetID(),static_cast<Player*>(player)->GetTeamID(),UsesTrainingContacts()?1:0);
-    return;
+  }
+  static const AnimCollection *cachedCollection=nullptr;
+  static std::weak_ptr<const std::vector<football_physics::BalanceMotion>> cachedBank;
+  if(cachedCollection==anims.get())if(auto shared=cachedBank.lock()){
+    physicalRig->setSharedBalanceMotions(shared);
+    printf("%s actor=%d sources=%u variants=%u shared=1 kind=native_procedural\n",player->GetExternalController()?"PHYSICAL_BALANCE_BANK":"PHYSICAL_CPU_BALANCE_BANK",player->GetID(),unsigned(shared->size()/16),unsigned(shared->size()));return;
   }
   std::vector<football_physics::BalanceMotion> bank;
   unsigned sources=0;
@@ -68,8 +73,9 @@ void HumanoidBase::ConfigurePhysicalRig(){
       bank.push_back(std::move(motion));
     }
   }
-  printf("PHYSICAL_BALANCE_BANK actor=%d sources=%u variants=%u kind=native_procedural\n",player->GetID(),sources,unsigned(bank.size()));
-  physicalRig->setBalanceMotions(std::move(bank));
+  printf("%s actor=%d sources=%u variants=%u shared=1 kind=native_procedural\n",player->GetExternalController()?"PHYSICAL_BALANCE_BANK":"PHYSICAL_CPU_BALANCE_BANK",player->GetID(),sources,unsigned(bank.size()));
+  auto shared=std::make_shared<const std::vector<football_physics::BalanceMotion>>(std::move(bank));
+  cachedCollection=anims.get();cachedBank=shared;physicalRig->setSharedBalanceMotions(shared);
 }
 void HumanoidBase::SetPhysicalGrip(const Vector3 &where,const Vector3 &force){physicalGripPoint=where;physicalGripForce=force;}
 Vector3 HumanoidBase::GetPhysicalShirtPoint()const{
@@ -305,7 +311,7 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
     context.phase=clamp((match->GetActualTime_ms()-physicalBallImpactTime+40)/740.f,0.f,1.f);
     context.contactPhase=.12f;context.contactMade=true;context.power=clamp(physicalBallImpactVelocity.GetLength()/25.f,0.f,1.f);
     context.difficulty=std::max(context.difficulty,context.power*.8f);context.preserveHead=context.power<.6f;
-    context.style=context.power>.70f?ContactStyle::DrivenImpact:
+    context.style=context.power>.70f||physicalBallImpactPart=="back"?ContactStyle::DrivenImpact:
       physicalBallImpactPart=="neck"?ContactStyle::HeadCushion:
       physicalBallImpactPart.find("thigh")!=std::string::npos?ContactStyle::Thigh:
       physicalBallImpactPart.find("knee")!=std::string::npos?ContactStyle::Shin:ContactStyle::Chest;
@@ -386,7 +392,8 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       const Vector3 delta=opponent->GetPosition()-spatialState.position;
       if(delta.GetLength()<input.opponentDistance){input.opponentDistance=delta.GetLength();input.opponent=point(delta);}
     }
-    input.passiveTracking=PlayerMatchEnabled() && !player->GetExternalController() && input.opponentDistance>2.f && !input.staggering && !input.gripped;
+    input.passiveTracking=PlayerMatchEnabled() && !player->GetExternalController() && input.opponentDistance>2.f &&
+      spatialState.movement.GetLength()<.20f && !input.action && !input.staggering && !input.gripped;
     BuildSituationalInput(input);
     // Anticipate small reach corrections. The existing skin contact gate
     // remains responsible for accepting an actual ball impulse.
@@ -459,6 +466,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
         physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration,d.angularSpeed,d.kineticEnergy,d.jointError,d.selfPenetration,d.brace,d.recoveryPhase,q[0],q[1],q[2],q[3]);
       if(input.grounding)printf("PHYSICAL_FOOT_PLANT t=%lu actor=%d correction=%.6f\n",physicalRigTime,player->GetID(),d.plantedCorrection);
       printf("PHYSICAL_BALANCE t=%lu actor=%d phase=%d risk=%.5f step=%.5f choice=%d arm_speed=%.5f elbow=%.5f counter=%.5f\n",physicalRigTime,player->GetID(),d.balancePhase,d.balanceRisk,d.stepDemand,d.balanceChoice,d.armSpeed,d.elbowAngle,d.counterbalance);
+      if(physicalRigTime%100==0)printf("ML_MUSCLE t=%lu actor=%d human=%d samples=%u error=%.6f acceleration=%.6f passive=%d\n",physicalRigTime,player->GetID(),player->GetExternalController()?1:0,d.neuralMotorSamples,d.motorError,d.motorAcceleration,input.passiveTracking?1:0);
       if(d.supportSink>1e-5f||d.supportTilt>1e-5f)printf("PHYSICAL_SUPPORT_COMPLIANCE t=%lu actor=%d sink=%.6f tilt=%.6f knee=%.6f foot_error=%.7f pending=%d\n",physicalRigTime,player->GetID(),d.supportSink,d.supportTilt,d.supportKnee,d.supportFootError,input.touchPending?1:0);
       if(after || input.staggering)printf("PHYSICAL_SUPPORT t=%lu actor=%d mode=%d stagger=%d muscles=%.5f torque=%.5f contacts=%u\n",physicalRigTime,player->GetID(),after,input.staggering?1:0,d.muscleEffort,d.supportTorque,d.groundContacts);
       printf("PHYSICAL_ARM_LIMITS t=%lu actor=%d error=%.7f penetration=%.6f left=[%.5f,%.5f,%.5f,%.5f] right=[%.5f,%.5f,%.5f,%.5f]\n",physicalRigTime,player->GetID(),d.armLimitError,d.armPenetration,

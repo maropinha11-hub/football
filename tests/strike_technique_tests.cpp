@@ -24,6 +24,8 @@ int main(){
   check(std::fabs(slowStep.value-fastStep.value)<.002f,"sprint reserve depends on simulated seconds rather than animation or render rate");
   bool boundedEnergy=true;for(int i=0;i<12000;++i){energy.step(.01f,energy.speedLimit(7.5f),true,.7f);boundedEnergy&=energy.value>=0&&energy.value<=1;}
   check(boundedEnergy,"held sprint remains bounded through exhaustion and recovery cycles");
+  SprintEnergy ordinary;for(int i=0;i<3000;++i)ordinary.step(.01f,7.5f,false,.7f);
+  check(ordinary.value==1.f&&!ordinary.depleted,"fast assisted movement cannot spend the human reserve when RB is released");
   auto central=football_flight::contactSpin({{0,-.11f,0}},{{0,25,0}});
   auto inside=football_flight::contactSpin({{.04f,-.10f,0}},{{0,25,0}});
   auto outside=football_flight::contactSpin({{-.04f,-.10f,0}},{{0,25,0}});

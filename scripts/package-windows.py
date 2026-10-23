@@ -72,6 +72,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "config" / "situational-motion-catalog.json",
                  stage / "situational-motion-catalog.json")
     shutil.copy2(project / "config" / "procedural-strikes.json", stage / "procedural-strikes.json")
+    shutil.copy2(project / "config" / "learned-muscle-policy.json", stage / "learned-muscle-policy.json")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
@@ -80,6 +81,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     for filename in ("dividir-arquivos.ps1", "dividir-arquivos.bat"):
         shutil.copy2(project / "scripts" / filename, stage / filename)
     shutil.copy2(project / "docs/BASE-APROVADA.md",stage / "LEIA-BASE-APROVADA.txt")
+    shutil.copy2(project / "docs/CONTROLE-FISICO-APRENDIDO.md",stage / "LEIA-CONTROLE-FISICO.txt")
     shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -134,8 +136,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "1. Extraia este ZIP completo em uma pasta nova.\n"
         "2. Abra treino-fisico.bat para o centro de treinamento experimental.\n"
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
-        "Correcao desta revisao: rotacoes pelo arco curto, camera presa a\n"
-        "cabeca renderizada e leitura direta dos quadros. Leia LEIA-BASE-APROVADA.txt.\n\n"
+        "Nesta revisao: caminhada com analogico leve/medio, folego humano\n"
+        "gasto somente com RB e respostas fisicas compartilhadas pela CPU.\n"
+        "O novo motor muscular foi treinado com referencias nativas.\n"
+        "Leia LEIA-CONTROLE-FISICO.txt e LEIA-BASE-APROVADA.txt.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
         "Base restaurada: fa0dfa6, correspondente ao executavel enviado.\n"
         "Sem os clipes de locomocao importados e sem busca por fase.\n"
@@ -180,8 +184,10 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "as 80.118 combinacoes de metadados nao sao novas capturas nem uma\n"
         "validacao exaustiva. Consulte situational-motion-catalog.json.\n"
         "56 variantes geradas de passe/chute/cruzamento preservam raiz, pernas e eventos.\n"
-        "Analogico leve: passada de caminhada; todo puxado conserva a velocidade aprovada.\n"
-        "FOLEGO: RB gasta sprint, andar/parar recupera; vale para jogador e CPU.\n"
+        "Analogico leve/medio (ate 74%): caminhada; todo puxado conserva a velocidade aprovada.\n"
+        "FOLEGO: RB gasta sprint; sem RB nao gasta; andar/parar recupera. CPU gasta ao decidir sprint.\n"
+        "Musculos aprendidos e respostas protetoras atuam no jogador e na CPU.\n"
+        "Leia LEIA-CONTROLE-FISICO.txt: treino reproduzivel e limites do modelo.\n"
         "Toque curto no A ganhou forca inicial; a carga aumenta a forca gradualmente.\n"
         "Efeito da bola considera a superficie real atingida em passes/chutes/cabecadas.\n"
         "Bolas paradas: jogadores se movimentam antes da cobranca, sem tocar antes do apito.\n"
@@ -318,6 +324,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
+                         "learned-muscle-policy.json","LEIA-CONTROLE-FISICO.txt",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):

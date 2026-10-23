@@ -1676,8 +1676,12 @@ void Match::CheckHumanoidCollisions() {
       //if (playerBounces.at(i1).size() > 0) printf("\n");
       // okay, accumulated all, now distribute them in normalized fashion
       const auto *body=players.at(i1)->GetHumanoid();
-      players.at(i1)->OffsetPosition(bounceVec * 0.01f * (body->PhysicalRigEnabled() && body->PhysicalShielding()?.6f:1.f));
-      players.at(i1)->GetHumanoid()->PhysicalCollision(bounceVec);
+      Vector3 displacement=bounceVec * 0.01f * (body->PhysicalRigEnabled() && body->PhysicalShielding()?.6f:1.f);
+      if(body->PhysicalRigEnabled())displacement.NormalizeMax(.012f);
+      players.at(i1)->OffsetPosition(displacement);
+      // Real body contacts supply physical impulses. The legacy proximity
+      // shell must not apply a second, invisible impact to the same duel.
+      if(!body->PhysicalRigEnabled())players.at(i1)->GetHumanoid()->PhysicalCollision(bounceVec);
       //printf("moving player %i\n", i1);
     }
 
@@ -1807,6 +1811,8 @@ void Match::CheckHumanoidCollision(Player *p1, Player *p2, std::vector<PlayerBou
       // can not bump faster than sprint
       offset1.NormalizeMax(sprintVelocity * 0.01f);
       offset2.NormalizeMax(sprintVelocity * 0.01f);
+      if(p1->GetHumanoid()->PhysicalRigEnabled())offset1.NormalizeMax(.018f);
+      if(p2->GetHumanoid()->PhysicalRigEnabled())offset2.NormalizeMax(.018f);
 
 
       p1->OffsetPosition(offset1);

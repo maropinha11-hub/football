@@ -41,6 +41,10 @@ def main():
             check('packaged executable implements physical CLI and solver telemetry', all(token in exe
                   for token in [b'--physical-rig', b'PHYSICAL_RIG_STATE', b'PHYSICAL_RIG_RECOVERED', b'PHYSICAL_RIG_FRAME']))
             check('full and update use the same executable', exe == patch.read('gameplayfootball.exe'))
+            policy=full.read(prefix+'learned-muscle-policy.json')
+            model=json.loads(policy)
+            check('the trained motor provenance and weights accompany both archives',policy==patch.read('learned-muscle-policy.json')==Path('config/learned-muscle-policy.json').read_bytes() and model['result']=='passed' and model['architecture']['parameters']==18)
+            check('learned muscles and CPU protective banks are compiled and documented',all(token in exe for token in [b'ML_MUSCLE',b'PHYSICAL_CPU_BALANCE_BANK',b'CPU_RECEIVE_ORIENT']) and full.read(prefix+'LEIA-CONTROLE-FISICO.txt')==patch.read('LEIA-CONTROLE-FISICO.txt') and b'sem RB nao gasta' in full.read(prefix+'LEIA-FISICA.txt'))
             license_text=full.read(prefix+'BULLET-LICENSE.txt')
             check('Bullet license accompanies the complete and update packages', license_text==patch.read('BULLET-LICENSE.txt')
                   and b'zlib license' in license_text)

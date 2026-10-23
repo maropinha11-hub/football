@@ -61,9 +61,11 @@ tornozelo, tronco e ombros; preservam raiz, quadril, joelhos e tempo de contato.
 O seletor mantém as ações originais como alternativas e só confirma o toque
 quando a superfície da chuteira alcança a bola. As variantes não são capturas.
 
-O analógico leve usa uma passada de caminhada entre os toques, com apoio
-sobreposto dos pés e pouca elevação durante o balanço. Essa passada é gerada
-no esqueleto nativo; os clipes que acertam a bola conservam seus contatos.
+Até 74% do curso do analógico há uma faixa progressiva de caminhada, com
+apoio sobreposto dos pés e pouca elevação durante o balanço. Essa passada é
+gerada no esqueleto nativo, inclusive no passo do toque. O contato inicia a
+passada de condução e é recalculado na chuteira real da nova pose; esperar
+o toque antigo no meio de um ciclo longo puxava o jogador para trás.
 A velocidade com o analógico todo puxado e a corrida com RB continuam iguais
 enquanto há fôlego. O toque breve no A ganhou força inicial (aproximadamente
 5–7 m/s), com aumento gradual até cerca de 22 m/s conforme a carga.
@@ -71,7 +73,9 @@ O som artificial dos passos foi retirado; respiração, ambiente e impacto da bo
 continuam ativos.
 
 A barra **FOLEGO** aparece embaixo. RB gasta a reserva de sprint tanto do
-jogador quanto dos 21 atletas da CPU. Quando ela acaba, a velocidade máxima
+jogador quanto dos 21 atletas da CPU. No jogador, somente o botão RB real
+gasta a reserva; andar ou trotar sem RB recupera, mesmo com assistência de
+recepção ativa. Quando ela acaba, a velocidade máxima
 cai gradualmente; caminhar ou parar recupera mais rápido do que trotar.
 Não é necessário esperar encher tudo para voltar a correr. Uma pequena faixa
 de recuperação evita alternar corrida e trote a cada quadro ao segurar RB.
@@ -135,3 +139,15 @@ O alcance final da defesa permite uma pequena correção gradual do ombro para
 acompanhar a bola, com comprimento do braço e limites articulares preservados.
 O planejamento e a execução usam a mesma curva de aproximação do corpo;
 a tolerância de aceitação do contato não foi ampliada.
+
+Todos os atletas da CPU compartilham agora o mesmo banco de respostas
+protetoras do jogador e mantêm os músculos físicos ativos ao se movimentar.
+A disputa corporal não recebe mais dois impulsos por camadas diferentes.
+A CPU antecipa a orientação do corpo nas recepções previstas; um impacto
+nas costas não é classificado como domínio de cabeça.
+
+Há um novo controlador muscular neural treinado com referências nativas e
+perturbações angulares, usado no acompanhamento físico e no tronco/braços
+durante quedas. É uma camada aprendida limitada, não uma política corporal
+completa nem o Euphoria. Veja [pesquisa, treinamento e limites](CONTROLE-FISICO-APRENDIDO.md)
+no repositório, ou LEIA-CONTROLE-FISICO.txt dentro do pacote.

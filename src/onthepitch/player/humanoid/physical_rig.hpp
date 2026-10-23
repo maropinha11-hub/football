@@ -52,6 +52,8 @@ struct Metrics {
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
   float armLimitError=0,armPenetration=0;
   float muscleEffort=0,supportTorque=0;
+  float motorError=0,motorAcceleration=0;
+  unsigned neuralMotorSamples=0;
   float counterbalance=0;
   float supportSink=0,supportTilt=0,supportKnee=0,supportFootError=0;
   float plantedCorrection=0;
@@ -72,6 +74,7 @@ class PhysicalRig {
   void configure(const pes3::NativeBind &bind,float heightScale);
   void setRecoveryMotions(RecoveryMotion front,RecoveryMotion back);
   void setBalanceMotions(std::vector<BalanceMotion> motions);
+  void setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions);
   void reset();
   void impulse(Vec newtonSeconds,Vec lever={{0,0,.35f}},bool forceFall=false);
   void step(const Input &input,float dt=.01f);
@@ -102,7 +105,7 @@ class PhysicalRig {
   Pose additive{};
   std::unique_ptr<ArticulatedBody> articulated;
   std::unique_ptr<BalanceController> balance;
-  std::vector<BalanceMotion> balanceMotions;
+  std::shared_ptr<const std::vector<BalanceMotion>> balanceMotions=std::make_shared<const std::vector<BalanceMotion>>();
   int balanceChoice=-1,handShoulder=3;
   float balanceMotionTime=0,handEnvelope=0,handDt=.01f;
   bool forcedFall=false,handUpdatePending=false,handInitialized=false;

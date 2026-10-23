@@ -4,6 +4,7 @@
 
 // Football Training: preserve ball actions, expose off-ball sliding in solo practice.
 #include "humancontroller.hpp"
+#include "../analog_locomotion.hpp"
 
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../physical_match_rules.hpp"
@@ -372,7 +373,7 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
     if (TrainingEnabled()) {
       if(actionMode==0 && match->TrainingHasBall() && !match->TrainingReceivingBall() &&
           !player->GetHumanoid()->UpperReceptionActive() && !hid->GetButton(e_ButtonFunction_Sprint) &&
-          hid->GetDirection().GetLength()>.01f && hid->GetDirection().GetLength()<=.72f &&
+          hid->GetDirection().GetLength()>.01f && hid->GetDirection().GetLength()<=football_input::walkingStickLimit &&
           (match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.05f){
         // The original ball-control magnet quantizes gentle walking as idle.
         // Keep its real contact commands, but retain continuous manual travel
@@ -773,7 +774,7 @@ void HumanController::_GetHidInput(Vector3 &rawInputDirection, float &rawInputVe
     if(TrainingEnabled())rawInputVelocityFloat*=clamp(GetConfiguration()->GetReal(
         hid->GetButton(e_ButtonFunction_Sprint)?"training_sprint_speed_scale":"training_walk_speed_scale",
         hid->GetButton(e_ButtonFunction_Sprint)?.90f:.72f),.55f,1.0f);
-    if (TrainingEnabled()) rawInputVelocityFloat *= clamp(magnitude, 0.0f, 1.0f);
+    if (TrainingEnabled()) rawInputVelocityFloat=football_input::movementSpeed(magnitude,hid->GetButton(e_ButtonFunction_Sprint),rawInputVelocityFloat,sprintVelocity*clamp(GetConfiguration()->GetReal("training_sprint_speed_scale",.90f),.55f,1.f));
     if(TrainingEnabled() && match->TrainingReceivingBall() && actionMode==0 && !player->GetHumanoid()->UpperReceptionActive())
       rawInputVelocityFloat=std::min(rawInputVelocityFloat,idleDribbleSwitch+.05f);
     // The native solver quantizes speeds below this boundary as idle. Keep

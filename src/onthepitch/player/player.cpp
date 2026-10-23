@@ -24,6 +24,7 @@
 #include "../team.hpp"
 
 #include "controller/elizacontroller.hpp"
+#include "controller/humancontroller.hpp"
 #include "controller/strategies/strategy.hpp"
 
 #include "../../main.hpp"
@@ -327,6 +328,9 @@ void Player::Process() {
 
     float distance = (posAfter - posBefore).GetLength();
     if(TrainingEnabled()){
+      // Read the actual button every tick, even during a long selected clip.
+      // Receive assistance or a corrective step is never a human sprint.
+      if(externalController)sprintRequested=static_cast<HumanController*>(externalController)->SprintButtonDown();
       sprintEnergy.step(.01f,GetMovement().Get2D().GetLength(),sprintRequested,GetStaminaStat(),match->IsInPlay());
       if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%500==0)
         printf("SPRINT_ENERGY t=%lu actor=%d human=%d energy=%.5f speed=%.5f limit=%.5f requested=%d depleted=%d\n",match->GetActualTime_ms(),GetID(),externalController?1:0,sprintEnergy.value,GetMovement().Get2D().GetLength(),GetMaxVelocity(),sprintRequested?1:0,sprintEnergy.depleted?1:0);

@@ -27,6 +27,7 @@ class HumanController : public PlayerController {
     virtual int GetReactionTime_ms();
 
     IHIDevice *GetHIDevice() { return hid; }
+    bool SprintButtonDown() const { return hid && hid->GetButton(e_ButtonFunction_Sprint); }
 
     int GetActionMode() { return actionMode; }
     int GetCharge_ms() const { return gauge_ms; }

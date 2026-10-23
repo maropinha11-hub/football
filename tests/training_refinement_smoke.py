@@ -21,18 +21,22 @@ try:
    for strength in [.25,.55,1.]:
     g.reset();g.pad(0,-strength);frames=g.advance(5000);g.pad(0,0)
     # Average complete slow strides, including the contact/recovery phase;
-    # a 500 ms tail aliases the 1.68 s walking cycle.
+    # a 500 ms tail aliases the walking/contact cycle.
     tail=frames[-36:];speed=math.dist(tail[-1]['player'][:2],tail[0]['player'][:2])/max(.01,(tail[-1]['t']-tail[0]['t'])/1000);speeds.append(speed)
     gap=max(math.dist(f['player'][:2],f['ball'][:2])for f in frames)
     check('stick '+str(strength)+' moves with connected ball control',speed>.25 and gap<1.8,dict(speed=speed,ball_gap=gap))
    check('analog permits walking below the approved full-stick pace',speeds[0]+.30<speeds[1]and speeds[1]+.20<speeds[2]and 2.5<speeds[2]<4.5,speeds)
-   powers=[]
+   powers=[];charges=[]
    for hold in [40,150,350,750]:
     g.reset();start=len(g.read_log());g.pad(0,0,buttons=1);g.advance(hold);g.pad(0,0);g.advance(2400)
     hits=[x for x in ev(g,'TRAINING_ACTION_TOUCH',start)if x['function']=='4'];power=ev(g,'HUMAN_PASS_POWER',start)
     check(str(hold)+' ms pass makes a real, charge-dependent contact',len(hits)==1 and len(power)==1,dict(hits=hits,power=power))
     powers.append(float(power[0]['speed'])if power else 0)
-   check('brief A is useful nearby and longer presses progressively strengthen it',5<powers[0]<7 and powers[-1]>19 and all(b>a for a,b in zip(powers,powers[1:])),powers)
+    charges.append(int(power[0]['charge'])if power else 0)
+   # Telemetry is sampled every 100 ms: advance(40) does not mean a
+   # 40 ms button hold. Validate the charge actually seen by the game.
+   expected=[5+17.2*(min(650,c)/650)**1.18 for c in charges]
+   check('brief A is useful nearby and longer presses progressively strengthen it',0<charges[0]<=160 and 5<powers[0]<8.4 and powers[-1]>19 and all(b>a for a,b in zip(powers,powers[1:]))and all(abs(p-e)<.001 for p,e in zip(powers,expected)),dict(charges=charges,speeds=powers,expected=expected))
    support=ev(g,'PHYSICAL_SUPPORT_COMPLIANCE')
    check('releases visibly recruit the pelvis and knees with bounded planted-foot error',bool(support)and max(float(x['knee'])for x in support)>.002 and all(float(x['foot_error'])<.005 and float(x['sink'])<=.0221 and float(x['tilt'])<=.0451 for x in support),dict(samples=len(support),peak_knee=max([float(x['knee'])for x in support]or[0]),peak_foot_error=max([float(x['foot_error'])for x in support]or[0])))
    g.reset();start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(1700);g.pad(0,0)

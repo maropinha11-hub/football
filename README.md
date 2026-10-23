@@ -18,6 +18,11 @@ Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacot
 completo. Veja [a base recuperada e os controles](docs/BASE-APROVADA.md) e
 [o relatório de validação](docs/approved-base-validation.json).
 
+A revisão inclui caminhada com analógico leve/médio, gasto de fôlego humano
+somente com RB, respostas protetoras compartilhadas pela CPU e um controlador
+muscular neural treinado com referências nativas. Veja
+[a pesquisa, o treinamento reproduzível e seus limites](docs/CONTROLE-FISICO-APRENDIDO.md).
+
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
 A revisão usa **Bullet 3.25**, motores físicos no tronco e braços, busca por

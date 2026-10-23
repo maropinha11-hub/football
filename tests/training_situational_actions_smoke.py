@@ -113,6 +113,8 @@ def main():
                 body = [row for row in events(log, "PHYSICAL_SITUATION")
                         if row.get("action") == str(action_kind)]
                 rendered = events(log, "PHYSICAL_SITUATION_RENDER")
+                contact_time = int(hits[0]["t"]) if hits else -10000
+                contact_window = [row for row in body if abs(int(row["t"])-contact_time) <= 120]
                 summary = dict(
                     function=function, running_ms=run_ms, stick=stick,
                     touches=hits, native_sources=selected,
@@ -122,6 +124,9 @@ def main():
                     peak_weight=maximum(body, "weight"),
                     peak_trunk_rotation_rad=maximum(body, "trunk"),
                     peak_arm_rotation_rad=maximum(body, "arms"),
+                    contact_samples=len(contact_window),
+                    contact_mean_trunk_rad=sum(float(x['trunk'])for x in contact_window)/max(1,len(contact_window)),
+                    contact_mean_arms_rad=sum(float(x['arms'])for x in contact_window)/max(1,len(contact_window)),
                     maximum_foot_error_m=maximum(body, "foot_error"),
                     maximum_root_error_m=maximum(body, "root_error"),
                     rendered_samples=len(rendered),
@@ -211,16 +216,22 @@ def main():
                        easy_arms_rad=easy["peak_arm_rotation_rad"],
                        difficult_arms_rad=difficult["peak_arm_rotation_rad"]))
             difficult_pass = report["scenarios"]["running_right_pass"]
-            # Different native pass sources already have different authored
-            # upper-body motion and contact blends. Compare the isolated
-            # procedural response here; the per-scenario checks above prove
-            # actual rendered application and its root/foot preservation.
+            # Compare the isolated response over the same +/-120 ms impact
+            # window. Whole-action peaks can compare an easy pass's late
+            # follow-through with a running pass's preparation instead.
+            # Keep the same margins; rendered application and preservation
+            # of root/feet are independently checked for every action above.
             check("a running sideways pass recruits more isolated trunk and arm response",
                   difficult_pass["peak_difficulty"] > easy["peak_difficulty"] + .05
-                  and difficult_pass["peak_trunk_rotation_rad"] > easy["peak_trunk_rotation_rad"] + .02
-                  and difficult_pass["peak_arm_rotation_rad"] > easy["peak_arm_rotation_rad"] + .02,
+                  and min(easy['contact_samples'],difficult_pass['contact_samples']) >= 6
+                  and difficult_pass["contact_mean_trunk_rad"] > easy["contact_mean_trunk_rad"] + .02
+                  and difficult_pass["contact_mean_arms_rad"] > easy["contact_mean_arms_rad"] + .02,
                   dict(easy_difficulty=easy["peak_difficulty"],
                        running_difficulty=difficult_pass["peak_difficulty"],
+                       easy_contact_mean_trunk_rad=easy['contact_mean_trunk_rad'],
+                       running_contact_mean_trunk_rad=difficult_pass['contact_mean_trunk_rad'],
+                       easy_contact_mean_arms_rad=easy['contact_mean_arms_rad'],
+                       running_contact_mean_arms_rad=difficult_pass['contact_mean_arms_rad'],
                        easy_isolated_trunk_rad=easy["peak_trunk_rotation_rad"],
                        running_isolated_trunk_rad=difficult_pass["peak_trunk_rotation_rad"],
                        easy_isolated_arms_rad=easy["peak_arm_rotation_rad"],

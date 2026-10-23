@@ -7,6 +7,9 @@
 #include "../match.hpp"
 
 #include "controller/elizacontroller.hpp"
+#include "controller/humancontroller.hpp"
+#include "analog_locomotion.hpp"
+#include "../reception_prediction.hpp"
 #include "controller/strategies/strategy.hpp"
 
 #include "../../main.hpp"
@@ -80,10 +83,35 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
   if (externalController) externalController->RequestCommand(commandQueue);
                      else controller->RequestCommand(commandQueue);
   if(TrainingEnabled()){
+    auto *fieldPlayer=dynamic_cast<Player*>(this);
     sprintRequested=false;
     for(auto &command:commandQueue)if(command.useDesiredMovement){
       sprintRequested|=command.desiredVelocityFloat>4.5f;
       command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,GetMaxVelocity());
+    }
+    if(externalController){
+      auto *human=static_cast<HumanController*>(externalController);
+      sprintRequested=human->SprintButtonDown();
+      const float strength=human->GetHIDevice()->GetDirection().GetLength();
+      if(!sprintRequested&&human->GetActionMode()==0&&strength>.01f&&strength<=football_input::walkingStickLimit&&!match->TrainingReceivingBall()){
+        const float manual=human->GetFloatVelocity();
+        for(auto &command:commandQueue)if(command.useDesiredMovement&&
+            (command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl))
+          command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,manual);
+      }
+    }else if(fieldPlayer&&PlayerMatchEnabled()&&fieldPlayer->GetFormationEntry().role!=e_PlayerRole_GK&&
+             !match->GetBallRetainer()&&match->GetLastTouchPlayer()!=this){
+      auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};
+      Player *last=match->GetLastTouchPlayer();
+      const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;
+      const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free);
+      if(plan.valid){
+        for(auto &command:commandQueue)if(command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl||command.desiredFunctionType==e_FunctionType_Trap){
+          command.useDesiredLookAt=true;command.desiredLookAt=match->GetBall()->Predict(0).Get2D();
+        }
+        if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
+          printf("CPU_RECEIVE_ORIENT t=%lu actor=%d arrival=%.4f height=%.4f\n",match->GetActualTime_ms(),GetID(),plan.time,plan.height);
+      }
     }
   }
   auto *referee=match->GetReferee();
