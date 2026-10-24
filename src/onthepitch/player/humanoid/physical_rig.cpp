@@ -180,12 +180,12 @@ void PhysicalRig::step(const Input &input,float dt){
     const float load=release*(.25f+.75f*bounded(std::max(c.power,c.difficulty),0,1));
     const float plant=1-smooth((std::min(positions[9][2],positions[12][2])-.14f)/.12f);
     const float freedom=input.upperReception||input.staggering||input.touchPending?0.f:plant;
-    Vec wantedSupport=addPoint(scalePoint(balance->lean(),.20f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.0025f));
+    Vec wantedSupport=addPoint(scalePoint(balance->lean(),.35f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.012f));
     const Vec localRelease{{-.015f*load,.020f*load*bounded(c.signedTurn,-1,1),0}};
-    wantedSupport=capped(scalePoint(addPoint(wantedSupport,rotatePoint(input.pose[0],localRelease)),freedom),.045f);
+    wantedSupport=capped(scalePoint(addPoint(wantedSupport,rotatePoint(input.pose[0],localRelease)),freedom),.12f);
     const Vec supportAcceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedSupport,supportTilt),100),scalePoint(supportTiltVelocity,20)),3.f);
-    supportTiltVelocity=capped(addPoint(supportTiltVelocity,scalePoint(supportAcceleration,dt)),.22f);
-    supportTilt=capped(addPoint(supportTilt,scalePoint(supportTiltVelocity,dt)),.045f);
+    supportTiltVelocity=capped(addPoint(supportTiltVelocity,scalePoint(supportAcceleration,dt)),.55f);
+    supportTilt=capped(addPoint(supportTilt,scalePoint(supportTiltVelocity,dt)),.12f);
     const float wantedSink=freedom*std::min(.022f,.014f*load+.012f*debug.balanceRisk+.002f*debug.effort);
     const float sinkAcceleration=bounded(100*(wantedSink-supportSink)-20*supportSinkVelocity,-.5f,.5f);
     supportSinkVelocity=bounded(supportSinkVelocity+sinkAcceleration*dt,-.055f,.055f);
@@ -338,7 +338,7 @@ void PhysicalRig::evaluate(const Input &input){
     solveLeg(input.receptionSupportBone-2,input.receptionSupport,.001f);
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
-  leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.24f),sway),balance->lean()),counterTilt),.38f);
+  leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.68f),sway),balance->lean()),counterTilt),.44f);
   const float actionBias=input.upperReception || input.situation.kind==football_situations::ActionKind::Header?0.f:input.action?.35f:1.f;
   leanAxis=scalePoint(leanAxis,actionBias);
   // Retain the solved support chain. Reinitializing from input.pose here

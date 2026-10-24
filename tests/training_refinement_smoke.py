@@ -38,7 +38,9 @@ try:
    expected=[5+17.2*(min(650,c)/650)**1.18 for c in charges]
    check('brief A is useful nearby and longer presses progressively strengthen it',0<charges[0]<=160 and 5<powers[0]<8.4 and powers[-1]>19 and all(b>a for a,b in zip(powers,powers[1:]))and all(abs(p-e)<.001 for p,e in zip(powers,expected)),dict(charges=charges,speeds=powers,expected=expected))
    support=ev(g,'PHYSICAL_SUPPORT_COMPLIANCE')
-   check('releases visibly recruit the pelvis and knees with bounded planted-foot error',bool(support)and max(float(x['knee'])for x in support)>.002 and all(float(x['foot_error'])<.005 and float(x['sink'])<=.0221 and float(x['tilt'])<=.0451 for x in support),dict(samples=len(support),peak_knee=max([float(x['knee'])for x in support]or[0]),peak_foot_error=max([float(x['foot_error'])for x in support]or[0])))
+   # Base weight transfer now deliberately exceeds the old .045 rad cap.
+   # Require that visible increase while retaining all foot/sink tolerances.
+   check('releases visibly recruit the pelvis and knees with bounded planted-foot error',bool(support)and max(float(x['knee'])for x in support)>.002 and max(float(x['tilt'])for x in support)>.045 and all(float(x['foot_error'])<.005 and float(x['sink'])<=.0221 and float(x['tilt'])<=.1201 for x in support),dict(samples=len(support),peak_knee=max([float(x['knee'])for x in support]or[0]),peak_tilt=max([float(x['tilt'])for x in support]or[0]),peak_foot_error=max([float(x['foot_error'])for x in support]or[0])))
    g.reset();start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(1700);g.pad(0,0)
    steps=ev(g,'FIELD_STEP',start);audio=ev(g,'FIELD_AUDIO',start)
    check('running produces no removed turf footstep sounds',not steps and bool(audio)and all(x.get('footsteps')=='0'for x in audio),dict(steps=steps,audio=audio))

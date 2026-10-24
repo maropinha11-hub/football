@@ -162,6 +162,10 @@ void Match::LaunchTrainingBall(int delivery) {
   const Vector3 lateral=forward.GetRotated2D(-.5f*pi)*offset;
   Vector3 target=delivery==0 ? root+forward*.55f+lateral+Vector3(0,0,.11f) :
     delivery==1 ? chest+Vector3(0,0,impact?0.f:belly?-.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
+  if(delivery==2&&GetConfiguration()->GetBool("training_physical_lab",false)){
+    if(events.GetKeyboardState(SDLK_LSHIFT))target.coords[2]=2.38f;
+    else if(events.GetKeyboardState(SDLK_LCTRL))target.coords[2]=2.16f;
+  }
   if(heightFixture)target=root+forward*(heightFixture==4?-.18f:.23f)+
     forward.GetRotated2D(.5f*pi)*(heightFixture<3?-.12f:0.f)+Vector3(0,0,heightFixture==1?.43f:heightFixture==2?.74f:1.43f);
   const float roughness=GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0;
@@ -653,7 +657,7 @@ void Match::AlignTrainingView(){
 }
 
 void Match::RestartPlayerMatch() {
-  physicalGripOpponent=nullptr;physicalAIHolds.clear();trainingGrip=trainingGripBlocked=false;trainingGripEscape=0;
+  physicalGripOpponent=nullptr;physicalAIHolds.clear();physicalDuelImpacts.clear();trainingGrip=trainingGripBlocked=false;trainingGripEscape=0;
   pause=false;gameOver=false;inPlay=false;inSetPiece=false;goalScoredTimer=0;playerMatchPassUntil_ms=0;trainingKnockOnUntil_ms=0;trainingReceiving=false;
   SetMatchPhase(e_MatchPhase_PreMatch);matchTime_ms=0;
   for(int side=0;side<2;++side)matchData->SetGoalCount(side,0);

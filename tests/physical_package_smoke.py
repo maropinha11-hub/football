@@ -63,6 +63,8 @@ def main():
             check('rendered head camera correction remains present',b'FIRSTPERSON_FRAME'in exe)
             check('large upload splitter accompanies both portable packages',all(full.read(prefix+name)==patch.read(name)for name in ['dividir-arquivos.bat','dividir-arquivos.ps1']))
             check('moving skin receptions and physical body duels remain present',all(token in exe for token in [b'moving_skin=1',b'PHYSICAL_BODY_DUEL',b'CPU_AERIAL_DUEL']))
+            check('Windows includes timed airborne receiving, raised-foot actions and reciprocal duel impacts',all(token in exe for token in [b'PHYSICAL_RECEIVE_BANK',b'physical/receive/',b'physical/strike/',b'PHYSICAL_AIR_PLAN',b'CPU_AIR_FORECAST',b'PHYSICAL_DUEL_IMPACT']))
+            check('portable guide explains the derived actions and player/CPU jump tests',all(token in full.read(prefix+'LEIA-FISICA.txt')for token in [b'194 adaptacoes',b'5 movimentos nativos',b'nao novas capturas',b'H+Shift+F6']))
             check('native restoration removes the new matching toggle',b'F12:'not in full.read(prefix+'LEIA-FISICA.txt')and b'Alt+F2:'in full.read(prefix+'LEIA-FISICA.txt')and b'training_motion_matching'not in config)
             check('MIT motion matching attribution accompanies the full and update package',
                   b'Daniel Holden'in full.read(prefix+'MOTION-MATCHING-LICENSE.txt')and

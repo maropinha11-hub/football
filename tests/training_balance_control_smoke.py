@@ -39,16 +39,27 @@ try:
   # Otherwise the preceding shield/contact trial leaves a pose-dependent
   # shoulder/partner arrangement, which can be outside real shirt reach.
   g.reset();g.advance(800);start=len(g.read_log())
-  # Settle before changing possession, and keep contextual LT held across
-  # that change. Waiting off-ball without LT lets a legitimate native touch
-  # recover possession first, in which case LT correctly protects instead
-  # of gripping. No hand/force/escape threshold or contact outcome is forced.
+  partner_id=int(events(g,'PHYSICAL_LAB')[-1]['partner'])
+  def partnerPosition():
+   shown=[json.loads(line[16:])for line in g.read_log().splitlines()if line.startswith('VISIBLE_PHYSICS ')]
+   return next(x['pelvis']for x in reversed(shown)if x['actor']==partner_id)
+  target=partnerPosition();actor=g.frames()[-1]['player'];dx=target[0]-actor[0];dy=target[1]-actor[1]
+  length=math.hypot(dx,dy);toward=(.35*dx/length,-.35*dy/length)
+  # Arrange a stationary loaded hold. Approach with ordinary input first,
+  # then wait for the real walking/braking pose to settle before acquiring
+  # the shirt. Grasping mid-stride can legitimately break before any tension
+  # develops, which is covered separately by the CPU moving-hold fixture.
+  g.pad(*toward)
+  g.wait(lambda:math.dist(g.frames()[-1]['player'][:2],partnerPosition()[:2])<.60,seconds=8)
+  g.pad(0,0);g.wait(lambda:g.frames()[-1]['speed']<.10,seconds=8);g.advance(300)
+  # Keep contextual LT held across the ownership change, so an automatic
+  # football touch cannot recover possession before the grip request.
   g.pad(0,0,left_trigger=1);key(g,'F11')
-  # The settled side-by-side arrangement can be just beyond actual shirt
-  # reach. Take a real short analog step toward the partner; do not expand
-  # the 10 cm acquisition gate or attach a hand outside anatomical reach.
-  g.pad(0,-.35,left_trigger=1);g.advance(250);g.pad(0,0,left_trigger=1)
-  g.advance(2000);capture(g,'lt-grip')
+  g.wait(lambda:any(x['state']=='begin'for x in events(g,'PHYSICAL_GRIP',start)),seconds=8)
+  g.advance(300)
+  # A real opposing step loads the attached shirt; it never widens reach.
+  g.pad(-toward[0],-toward[1],left_trigger=1);g.advance(200);g.pad(0,0,left_trigger=1)
+  g.advance(1800);capture(g,'lt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start);partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT without the ball reaches then grips actual shirt surface',any(x['state']=='begin'and float(x['hand_gap'])<.10 for x in grips)and any(x['with_ball']=='0'and x['reaching']=='1'for x in partner),grips)
   check('held partner actively attempts to escape',any(float(x.get('intended_speed','0'))>.30 and float(x.get('actual_speed','0'))>0 for x in forces),forces[-12:])
@@ -69,7 +80,18 @@ try:
   grips=events(g,'PHYSICAL_GRIP',manual)
   begins=[int(x['t'])for x in grips if x['state']=='begin'];releases=[x for x in grips if x['state']=='release'and x.get('reason')in ['escaped','reach','fall']]
   partner=events(g,'PHYSICAL_PARTNER',manual)
-  physicalRelease=any((x['reason']=='escaped'and int(x['t'])-min(begins or[0])>=600)or(x['reason']=='reach'and any(int(x['t'])<=int(p['t'])<=int(x['t'])+300 and (float(p['hand_gap'])>.23 or float(p['distance'])>1.08)for p in partner))or(x['reason']=='fall'and any(z['to']=='1'for z in events(g,'PHYSICAL_RIG_STATE',manual)))for x in releases)
+  def reachReleaseObserved(release):
+   at=int(release['t'])
+   if any(at<=int(p['t'])<=at+300 and(float(p['hand_gap'])>.23 or float(p['distance'])>1.08)for p in partner):return True
+   # The constraint resolves at100Hz, while partner telemetry is100ms. Once
+   # released, the hand measures a new shirt target, so the next sample can
+   # be back inside reach. Corroborate the exact reach-release event by a
+   # loaded hold immediately before it and no attachment afterwards while
+   # LT remains held and possession has not switched. Do not widen reach.
+   loaded=any(0<=at-int(f['t'])<=150 and float(f['force'])>0 for f in sustained)
+   detached=any(0<=int(p['t'])-at<=150 and p['grip']=='0'and p['trigger']=='1'and p['with_ball']=='0'for p in partner)
+   return loaded and detached
+  physicalRelease=any((x['reason']=='escaped'and int(x['t'])-min(begins or[0])>=600)or(x['reason']=='reach'and reachReleaseObserved(x))or(x['reason']=='fall'and any(z['to']=='1'for z in events(g,'PHYSICAL_RIG_STATE',manual)))for x in releases)
   # Deliberate escape has its 600 ms effort gate above. A hand that already
   # lost the shirt, or an actual fall, must release immediately; requiring a
   # minimum half-second hold here would demand an invisible physical anchor.

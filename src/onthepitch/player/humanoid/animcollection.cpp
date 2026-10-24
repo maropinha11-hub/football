@@ -18,6 +18,7 @@
 #include "humanoid.hpp"
 #include "walking_gait.hpp"
 #include "header_contact.hpp"
+#include "adaptive_reception.hpp"
 
 #include "main.hpp"
 
@@ -601,6 +602,125 @@ void AnimCollection::Load(boost::filesystem::path directory) {
       animation->GetVariable("touch_bodypart").c_str(),mode.c_str());
   }
 
+  // Reachable airborne balls need real timed full-body candidates, rather
+  // than a reaction layered onto locomotion after an accidental collision.
+  // Keep the native bank intact and derive these from its own receiving and
+  // heading actions. No uploaded locomotion/retargeting pack is involved.
+  if(TrainingEnabled()){
+    const auto originals=animations;
+    unsigned generated=0;
+    for(Animation *source:originals){
+      const std::string name=source->GetName();
+      const bool knee=name=="media/animations/trap/idle/highballs/000_knee.anim"||name=="media/animations/trap/idle/highballs/000_knee.anim_mirror";
+      const bool chest=name=="media/animations/trap/idle/highballs/000_chest.anim"||name=="media/animations/trap/idle/highballs/000_chest.anim_mirror";
+      const bool head=name=="media/animations/pass/idle/nonbase/000_header.anim"||name=="media/animations/pass/idle/nonbase/000_header.anim_mirror";
+      const bool highFoot=name=="media/animations/pass/walk/nonbase/000_kneeheight.anim"||name=="media/animations/pass/walk/nonbase/000_kneeheight.anim_mirror"||
+        name=="media/animations/pass/idle/nonbase/090_kneeheight.anim"||name=="media/animations/pass/idle/nonbase/090_kneeheight.anim_mirror";
+      if(!knee&&!chest&&!head&&!highFoot)continue;
+      Vector3 marker;int sourceContact=-1;
+      if(!boost::static_pointer_cast<FootballAnimationExtension>(source->GetExtension("football"))->GetFirstTouch(marker,sourceContact))continue;
+      const bool mirrored=name.find("_mirror")!=std::string::npos;
+      const unsigned hip=highFoot?(source->GetVariable("touch_bodypart")=="left_foot"?7:10):mirrored?7:10,ankle=hip+2;
+      struct Variant{std::string region;float height,reach,jump;int contact;};
+      std::vector<Variant> variants;
+      if(highFoot){
+        for(float height:{.32f,.48f,.64f,.80f,.96f,1.12f})for(int contact:{26,42})
+          variants.push_back({"foot",height,0,0,contact});
+      }else if(knee){
+        for(const std::string region:{"foot","shin"})
+          for(float height:{.32f,.48f,.64f,.80f,.96f,1.12f})
+            for(float reach:{.0f,.18f})for(int contact:{26,42})
+              variants.push_back({region,height,reach,0,contact});
+        for(float height:{.68f,.84f,1.f})for(float reach:{0.f,.15f})for(int contact:{28,44})
+          variants.push_back({"thigh",height,reach,0,contact});
+      }else if(chest){
+        for(float jump:{0.f,.18f,.36f})variants.push_back({"chest",0,0,jump,jump>0?int(std::round((.12f+std::sqrt(2*jump/9.81f))*100)):32});
+      }else{
+        for(float jump:{0.f,.08f,.16f,.24f,.32f,.40f,.48f,.56f,.64f}){
+          const int contact=jump>0?int(std::round((.12f+std::sqrt(2*jump/9.81f))*100)):32;
+          variants.push_back({"head",0,0,jump,contact});
+          if(jump==0)variants.push_back({"head",0,0,0,46});
+        }
+      }
+      for(const auto &v:variants){
+        Animation *animation=new Animation(*source);
+        auto extension=boost::shared_ptr<FootballAnimationExtension>(new FootballAnimationExtension(animation));
+        animation->GetExtensions()["football"]=extension;
+        for(auto *node:animation->GetNodeAnimations())node->animation.clear();
+        const int sourceEnd=source->GetFrameCount()-1;
+        const int end=v.jump>0?int(std::ceil((.12f+2*std::sqrt(2*v.jump/9.81f)+.24f)*100)):
+          v.contact+std::max(28,sourceEnd-sourceContact);
+        const std::string part=v.region=="head"?"head":v.region=="chest"?"trunk":
+          (hip==7?"left_":"right_")+(v.region=="foot"?std::string("foot"):v.region=="shin"?std::string("lowerleg"):std::string("upperleg"));
+        animation->SetName(std::string(highFoot?"physical/strike/":"physical/receive/")+v.region+"/"+int_to_str(generated++));
+        animation->SetVariable("type",highFoot?"shortpass":"trap");animation->SetVariable("baseanim","false");
+        animation->SetVariable("generated_receipt","true");animation->SetVariable("forced_touch_bodypart",part);
+        animation->SetVariable("reception_region",v.region);animation->SetVariable("physical_jump_height",real_to_str(v.jump));
+        animation->SetVariable("incomingballdirection","0,1,0");
+        animation->SetVariable("incomingballdirection_maxdeviation","1.0");
+        animation->SetVariable("incoming_special_state","");animation->SetVariable("outgoing_special_state","");
+        animation->SetVariable("training_retimed","true");
+        Vector3 contactMarker;
+        for(int frame=0;frame<=end;++frame){
+          float sourceFrame=frame<=v.contact?float(frame)*sourceContact/v.contact:
+            sourceContact+float(frame-v.contact)*(sourceEnd-sourceContact)/(end-v.contact);
+          if(head&&frame>v.contact)
+            sourceFrame=sourceContact*(1-football_physics::smooth(float(frame-v.contact)/32.f));
+          Quaternion q;Vector3 root,unused;
+          auto sample=[&](const std::string &bone,Quaternion &rotation,Vector3 &position){
+            const int lo=int(std::floor(sourceFrame)),hi=std::min(sourceEnd,lo+1);const float t=sourceFrame-lo;
+            Quaternion next;Vector3 nextPosition;source->GetKeyFrame(bone,lo,rotation,position);
+            source->GetKeyFrame(bone,hi,next,nextPosition);rotation=rotation.GetSlerped(t,next);position=position*(1-t)+nextPosition*t;
+          };
+          sample("player",q,root);
+          football_physics::Pose pose,world;football_physics::Points points;
+          for(unsigned bone=0;bone<13;++bone){sample(pes3::nativeBoneNames[bone],q,unused);
+            for(unsigned axis=0;axis<4;++axis)pose[bone][axis]=q.elements[axis];}
+          const float w=football_reach::envelope(frame,v.contact,end);
+          root.coords[2]+=football_reach::jump(frame*.01f,v.jump);
+          football_physics::Vec pelvis{{root.coords[0],root.coords[1],root.coords[2]+walkingBind.offsets[0][2]}};
+          football_reach::fk(walkingBind,pose,pelvis,world,points);
+          if(knee||highFoot){
+            const auto planted=points[hip==7?12:9];
+            if(v.region=="thigh"){
+              // Aim the upper leg at a raised knee, without changing its
+              // length or snapping the lower leg out of its authored fold.
+              auto target=football_physics::addPoint(points[hip],{{mirrored?-.04f:.04f,-.38f-v.reach,v.height-points[hip][2]}});
+              const auto current=football_physics::unit(pes3::subtractPoint(points[hip+1],points[hip]));
+              const auto goal=football_physics::unit(pes3::subtractPoint(target,points[hip]));
+              const auto delta=pes3::swingRotation(current,goal);
+              const auto swing=football_physics::blended({{0,0,0,1}},delta,w);
+              const auto upper=football_physics::normalized(pes3::productRotation(swing,world[hip]));
+              pose[hip]=football_physics::normalized(pes3::productRotation(pes3::inverseRotation(world[0]),upper));
+            }else{
+              auto target=points[ankle];
+              const float targetZ=v.height-(v.region=="shin"?.20f:.06f);
+              target[2]+=(targetZ-target[2])*w;target[1]-=v.reach*w;
+              football_reach::leg(walkingBind,pose,pelvis,hip,target);
+            }
+            // The opposite leg supports the whole preparation; the active
+            // limb is free to reach. IK never changes a bone's length.
+            football_reach::leg(walkingBind,pose,pelvis,hip==7?10:7,planted);
+            football_reach::fk(walkingBind,pose,pelvis,world,points);
+          }
+          animation->SetKeyFrame("player",frame,QUATERNION_IDENTITY,root);
+          for(unsigned bone=0;bone<13;++bone)animation->SetKeyFrame(pes3::nativeBoneNames[bone],frame,
+            Quaternion(pose[bone][0],pose[bone][1],pose[bone][2],pose[bone][3]),Vector3(0));
+          if(frame==v.contact){
+            if(knee||highFoot){const auto p=v.region=="foot"?points[ankle]:v.region=="shin"?
+                pes3::scalePoint(pes3::addPoint(points[hip+1],points[ankle]),.5f):
+                pes3::addPoint(pes3::scalePoint(points[hip],.25f),pes3::scalePoint(points[hip+1],.75f));
+              contactMarker=Vector3(p[0],p[1]-.16f,p[2]);
+            }else contactMarker=marker+root.Get2D()+Vector3(0,0,v.jump);
+          }
+        }
+        extension->SetKeyFrame(v.contact,QUATERNION_IDENTITY,contactMarker);
+        animation->DirtyCache();_PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+      }
+    }
+    printf("PHYSICAL_RECEIVE_BANK clips=%u native_sources=5 physical_contact=1\n",generated);
+  }
+
   //Log(e_Notice, "AnimCollection", "Load", "Deleting base anim");
 
   //delete baseAnim;
@@ -1063,6 +1183,9 @@ int AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode,
        (animation->GetAnimType()=="shortpass" || animation->GetAnimType()=="shot") &&
        closestBodyPart->GetName().find("arm")!=std::string::npos)
       animation->SetVariable("touch_bodypart","head");
+
+    if(animation->GetVariable("generated_receipt")=="true")
+      animation->SetVariable("touch_bodypart",animation->GetVariable("forced_touch_bodypart"));
 
     return animTouchFrame; // XDEBUG disable this
 

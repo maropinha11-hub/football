@@ -31,7 +31,8 @@ namespace {
 bool imminentReception(Match *match,Player *player){
   if(!TrainingEnabled()||match->GetBallRetainer())return false;
   Player *last=match->GetLastTouchPlayer();
-  if(last==player&&player->GetLastTouchType()!=e_TouchType_Accidental)return false;
+  if(last==player&&player->GetLastTouchType()!=e_TouchType_Accidental&&
+      (player->GetLastTouchType()==e_TouchType_Intentional_Kicked||match->GetBall()->Predict(0).coords[2]<.30f))return false;
   const Vector3 ball=match->GetBall()->Predict(0);
   const bool free=!last||last->GetTeamID()==player->GetTeamID()||(last->GetPosition()-ball).Get2D().GetLength()>1.15f;
   auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};

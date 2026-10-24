@@ -297,6 +297,7 @@ class Match {
     Player *physicalGripOpponent=nullptr;
     struct PhysicalAIHold {Player *victim=nullptr;Vector3 offset{0},anchor{0};unsigned long started=0,cooldown=0;};
     std::map<int,PhysicalAIHold> physicalAIHolds;
+    std::map<std::pair<int,int>,unsigned long> physicalDuelImpacts;
     void ProcessPlayerMatchContact();
     void ApplyPhysicalBodyDuel(Player *first,Player *second);
     int trainingContactExercise=0;

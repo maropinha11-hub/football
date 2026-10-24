@@ -29,7 +29,7 @@ template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec veloc
     // Allow a short adjustment step, with finite acceleration, instead of
     // ignoring a pass just outside the receiver's present footprint.
     const float corridor=.65f+std::min(.95f,2.5f*time*time);
-    if(!std::isfinite(distance)||!std::isfinite(height)||distance>corridor||height<.055f||height>2.35f)continue;
+    if(!std::isfinite(distance)||!std::isfinite(height)||distance>corridor||height<.055f||height>2.65f)continue;
     const float rating=distance+.12f*time;
     if(rating<score){score=rating;best={true,time,distance,height,p};}
   }

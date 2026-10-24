@@ -106,12 +106,15 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
       Player *last=match->GetLastTouchPlayer();
       const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;
       const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free);
+      if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0&&
+         (match->GetBall()->Predict(1000).Get2D()-GetPosition()).GetLength()<2.f&&match->GetBall()->Predict(0).coords[2]>2.5f)
+        printf("CPU_AIR_FORECAST t=%lu actor=%d valid=%d free=%d speed=%.4f future_height=%.4f\n",match->GetActualTime_ms(),GetID(),plan.valid?1:0,free?1:0,GetMovement().GetLength(),match->GetBall()->Predict(1000).coords[2]);
       if(plan.valid){
         bool receiving=fieldPlayer->GetTeam()->GetDesignatedTeamPossessionPlayer()==fieldPlayer;
         // Possession designation can lag an arrival beside another player.
         // Let the best nearby reachable receiver respond instead of watching
         // the ball pass while a more distant teammate remains designated.
-        if(!receiving&&plan.time<.70f&&plan.gap<.85f){
+        if(!receiving&&plan.time<1.10f&&plan.gap<1.10f){
           const Vector3 arrival(plan.point[0],plan.point[1],0);
           float own=(arrival-GetPosition().Get2D()).GetLength();bool better=false;
           std::vector<Player*> mates;fieldPlayer->GetTeam()->GetActivePlayers(mates);
@@ -129,10 +132,11 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
           command.useDesiredLookAt=true;command.desiredLookAt=match->GetBall()->Predict(0).Get2D();
           if(receiving){command.useDesiredMovement=true;command.desiredDirection=step.GetNormalized(facing);command.desiredVelocityFloat=approach;}
         }
-        const bool action=std::any_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType!=e_FunctionType_Movement&&c.desiredFunctionType!=e_FunctionType_BallControl;});
-        if(receiving&&!action&&!fieldPlayer->TouchPending()&&plan.time<.65f&&plan.height<1.55f){
+        const bool action=std::any_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType!=e_FunctionType_Movement&&c.desiredFunctionType!=e_FunctionType_BallControl&&c.desiredFunctionType!=e_FunctionType_Trap;});
+        if(receiving&&!action&&!fieldPlayer->TouchPending()&&plan.time<1.10f&&plan.height<2.65f){
           PlayerCommand trap;trap.desiredFunctionType=e_FunctionType_Trap;trap.useDesiredMovement=trap.useDesiredLookAt=true;
           trap.desiredDirection=step.GetNormalized(facing);trap.desiredVelocityFloat=approach;trap.desiredLookAt=match->GetBall()->Predict(0).Get2D();
+          commandQueue.erase(std::remove_if(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_Trap;}),commandQueue.end());
           commandQueue.insert(commandQueue.begin(),trap);
         }
         if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)

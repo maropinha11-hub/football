@@ -14,12 +14,21 @@ try:
   # The standard side-by-side drill can be outside this player's anatomical
   # arm reach. Bring the carrier closer with actual analog locomotion; the
   # CPU still has to reach real skin before the unchanged .10 m grip gate.
-  dx=.15*math.cos(yaw)-.68*math.sin(yaw);dy=.15*math.sin(yaw)+.68*math.cos(yaw);length=math.hypot(dx,dy)
-  g.pad(.35*dx/length,-.35*dy/length);g.advance(250);g.pad(0,0)
-  g.advance(1500);grips=ev(g,'PHYSICAL_AI_GRIP');forces=ev(g,'PHYSICAL_AI_GRIP_FORCE')
+  g.wait(lambda:ev(g,'PHYSICAL_MATCH_SETUP'));setup=ev(g,'PHYSICAL_MATCH_SETUP')[-1];opponent=int(setup['opponent'])
+  def match_frames_now():return[json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PLAYER_MATCH_FRAME ')]
+  g.wait(lambda:match_frames_now()and match_frames_now()[-1]['t']>=int(setup['t']))
+  match_frames=match_frames_now()
+  target=next(x['p']for x in match_frames[-1]['players']if x['id']==opponent);actor=g.frames()[-1]['player']
+  dx=target[0]-actor[0];dy=target[1]-actor[1];length=math.hypot(dx,dy)
+  # Make one real approach to the actual opponent until its hand contacts
+  # the shirt. Braking now works, so a fixed250ms step no longer coasts the
+  # carrier the additional distance that the old fixture depended on.
+  g.pad(.35*dx/length,-.35*dy/length)
+  g.wait(lambda:any(x['state']=='begin'and x['actor']==str(opponent)for x in ev(g,'PHYSICAL_AI_GRIP')),seconds=8);g.pad(0,0)
+  g.advance(1500);grips=[x for x in ev(g,'PHYSICAL_AI_GRIP')if x['actor']==str(opponent)];forces=[x for x in ev(g,'PHYSICAL_AI_GRIP_FORCE')if x['actor']==str(opponent)]
   check('CPU hand reaches the actual shirt before holding',any(x['state']=='begin'and float(x['gap'])<.10 for x in grips),grips)
   check('CPU hold transmits bounded force through a reachable hand',bool(forces)and all(math.isfinite(float(x['force']))and float(x['force'])<=180.01 and float(x['gap'])<=.23 for x in forces),forces)
-  g.keys(['b','n'],False);g.advance(1800);grips=ev(g,'PHYSICAL_AI_GRIP');fouls=ev(g,'PHYSICAL_FOUL')
+  g.keys(['b','n'],False);g.advance(1800);grips=[x for x in ev(g,'PHYSICAL_AI_GRIP')if x['actor']==str(opponent)];fouls=ev(g,'PHYSICAL_FOUL')
   check('CPU grip eventually releases or is stopped by the referee',any(x['state']=='release'for x in grips)or bool(fouls),dict(grips=grips,fouls=fouls))
   frames=[json.loads(x[19:])for x in g.read_log().splitlines()if x.startswith('PLAYER_MATCH_FRAME ')]
   check('contact drill preserves the two teams and fixed human',all(len(x['players'])==22 and x['human_count']==1 and x['selected_id']==x['locked_id']for x in frames),dict(samples=len(frames)))

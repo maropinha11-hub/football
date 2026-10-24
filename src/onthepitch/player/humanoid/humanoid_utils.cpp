@@ -335,6 +335,19 @@ Vector3 GetTrapVector(Match *match, Player *player, const Vector3 &nextStartPos,
 
   Ball *ball = match->GetBall();
 
+  if(currentAnim->anim->GetVariable("generated_receipt")=="true"&&
+      currentAnim->anim->GetVariable("touch_bodypart")=="head"){
+    // A head cushion is not a foot dribble at head height. Send the real
+    // contact gently down/ahead of the body so gravity completes the control,
+    // rather than leaving a nearly stationary ball inside the follow-through.
+    xRot=yRot=0;
+    // An idle receiver's adjustment direction can point backwards even
+    // though its chest/head faces the arriving ball. Cushion ahead of the
+    // actual body, never through its own forehead toward that idle vector.
+    const Vector3 forward=spatialState.bodyDirectionVec.Get2D().GetNormalized(Vector3(0,-1,0));
+    return spatialState.movement.Get2D()*.50f+forward*1.35f+Vector3(0,0,-.65f);
+  }
+
   float distanceFactor = 0.0f; // how far ball bounces off feet
   float heightFactor = 0.0f; // how high ball bounces off feet
   float ballMovementFactor = 0.0f; // how much of the current ball movement is maintained

@@ -36,7 +36,15 @@ try:
      if not when+1200<=frame['t']<=when+3000:continue
      nearest=min(match,key=lambda x:abs(x['t']-frame['t']),default=None)
      player=next((x for x in nearest['players']if str(x['id'])==actor),None)if nearest else None
-     if player:attached.append(dict(t=frame['t'],height=frame['ball'][2],gap=math.dist(frame['ball'][:2],player['p'][:2]),stuck=frame['ball'][2]>.35 and math.dist(frame['ball'][:2],player['p'][:2])<.55))
+     if player:
+      # A rising/falling airborne control near the body is not suspension.
+      # The old regression was a nearly stationary high ball whose tangent
+      # velocity was damped every tick despite gravity. Measure that loss of
+      # vertical travel, keeping the original height/gap/fraction thresholds.
+      previous=attached[-1]if attached else None
+      vz=(frame['ball'][2]-previous['height'])/((frame['t']-previous['t'])/1000)if previous and frame['t']>previous['t']else None
+      gap=math.dist(frame['ball'][:2],player['p'][:2])
+      attached.append(dict(t=frame['t'],height=frame['ball'][2],gap=gap,vertical_speed=vz,stuck=frame['ball'][2]>.35 and gap<.55 and vz is not None and abs(vz)<.35))
     fraction=sum(x['stuck']for x in attached)/max(1,len(attached))
     check(title+' does not remain suspended against a back/thigh after receiving',len(attached)>8 and fraction<.25,dict(attached_fraction=fraction,late_samples=attached))
     impacts=ev(g,'TRAINING_BODY_TOUCH',start)

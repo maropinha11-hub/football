@@ -18,6 +18,14 @@ Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacot
 completo. Veja [a base recuperada e os controles](docs/BASE-APROVADA.md) e
 [o relatório de validação](docs/approved-base-validation.json).
 
+O modo físico agora acrescenta **194 adaptações temporizadas de cinco movimentos
+nativos** para recepções por altura e batidas no ar. O seletor pode preparar uma
+extensão da perna, amortecer com a coxa/peito/cabeça ou saltar antes de a bola
+chegar ao chão, tanto no player quanto na CPU. As disputas transmitem um impulso
+inicial aos dois corpos, além da pressão contínua, para acionar a recuperação de
+equilíbrio. São movimentos derivados dos existentes, sem novas capturas ou
+locomoção Unity. Veja [como observar as recepções e divididas](docs/RECEPCAO-ATIVA-E-DIVIDIDAS.md).
+
 A revisão inclui passos procedurais de recuperação com IK, caminhada com
 postura própria de braços/tronco e analógico leve/médio, gasto de fôlego humano
 somente com RB, respostas protetoras compartilhadas pela CPU e um controlador

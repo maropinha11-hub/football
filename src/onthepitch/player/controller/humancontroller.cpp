@@ -8,6 +8,7 @@
 
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../physical_match_rules.hpp"
+#include "../../reception_prediction.hpp"
 
 #include "../../../main.hpp"
 #include "../../../hid/gamepad.hpp"
@@ -420,6 +421,20 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
           // A well-aimed chest ball needs a quiet receiving base. Offset
           // deliveries still retain the native lateral interception step.
           command.desiredVelocityFloat=0;command.desiredDirection=match->GetTrainingReceptionFacing();
+        }
+        if(player->GetHumanoid()->PhysicalRigEnabled()&&stick.GetLength()<.05f&&match->GetBall()->Predict(0).coords[2]>.30f){
+          auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};
+          const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(player->GetPosition()),point(player->GetMovement()),point(match->GetBall()->GetMovement()),!match->GetBallRetainer());
+          if(plan.valid){
+            const Vector3 front=match->GetTrainingReceptionFacing();
+            const Vector3 meeting=Vector3(plan.point[0],plan.point[1],0)-front*.24f-player->GetPosition().Get2D();
+            // Do not run toward a point the high ball will pass hundreds of
+            // milliseconds before it reaches receiving height. Wait at its
+            // actual meeting point, retaining manual forward/back adjustment.
+            command.desiredVelocityFloat=meeting.GetLength()<.40f?0.f:std::min(1.5f,meeting.GetLength()/std::max(.25f,plan.time));
+            command.desiredDirection=meeting.GetNormalized(front);
+            command.desiredLookAt=player->GetPosition()+front*10.f;
+          }
         }
         for(auto &receive:commandQueue)if(receive.desiredFunctionType==e_FunctionType_Trap ||
             receive.desiredFunctionType==e_FunctionType_BallControl){

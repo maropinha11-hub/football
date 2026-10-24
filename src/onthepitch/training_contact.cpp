@@ -24,6 +24,23 @@ void Match::ApplyPhysicalBodyDuel(Player *first,Player *second){
   Vector3 friction=relative-normal*relative.GetDotProduct(normal);
   friction=friction.GetNormalized(0)*std::min(force*.32f,friction.GetLength()*45.f);
   const Vector3 onSecond=normal*force+friction;
+  // Pressure is a sustained force, not the impact that initiates a duel.
+  // Previously its 10 ms impulse (<=2.6 Ns) never activated a recovery step.
+  // Resolve a new closing contact with reduced mass, once per contact
+  // episode; apply the same opposite impulse to both bodies at the skin hit.
+  const int firstID=first->GetID(),secondID=second->GetID();
+  const std::pair<int,int> key(std::min(firstID,secondID),std::max(firstID,secondID));
+  const float closing=std::max(0.f,relative.GetDotProduct(normal));
+  auto previous=physicalDuelImpacts.find(key);
+  if(closing>.7f&&(previous==physicalDuelImpacts.end()||actualTime_ms-previous->second>500)){
+    const float magnitude=std::min(240.f,closing*(football_physics::PhysicalRig::mass*.5f)*1.05f)*(first->GetTeamID()==second->GetTeamID()?.65f:1.f);
+    const Vector3 impulse=normal*magnitude;
+    a->AddPhysicalImpulse(-impulse,point-first->GetPosition()-Vector3(0,0,.96f));
+    b->AddPhysicalImpulse(impulse,point-second->GetPosition()-Vector3(0,0,.96f));
+    physicalDuelImpacts[key]=actualTime_ms;
+    if(GetConfiguration()->GetBool("training_telemetry",false))
+      printf("PHYSICAL_DUEL_IMPACT t=%lu actor=%d opponent=%d impulse=%.5f closing=%.5f reciprocal=1\n",actualTime_ms,first->GetID(),second->GetID(),magnitude,closing);
+  }
   a->AddPhysicalTraction(-onSecond);b->AddPhysicalTraction(onSecond);
   a->AddPhysicalImpulse(-onSecond*.01f,point-first->GetPosition()-Vector3(0,0,.96f));
   b->AddPhysicalImpulse(onSecond*.01f,point-second->GetPosition()-Vector3(0,0,.96f));

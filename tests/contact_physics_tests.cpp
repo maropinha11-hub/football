@@ -1,4 +1,5 @@
 #include "onthepitch/player/humanoid/physical_rig.hpp"
+#include "onthepitch/player/humanoid/adaptive_reception.hpp"
 #include "onthepitch/player/humanoid/shirt_cloth.hpp"
 #include "onthepitch/player/humanoid/anatomical_arms.hpp"
 #include "onthepitch/player/humanoid/contact_resistance.hpp"
@@ -49,6 +50,19 @@ float armClearance(const PhysicalRig&r){
 }
 }
 int main(int argc,char **argv){
+ for(float height:{.3f,.6f,.9f,1.15f}){
+  const auto bind=bindPose();auto pose=standing().pose;const Vec root{{0,0,.96f}};Pose world;Points points;
+  football_reach::fk(bind,pose,root,world,points);const auto support=points[9];
+  football_reach::leg(bind,pose,root,10,{{-.087f,-.35f,height}});
+  football_reach::fk(bind,pose,root,world,points);
+  check(length(subtractPoint(points[12],{{-.087f,-.35f,height}}))<.001f,"airborne reach actually reaches the requested ankle location");
+  check(std::fabs(length(subtractPoint(points[11],points[10]))-length(bind.offsets[11]))<1e-5f&&std::fabs(length(subtractPoint(points[12],points[11]))-length(bind.offsets[12]))<1e-5f,"airborne reach preserves thigh and shin lengths");
+  check(length(subtractPoint(points[9],support))<1e-6f,"reaching leg does not displace the opposite support shoe");
+ }
+ for(float height:{.16f,.32f,.64f}){
+  const float apex=.12f+std::sqrt(2*height/9.81f),landing=.12f+2*std::sqrt(2*height/9.81f);
+  check(football_reach::jump(0,height)==0&&std::fabs(football_reach::jump(apex,height)-height)<1e-5f&&football_reach::jump(landing+.01f,height)==0,"jump has grounded takeoff, physical apex and grounded landing");
+ }
  for(bool cushion:{false,true}){
   const Vec grazing{{-.01f,0,-2.f}},normal{{1,0,0}};
   const Vec after=football_contacts::bodyResponse(grazing,normal,cushion);

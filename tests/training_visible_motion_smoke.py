@@ -36,6 +36,9 @@ try:
        slip.append(math.dist(previous[foot][:2],current[foot][:2])/dt)
     check('off-ball stick '+str(strength)+' has alternating visible swing and grounded support',bool(walk)and all(max(v,default=0)-min(v,default=0)>.02 for v in heights.values())and support>.80,dict(height_ranges={k:[min(v,default=0),max(v,default=0)]for k,v in heights.items()},support_fraction=support))
     check('off-ball stick '+str(strength)+' support feet stay on the pitch rather than sliding at root speed',bool(slip)and statistics.median(slip)<.55,dict(stance_samples=len(slip),median_slip_mps=statistics.median(slip)if slip else None,root_speed=speed))
+    if strength==.35:
+     stopped=g.advance(650);drift=math.dist(f[-1]['player'][:2],stopped[-1]['player'][:2])
+     check('releasing an ordinary walking stick brakes before the long cycle ends',drift<.25 and stopped[-1]['speed']<.20,dict(drift_m=drift,final_speed=stopped[-1]['speed'],observation_ms=650))
    prepared=[int(x['t'])for x in ev(g,'RESTART_PREPARED')];continuous=[math.dist(x['player'][:2],y['player'][:2])for x,y in zip(f,f[1:])if not any(x['t']-100<=t<=y['t']+100 for t in prepared)]
    check('walking has no unexplained player relocation outside native restart preparation',len(continuous)>30 and max(continuous)<.30,dict(frame_pairs=len(continuous),maximum_displacement=max(continuous,default=999),native_preparations=prepared))
    check('ordinary walking pressures give progressively greater travel',speeds[0]+.06<speeds[-1],speeds)
