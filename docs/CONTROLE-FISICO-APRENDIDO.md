@@ -1,4 +1,4 @@
-# Controle físico aprendido e caminhada
+# Apoio procedural, controle físico aprendido e caminhada
 
 Esta revisão mantém a locomoção aprovada e acrescenta um controlador muscular
 neural pequeno ao Bullet. Ele atua no jogador e na CPU. Não é o Euphoria,
@@ -12,6 +12,29 @@ normal aprovada; RB continua sendo o comando de sprint. A passada lenta tem
 apoio sobreposto e joelhos resolvidos no esqueleto original. O toque inicia a
 passada de condução e deixa a bola rolar durante a recuperação. O contato é
 recalculado na chuteira dessa pose, sem aumentar a tolerância da colisão.
+
+A caminhada agora também reduz o balanço vertical do corpo, abre os cotovelos
+e deixa os braços mais baixos, com contrarrotação suave do tronco. A CPU
+seleciona o mesmo ciclo em aproximações lentas. Não há novas capturas externas.
+
+Impactos moderados calculam uma passada de recuperação a partir do déficit de
+apoio e da direção do impulso. Um pé levanta e avança; o outro tenta manter
+seu apoio, com IK de duas articulações e comprimentos anatômicos preservados.
+A trajetória é gerada sem escolher uma animação de tropeço. O pé mais baixo
+permanece como apoio quando o outro já está em balanço. O apoio cede de forma
+gradual quando a passada nativa avança além do alcance, sem prendê-lo a um
+ponto que ficou para trás. Reposicionamentos de cobranças e do laboratório
+limpam alvos e momento anteriores. Um braço
+buscando uma pegada e corpos muito próximos impedem essa passada livre;
+a resposta muscular continua ativa durante a disputa. Há limites de
+velocidade, alcance e cruzamento das pernas, além de liberação gradual para
+uma ação com a bola. Impactos fortes mantêm as reações protetoras nativas;
+perda persistente de apoio ainda pode resultar em queda articulada. O controle
+não garante equilíbrio contra qualquer força, nem é o sistema proprietário
+Euphoria. Os alvos de apoio nunca são a posição da bola. Ao agarrar, a mão que fez o contato assume o acompanhamento, a partir de sua
+pose atual. A continuidade da pegada passa a exigir essa mesma mão. Isso vale
+para o jogador e para a CPU, sem trocar de braço nem reposicionar a mão
+instantaneamente.
 
 O fôlego humano lê o botão RB a cada passo de simulação. Velocidade pedida
 pelo assistente de recepção não equivale mais a apertar RB. Sem RB, o jogador
@@ -33,7 +56,22 @@ compromete um passo de recuperação e só entra em queda após perda de apoio
 persistente. A rede controla a resposta muscular angular; não aprendeu
 esse planejamento de passos. As duas camadas têm funções diferentes.
 
-Nas recepções previstas, a CPU orienta o corpo para a bola antes da chegada.
+Nas recepções previstas, o recebedor designado da CPU orienta o corpo e ajusta
+sua aproximação e frenagem antes da chegada. A seleção de domínio continua
+nativa. A preparação do corpo também considera altura e tempo de chegada,
+e o contato real recruta tronco e braços. Rebotes passivos têm restituição
+menor; transições de pose não podem acrescentar uma velocidade muscular de
+18 m/s à superfície do jogador.
+
+Cabeceios têm preparação e acompanhamento de tronco/pescoço na referência
+nativa, sem alterar a pose do instante exato do contato. A força considera
+carga do comando, velocidade da bola e movimento real da superfície da cabeça,
+com limites próprios de passe e finalização. A aproximação gradual da mão
+do goleiro também foi ajustada para alcançar a trajetória com a pele real,
+sem ampliar a tolerância de contato. Não herda a potência de passe
+com o pé. Mais jogadores elegíveis podem disputar uma bola aérea, preservando
+a prioridade de companheiros melhor posicionados e o contato real.
+
 Uma bolada real nas costas não é mais classificada como domínio de cabeça.
 A previsão não cria posse nem toque por proximidade: a pele precisa alcançar
 a bola. Bolas fora do alcance ou fortes demais ainda podem escapar.
@@ -74,6 +112,14 @@ controlam os motores angulares de acompanhamento e a musculatura superior
 durante quedas; inércia, limites de torque e articulações continuam físicos.
 Os testes gráficos verificam execução real, limites e recuperação. Não
 demonstram reprodução exata de movimentos humanos ou de outra engine.
+
+Uma nova busca de 75 gerações, com impactos opostos e condições mais amplas,
+foi avaliada nesta revisão. Seu custo caiu ligeiramente, mas o erro e a variação
+de aceleração pioraram em relação à rede aprovada. Os pesos foram rejeitados
+para execução; o relatório está em `config/muscle-policy-rejected-candidate.json`.
+O jogo mantém o modelo descrito acima. A nova plantação dos pés é analítica
+com IK, combinada com esse servo neural; não foi aprendida por uma política
+de corpo inteiro.
 
 ## Pesquisa e fontes primárias
 

@@ -538,7 +538,10 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   sampleSkin(0);const Vector3 beforeSurface=positions[struckBone]+global[struckBone]*localSurface;
   sampleSkin(1);const Vector3 afterSurface=positions[struckBone]+global[struckBone]*localSurface;
   Vector3 surfaceVelocity=(afterSurface-beforeSurface)*100;
-  surfaceVelocity=surfaceVelocity.GetNormalized(Vector3(0))*std::min(18.f,surfaceVelocity.GetLength());
+  // Bound the muscular component, not the player's travel. A short pose
+  // transition used to turn a torso/arm into an 18 m/s rebounding wall.
+  Vector3 localVelocity=surfaceVelocity-spatialState.movement;localVelocity.NormalizeMax(4.f);
+  surfaceVelocity=spatialState.movement+localVelocity;
   const Vector3 relative=incoming-surfaceVelocity;
   const float inward=relative.GetDotProduct(normal);
   if(inward>=-.2f)return;
@@ -553,7 +556,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   // Only a swept, real skin contact can absorb the pass. A soft receiver
   // withdraws the contacted surface; this is not a proximity possession or
   // an invisible barrier in front of the chest.
-  Vector3 outgoing=(relative-normal*inward)*(cushioning?.30f:.8f)-normal*inward*(cushioning?.055f:.3f)+
+  Vector3 outgoing=(relative-normal*inward)*(cushioning?.22f:.65f)-normal*inward*(cushioning?.035f:.18f)+
     (cushioning?spatialState.movement*.70f:surfaceVelocity);
   if(cushioning){
     const float maxLead=std::max(1.3f,spatialState.movement.Get2D().GetLength()+.75f);
@@ -571,7 +574,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   contactPreviousBall=resolved;
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
-  if(PhysicalRigEnabled()&&(part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||part.find("knee")!=std::string::npos)){
+  if(PhysicalRigEnabled()&&legalPart){
     physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
     physicalBallImpactPart=toBall.GetDotProduct(spatialState.bodyDirectionVec)<-.25f?"back":part;
     const Vector3 impulse=(incoming-outgoing)*.43f;

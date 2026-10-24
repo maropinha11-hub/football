@@ -1283,7 +1283,11 @@ float ElizaController::_GetPassingOdds(const Vector3 &target, e_FunctionType pas
     }
   }
 
-  if (passType == e_FunctionType_HighPass) danger += 0.4f; // just don't prefer high passing when low passing is applicable as well
+  if (passType == e_FunctionType_HighPass){
+    const bool crossing=PlayerMatchEnabled()&&std::fabs(player->GetPosition().coords[1])>14.f&&
+      (player->GetPosition()-Vector3(-team->GetSide()*pitchHalfW,0,0)).Get2D().GetLength()<35.f;
+    danger+=crossing?.22f:.4f;
+  }
 
   danger = NormalizedClamp(danger, 0.0f, secondScale); // 1 super dangerous dude is basically the same as 100% danger
   float odds = 1.0f - danger;
@@ -1293,7 +1297,7 @@ float ElizaController::_GetPassingOdds(const Vector3 &target, e_FunctionType pas
 
 void ElizaController::_QueueAerialDuel(PlayerCommandQueue &queue){
   if(!PlayerMatchEnabled()||!player->GetHumanoid()->PhysicalRigEnabled()||
-     CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK||team->GetDesignatedTeamPossessionPlayer()!=player)return;
+     CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK)return;
   if(std::any_of(queue.begin(),queue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_ShortPass||c.desiredFunctionType==e_FunctionType_LongPass||c.desiredFunctionType==e_FunctionType_HighPass||c.desiredFunctionType==e_FunctionType_Shot;}))return;
   if(match->GetLastTouchPlayer()==player&&CastPlayer()->GetLastTouchType()!=e_TouchType_Accidental)return;
   const Vector3 position=player->GetPosition(),goal(-team->GetSide()*pitchHalfW,0,0);
@@ -1301,7 +1305,7 @@ void ElizaController::_QueueAerialDuel(PlayerCommandQueue &queue){
   // inside the box must still be allowed to compete for a high ball.
   std::vector<PlayerImage> opponents;_mentalImage->GetTeamPlayerImages(1-team->GetID(),-1,opponents);
   float pressure=100;for(const auto &opponent:opponents)pressure=std::min(pressure,(opponent.position-position).Get2D().GetLength());
-  if(pressure>2.1f)return;
+  if(pressure>2.1f&&(goal-position).Get2D().GetLength()>24.f)return;
   float arrival=0,height=0,best=100;
   for(unsigned ms=80;ms<=800;ms+=20){const Vector3 ball=match->GetBall()->Predict(ms);
     const float gap=(ball-position-player->GetMovement()*(ms*.001f)).Get2D().GetLength();
@@ -1310,6 +1314,11 @@ void ElizaController::_QueueAerialDuel(PlayerCommandQueue &queue){
     if(score<best){best=score;arrival=ms*.001f;height=ball.coords[2];}
   }
   if(arrival==0)return;
+  if(team->GetDesignatedTeamPossessionPlayer()!=player){
+    const Vector3 landing=match->GetBall()->Predict(unsigned(arrival*1000));
+    const float own=(landing-position).Get2D().GetLength();std::vector<Player*> mates;team->GetActivePlayers(mates);
+    for(auto *mate:mates)if(mate!=player&&(landing-mate->GetPosition()).Get2D().GetLength()+.35f<own)return;
+  }
   Player *target=nullptr;float rating=.68f;
   const float offside=std::max(0.f,AI_GetOffsideLine(match,_mentalImage,1-team->GetID())*(-team->GetSide()));
   std::vector<Player*> mates;team->GetActivePlayers(mates);

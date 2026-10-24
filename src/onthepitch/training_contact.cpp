@@ -95,7 +95,7 @@ void Match::ProcessPlayerMatchContact(){
   if(distance<.9f && opponent->HasPossession())other->SetPhysicalShield(true);
   const float yaw=std::atan2(opponent->GetBodyDirectionVec().coords[0],-opponent->GetBodyDirectionVec().coords[1]);
   const Vector3 shirt=trainingGrip?opponent->GetPosition()+trainingGripAnchor.GetRotated2D(yaw):other->GetPhysicalShirtPoint(trainingPlayer->GetPosition());
-  const float gap=human->PhysicalHandDistance(shirt);
+  const float gap=human->PhysicalHandDistance(shirt,trainingGrip);
   if((shield || gripKey) && distance<.9f)human->SetPhysicalHandTarget(shirt,true);
   const bool busy=human->PhysicalRigBusy() || other->PhysicalRigBusy();
   if(events.ConsumeKeyPress(SDLK_m) && !busy && distance<.85f && actualTime_ms>=trainingTackleUntil){
@@ -104,7 +104,7 @@ void Match::ProcessPlayerMatchContact(){
     trainingTackleUntil=actualTime_ms+850;
     printf("PHYSICAL_MATCH_CONTEST t=%lu actor=%d opponent=%d impulse=%.3f distance=%.4f\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID(),strength,distance);
   }
-  if(gripKey && !trainingGrip && !trainingGripBlocked && !busy && distance<.9f && gap<.10f){
+  if(gripKey && !trainingGrip && !trainingGripBlocked && !busy && distance<.9f && gap<.10f && human->BeginPhysicalHandHold(shirt)){
     trainingGrip=true;physicalGripOpponent=opponent;trainingGripOffset=separation;trainingGripStarted=actualTime_ms;trainingGripEscape=0;
     trainingGripAnchor=(shirt-opponent->GetPosition()).GetRotated2D(-yaw);
     printf("PHYSICAL_MATCH_GRIP t=%lu state=begin actor=%d opponent=%d hand_gap=%.5f\n",actualTime_ms,trainingPlayer->GetID(),opponent->GetID(),gap);
@@ -159,10 +159,10 @@ void Match::ProcessPlayerMatchContact(){
     if(reaching || hold.victim)body->SetPhysicalShield(true);
     const Vector3 shirt=target->GetPhysicalShirtPoint(actor->GetPosition());
     if((possession || carrier || aerial || hold.victim) && d<.95f)body->SetPhysicalHandTarget(shirt,true);
-    const float hand=body->PhysicalHandDistance(shirt);
+    const float hand=body->PhysicalHandDistance(shirt,hold.victim!=nullptr);
     if(laboratory && actualTime_ms%100==0)
       printf("PHYSICAL_AI_REACH t=%lu actor=%d victim=%d distance=%.5f carrier=%d hand_gap=%.5f function=%d\n",actualTime_ms,actor->GetID(),victim->GetID(),d,carrier,hand,int(actor->GetCurrentFunctionType()));
-    if(!hold.victim && reaching && actualTime_ms>=hold.cooldown && d<.85f && hand<.10f && !target->PhysicalRigBusy()){
+    if(!hold.victim && reaching && actualTime_ms>=hold.cooldown && d<.85f && hand<.10f && !target->PhysicalRigBusy() && body->BeginPhysicalHandHold(shirt)){
       hold.victim=victim;hold.offset=delta;hold.started=actualTime_ms;
       printf("PHYSICAL_AI_GRIP t=%lu actor=%d victim=%d state=begin gap=%.5f\n",actualTime_ms,actor->GetID(),victim->GetID(),hand);
     }
@@ -235,7 +235,7 @@ void Match::ProcessTrainingContact(){
   human->SetPhysicalShield(shield || gripKey);
   const float partnerYaw=std::atan2(trainingPartner->GetBodyDirectionVec().coords[0],-trainingPartner->GetBodyDirectionVec().coords[1]);
   const Vector3 shirtPoint=trainingGrip?trainingPartner->GetPosition()+trainingGripAnchor.GetRotated2D(partnerYaw):partner->GetPhysicalShirtPoint();
-  const float handDistance=human->PhysicalHandDistance(shirtPoint);
+  const float handDistance=human->PhysicalHandDistance(shirtPoint,trainingGrip);
   if((gripKey || shield) && distance<.9f)human->SetPhysicalHandTarget(shirtPoint,true);
   const bool busy=human->PhysicalRigBusy() || partner->PhysicalRigBusy();
   if(!busy && trainingContactExercise==2 && distance>.50f){
@@ -281,7 +281,7 @@ void Match::ProcessTrainingContact(){
     // award the ball. Existing tackles remain available in the full match.
     printf("PHYSICAL_CONTEST t=%lu distance=%.4f impulse=%.4f\n",actualTime_ms,distance,impulse.GetLength());
   }
-  if(gripKey && !trainingGrip && !trainingGripBlocked && !busy && distance<.9f && handDistance<.10f){
+  if(gripKey && !trainingGrip && !trainingGripBlocked && !busy && distance<.9f && handDistance<.10f && human->BeginPhysicalHandHold(shirtPoint)){
     trainingGrip=true;trainingGripOffset=separation;trainingGripStarted=actualTime_ms;trainingGripEscape=0;
     trainingGripAnchor=(shirtPoint-trainingPartner->GetPosition()).GetRotated2D(-partnerYaw);
     printf("PHYSICAL_GRIP t=%lu state=begin distance=%.4f hand_gap=%.5f\n",actualTime_ms,distance,handDistance);

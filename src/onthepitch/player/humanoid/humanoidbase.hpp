@@ -266,13 +266,16 @@ class HumanoidBase {
     Vector3 SafeFirstPersonEye(const Vector3 &eye,float clearance)const;
     void SetPhysicalShield(bool active) {physicalShield=active;}
     void SetPhysicalHandTarget(const Vector3 &point,bool active) {physicalHandTarget=point;physicalHandTargetActive=active;}
-    float PhysicalHandDistance(const Vector3 &point)const;
+    float PhysicalHandDistance(const Vector3 &point,bool holding=false)const;
+    bool BeginPhysicalHandHold(const Vector3 &point);
     bool TackleLegContact(const HumanoidBase &victim,Vector3 &point)const;
     bool BodyContestContact(const HumanoidBase &other,Vector3 &point,Vector3 &normal,float &depth)const;
     Vector3 GetPhysicalShirtPoint()const;
     Vector3 GetPhysicalShirtPoint(const Vector3 &from)const;
     void PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes);
     void PhysicalActionContact(const Vector3 &incoming);
+    void PhysicalHeaderTouch(Vector3 &outgoing,const Vector3 &incoming,bool shot);
+    void PhysicalReceptionContact(const Vector3 &incoming,const std::string &part);
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);

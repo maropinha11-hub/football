@@ -5,9 +5,12 @@
 #include "onthepitch/reception_prediction.hpp"
 #include "onthepitch/player/sprint_energy.hpp"
 #include "onthepitch/player/humanoid/contact_flight.hpp"
+#include "onthepitch/player/humanoid/header_contact.hpp"
 int main(){
   using namespace football_strike;int failures=0,checks=0;
   auto check=[&](bool ok,const char *name){++checks;std::cout<<(ok?"PASS ":"FAIL ")<<name<<'\n';if(!ok)++failures;};
+  check(football_header::speed(.3f,8,1,false)<9&&football_header::speed(1,25,7,false)<=13&&football_header::speed(1,25,7,true)<=18,"headers use bounded head-body impulse rather than foot-pass power");
+  check(football_header::pitch(-.12f)<-.17f&&std::fabs(football_header::pitch(0))<1e-6f&&football_header::pitch(.12f)>.17f,"heading visibly loads and follows through while preserving its exact impact pose");
   check(shortPassSpeed(10)>5.f&&shortPassSpeed(50)>5.5f&&shortPassSpeed(130)<8.f,"a brief tap reaches a nearby teammate without becoming a driven pass");
   check(shortPassSpeed(650)>20.f&&shortPassSpeed(1000)==shortPassSpeed(650),"holding A supplies a bounded firm pass");
   bool increasing=true;for(unsigned n=11;n<650;++n)increasing&=shortPassSpeed(n)>shortPassSpeed(n-1);

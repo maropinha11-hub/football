@@ -18,7 +18,8 @@ Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacot
 completo. Veja [a base recuperada e os controles](docs/BASE-APROVADA.md) e
 [o relatório de validação](docs/approved-base-validation.json).
 
-A revisão inclui caminhada com analógico leve/médio, gasto de fôlego humano
+A revisão inclui passos procedurais de recuperação com IK, caminhada com
+postura própria de braços/tronco e analógico leve/médio, gasto de fôlego humano
 somente com RB, respostas protetoras compartilhadas pela CPU e um controlador
 muscular neural treinado com referências nativas. Veja
 [a pesquisa, o treinamento reproduzível e seus limites](docs/CONTROLE-FISICO-APRENDIDO.md).
@@ -34,9 +35,9 @@ queda deliberada de teste. R3/Tab mostra o corpo.
 No laboratório, **LT/L2 protege com a bola e tenta agarrar sem ela**; L3 não
 aciona a camisa. **F10** ativa o parceiro e **F11** alterna a posse de teste.
 `partida-fisica.bat` permite testar contatos com jogadores da CPU.
-A física agora alcança os **22 jogadores**. Impactos recuperáveis usam as
-animações nativas de desequilíbrio de corpo inteiro, escolhidas pela direção
-do impacto; **F3** muda essa direção no teste de F8. A queda mantém motores
+A física agora alcança os **22 jogadores**. Impactos moderados calculam uma
+passada com IK e apoio do outro pé; impactos fortes usam as animações nativas
+de desequilíbrio de corpo inteiro, escolhidas pela direção do impacto; **F3** muda essa direção no teste de F8. A queda mantém motores
 articulares limitados e tentativa de apoio enquanto os pés tocam o chão.
 Na partida, **LT/L2**, **H/N** e **M** permitem testar proteção, agarramento e
 disputa. **F2** aproxima um adversário para um ensaio explícito de contato;

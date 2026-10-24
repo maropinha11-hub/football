@@ -17,6 +17,7 @@
 
 #include "humanoid.hpp"
 #include "walking_gait.hpp"
+#include "header_contact.hpp"
 
 #include "main.hpp"
 
@@ -526,11 +527,14 @@ void AnimCollection::Load(boost::filesystem::path directory) {
             // its furthest point. A frontmost planted toe would require the
             // root to retreat from a ball rolling close to walking pace.
             const float phase=float(frame-walkTouchFrame)/end+(rightTouch?.32f:.82f);
+            root.coords[2]=-.08f+.012f*std::cos(12.5663706f*phase);
+            animation->SetKeyFrame("player",frame,QUATERNION_IDENTITY,root);
             football_walk::pose(walkingBind,pose,{{root.coords[0],root.coords[1],root.coords[2]+walkingBind.offsets[0][2]}},phase,stride);
+            football_walk::upperBody(walkingBind,pose,phase);
             // The whole slow cycle walks, including the contacting step.
             // The runtime rebinds the existing event to the resulting real
             // shoe surface; no running knee pose is blended back at impact.
-            for(unsigned bone=7;bone<13;++bone)animation->SetKeyFrame(pes3::nativeBoneNames[bone],frame,Quaternion(pose[bone][0],pose[bone][1],pose[bone][2],pose[bone][3]),Vector3(0));
+            for(unsigned bone=1;bone<13;++bone)if(bone!=2)animation->SetKeyFrame(pes3::nativeBoneNames[bone],frame,Quaternion(pose[bone][0],pose[bone][1],pose[bone][2],pose[bone][3]),Vector3(0));
           }
           animation->SetVariable("training_walk_support","overlap");animation->DirtyCache();
         }
@@ -546,6 +550,21 @@ void AnimCollection::Load(boost::filesystem::path directory) {
         _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
       }
     }
+  }
+
+  if(TrainingEnabled())for(Animation *animation:animations)if(animation->GetVariable("touch_bodypart")=="head"){
+    auto extension=boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"));
+    Vector3 marker;int at=-1;if(!extension->GetFirstTouch(marker,at)||at<1)continue;
+    const Animation original=*animation;const int end=animation->GetFrameCount()-1;
+    for(int frame=0;frame<=end;++frame){
+      const float edge=football_physics::smooth(frame/8.f)*football_physics::smooth((end-frame)/8.f);
+      const float load=football_header::pitch((frame-at)*.01f)*edge;
+      for(const std::string bone:{"middle","neck"}){Quaternion q;Vector3 p;original.GetKeyFrame(bone,frame,q,p);
+        Quaternion bend;bend.SetAngleAxis(load*(bone=="middle"?1.f:.35f),Vector3(1,0,0));
+        animation->SetKeyFrame(bone,frame,(q*bend).GetNormalized(),p);
+      }
+    }
+    animation->SetVariable("physical_header_load","true");animation->DirtyCache();
   }
 
   // The training player uses native dribbling in every camera/direction.

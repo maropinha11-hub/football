@@ -17,9 +17,23 @@ void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){r
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
 void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
+bool PhysicalRig::adoptContactHand(Vec target){
+  if(!ready||state!=Mode::Active)return false;
+  unsigned selected=4;float gap=100;
+  for(unsigned elbow:{4u,6u}){
+    const Vec hand=addPoint(positions[elbow],rotatePoint(world[elbow],{{0,0,-.25f*scale}}));
+    const float distance=length(subtractPoint(hand,target));if(distance<gap){gap=distance;selected=elbow;}
+  }
+  if(gap>=.10f)return false;
+  // Adopt the hand which actually touched, starting from its current final
+  // anatomical pose. This changes controller ownership, never its transform.
+  handShoulder=int(selected)-1;handPose[0]=local[handShoulder];handPose[1]=local[handShoulder+1];
+  handVelocity[0]=handVelocity[1]={{0,0,0}};handInitialized=true;handEnvelope=1;lastHandTarget=target;
+  return true;
+}
 void PhysicalRig::forwardKinematics(){
   positions[0]=root;
   for(unsigned i=0;i<13;++i){
@@ -53,10 +67,13 @@ PhysicalRig::PhysicalRig():balance(new BalanceController){}
 PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &input,float dt){
   dt=bounded(dt,.001f,.02f);
+  // Restarts and explicit laboratory placements can relocate the native
+  // root. Neither a support anchor nor accumulated momentum survives that.
+  if(ready&&state==Mode::Active&&length(subtractPoint(input.pelvis,root))>.45f+length(input.velocity)*dt)reset();
   protection+=(float(input.protect)-protection)*(1-std::exp(-7*dt));
   if(!ready){local=input.pose;root=input.pelvis;previousVelocity=input.velocity;lastForward=input.forward;ready=true;forwardKinematics();}
   debug={};
-  if(state!=Mode::Active){supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;}
+  if(state!=Mode::Active){recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;}
   auto situation=input.situation;
   if(input.upperReception || input.staggering || state!=Mode::Active)situation.enabled=false;
   situationLayer.step(situation,dt);
@@ -105,6 +122,7 @@ void PhysicalRig::step(const Input &input,float dt){
     }
     const float stance=length(subtractPoint(positions[9],positions[12]));
     lostBalance=balance->step(dt,input.pelvis[2],stance,length(input.velocity),input.protect,input.gripped);
+    updateSupportStep(input,source,dt,impulseSize);
     debug.balanceRisk=balance->risk;debug.balancePhase=balance->phase;debug.stepDemand=balance->stepDemand;debug.supportMargin=balance->margin;
     const float accumulatedLoad=std::max(impulseSize,length(balance->remainingImpulse()));
     if(accumulatedLoad>20 && !balanceMotions->empty() && (balanceChoice<0 || balanceMotionTime>.55f)){
@@ -212,6 +230,66 @@ void PhysicalRig::step(const Input &input,float dt){
   if(state!=Mode::Active)debug.supportMargin=.22f-length(subtractPoint(xcom,midpoint));
   debug.balanceChoice=balanceChoice;
 }
+void PhysicalRig::updateSupportStep(const Input &input,const Points &source,float dt,float impulseSize){
+  stepCooldown=std::max(0.f,stepCooldown-dt);
+  const bool available=!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering&&!input.gripped&&!input.handTargetActive&&input.opponentDistance>.65f&&length(input.velocity)<4.8f;
+  // A free support step must not compete with an anchored hand or step
+  // through a close body. Those constraints retain upper-body balance.
+  // A fresh external impulse or a sustained capture-point deficit can require
+  // a new support. Neither the animation bank nor the ball supplies this target.
+  if(recoveryFoot<0&&stepCooldown<=0&&available&&balance->stepDemand>.045f&&
+     (impulseSize>45.f||balance->risk>.30f)&&std::min(source[9][2],source[12][2])<.22f){
+    const Vec direction=unit(balance->remainingImpulse(),input.forward);
+    const Vec lateral=rotatePoint(input.pose[0],{{1,0,0}});
+    const float side=dotPoint(direction,lateral);
+    recoveryFoot=std::fabs(side)>.25f?(side>0?0:1):
+      (dotPoint(source[9],direction)<dotPoint(source[12],direction)?0:1);
+    // Keep the lower, loaded shoe as support if the preferred outside
+    // shoe is still the only grounded one in the current native gait.
+    if(source[recoveryFoot?9:12][2]>source[recoveryFoot?12:9][2]+.035f)recoveryFoot=1-recoveryFoot;
+    const unsigned moving=recoveryFoot?12:9,other=recoveryFoot?9:12;
+    stepStart=source[moving];stepSupport=source[other];
+    stepTarget=addPoint(stepStart,scalePoint(direction,bounded(.12f+balance->stepDemand*.55f,.14f,.34f)*scale));
+    // An outside recovery step cannot cross through the standing shin.
+    const float separation=dotPoint(subtractPoint(stepTarget,stepSupport),lateral)*(recoveryFoot? -1.f:1.f);
+    if(separation<.14f*scale)stepTarget=addPoint(stepTarget,scalePoint(lateral,(.14f*scale-separation)*(recoveryFoot?-1.f:1.f)));
+    stepTarget[2]=std::min(stepStart[2],stepSupport[2]);stepTime=0;stepRelease=0;stepCooldown=.85f;
+  }
+  if(recoveryFoot>=0){
+    stepTime+=dt;
+    const unsigned support=recoveryFoot?9:12;
+    Vec drift=subtractPoint(source[support],stepSupport);drift[2]=0;
+    const bool leavingSupport=length(drift)>.18f*scale||source[support][2]>stepSupport[2]+.10f*scale;
+    if(!available||leavingSupport||stepRelease>0)stepRelease=std::min(1.f,stepRelease+dt/.12f);
+    const float progress=bounded(stepTime/stepDuration,0,1);
+    const float weight=smooth(stepTime/.08f)*(1-smooth(std::max(0.f,stepTime-stepDuration-.10f)/.22f))*(1-smooth(stepRelease));
+    Vec swing=addPoint(stepStart,scalePoint(subtractPoint(stepTarget,stepStart),smooth(progress)));
+    swing[2]+=.065f*scale*std::pow(std::sin(3.14159265f*progress),2.f);
+    for(unsigned side=0;side<2;++side){
+      const unsigned ankle=side?12:9;
+      const Vec target=side==unsigned(recoveryFoot)?swing:stepSupport;
+      const Vec wanted=scalePoint(capped(subtractPoint(target,source[ankle]),.40f*scale),weight);
+      // Bounded speed prevents a changing base clip or an interrupted action
+      // from snapping a shoe to its calculated support point.
+      stepOffset[side]=addPoint(stepOffset[side],capped(subtractPoint(wanted,stepOffset[side]),1.45f*dt));
+    }
+    debug.recoveryStep=weight;debug.recoveryFoot=recoveryFoot;
+    debug.recoveryLift=std::max(0.f,swing[2]-stepStart[2])*weight;
+    if((stepTime>stepDuration+.33f||stepRelease>=1)&&length(stepOffset[0])+length(stepOffset[1])<.003f){
+      recoveryFoot=-1;stepOffset[0]=stepOffset[1]={{0,0,0}};
+    }
+  }
+}
+void PhysicalRig::applySupportStep(const Input &input){
+  if(recoveryFoot<0)return;
+  for(unsigned side=0;side<2;++side){
+    const unsigned ankle=side?12:9;
+    const Vec target=addPoint(positions[ankle],stepOffset[side]);
+    solveLeg(ankle-2,target,.001f);
+    if(side==unsigned(recoveryFoot))debug.recoveryLift=std::max(0.f,positions[ankle][2]-stepStart[2]);
+    if(side!=unsigned(recoveryFoot)&&debug.recoveryStep>.95f)debug.recoverySupportError=length(subtractPoint(positions[ankle],stepSupport));
+  }
+}
 void PhysicalRig::evaluate(const Input &input){
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
@@ -228,13 +306,14 @@ void PhysicalRig::evaluate(const Input &input){
     debug.supportKnee=std::max(length(subtractPoint(leftKnee,positions[8])),length(subtractPoint(rightKnee,positions[11])));
     debug.supportFootError=std::max(length(subtractPoint(left,positions[9])),length(subtractPoint(right,positions[12])));
   }
-  if(input.grounding&&!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering){
+  if(input.grounding&&recoveryFoot<0&&!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering){
     for(unsigned side=0;side<2;++side)if(length(plantOffset[side])>1e-6f){
       const unsigned ankle=side?12:9;
       solveLeg(ankle-2,addPoint(positions[ankle],plantOffset[side]),1e-5f);
       debug.plantedCorrection=std::max(debug.plantedCorrection,length(plantOffset[side]));
     }
   }
+  applySupportStep(input);
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
   leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.24f),sway),balance->lean()),counterTilt),.38f);

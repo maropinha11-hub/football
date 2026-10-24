@@ -57,6 +57,8 @@ struct Metrics {
   float counterbalance=0;
   float supportSink=0,supportTilt=0,supportKnee=0,supportFootError=0;
   float plantedCorrection=0;
+  float recoveryStep=0,recoveryLift=0,recoverySupportError=0;
+  int recoveryFoot=-1;
   football_situations::ActionMetrics situation;
   float situationTrunk=0,situationArms=0,situationFootError=0,situationRootError=0;
   int balancePhase=0,balanceChoice=-1;
@@ -90,11 +92,15 @@ class PhysicalRig {
   bool initialized()const{return ready;}
   const Pose &additivePose()const{return additive;}
   Vec balanceVelocity()const;
+  bool adoptContactHand(Vec target);
+  int activeHandBone()const{return handInitialized?handShoulder+1:-1;}
   float renderWeight()const{return state==Mode::Active?0.f:1.f;}
   float age()const{return stateAge;}
   static constexpr float mass=84.f;
  private:
   void forwardKinematics();
+  void updateSupportStep(const Input &input,const Points &source,float dt,float impulseSize);
+  void applySupportStep(const Input &input);
   void solveLeg(unsigned hip,Vec target,float edgeMargin=.003f);
   void reachHand(unsigned shoulder,Vec target,float weight);
   void separateArms();
@@ -130,6 +136,9 @@ class PhysicalRig {
   Vec sourceFeet[2]{},plantAnchor[2]{},plantOffset[2]{};
   float plantAge[2]={0,0},plantHeight[2]={0,0};
   bool sourceFeetReady=false;
+  int recoveryFoot=-1;
+  float stepTime=0,stepDuration=.44f,stepCooldown=0,stepRelease=0;
+  Vec stepStart{},stepTarget{},stepSupport{},stepOffset[2]{};
   Vec pendingImpulse{{0,0,0}},pendingTorque{{0,0,0}},reachOffset{{0,0,0}};
   std::array<Vec,13> reachOffsets{};
   Vec recoveryStart{{0,0,0}};

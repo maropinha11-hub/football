@@ -46,4 +46,14 @@ inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase
     local[ankle]=normalized(productRotation(inverseRotation(world[knee]),productRotation(world[0],exponential({{roll,0,0}}))));fk();
   }
 }
+inline void upperBody(const pes3::NativeBind &bind,Pose &pose,float phase){
+  const float swing=std::sin(6.28318531f*phase),transfer=std::sin(12.5663706f*phase);
+  // Walking carries the arms lower, opens the elbows and counter-rotates
+  // the trunk. Retiming the jogging arms retained its unmistakable run pose.
+  pose[1]=normalized(productRotation(bind.rotations[1],exponential({{.045f,.024f*swing,.035f*swing}})));
+  for(unsigned side=0;side<2;++side){const unsigned shoulder=side?5:3,elbow=shoulder+1;const float sign=side?-1.f:1.f;
+    pose[shoulder]=normalized(productRotation(bind.rotations[shoulder],exponential({{.22f*sign*swing,sign*-.06f,.025f*transfer}})));
+    pose[elbow]=normalized(productRotation(bind.rotations[elbow],exponential({{-.28f-.05f*sign*swing,0,0}})));
+  }
+}
 }

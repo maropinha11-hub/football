@@ -42,6 +42,9 @@ try:
       evidence.update(ball_travel=displacement,travel_error_deg=angle(requested,displacement))
     r['scenarios'][name]=evidence
     check(name+' completes a real first-time contact',len(events)==1 and(key!='F6'or events[0]['part']=='head'),evidence)
+    if key=='F6'and not a.approved:
+     power=[dict(re.findall(r'(\w+)=([^\s]+)',line))for line in g.read_log()[start:].splitlines()if line.startswith('HEADER_CONTACT_POWER ')]
+     check(name+' uses loaded head contact and a bounded header-specific impulse',len(power)==1 and power[0]['loaded']=='1'and 3.19<float(power[0]['speed'])<=(18.001 if kind==8 else 13.001),power)
     check(name+' retains the selected aim through repeated taps and stick release',bool(events)and evidence['target_error_deg']<20,evidence)
     check(name+' sends the actual ball toward the chosen side',bool(events)and evidence['outgoing_error_deg']<35 and evidence.get('travel_error_deg',180)<40,evidence)
   g.keys(['Escape'],True);g.game.wait(timeout=15);check('clean exit',g.game.returncode==0,g.game.returncode)

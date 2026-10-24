@@ -35,6 +35,25 @@ try:
    check('all 21 CPU actors share the actual protective-motion bank',len({x['actor']for x in banks})==21 and all(int(x['variants'])>=160 and x['shared']=='1'for x in banks),dict(actors=sorted({x['actor']for x in banks})))
    check('moving CPU actors run learned muscles rather than passive static tracking',len({x['actor']for x in muscles})>=16 and all(float(x['acceleration'])<=140.001 for x in muscles),dict(actors=sorted({x['actor']for x in muscles}),samples=len(muscles)))
    orient=ev(g,'CPU_RECEIVE_ORIENT');check('CPU receivers actively orient toward forecast arrivals',bool(orient),orient[:8])
+   receipts=[x for x in ev(g,'RECEPTION_BODY_LOAD')if x['actor']!='10']
+   touches=ev(g,'TRAINING_ACTION_TOUCH')
+   acquired=[x for x in receipts if any(y.get('actor')==x['actor']and y['t']==x['t']and y.get('function')in ['2','3']for y in touches)]
+   # A receiver may pass/shoot first time instead of trapping. Join the
+   # actual pass target to its next real native contact; require two actors
+   # without demanding an extra trap which would break one-touch circulation.
+   previous=None
+   for action in ev(g,'PLAYER_MATCH_ACTION'):
+    if previous and previous.get('action')in ['4','5','6']and previous.get('target')==action.get('actor')and action.get('actor')!='10'and action.get('action')in ['4','5','6','8']:
+     contact=next((x for x in touches if x.get('actor')==action['actor']and x['t']==action['t']and x.get('function')==action['action']),None)
+     if contact:acquired.append(dict(actor=contact['actor'],t=contact['t'],part=contact['part'],kind='one_touch',from_actor=previous['actor']))
+    previous=action
+   check('multiple CPU receivers complete real native skin contacts after their approach',len({x['actor']for x in acquired})>=2,acquired)
+   responses=ev(g,'PHYSICAL_SITUATION');moving=[]
+   for contact in acquired:
+    window=[x for x in responses if x['actor']==contact['actor']and int(contact['t'])<=int(x['t'])<=int(contact['t'])+500]
+    trunk=max([float(x['trunk'])for x in window]or[0]);arms=max([float(x['arms'])for x in window]or[0])
+    if trunk>.05 and arms>.05:moving.append(dict(actor=contact['actor'],t=contact['t'],trunk_rad=trunk,arms_rad=arms))
+   check('CPU receipts recruit torso and arms rather than only stopping the ball',len({x['actor']for x in moving})>=2,moving)
    # A normal match may have reached a throw-in after the observation run;
    # this optional fixture is correctly unavailable while play is stopped.
    g.keys(['r'],True);g.advance(100);g.keys(['r'],False);g.advance(2700)

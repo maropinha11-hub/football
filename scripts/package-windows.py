@@ -73,6 +73,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                  stage / "situational-motion-catalog.json")
     shutil.copy2(project / "config" / "procedural-strikes.json", stage / "procedural-strikes.json")
     shutil.copy2(project / "config" / "learned-muscle-policy.json", stage / "learned-muscle-policy.json")
+    shutil.copy2(project / "config" / "muscle-policy-rejected-candidate.json", stage / "muscle-policy-rejected-candidate.json")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
     shutil.copy2(project / "third_party/bullet/LICENSE.txt", stage / "BULLET-LICENSE.txt")
@@ -138,7 +139,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "3. R3/Tab: camera externa para observar o corpo.\n\n"
         "Nesta revisao: caminhada com analogico leve/medio, folego humano\n"
         "gasto somente com RB e respostas fisicas compartilhadas pela CPU.\n"
-        "O novo motor muscular foi treinado com referencias nativas.\n"
+        "Apoio procedural com IK, postura de caminhada e cabecadas calibradas.\n"
+        "Mantem o motor muscular treinado aprovado.\n"
         "Leia LEIA-CONTROLE-FISICO.txt e LEIA-BASE-APROVADA.txt.\n\n"
         "F7: comparar fisica ligada/desligada.\n"
         "Base restaurada: fa0dfa6, correspondente ao executavel enviado.\n"
@@ -175,7 +177,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Xbox: controles anteriores; RB corre; direito olha.\n\n"
         "partida-fisica.bat: o mesmo experimento contra os times da CPU.\n"
         "Todos os 22 jogadores recebem a camada fisica, inclusive a CPU.\n"
-        "Impactos selecionam passos de apoio e protecao de corpo inteiro.\n"
+        "Impactos moderados geram passos com IK; fortes selecionam protecao de corpo inteiro.\n"
         "Passes, chutes e cruzamentos recebem preparacao e recuperacao de\n"
         "tronco e bracos conforme direcao, velocidade, bola e adversario.\n"
         "Teste um passe parado e outro para o lado durante a corrida com RB.\n"
@@ -324,7 +326,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
-                         "learned-muscle-policy.json","LEIA-CONTROLE-FISICO.txt",
+                         "learned-muscle-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):

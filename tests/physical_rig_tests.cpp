@@ -49,6 +49,79 @@ int main(int argc,char **argv){
     check(support&&maxLift>.04f&&maxLift<.05f,"walking has overlapping ground support with a low lifted swing rather than a jogging flight phase");
     check(links&&seam<.001f,"the derived walking leg cycle stays finite and loops continuously on the native skeleton");
   }
+  // Unauthored support steps must lift a shoe under a recoverable push,
+  // keep the opposite support and return smoothly without a trip animation.
+  for(float dt:{.005f,.01f,.02f})for(Vec push:{Vec{{125,0,0}},Vec{{-125,0,0}},Vec{{0,125,0}},Vec{{0,-125,0}}}){
+    PhysicalRig recovery;recovery.configure(bind,1);Input standingInput=standing();recovery.step(standingInput,dt);
+    recovery.impulse(push);float lift=0,actualLift=0,supportError=0,shoeSpeed=0,links=0;bool generated=false,stable=true;
+    Vec prior[2]={recovery.points()[9],recovery.points()[12]};const Vec initialFeet[2]={prior[0],prior[1]};
+    for(unsigned tick=0;tick<unsigned(2.f/dt);++tick){
+      standingInput.velocity=recovery.balanceVelocity();standingInput.pelvis=addPoint(standingInput.pelvis,scalePoint(standingInput.velocity,dt));
+      recovery.step(standingInput,dt);const auto &m=recovery.metrics();
+      generated|=m.recoveryStep>.5f;lift=std::max(lift,m.recoveryLift);
+      if(m.recoveryFoot>=0)actualLift=std::max(actualLift,recovery.points()[m.recoveryFoot?12:9][2]-initialFeet[m.recoveryFoot][2]);supportError=std::max(supportError,m.recoverySupportError);
+      for(unsigned side=0;side<2;++side){const Vec now=recovery.points()[side?12:9];shoeSpeed=std::max(shoeSpeed,length(subtractPoint(now,prior[side]))/dt);prior[side]=now;}
+      links=std::max(links,boneError(recovery,bind));stable&=finite(recovery)&&recovery.mode()==Mode::Active;
+      const Vec before=recovery.points()[12];recovery.evaluate(standingInput);
+      stable&=length(subtractPoint(before,recovery.points()[12]))<1e-6f;
+    }
+    check(generated&&lift>.045f&&actualLift>.025f,"capture-point load generates a lifted recovery step without a reference clip");
+    check(stable&&links<1e-5f&&supportError<.05f&&shoeSpeed<2.3f,"generated step retains support, finite bone lengths and bounded shoe velocity at supported timesteps");
+    check(recovery.metrics().recoveryStep<.001f&&recovery.metrics().balanceRisk<.03f,"generated step finishes and returns to ordinary active locomotion");
+  }
+  {
+    PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();recovery.step(v);recovery.impulse({{125,0,0}});
+    for(unsigned i=0;i<15;++i)recovery.step(v);v.action=v.touchPending=true;
+    for(unsigned i=0;i<30;++i)recovery.step(v);
+    check(recovery.metrics().recoveryStep<.001f,"queued ball action releases the generated support before its contact");
+  }
+  {
+    PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();recovery.step(v);recovery.impulse({{125,0,0}});
+    for(unsigned i=0;i<18;++i)recovery.step(v);
+    check(recovery.metrics().recoveryStep>.5f,"fall interruption starts during an actual generated support step");
+    recovery.impulse({{170,0,0}},{{0,0,.18f}},true);
+    for(unsigned i=0;i<800;++i)recovery.step(v);
+    check(recovery.mode()==Mode::Active&&recovery.metrics().recoveryStep==0&&finite(recovery),"fall and get-up discard the old procedural foot anchors");
+    recovery.configure(bind,1);v=standing();v.velocity={{0,-7,0}};recovery.step(v);recovery.impulse({{125,0,0}});
+    for(unsigned i=0;i<15;++i)recovery.step(v);
+    check(recovery.metrics().recoveryStep==0,"fast sprint does not pin a recovery shoe to an obsolete world position");
+  }
+  for(bool reaching:{false,true}){
+    PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();
+    v.handTargetActive=reaching;v.handTarget={{.25f,-.20f,1.25f}};v.opponentDistance=reaching?1.f:.50f;
+    recovery.step(v);recovery.impulse({{125,0,0}});float stepWeight=0,counter=0;
+    for(unsigned i=0;i<80;++i){recovery.step(v);stepWeight=std::max(stepWeight,recovery.metrics().recoveryStep);counter=std::max(counter,recovery.metrics().counterbalance);}
+    check(stepWeight==0&&counter>.01f&&finite(recovery),"hand constraints and close bodies retain muscle balance without a conflicting free step");
+  }
+  {
+    PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();recovery.step(v);recovery.impulse({{125,0,0}});
+    for(unsigned i=0;i<15;++i)recovery.step(v);v.action=true;recovery.step(v);v.action=false;
+    for(unsigned i=0;i<40;++i)recovery.step(v);
+    check(recovery.metrics().recoveryStep==0,"even a one-tick action interruption commits a smooth support release");
+    recovery.configure(bind,1);v=standing();v.pose[10]=exponential({{-.5f,0,0}});v.pose[11]=exponential({{1.4f,0,0}});recovery.step(v);
+    const unsigned freeSide=recovery.points()[9][2]>recovery.points()[12][2]?0:1;
+    recovery.impulse({{125,0,0}});recovery.step(v);
+    check(recovery.metrics().recoveryFoot==int(freeSide),"recovery swings the free shoe while the lower loaded shoe remains support");
+  }
+  {
+    PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();recovery.step(v);recovery.impulse({{125,0,0}});
+    for(unsigned i=0;i<15;++i)recovery.step(v);v.pelvis[0]+=8.f;recovery.step(v);
+    check(recovery.metrics().recoveryStep==0&&recovery.metrics().balanceRisk==0&&finite(recovery),"a restart relocation clears stale support anchors and momentum");
+    recovery.configure(bind,1);v=standing();v.velocity={{1.8f,0,0}};recovery.step(v);recovery.impulse({{125,0,0}});
+    float supportError=0;for(unsigned i=0;i<100;++i){v.pelvis[0]+=.018f;recovery.step(v);supportError=std::max(supportError,recovery.metrics().recoverySupportError);}
+    check(supportError<.06f&&recovery.metrics().recoveryStep==0&&finite(recovery),"a travelling base releases an obsolete support instead of straining the planted leg");
+  }
+  {
+    PhysicalRig hands;hands.configure(bind,1);Input v=standing();hands.step(v);
+    const Vec rightHand=addPoint(hands.points()[6],rotatePoint(hands.worldRotations()[6],{{0,0,-.25f}}));
+    const Pose before=hands.pose();const bool reached=hands.adoptContactHand(rightHand);float jump=0;
+    for(unsigned i=0;i<13;++i)jump=std::max(jump,length(logarithm(productRotation(before[i],inverseRotation(hands.pose()[i])))));
+    check(reached&&hands.activeHandBone()==6&&jump<1e-6f,"a real idle-hand contact becomes the tracked grip hand without changing its pose");
+    check(!hands.adoptContactHand({{10,0,0}})&&hands.activeHandBone()==6,"an out-of-reach shirt cannot create or switch a grip hand");
+    v.handTargetActive=true;v.handTarget=rightHand;
+    float drift=0;for(unsigned i=0;i<60;++i){hands.step(v);const Vec actual=addPoint(hands.points()[6],rotatePoint(hands.worldRotations()[6],{{0,0,-.25f}}));drift=std::max(drift,length(subtractPoint(actual,rightHand)));}
+    check(drift<.10f&&hands.metrics().armSpeed<3.81f&&boneError(hands,bind)<1e-5f,"the adopted hand follows its actual contact with bounded joints and no limb stretching");
+  }
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
   float maximumBoneError=0,peakLean=0,peakCounterbalance=0;
   rig.step(input);const Vec initialLeft=rig.points()[9],initialRight=rig.points()[12];

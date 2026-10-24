@@ -55,6 +55,17 @@ mantêm esforço muscular e os braços procuram apoio no chão.
 É um protótipo próprio de comportamento físico ativo com Bullet, inspirado
 nesse tipo de reação corporal; não incorpora a tecnologia Euphoria do GTA IV.
 
+Impactos moderados também geram uma passada de recuperação com IK, sem
+selecionar um tropeço pronto. O alvo vem da direção do impulso e do déficit
+de apoio. O outro pé tenta ficar apoiado; há limites de alcance, velocidade
+e cruzamento das pernas. Uma mão buscando pegada ou um corpo muito próximo
+impede a passada livre, preservando o controle muscular da disputa.
+Corridas rápidas preservam a proteção nativa, em
+vez de prender o pé a um ponto que ficou para trás. Uma queda interrompe e
+limpa os alvos anteriores antes de levantar. O avanço para além do alcance
+libera o apoio gradualmente; reposicionamentos limpam alvos e momento antigos. Essa plantação é analítica;
+o servo neural mantém sua função muscular, não planeja a passada.
+
 Há também **56 variantes geradas de ações nativas**, com contato de parte
 interna/externa da chuteira, bico e peito do pé com pouco giro. Elas ajustam
 tornozelo, tronco e ombros; preservam raiz, quadril, joelhos e tempo de contato.
@@ -143,10 +154,15 @@ a tolerância de aceitação do contato não foi ampliada.
 Todos os atletas da CPU compartilham agora o mesmo banco de respostas
 protetoras do jogador e mantêm os músculos físicos ativos ao se movimentar.
 A disputa corporal não recebe mais dois impulsos por camadas diferentes.
-A CPU antecipa a orientação do corpo nas recepções previstas; um impacto
+A CPU antecipa a orientação e ajusta aproximação/frenagem nas recepções
+previstas; um impacto
 nas costas não é classificado como domínio de cabeça.
 
-Há um novo controlador muscular neural treinado com referências nativas e
+Cabeceios têm preparação e acompanhamento visíveis na referência nativa,
+com potência própria limitada pelo comando, bola e movimento da cabeça.
+A pose no instante exato de impacto continua preservada.
+
+Há um controlador muscular neural treinado com referências nativas e
 perturbações angulares, usado no acompanhamento físico e no tronco/braços
 durante quedas. É uma camada aprendida limitada, não uma política corporal
 completa nem o Euphoria. Veja [pesquisa, treinamento e limites](CONTROLE-FISICO-APRENDIDO.md)

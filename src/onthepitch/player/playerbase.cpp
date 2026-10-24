@@ -106,11 +106,23 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
       const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;
       const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free);
       if(plan.valid){
+        const bool receiving=fieldPlayer->GetTeam()->GetDesignatedTeamPossessionPlayer()==fieldPlayer;
+        const Vector3 facing=(match->GetBall()->Predict(0)-GetPosition()).Get2D().GetNormalized(GetDirectionVec());
+        const Vector3 meeting=Vector3(plan.point[0],plan.point[1],0)-facing*.34f;
+        const Vector3 step=meeting-GetPosition().Get2D();
+        const float approach=clamp(step.GetLength()/std::max(.25f,plan.time),0.f,2.2f);
         for(auto &command:commandQueue)if(command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl||command.desiredFunctionType==e_FunctionType_Trap){
           command.useDesiredLookAt=true;command.desiredLookAt=match->GetBall()->Predict(0).Get2D();
+          if(receiving){command.useDesiredMovement=true;command.desiredDirection=step.GetNormalized(facing);command.desiredVelocityFloat=approach;}
+        }
+        const bool action=std::any_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType!=e_FunctionType_Movement&&c.desiredFunctionType!=e_FunctionType_BallControl;});
+        if(receiving&&!action&&!fieldPlayer->TouchPending()&&plan.time<.65f&&plan.height<1.55f){
+          PlayerCommand trap;trap.desiredFunctionType=e_FunctionType_Trap;trap.useDesiredMovement=trap.useDesiredLookAt=true;
+          trap.desiredDirection=step.GetNormalized(facing);trap.desiredVelocityFloat=approach;trap.desiredLookAt=match->GetBall()->Predict(0).Get2D();
+          commandQueue.insert(commandQueue.begin(),trap);
         }
         if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
-          printf("CPU_RECEIVE_ORIENT t=%lu actor=%d arrival=%.4f height=%.4f\n",match->GetActualTime_ms(),GetID(),plan.time,plan.height);
+          printf("CPU_RECEIVE_ORIENT t=%lu actor=%d arrival=%.4f height=%.4f step=%.5f approach=%.5f active=%d\n",match->GetActualTime_ms(),GetID(),plan.time,plan.height,step.GetLength(),approach,receiving?1:0);
       }
     }
   }
