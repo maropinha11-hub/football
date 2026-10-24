@@ -18,7 +18,7 @@ template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec veloc
   if(!std::isfinite(speed)||speed<.8f||speed>32.f||
      (approach/std::max(.1f,gap)<.15f&&!(relative[2]<-.8f&&gap<1.05f)))return best;
   float score=std::numeric_limits<float>::infinity();
-  for(unsigned ms=40;ms<=900;ms+=20){const Vec p=ball(ms);const float time=ms*.001f;
+  for(unsigned ms=40;ms<=1200;ms+=20){const Vec p=ball(ms);const float time=ms*.001f;
     const float horizontalSpeed=std::hypot(velocity[0],velocity[1]);
     // A receiver brakes for a pass. Extrapolating its old running velocity
     // for 900 ms ignored balls that reach the body after the player stops.
@@ -28,7 +28,7 @@ template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec veloc
     const float distance=std::sqrt(x*x+y*y);
     // Allow a short adjustment step, with finite acceleration, instead of
     // ignoring a pass just outside the receiver's present footprint.
-    const float corridor=1.05f+std::min(.45f,1.2f*time*time);
+    const float corridor=.65f+std::min(.95f,2.5f*time*time);
     if(!std::isfinite(distance)||!std::isfinite(height)||distance>corridor||height<.055f||height>2.35f)continue;
     const float rating=distance+.12f*time;
     if(rating<score){score=rating;best={true,time,distance,height,p};}

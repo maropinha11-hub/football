@@ -17,7 +17,7 @@ void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){r
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
 void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 bool PhysicalRig::adoptContactHand(Vec target){
@@ -85,6 +85,14 @@ void PhysicalRig::step(const Input &input,float dt){
   const float turn=std::atan2(crossPoint(lastForward,input.forward)[2],bounded(dotPoint(lastForward,input.forward),-1,1))/dt;
   filteredTurn+=(bounded(turn,-6,6)-filteredTurn)*(1-std::exp(-6*dt));
   previousVelocity=input.velocity;lastForward=input.forward;
+  Vec impactWanted{{0,0,0}};
+  if(input.ballImpactAge>=0&&input.ballImpactAge<.60f){
+    const float sustain=1-smooth((input.ballImpactAge-.12f)/.48f);
+    impactWanted=scalePoint(capped(crossPoint({{0,0,1}},input.ballImpact),18.f),.012f*sustain);
+  }
+  const Vec impactAcceleration=capped(subtractPoint(scalePoint(subtractPoint(impactWanted,impactReflex),196.f),scalePoint(impactReflexVelocity,28.f)),18.f);
+  impactReflexVelocity=capped(addPoint(impactReflexVelocity,scalePoint(impactAcceleration,dt)),1.4f);
+  impactReflex=capped(addPoint(impactReflex,scalePoint(impactReflexVelocity,dt)),.23f);
   debug.turnRate=filteredTurn;debug.effort=bounded(length(filteredAcceleration)/12+std::fabs(filteredTurn)*length(input.velocity)/55,0,1);
   // Plant one support shoe during native sideways/backward steps. The
   // anchor is a ground contact, never a target ball position. Release before
@@ -112,6 +120,10 @@ void PhysicalRig::step(const Input &input,float dt){
   }
   sourceFeetReady=true;
   const float impulseSize=length(pendingImpulse);
+  if(state==Mode::Falling&&articulated&&impulseSize>0){
+    const Vec lever=scalePoint(crossPoint(pendingImpulse,pendingTorque),1/std::max(.001f,impulseSize*impulseSize));
+    articulated->impulse(pendingImpulse,lever);
+  }
   bool lostBalance=false;
   if(state==Mode::Active){
     balance->addImpulse(pendingImpulse,pendingTorque);
@@ -375,6 +387,17 @@ void PhysicalRig::evaluate(const Input &input){
     local[1]=normalized(productRotation(exponential(bend),local[1]));
     forwardKinematics();
   }
+  // A measured ball hit has a short whole-upper-body reflex even while a
+  // different football action is active. It never moves a contacting foot.
+  // The learned muscle tracker follows this reference on the next substep.
+  if(length(impactReflex)>.0001f){
+    const float gain=input.upperReception?.35f:1.f;
+    const float strength=bounded(length(impactReflex)/.216f,0,1);
+    if(!(input.touchPending&&input.situation.kind==football_situations::ActionKind::Header))
+      local[1]=normalized(productRotation(exponential(scalePoint(rotatePoint(inverseRotation(world[0]),impactReflex),gain)),local[1]));
+    for(unsigned shoulder:{3u,5u})local[shoulder]=normalized(productRotation(exponential({{-.08f*strength,(shoulder==3?-.13f:.13f)*strength,0}}),local[shoulder]));
+    forwardKinematics();
+  }
   // Small anticipatory save corrections rotate the real shoulder chain.
   // The same damped reach envelope used by feet limits approach and release;
   // no limb is stretched and the ball still needs a measured skin contact.
@@ -386,12 +409,13 @@ void PhysicalRig::evaluate(const Input &input){
     const Quat goal=normalized(productRotation(exponential(capped(logarithm(turn),.16f)),world[shoulder]));
     local[shoulder]=normalized(productRotation(inverseRotation(world[1]),goal));forwardKinematics();
   }
-  if(physicalUpperValid && !input.action && !input.upperReception){
+  if(physicalUpperValid && (!input.action||length(impactReflex)>.001f) && !input.upperReception){
     for(unsigned i=1;i<=6;++i){
       // Arms keep their authored muscle tone while upright. Applying 65% of
       // a freely lagging forearm made the elbow look dislocated even when
       // Bullet's own constraint was valid. Free falls still use full dynamics.
       const bool arm=i>=3;
+      if(!arm&&input.touchPending&&input.situation.kind==football_situations::ActionKind::Header)continue;
       const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.22f:i==1?.28f:.18f);
       local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.48f:.80f)),local[i]));
     }

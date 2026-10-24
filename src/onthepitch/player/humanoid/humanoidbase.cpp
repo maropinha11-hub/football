@@ -959,6 +959,8 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactRoot.SetValue(contactPositions[0].Get2D(),snapshotTime_ms);
   buf_contactHeight.SetValue(contactPositions[0].coords[2],snapshotTime_ms);
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
+  buf_physicalRootDelta.SetValue(physicalRootDelta,snapshotTime_ms);
+  buf_visibleWalking.SetValue(Vector3(physicalWalkWeight,physicalWalkPhase,physicalWalkWanted?1.f:0.f),snapshotTime_ms);
   buf_physicalRig.SetValue(PhysicalRigEnabled()?(PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
   const auto situation=physicalRig && physicalRig->initialized()?physicalRig->metrics().situation:football_situations::ActionMetrics{};
   buf_situationState.SetValue(Vector3(situation.weight,situation.difficulty,int(situation.kind)),snapshotTime_ms);
@@ -1016,6 +1018,8 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedContactRoot=buf_contactRoot.GetValue(putTime_ms);
   fetchedContactHeight=buf_contactHeight.GetValue(putTime_ms);
   fetchedContactBlend=buf_contactBlend.GetValue(putTime_ms);
+  fetchedPhysicalRootDelta=buf_physicalRootDelta.GetValue(putTime_ms);
+  fetchedVisibleWalking=buf_visibleWalking.GetValue(putTime_ms);
   fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
   fetchedPhysicalRagdoll=buf_physicalRig.GetValue(putTime_ms)>1.5f;
   fetchedSituationState=buf_situationState.GetValue(putTime_ms);

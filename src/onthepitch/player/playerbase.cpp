@@ -106,7 +106,20 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
       const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;
       const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free);
       if(plan.valid){
-        const bool receiving=fieldPlayer->GetTeam()->GetDesignatedTeamPossessionPlayer()==fieldPlayer;
+        bool receiving=fieldPlayer->GetTeam()->GetDesignatedTeamPossessionPlayer()==fieldPlayer;
+        // Possession designation can lag an arrival beside another player.
+        // Let the best nearby reachable receiver respond instead of watching
+        // the ball pass while a more distant teammate remains designated.
+        if(!receiving&&plan.time<.70f&&plan.gap<.85f){
+          const Vector3 arrival(plan.point[0],plan.point[1],0);
+          float own=(arrival-GetPosition().Get2D()).GetLength();bool better=false;
+          std::vector<Player*> mates;fieldPlayer->GetTeam()->GetActivePlayers(mates);
+          for(auto *mate:mates)if(mate!=fieldPlayer&&mate->GetFormationEntry().role!=e_PlayerRole_GK){
+            const Vector3 next=mate->GetPosition().Get2D()+mate->GetMovement().Get2D()*std::min(.18f,plan.time);
+            if((arrival-next).GetLength()+.18f<own){better=true;break;}
+          }
+          receiving=!better;
+        }
         const Vector3 facing=(match->GetBall()->Predict(0)-GetPosition()).Get2D().GetNormalized(GetDirectionVec());
         const Vector3 meeting=Vector3(plan.point[0],plan.point[1],0)-facing*.34f;
         const Vector3 step=meeting-GetPosition().Get2D();

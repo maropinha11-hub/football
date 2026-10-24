@@ -275,7 +275,7 @@ class HumanoidBase {
     void PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes);
     void PhysicalActionContact(const Vector3 &incoming);
     void PhysicalHeaderTouch(Vector3 &outgoing,const Vector3 &incoming,bool shot);
-    void PhysicalReceptionContact(const Vector3 &incoming,const std::string &part);
+    void PhysicalReceptionContact(const Vector3 &incoming,const Vector3 &outgoing,const std::string &part);
     bool UpperReceptionActive() const {return upperReceptionClip!=nullptr;}
     void TickUpperReception();
     bool StartUpperReception(Animation *clip,int contactFrame);
@@ -442,6 +442,14 @@ class HumanoidBase {
     std::unique_ptr<football_physics::PhysicalRig> physicalRig;
     unsigned long physicalRigTime=~0ul;
     unsigned long physicalCollisionTime=0;
+    unsigned long physicalVisibleTelemetryTime=~0ul;
+    Vector3 physicalRootDelta{0},fetchedPhysicalRootDelta{0};
+    TemporalSmoother<Vector3> buf_physicalRootDelta,buf_visibleWalking;
+    Vector3 fetchedVisibleWalking{0};
+    float physicalWalkPhase=0,physicalWalkWeight=0,physicalWalkHeight=0;
+    bool physicalWalkWanted=false;
+    pes3::NativeRotations physicalWalkEntry{},physicalWalkExit{};
+    void ComposeWalkingReference(football_physics::Input &input,bool advance);
     TemporalSmoother<float> buf_physicalRig;
     bool fetchedPhysicalRig=false;
     TemporalSmoother<Quaternion> buf_physicalAdditive[13];

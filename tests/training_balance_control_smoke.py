@@ -38,7 +38,11 @@ try:
   # Start the independent off-ball grip fixture from a settled native pose.
   # Otherwise the preceding shield/contact trial leaves a pose-dependent
   # shoulder/partner arrangement, which can be outside real shirt reach.
-  g.reset();key(g,'F11');start=len(g.read_log())
+  g.reset();key(g,'F11');g.advance(800);start=len(g.read_log())
+  # Changing possession also changes the native look/approach target. Let
+  # that turn finish before measuring a sustained calm hold; an immediate
+  # grip may correctly lose its real shirt contact during the turn. All
+  # acquisition/release, traction and escape thresholds remain unchanged.
   g.pad(0,0,left_trigger=1);g.advance(2000);capture(g,'lt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start);partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT without the ball reaches then grips actual shirt surface',any(x['state']=='begin'and float(x['hand_gap'])<.10 for x in grips)and any(x['with_ball']=='0'and x['reaching']=='1'for x in partner),grips)

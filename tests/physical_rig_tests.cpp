@@ -122,6 +122,17 @@ int main(int argc,char **argv){
     float drift=0;for(unsigned i=0;i<60;++i){hands.step(v);const Vec actual=addPoint(hands.points()[6],rotatePoint(hands.worldRotations()[6],{{0,0,-.25f}}));drift=std::max(drift,length(subtractPoint(actual,rightHand)));}
     check(drift<.10f&&hands.metrics().armSpeed<3.81f&&boneError(hands,bind)<1e-5f,"the adopted hand follows its actual contact with bounded joints and no limb stretching");
   }
+  {
+    PhysicalRig hit,reference;hit.configure(bind,1);reference.configure(bind,1);Input v=standing();v.action=true;
+    hit.step(v);reference.step(v);float visible=0,footError=0;
+    for(unsigned tick=1;tick<80;++tick){
+      Input withHit=v;withHit.ballImpact={{0,-12,0}};withHit.ballImpactAge=tick*.01f;hit.step(withHit);reference.step(v);
+      visible=std::max(visible,length(logarithm(productRotation(hit.pose()[1],inverseRotation(reference.pose()[1])))));
+      footError=std::max(footError,length(subtractPoint(hit.points()[12],reference.points()[12])));
+    }
+    check(visible>.05f&&footError<.001f&&boneError(hit,bind)<1e-5f,"a ball impact causes a visible bounded reflex even during another action, preserving the contact foot");
+    check(hit.metrics().neuralMotorSamples>0,"impact reference reaches the actual learned muscular tracker");
+  }
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
   float maximumBoneError=0,peakLean=0,peakCounterbalance=0;
   rig.step(input);const Vec initialLeft=rig.points()[9],initialRight=rig.points()[12];

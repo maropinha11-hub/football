@@ -1,5 +1,5 @@
 """Rendered automatic support steps generated from load rather than a trip clip."""
-import argparse,hashlib,json,re,subprocess
+import argparse,hashlib,json,re,subprocess,math
 from pathlib import Path
 from native_training_harness import NativeTraining
 p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':1440');a=p.parse_args()
@@ -8,14 +8,21 @@ def check(name,ok,evidence):
  c=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(c);print(json.dumps(c),flush=True)
 def ev(g,prefix,start=0):return[dict(re.findall(r'(\w+)=([^\s]+)',x))for x in g.read_log()[start:].splitlines()if x.startswith(prefix+' ')]
 def key(g,k):g.keys([k],True);g.advance(100);g.keys([k],False);g.advance(100)
+def visible(g,start=0):
+ return list({x['t']:x for line in g.read_log()[start:].splitlines()if line.startswith('VISIBLE_PHYSICS ')for x in [json.loads(line[16:])]if x['human']}.values())
 try:
  with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides=dict(context_x=640,context_y=360,training_physical_rig='true',training_physical_lab='true',simulation_seed=7))as g:
   for direction in range(4):
-   g.reset();start=len(g.read_log());key(g,'F8')
+   g.reset();before=visible(g)[-1];start=len(g.read_log());key(g,'F8')
    subprocess.run(['import','-window',g.window,str(a.output/('procedural-step-'+str(direction)+'.png'))],env=g.env,check=True)
    f=g.advance(1800);steps=ev(g,'PROCEDURAL_SUPPORT_STEP',start);states=ev(g,'PHYSICAL_RIG_STATE',start)
    check('direction '+str(direction)+' generates support without selecting a whole-body trip',bool(steps)and max(float(x['lift'])for x in steps)>.035 and not ev(g,'PHYSICAL_STAGGER_CLIP',start),dict(step_samples=steps))
    check('direction '+str(direction)+' preserves a reachable support and regains control',bool(steps)and max(float(x['support_error'])for x in steps)<.06 and not any(x['to']=='1'for x in states)and f[-1]['speed']<.5,dict(states=states,final_speed=f[-1]['speed']))
+   foot='right'if steps and steps[0]['foot']=='1'else'left';poses=visible(g,start)
+   lift=max([x[foot][2]-before[foot][2]for x in poses]or[0]);support='left'if foot=='right'else'right'
+   held=[x for x in poses if any(abs(x['t']-int(step['t']))<=30 and float(step['weight'])>.99 for step in steps)]
+   support_drift=max([math.dist(x[support],before[support])for x in held]or[999])
+   check('direction '+str(direction)+' displays the generated foot lift and keeps its other visible support',lift>.025 and support_drift<.06,dict(visible_samples=len(poses),lift_m=lift,support_drift_m=support_drift))
    key(g,'F3')
   # The active layer reports support/arms; PHYSICAL_RIG_RENDER is emitted
   # only by the full falling/get-up renderer. Exercise that renderer rather

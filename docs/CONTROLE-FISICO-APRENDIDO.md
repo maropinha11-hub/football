@@ -6,6 +6,26 @@ nem uma política de locomoção do corpo inteiro treinada por reforço.
 
 ## O que mudou no jogo
 
+Esta correção liga a pose física completa à pose desenhada: inclinação e
+deslocamento vertical do quadril acompanham a solução das pernas. Antes,
+aplicar apenas as rotações dos membros escondia parte da resposta de apoio.
+Os testes novos medem os tornozelos e a direção do tronco depois da mistura
+final, em uma partida com 22 jogadores, além das métricas do simulador.
+
+Sem bola, a passada lenta mantém uma fase contínua proporcional à distância
+percorrida. Trocar um candidato nativo de movimento não reinicia mais a
+passada. O IK orienta o avanço dos pés pela direção real do deslocamento,
+inclusive de lado e para trás; a entrada e a saída da caminhada são graduais.
+As ações e os contatos com bola continuam com o tempo do seletor nativo.
+
+Um recebedor próximo pode assumir uma chegada alcançável quando a designação
+de posse ainda aponta para um colega mais distante. Isso ajusta a aproximação,
+sem conceder posse nem ampliar a pele de contato. Todo impacto corporal real
+envia seu momento à física e gera uma resposta amortecida de tronco e braços,
+inclusive durante outra ação. Repetir contatos não reinicia a resposta do zero.
+A recepção também mantém o motor muscular ativo na CPU parada. Corpos caídos
+continuam verificando a colisão da bola e recebem seu impulso articulado.
+
 Até 74% do curso do analógico sem RB há uma faixa progressiva de caminhada,
 até 1,55 m/s. Acima dela, a velocidade cresce suavemente até a velocidade
 normal aprovada; RB continua sendo o comando de sprint. A passada lenta tem
@@ -113,8 +133,8 @@ durante quedas; inércia, limites de torque e articulações continuam físicos.
 Os testes gráficos verificam execução real, limites e recuperação. Não
 demonstram reprodução exata de movimentos humanos ou de outra engine.
 
-Uma nova busca de 75 gerações, com impactos opostos e condições mais amplas,
-foi avaliada nesta revisão. Seu custo caiu ligeiramente, mas o erro e a variação
+Uma busca de 75 gerações, com impactos opostos e condições mais amplas,
+foi avaliada na revisão anterior. Seu custo caiu ligeiramente, mas o erro e a variação
 de aceleração pioraram em relação à rede aprovada. Os pesos foram rejeitados
 para execução; o relatório está em `config/muscle-policy-rejected-candidate.json`.
 O jogo mantém o modelo descrito acima. A nova plantação dos pés é analítica
@@ -142,5 +162,9 @@ R3/Tab para ver o corpo. Compare o analógico em cerca de um terço, metade e
 dois terços do curso; observe a barra FOLEGO com e sem RB. F8/Shift+F8/Ctrl+F8
 testam impactos crescentes. F2 aproxima um parceiro e M provoca uma disputa.
 Em `partida-fisica.bat`, jogador e CPU usam a camada física. F7 compara essa
-camada ligada/desligada. A versão Windows é compilada e verificada aqui;
+camada ligada/desligada. Segure **H** e aperte F4/F5/F6 para direcionar um
+lançamento de teste a um companheiro controlado pela CPU. H+Ctrl+Shift+F4
+afasta a bola para comparar a caminhada sem posse. Esses atalhos só montam
+o cenário; os contatos, decisões e reações continuam sendo simulados.
+A versão Windows é compilada e verificada aqui;
 os testes gráficos automatizados rodam na versão Linux com controle virtual.

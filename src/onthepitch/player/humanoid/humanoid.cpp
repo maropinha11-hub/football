@@ -107,7 +107,7 @@ void Humanoid::Process() {
       if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CUT_STEP t=%lu actor=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),demand.GetLength());
     }
   }
-  if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
+  if(PhysicalRigBusy()) {ProcessPhysicalMotion();ProcessTrainingBodyContact();return;}
 
   _cache_AgilityFactor = GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor);
   _cache_AccelerationFactor = GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor);
@@ -138,7 +138,7 @@ void Humanoid::Process() {
   TickUpperReception();
   CalculateSpatialState();
   UpdateTrainingContactPose();
-  if(PhysicalRigBusy()) {ProcessPhysicalMotion();return;}
+  if(PhysicalRigBusy()) {ProcessPhysicalMotion();ProcessTrainingBodyContact();return;}
   spatialState.positionOffsetMovement = Vector3(0);
 
   currentAnim->frameNum++;
@@ -461,13 +461,13 @@ void Humanoid::Process() {
     radian xRot=0,yRot=0;
     const Vector3 touch=GetTrapVector(match,CastPlayer(),nextStartPos,nextStartAngle,spatialState.angle,
       CalculateOutgoingMovement(currentAnim->positions),currentAnim,currentAnim->frameNum,spatialState,decayingPositionOffset,xRot,yRot);
-    PhysicalReceptionContact(match->GetBall()->GetMovement(),"trunk");
+    PhysicalReceptionContact(match->GetBall()->GetMovement(),touch,"trunk");
     match->GetBall()->Touch(touch);match->GetBall()->SetRotation(xRot,yRot,0,.5f);
     if(player==match->GetTrainingPlayer())match->NotifyTrainingTouch(e_FunctionType_Trap,false);
     match->RecordPlayerMatchAction(CastPlayer(),e_FunctionType_Trap,nullptr);
     team->SetLastTouchPlayer(CastPlayer(),e_TouchType_Intentional_Nonkicked);CastPlayer()->UpdatePossessionStats(false);
     if(GetConfiguration()->GetBool("training_telemetry",false))
-      printf("TRAINING_ACTION_TOUCH t=%lu part=trunk function=3 z=%.4f upper_layer=1\n",match->GetActualTime_ms(),match->GetBall()->Predict(0).coords[2]);
+      printf("TRAINING_ACTION_TOUCH t=%lu part=trunk function=3 z=%.4f upper_layer=1 actor=%d\n",match->GetActualTime_ms(),match->GetBall()->Predict(0).coords[2],player->GetID());
   }
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
   // A physical actor needs an authored reception or a real impact response.
@@ -562,7 +562,7 @@ void Humanoid::Process() {
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (trap): %f\n", bumpyRideBias);
 
-        PhysicalReceptionContact(currentBallVec,currentAnim->anim->GetVariable("touch_bodypart"));
+        PhysicalReceptionContact(currentBallVec,touchVec,currentAnim->anim->GetVariable("touch_bodypart"));
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.5f * (1.0f - bumpyRideBias));
 
@@ -594,7 +594,7 @@ void Humanoid::Process() {
           touchVec.coords[2]=std::max(touchVec.coords[2],hop*clamp(delta/2.f,.70f,1.f));
           if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_CONTROL_HOP t=%lu vz=%.6f delta=%.6f\n",match->GetActualTime_ms(),touchVec.coords[2],delta);
         }
-        PhysicalReceptionContact(currentBallVec,currentAnim->anim->GetVariable("touch_bodypart"));
+        PhysicalReceptionContact(currentBallVec,touchVec,currentAnim->anim->GetVariable("touch_bodypart"));
         match->GetBall()->Touch(touchVec);
         match->GetBall()->SetRotation(xRot, yRot, 0, 0.6f * (1.0f - bumpyRideBias)); // 1.0
 

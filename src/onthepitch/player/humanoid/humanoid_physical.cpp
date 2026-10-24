@@ -7,12 +7,14 @@
 #include "situational_profiles.hpp"
 #include "strike_technique.hpp"
 #include "header_contact.hpp"
+#include "walking_gait.hpp"
 #include "../../physical_match_rules.hpp"
 #include "../../reception_prediction.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../controller/humancontroller.hpp"
+#include "../analog_locomotion.hpp"
 #include <sstream>
 #include <iomanip>
 
@@ -125,6 +127,7 @@ bool HumanoidBase::PhysicalStaggering()const {
 void HumanoidBase::ResetPhysicalRig(bool clearHistory){
   if(physicalRig)physicalRig->reset();
   physicalRigTime=~0ul;physicalCollisionTime=0;if(clearHistory)buf_physicalRig.Clear();
+  physicalWalkWeight=physicalWalkPhase=0;physicalWalkWanted=false;physicalRootDelta=Vector3(0);buf_physicalRootDelta.Clear();
   physicalSituationProfile=0;buf_situationState.Clear();
   physicalCutUntil=physicalBallImpactTime=physicalKeeperAttemptUntil=0;physicalIntentTime=~0ul;
   physicalPendingCut=Vector3(0);
@@ -397,6 +400,54 @@ void HumanoidBase::BuildSituationalInput(football_physics::Input &input){
   }
 }
 
+void HumanoidBase::ComposeWalkingReference(football_physics::Input &input,bool advance){
+  using namespace football_physics;
+  auto *clip=currentAnim->anim;
+  bool walking=spatialState.floatVelocity>.10f&&spatialState.floatVelocity<1.65f;
+  if(player->GetExternalController()){
+    auto *human=static_cast<HumanController*>(player->GetExternalController());
+    const float strength=human->GetHIDevice()->GetDirection().GetLength();
+    walking=strength>.01f&&strength<=football_input::walkingStickLimit&&!human->SprintButtonDown()&&!match->TrainingReceivingBall();
+  }
+  const bool wanted=currentAnim->functionType==e_FunctionType_Movement&&walking&&
+    spatialState.floatVelocity>.10f&&!input.action&&!input.upperReception&&!input.staggering;
+  const float stride=bounded(.38f+spatialState.movement.Get2D().GetLength()*.12f,.38f,.62f);
+  {
+    if(wanted&&!physicalWalkWanted){
+      physicalWalkEntry=physicalRig->initialized()?physicalRig->pose():input.pose;
+      physicalWalkHeight=physicalRig->initialized()?physicalRig->points()[0][2]:input.pelvis[2];
+      physicalWalkPhase=float(currentAnim->frameNum)/std::max(1,clip->GetFrameCount()-1);
+    }
+    if(!wanted&&physicalWalkWanted){physicalWalkExit=physicalRig->pose();physicalWalkHeight=physicalRig->points()[0][2];}
+    physicalWalkWanted=wanted;
+  }
+  if(advance){
+    float release=.18f;
+    if(currentAnim->touchFrame>=0&&!currentAnim->touchMade)
+      release=std::max(.025f,std::min(release,(currentAnim->touchFrame-currentAnim->frameNum)*.005f));
+    physicalWalkWeight=bounded(physicalWalkWeight+(wanted?.01f/.20f:-.01f/release),0,1);
+    if(wanted){
+      physicalWalkPhase+=spatialState.movement.Get2D().GetLength()*.01f/(stride/.64f);
+      physicalWalkPhase-=std::floor(physicalWalkPhase);
+    }
+  }
+  if(physicalWalkWeight<=0)return;
+  const float weight=smooth(physicalWalkWeight);
+  if(wanted){
+    auto bind=pes3NativeReference;for(auto &offset:bind.offsets)offset=scalePoint(offset,zMultiplier);
+    auto pose=input.pose;
+    Vec pelvis=input.pelvis;pelvis[2]=(pes3NativeReference.offsets[0][2]-.08f+.012f*std::cos(12.5663706f*physicalWalkPhase))*zMultiplier;
+    Vec travel=rotatePoint(inverseRotation(pose[0]),point(spatialState.movement));travel[2]=0;
+    football_walk::pose(bind,pose,pelvis,physicalWalkPhase,stride,travel);
+    football_walk::upperBody(bind,pose,physicalWalkPhase);
+    for(unsigned bone=1;bone<13;++bone)input.pose[bone]=blended(physicalWalkEntry[bone],pose[bone],weight);
+    input.pelvis[2]=physicalWalkHeight*(1-weight)+pelvis[2]*weight;
+  }else{
+    for(unsigned bone=1;bone<13;++bone)input.pose[bone]=blended(input.pose[bone],physicalWalkExit[bone],weight);
+    input.pelvis[2]=input.pelvis[2]*(1-weight)+physicalWalkHeight*weight;
+  }
+}
+
 void HumanoidBase::UpdatePhysicalRigPose(){
   if(!PhysicalRigEnabled())return;
   ConfigurePhysicalRig();
@@ -424,7 +475,13 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     }
     input.passiveTracking=PlayerMatchEnabled() && !player->GetExternalController() && input.opponentDistance>2.f &&
       spatialState.movement.GetLength()<.20f && !input.action && !input.staggering && !input.gripped;
+    ComposeWalkingReference(input,physicalRigTime!=match->GetActualTime_ms());
     BuildSituationalInput(input);
+    if(input.situation.kind!=football_situations::ActionKind::None)input.passiveTracking=false;
+    if(physicalBallImpactTime&&match->GetActualTime_ms()-physicalBallImpactTime<600){
+      input.ballImpact=point(physicalBallImpactVelocity);input.ballImpactAge=(match->GetActualTime_ms()-physicalBallImpactTime)*.001f;
+      input.passiveTracking=false;
+    }
     // Anticipate small reach corrections. The existing skin contact gate
     // remains responsible for accepting an actual ball impulse.
     const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
@@ -510,6 +567,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     }
   } else physicalRig->evaluate(input);
   if(!physicalRig || !physicalRig->initialized())return;
+  physicalRootDelta=vector(football_physics::subtractPoint(physicalRig->points()[0],input.pelvis));
   for(unsigned i=0;i<13;++i){contactLocal[i]=quaternion(physicalRig->pose()[i]);contactGlobal[i]=quaternion(physicalRig->worldRotations()[i]);contactPositions[i]=vector(physicalRig->points()[i]);}
 }
 
@@ -535,11 +593,12 @@ void HumanoidBase::PhysicalHeaderTouch(Vector3 &outgoing,const Vector3 &incoming
   if(GetConfiguration()->GetBool("training_telemetry",false))printf("HEADER_CONTACT_POWER t=%lu actor=%d shot=%d power=%.5f incoming=%.5f drive=%.5f speed=%.5f loaded=%d\n",match->GetActualTime_ms(),player->GetID(),shot?1:0,power,incoming.GetLength(),velocity.GetDotProduct(aim),speed,currentAnim->anim->GetVariable("physical_header_load")=="true"?1:0);
 }
 
-void HumanoidBase::PhysicalReceptionContact(const Vector3 &incoming,const std::string &part){
+void HumanoidBase::PhysicalReceptionContact(const Vector3 &incoming,const Vector3 &outgoing,const std::string &part){
   if(!PhysicalRigEnabled()||incoming.GetLength()<1.8f)return;
   if(match->GetLastTouchPlayer()==player&&static_cast<Player*>(player)->GetLastTouchType()!=e_TouchType_Accidental)return;
   physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=incoming-spatialState.movement;
   physicalBallImpactPosition=match->GetBall()->Predict(0);physicalBallImpactPart=part;
+  AddPhysicalImpulse((incoming-outgoing)*.43f,physicalBallImpactPosition-contactPositions[0]);
   if(GetConfiguration()->GetBool("training_telemetry",false))printf("RECEPTION_BODY_LOAD t=%lu actor=%d part=%s incoming=%.5f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),incoming.GetLength());
 }
 
@@ -643,6 +702,19 @@ void HumanoidBase::ProcessPhysicalPartner(){
 
 void HumanoidBase::PutPhysicalRig(){
   if(!fetchedPhysicalRig)return;
+  auto observeVisible=[&](){
+    const unsigned long snapshot=fetchedbuf_animApplyBuffer.snapshotTime_ms;
+    if(!GetConfiguration()->GetBool("training_telemetry",false)||
+       (physicalVisibleTelemetryTime!=~0ul&&snapshot>=physicalVisibleTelemetryTime&&snapshot-physicalVisibleTelemetryTime<40))return;
+    physicalVisibleTelemetryTime=snapshot;
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
+    const Vector3 origin=humanoidNode->GetPosition().Get2D();
+    const Vector3 left=origin+(nodeMap.at("left_ankle")->GetDerivedPosition()-origin)*zMultiplier;
+    const Vector3 right=origin+(nodeMap.at("right_ankle")->GetDerivedPosition()-origin)*zMultiplier;
+    const Vector3 pelvis=origin+(nodeMap.at("body")->GetDerivedPosition()-origin)*zMultiplier;
+    const Vector3 torso=nodeMap.at("middle")->GetDerivedRotation()*Vector3(0,0,1);
+    printf("VISIBLE_PHYSICS {\"t\":%lu,\"actor\":%d,\"human\":%d,\"walk\":%.5f,\"phase\":%.5f,\"slow\":%d,\"kind\":\"%s\",\"blend\":%.5f,\"pelvis\":[%.5f,%.5f,%.5f],\"left\":[%.5f,%.5f,%.5f],\"right\":[%.5f,%.5f,%.5f],\"torso\":[%.5f,%.5f,%.5f],\"root_delta\":%.6f}\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,player->GetID(),player->GetExternalController()?1:0,fetchedVisibleWalking.coords[0],fetchedVisibleWalking.coords[1],fetchedVisibleWalking.coords[2]>.5f?1:0,fetchedbuf_animApplyBuffer.anim->GetAnimType().c_str(),fetchedContactBlend,pelvis.coords[0],pelvis.coords[1],pelvis.coords[2],left.coords[0],left.coords[1],left.coords[2],right.coords[0],right.coords[1],right.coords[2],torso.coords[0],torso.coords[1],torso.coords[2],fetchedPhysicalRootDelta.coords[2]);
+  };
   auto limitRenderedArms=[&](){
     football_physics::Pose pose;for(unsigned i=0;i<13;++i)pose[i]=rotation(nodeMap.at(pes3::nativeBoneNames[i])->GetRotation());
     football_physics::Metrics metrics;
@@ -655,11 +727,15 @@ void HumanoidBase::PutPhysicalRig(){
       printf("PHYSICAL_ARM_RENDER t=%lu error=%.7f penetration=%.6f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,metrics.armLimitError,metrics.armPenetration);
   };
   if(!fetchedPhysicalRagdoll){
-    const bool observeSituation=player->GetExternalController() && fetchedSituationState.coords[0]>.001f &&
+    const bool observeSituation=fetchedSituationState.coords[0]>.001f &&
       GetConfiguration()->GetBool("training_telemetry",false);
     Quaternion nativeUpper[7];
     if(observeSituation)for(unsigned i=1;i<7;++i)nativeUpper[i]=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation();
     PutTrainingContactPose();
+    humanoidNode->SetPosition(humanoidNode->GetPosition()+fetchedPhysicalRootDelta*((1-fetchedContactBlend)/zMultiplier),false);
+    const Quaternion rootDelta=Quaternion(QUATERNION_IDENTITY).GetSlerped(1-fetchedContactBlend,fetchedPhysicalAdditive[0]);
+    nodeMap.at("body")->SetRotation((rootDelta*nodeMap.at("body")->GetRotation()).GetNormalized(),false);
+    humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
     Vector3 supportLeft,supportRight,supportRoot;
     if(observeSituation){
       humanoidNode->RecursiveUpdateSpatialData(e_SpatialDataType_Both);
@@ -695,7 +771,7 @@ void HumanoidBase::PutPhysicalRig(){
       }
       printf("PHYSICAL_SITUATION_RENDER t=%lu actor=%d action=%d source=%s frame=%d weight=%.6f difficulty=%.6f trunk=%.6f arms=%.6f foot_error=%.8f root_error=%.8f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,player->GetID(),int(std::round(fetchedSituationState.coords[2])),fetchedbuf_animApplyBuffer.anim->GetName().c_str(),fetchedbuf_animApplyBuffer.frameNum,fetchedSituationState.coords[0],fetchedSituationState.coords[1],trunk,arms,situationFootError,situationRootError);
     }
-    return;
+    observeVisible();return;
   }
   auto body=nodeMap.at("body");const auto &bind=pes3NativeReference.offsets[0];
   body->SetPosition(Vector3(bind[0],bind[1],bind[2]),false);
@@ -713,4 +789,5 @@ void HumanoidBase::PutPhysicalRig(){
     }
     printf("PHYSICAL_RIG_RENDER t=%lu length_error=%.8f root_height=%.5f\n",fetchedbuf_animApplyBuffer.snapshotTime_ms,maximumError,fetchedContactHeight);
   }
+  observeVisible();
 }

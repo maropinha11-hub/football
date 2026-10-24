@@ -13,7 +13,7 @@ inline Vec foot(float phase,float stride,float lateral){
   const float eased=swing*swing*(3-2*swing);
   return {{lateral,stride*(.5f-eased),.045f*std::pow(std::sin(3.14159265f*swing),2.f)}};
 }
-inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase,float stride){
+inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase,float stride,Vec travel={{0,-1,0}}){
   Points p{};Pose world{};
   auto fk=[&](){p[0]=pelvis;for(unsigned i=0;i<13;++i){const int parent=pes3::nativeParents[i];
     world[i]=parent<0?local[i]:normalized(productRotation(world[parent],local[i]));
@@ -25,8 +25,10 @@ inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase
   for(unsigned side=0;side<2;++side){
     const unsigned hip=side?10:7,knee=hip+1,ankle=hip+2;
     const float legPhase=phase+.5f*side;
-    const Vec offset=foot(legPhase,stride,p[ankle][0]-pelvis[0]);
-    Vec target=addPoint(pelvis,rotatePoint(world[0],{{offset[0],offset[1],0}}));
+    const Vec rest=rotatePoint(inverseRotation(world[0]),subtractPoint(p[ankle],pelvis));
+    const Vec offset=foot(legPhase,stride,rest[0]);
+    const Vec relative=addPoint({{offset[0],0,0}},scalePoint(unit(travel),-offset[1]));
+    Vec target=addPoint(pelvis,rotatePoint(world[0],relative));
     target[2]=.075f+offset[2];
     const float a=length(subtractPoint(p[knee],p[hip])),b=length(subtractPoint(p[ankle],p[knee]));
     const Vec direction=unit(subtractPoint(target,p[hip]));

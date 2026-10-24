@@ -11,13 +11,15 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
 p.add_argument('--display-base',type=int,default=164)
-p.add_argument('--only',nargs='+',choices=['support_step','malleable_solo','malleable_match','aerial_contest','energy_solo','energy_match','keeper_central','keeper_arrivals','refinement_solo','refinement_match','approved_restore','firstperson_sync','control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match','pitch_turf','pitch_receive','pitch_rules','pitch_body','pitch_tackle','cpu_grip','toggle_stress','tactical_receptions','hud_stress','restart_lifecycle','startup_cycles','pass_turn_fps'])
+p.add_argument('--only',nargs='+',choices=['visible_walk','visible_receive','support_step','malleable_solo','malleable_match','aerial_contest','energy_solo','energy_match','keeper_central','keeper_arrivals','refinement_solo','refinement_match','approved_restore','firstperson_sync','control_hop_comparison','situational_fps','situational_external','physical_solo','physical_actions','physical_controls','physical_match','approved_gait','approved_match','physical_quality','contact_lab','pass_turn','balance_lab','aerial_taps','aerial_direction_fps','aerial_direction_external','aerial_direction_approved','anatomy_lab','stagger_lab','stagger_match','pitch_turf','pitch_receive','pitch_rules','pitch_body','pitch_tackle','cpu_grip','toggle_stress','tactical_receptions','hud_stress','restart_lifecycle','startup_cycles','pass_turn_fps'])
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
 env=os.environ.copy();native=Path(env.get('FOOTBALL_NATIVE_ROOT','/workspace/.football-native'))/'root/usr'
 env['PATH']=str(native/'bin')+':'+env['PATH']
 env['LD_LIBRARY_PATH']=str(native/'lib/x86_64-linux-gnu')+':'+env.get('LD_LIBRARY_PATH','')
 env['FOOTBALL_TEST_GL_THREADS']='1'
-cases=[('support_step','training_support_step_smoke.py',[]),
+cases=[('visible_walk','training_visible_motion_smoke.py',['--mode','walk']),
+       ('visible_receive','training_visible_motion_smoke.py',['--mode','receive']),
+       ('support_step','training_support_step_smoke.py',[]),
        ('malleable_solo','training_malleable_smoke.py',[]),
        ('malleable_match','training_malleable_smoke.py',['--match']),
        ('aerial_contest','training_aerial_contest_smoke.py',[]),

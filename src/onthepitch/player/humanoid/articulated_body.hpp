@@ -9,6 +9,7 @@ class ArticulatedBody {
   ~ArticulatedBody();
   void start(const pes3::NativeBind &bind,float scale,const Pose &pose,Vec pelvis,Vec velocity,Vec impulse,Vec lever,bool tracking=false);
   void track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics);
+  void impulse(Vec value,Vec lever);
   void step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics);
  private:
   struct World;

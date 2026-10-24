@@ -516,7 +516,7 @@ void AnimCollection::Load(boost::filesystem::path directory) {
           const Animation authored=*animation;
           // Bake overlapping support into the whole selected slow gait.
           // Rebind the timed ball event to this walking shoe at runtime.
-          const float stride=clamp(v.Get2D().GetLength()*.50f,.20f,.60f);
+          const float stride=clamp(v.Get2D().GetLength()*.64f,.28f,.80f);
           for(int frame=0;frame<=end;++frame){
             football_physics::Pose pose;Quaternion q;Vector3 root,unused;
             authored.GetKeyFrame("player",frame,q,root);
@@ -672,8 +672,8 @@ void AnimCollection::CrudeSelection(DataSet &dataSet, const CrudeSelectionQuery 
         // idle/dribble boundary. The physical root still accelerates from
         // the current speed and contact feasibility is checked afterward.
         if(animations.at(i)->GetVariable("training_slow_dribble")=="true" &&
-            query.incomingVelocity==e_Velocity_Idle &&
-            animations.at(i)->GetAnimType()=="movement")animIncomingVelocity=e_Velocity_Idle;
+            query.incomingVelocity!=e_Velocity_Sprint &&
+            animations.at(i)->GetAnimType()=="movement")animIncomingVelocity=query.incomingVelocity;
 
         if (query.incomingVelocity_Strict == false) {
 

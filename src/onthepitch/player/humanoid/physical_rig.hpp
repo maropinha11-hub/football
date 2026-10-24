@@ -40,6 +40,7 @@ struct Input {
   Vec handTarget{{0,0,0}};
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
+  Vec ballImpact{{0,0,0}};float ballImpactAge=-1;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false,touchPending=false,grounding=false;
   football_situations::Context situation;
@@ -131,6 +132,7 @@ class PhysicalRig {
   Vec root{{0,0,.96f}},rootVelocity{{0,0,0}},previousVelocity{{0,0,0}};
   Vec filteredAcceleration{{0,0,0}},lastForward{{0,-1,0}},sway{{0,0,0}},swayVelocity{{0,0,0}};
   Vec counterTilt{{0,0,0}},counterTiltVelocity{{0,0,0}};
+  Vec impactReflex{{0,0,0}},impactReflexVelocity{{0,0,0}};
   Vec supportTilt{{0,0,0}},supportTiltVelocity{{0,0,0}};
   float supportSink=0,supportSinkVelocity=0;
   Vec sourceFeet[2]{},plantAnchor[2]{},plantOffset[2]{};

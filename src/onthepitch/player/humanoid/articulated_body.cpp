@@ -124,6 +124,10 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
     }
   }
 }
+void ArticulatedBody::impulse(Vec value,Vec lever){
+  if(!state||state->bodies.size()<3)return;
+  state->bodies[2]->activate(true);state->bodies[2]->applyImpulse(bv(capped(value,80.f)),bv(capped(lever,.8f)));
+}
 void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics){
   if(!state || !state->tracking)start(bind,scale,target,pelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},true);
   auto &s=*state;std::array<btTransform,13> desired,previous;

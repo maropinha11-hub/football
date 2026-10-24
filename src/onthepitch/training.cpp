@@ -115,6 +115,25 @@ void Match::NotifyTrainingTouch(e_FunctionType function, bool knockOn) {
 
 void Match::LaunchTrainingBall(int delivery) {
   Player *player=trainingPlayer;
+  auto &events=UserEventManager::GetInstance();
+  const bool cpu=PlayerMatchEnabled()&&events.GetKeyboardState(SDLK_h);
+  if(cpu){
+    std::vector<Player*> mates;GetTeam(trainingPlayer->GetTeamID())->GetActivePlayers(mates);
+    float closest=1e9f;
+    for(auto *mate:mates)if(mate!=trainingPlayer&&mate->GetFormationEntry().role!=e_PlayerRole_GK){
+      const float distance=(mate->GetPosition()-trainingPlayer->GetPosition()).Get2D().GetLength();
+      if(distance<closest){closest=distance;player=mate;}
+    }
+    const Vector3 front=trainingPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+    const Vector3 spot=trainingPlayer->GetPosition().Get2D()+front.GetRotated2D(.5f*pi)*3.f;
+    player->ResetPosition(spot,spot+front*10.f);
+    std::vector<Player*> actors;GetTeam(0)->GetActivePlayers(actors);GetTeam(1)->GetActivePlayers(actors);
+    for(auto *actor:actors)if(actor!=player&&actor!=trainingPlayer&&actor->GetFormationEntry().role!=e_PlayerRole_GK&&
+       (actor->GetPosition()-spot).Get2D().GetLength()<13.f){
+      const Vector3 away=actor->GetPosition().Get2D()+front.GetRotated2D(-.5f*pi)*18.f;
+      actor->ResetPosition(away,away+actor->GetBodyDirectionVec());
+    }
+  }
   const Vector3 root=player->GetPosition().Get2D();
   const Vector3 forward=player->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
   // Reset only this attempt, retaining the player's current field position and facing.
@@ -124,10 +143,15 @@ void Match::LaunchTrainingBall(int delivery) {
     lastTouchTeamID=-1;for(unsigned i=0;i<e_TouchType_SIZE;++i)lastTouchTeamIDs[i]=-1;
     player->ResetPosition(root,root+forward*10.f);
     if(player->GetExternalController())player->GetExternalController()->Reset();
-    trainingView.reset(std::atan2(forward.coords[1],forward.coords[0]));trainingEyeInitialized=false;
+    if(!cpu){trainingView.reset(std::atan2(forward.coords[1],forward.coords[0]));trainingEyeInitialized=false;}
+  }
+  if(cpu&&delivery==0&&events.GetKeyboardState(SDLK_LSHIFT)&&events.GetKeyboardState(SDLK_LCTRL)){
+    ball->SetPosition(Vector3(0,trainingPlayer->GetPosition().coords[1]<0?20.f:-20.f,.112f));ball->SetMomentum(Vector3(0));
+    UpdateLatestMentalImageBallPredictions();
+    SpamMessage("Caminhada sem bola: use o analogico levemente",4000);
+    printf("WALK_LAB_SETUP t=%lu human=%d\n",actualTime_ms,trainingPlayer->GetID());return;
   }
   const Vector3 chest=player->GetHumanoid()->GetStandingChestTarget();
-  auto &events=UserEventManager::GetInstance();
   const bool driven=delivery==1 && events.GetKeyboardState(SDLK_LSHIFT);
   const bool belly=delivery==1 && events.GetKeyboardState(SDLK_LCTRL);
   const bool impact=driven&&belly;
@@ -155,8 +179,8 @@ void Match::LaunchTrainingBall(int delivery) {
   UpdateLatestMentalImageBallPredictions();
   SpamMessage(delivery==0?"Passe rasteiro recebido | F4: repetir":
       delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
-  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d\n",
-    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0);
+  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d actor=%d\n",
+    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0,player->GetID());
   fflush(stdout);
 }
 

@@ -574,11 +574,11 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   contactPreviousBall=resolved;
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
-  if(PhysicalRigEnabled()&&legalPart){
+  if(PhysicalRigEnabled()){
     physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
     physicalBallImpactPart=toBall.GetDotProduct(spatialState.bodyDirectionVec)<-.25f?"back":part;
     const Vector3 impulse=(incoming-outgoing)*.43f;
-    if(-inward>14.f)AddPhysicalImpulse(impulse,point-contactPositions[0]);
+    AddPhysicalImpulse(impulse,point-contactPositions[0]);
     if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());
   }
   if(cushioning&&GetConfiguration()->GetBool("training_telemetry",false))
@@ -680,8 +680,12 @@ void HumanoidBase::UpdateTrainingContactPose() {
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?
       ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;
-  if(PhysicalRigEnabled() && currentAnim->functionType!=e_FunctionType_BallControl &&
-      currentAnim->functionType!=e_FunctionType_Movement)contactPoseBlend=nativeBlend;
+  if(PhysicalRigEnabled()){
+    const float enter=football_physics::smooth(currentAnim->frameNum/std::max(1.f,std::min(8.f,currentAnim->touchFrame*.5f)));
+    contactPoseBlend=nativeBlend*enter;
+    if(physicalWalkWeight>.001f)contactPoseBlend=1.f;
+    if(physicalRig&&physicalRig->initialized())contactPoseBlend=std::max(contactPoseBlend,physicalRig->metrics().recoveryStep);
+  }
   if(GetConfiguration()->GetBool("training_telemetry",false) && currentAnim->touchFrame>=0 && match->GetActualTime_ms()%20==0) {
     const Vector3 point=match->GetBall()->Predict(0),next=match->GetBall()->Predict(10);
     printf("TRAINING_NATIVE_GEOMETRY t=%lu frame=%d contact_frame=%d left=%.5f right=%.5f next_left=%.5f next_right=%.5f touched=%d\n",
