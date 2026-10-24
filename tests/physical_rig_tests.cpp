@@ -132,6 +132,12 @@ int main(int argc,char **argv){
     }
     check(visible>.05f&&footError<.001f&&boneError(hit,bind)<1e-5f,"a ball impact causes a visible bounded reflex even during another action, preserving the contact foot");
     check(hit.metrics().neuralMotorSamples>0,"impact reference reaches the actual learned muscular tracker");
+    hit.configure(bind,1);reference.configure(bind,1);hit.step(v);reference.step(v);visible=0;
+    for(unsigned tick=1;tick<70;++tick){
+      Input vertical=v;vertical.ballImpact={{0,0,-5}};vertical.ballImpactLever={{0,.22f,.45f}};vertical.ballImpactAge=tick*.01f;
+      hit.step(vertical);reference.step(v);visible=std::max(visible,length(logarithm(productRotation(hit.pose()[1],inverseRotation(reference.pose()[1])))));
+    }
+    check(visible>.07f&&boneError(hit,bind)<1e-5f,"a descending ball has a visible shoulder/back reflex through its actual moment arm");
   }
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
   float maximumBoneError=0,peakLean=0,peakCounterbalance=0;

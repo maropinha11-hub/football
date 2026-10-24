@@ -142,6 +142,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "Folego humano sem RB nao gasta; RB continua sendo sprint.\n"
         "Partida: H+F4/F5/F6 testa a recepcao de um companheiro CPU.\n"
         "H+Ctrl+Shift+F4 afasta a bola para observar a caminhada sem posse.\n"
+        "7/8/9/0 + F5: canela, coxa, descendente alta e bola por tras.\n"
+        "Acrescente H na partida para testar essas chegadas no companheiro CPU.\n"
         "Mantem o motor muscular treinado aprovado.\n"
         "Leia LEIA-CONTROLE-FISICO.txt e LEIA-BASE-APROVADA.txt.\n\n"
         "F7: comparar fisica ligada/desligada.\n"

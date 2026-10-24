@@ -450,6 +450,12 @@ class HumanoidBase {
     bool physicalWalkWanted=false;
     pes3::NativeRotations physicalWalkEntry{},physicalWalkExit{};
     void ComposeWalkingReference(football_physics::Input &input,bool advance);
+    void ComposeReceptionReference(football_physics::Input &input,bool advance);
+    Animation *physicalReceptionClips[3][2]={{nullptr,nullptr},{nullptr,nullptr},{nullptr,nullptr}};
+    Animation *physicalReceptionClip=nullptr;
+    float physicalReceptionWeight=0,physicalReceptionPhase=0,physicalReceptionApplied=0;
+    unsigned long physicalReceptionContactAt=0,physicalReceptionEpisodeAt=0;
+    std::string physicalReceptionPart;
     TemporalSmoother<float> buf_physicalRig;
     bool fetchedPhysicalRig=false;
     TemporalSmoother<Quaternion> buf_physicalAdditive[13];

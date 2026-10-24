@@ -2,6 +2,7 @@
 #include "onthepitch/player/humanoid/shirt_cloth.hpp"
 #include "onthepitch/player/humanoid/anatomical_arms.hpp"
 #include "onthepitch/player/humanoid/contact_resistance.hpp"
+#include "onthepitch/player/humanoid/body_ball_response.hpp"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -48,6 +49,15 @@ float armClearance(const PhysicalRig&r){
 }
 }
 int main(int argc,char **argv){
+ for(bool cushion:{false,true}){
+  const Vec grazing{{-.01f,0,-2.f}},normal{{1,0,0}};
+  const Vec after=football_contacts::bodyResponse(grazing,normal,cushion);
+  check(after[2]<-1.99f,"a nearly unloaded back contact preserves the ball's downward slide");
+  check(after[0]>0&&length(after)<=length(grazing),"stationary skin friction cannot add energy");
+  const Vec incoming{{-8,0,-3}},absorbed=football_contacts::bodyResponse(incoming,normal,cushion);
+  check(length(absorbed)<length(incoming)&&absorbed[0]>0,"a real normal impulse can dissipate a driven ball");
+  check(football_contacts::bodyResponse({{1,0,-2}},normal,cushion)==Vec{{1,0,-2}},"a separating ball is not pulled back onto the body");
+ }
  const std::string root=argc>1?argv[1]:"data/media/animations";
  const auto front=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_front.anim");
  const auto back=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_back.anim");

@@ -10,7 +10,12 @@ def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
 try:
  with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides={'context_x':480,'context_y':270,'training_physical_rig':'true','training_physical_lab':'true','player_match':'true','player_match_half_seconds':120,'simulation_seed':7})as g:
-  g.advance(2600);g.keys(['b','n'],True);g.keys(['Shift_L','F2','F11'],True);g.advance(100);g.keys(['Shift_L','F2','F11'],False)
+  g.advance(2600);yaw=g.frames()[-1]['player_yaw'];g.keys(['b','n'],True);g.keys(['Shift_L','F2','F11'],True);g.advance(100);g.keys(['Shift_L','F2','F11'],False)
+  # The standard side-by-side drill can be outside this player's anatomical
+  # arm reach. Bring the carrier closer with actual analog locomotion; the
+  # CPU still has to reach real skin before the unchanged .10 m grip gate.
+  dx=.15*math.cos(yaw)-.68*math.sin(yaw);dy=.15*math.sin(yaw)+.68*math.cos(yaw);length=math.hypot(dx,dy)
+  g.pad(.35*dx/length,-.35*dy/length);g.advance(250);g.pad(0,0)
   g.advance(1500);grips=ev(g,'PHYSICAL_AI_GRIP');forces=ev(g,'PHYSICAL_AI_GRIP_FORCE')
   check('CPU hand reaches the actual shirt before holding',any(x['state']=='begin'and float(x['gap'])<.10 for x in grips),grips)
   check('CPU hold transmits bounded force through a reachable hand',bool(forces)and all(math.isfinite(float(x['force']))and float(x['force'])<=180.01 and float(x['gap'])<=.23 for x in forces),forces)

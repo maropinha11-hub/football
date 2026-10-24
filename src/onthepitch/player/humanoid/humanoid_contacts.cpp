@@ -3,6 +3,7 @@
 #include "situational_action.hpp"
 #include "anatomical_arms.hpp"
 #include "native_contact_timing.hpp"
+#include "body_ball_response.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../controller/humancontroller.hpp"
@@ -544,7 +545,7 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   surfaceVelocity=spatialState.movement+localVelocity;
   const Vector3 relative=incoming-surfaceVelocity;
   const float inward=relative.GetDotProduct(normal);
-  if(inward>=-.2f)return;
+  if(inward>=0)return;
   const bool legalPart=part=="middle"||part=="neck"||part.find("thigh")!=std::string::npos||
     part.find("knee")!=std::string::npos||part.find("ankle")!=std::string::npos;
   const Vector3 toBall=(point-spatialState.position).Get2D().GetNormalized(spatialState.bodyDirectionVec);
@@ -556,16 +557,9 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   // Only a swept, real skin contact can absorb the pass. A soft receiver
   // withdraws the contacted surface; this is not a proximity possession or
   // an invisible barrier in front of the chest.
-  Vector3 outgoing=(relative-normal*inward)*(cushioning?.22f:.65f)-normal*inward*(cushioning?.035f:.18f)+
-    (cushioning?spatialState.movement*.70f:surfaceVelocity);
-  if(cushioning){
-    const float maxLead=std::max(1.3f,spatialState.movement.Get2D().GetLength()+.75f);
-    const Vector3 flat=outgoing.Get2D();
-    if(flat.GetLength()>maxLead){const Vector3 limited=flat.GetNormalized(0)*maxLead;outgoing.coords[0]=limited.coords[0];outgoing.coords[1]=limited.coords[1];}
-    outgoing.coords[2]=clamp(outgoing.coords[2],-2.2f,.8f);
-    const float separating=(outgoing-surfaceVelocity).GetDotProduct(normal);
-    if(separating<.05f)outgoing+=normal*(.05f-separating);
-  }
+  const auto response=football_contacts::bodyResponse({{relative.coords[0],relative.coords[1],relative.coords[2]}},
+    {{normal.coords[0],normal.coords[1],normal.coords[2]}},cushioning);
+  const Vector3 outgoing=surfaceVelocity+Vector3(response[0],response[1],response[2]);
   const Vector3 resolved=surface+normal*.1105f+outgoing*(1-high)*.01f;
   // A fast ball can cross more than 12 cm in a simulation step. Rejecting
   // that correction allowed it through the torso. Bound it by this sweep.
@@ -575,10 +569,20 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
   if(PhysicalRigEnabled()){
-    physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
-    physicalBallImpactPart=toBall.GetDotProduct(spatialState.bodyDirectionVec)<-.25f?"back":part;
+    if(!physicalBallImpactTime||match->GetActualTime_ms()-physicalBallImpactTime>700||
+        relative.GetLength()>physicalBallImpactVelocity.GetLength()+2.f||(point-physicalBallImpactPosition).GetLength()>.35f){
+      // Keep the first impact's absorption phase through its small repeated
+      // support contacts. Gravity-sized follow-up impulses must not erase
+      // the original reaction or restart its animation on every tick.
+      physicalBallImpactTime=match->GetActualTime_ms();physicalBallImpactVelocity=relative;physicalBallImpactPosition=point;
+      physicalBallImpactPart=toBall.GetDotProduct(spatialState.bodyDirectionVec)<-.25f?"back":part;
+    }
     const Vector3 impulse=(incoming-outgoing)*.43f;
     AddPhysicalImpulse(impulse,point-contactPositions[0]);
+    if(cushioning&&point.coords[2]>.28f){
+      if(!physicalReceptionContactAt||match->GetActualTime_ms()-physicalReceptionContactAt>250)physicalReceptionEpisodeAt=match->GetActualTime_ms();
+      physicalReceptionContactAt=match->GetActualTime_ms();physicalReceptionPart=part;
+    }
     if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_BALL_REACTION t=%lu actor=%d part=%s speed=%.4f hard=%d impulse=%.4f\n",match->GetActualTime_ms(),player->GetID(),part.c_str(),-inward,-inward>14.f?1:0,impulse.GetLength());
   }
   if(cushioning&&GetConfiguration()->GetBool("training_telemetry",false))
@@ -684,6 +688,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
     const float enter=football_physics::smooth(currentAnim->frameNum/std::max(1.f,std::min(8.f,currentAnim->touchFrame*.5f)));
     contactPoseBlend=nativeBlend*enter;
     if(physicalWalkWeight>.001f)contactPoseBlend=1.f;
+    if(physicalReceptionApplied>.001f)contactPoseBlend=1.f;
     if(physicalRig&&physicalRig->initialized())contactPoseBlend=std::max(contactPoseBlend,physicalRig->metrics().recoveryStep);
   }
   if(GetConfiguration()->GetBool("training_telemetry",false) && currentAnim->touchFrame>=0 && match->GetActualTime_ms()%20==0) {

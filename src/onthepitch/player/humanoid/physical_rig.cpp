@@ -88,7 +88,15 @@ void PhysicalRig::step(const Input &input,float dt){
   Vec impactWanted{{0,0,0}};
   if(input.ballImpactAge>=0&&input.ballImpactAge<.60f){
     const float sustain=1-smooth((input.ballImpactAge-.12f)/.48f);
-    impactWanted=scalePoint(capped(crossPoint({{0,0,1}},input.ballImpact),18.f),.012f*sustain);
+    // A vertical ball also bends a back/shoulder: its actual offset from
+    // the pelvis supplies the moment arm. Z cross velocity was exactly zero
+    // for these hits, leaving the receiving body rigid under the ball.
+    Vec axis=crossPoint(input.ballImpactLever,input.ballImpact);
+    if(length(axis)>.01f){
+      const float speed=length(input.ballImpact);
+      const float response=speed>2.f?bounded(.10f+speed*.009f,.10f,.27f):speed*.025f;
+      impactWanted=scalePoint(unit(axis),response*sustain);
+    }
   }
   const Vec impactAcceleration=capped(subtractPoint(scalePoint(subtractPoint(impactWanted,impactReflex),196.f),scalePoint(impactReflexVelocity,28.f)),18.f);
   impactReflexVelocity=capped(addPoint(impactReflexVelocity,scalePoint(impactAcceleration,dt)),1.4f);
@@ -326,6 +334,8 @@ void PhysicalRig::evaluate(const Input &input){
     }
   }
   applySupportStep(input);
+  if(input.receptionSupportBone==9||input.receptionSupportBone==12)
+    solveLeg(input.receptionSupportBone-2,input.receptionSupport,.001f);
   Vec horizontal=capped(filteredAcceleration,5);
   Vec leanAxis=crossPoint({{0,0,1}},scalePoint(horizontal,1/9.81f));
   leanAxis=capped(addPoint(addPoint(addPoint(scalePoint(leanAxis,.24f),sway),balance->lean()),counterTilt),.38f);

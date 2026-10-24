@@ -38,9 +38,10 @@ struct Input {
   Vec pelvis{{0,0,.96f}},velocity{{0,0,0}},forward{{0,-1,0}};
   Vec reach{{0,0,0}},opponent{{0,0,0}};
   Vec handTarget{{0,0,0}};
+  Vec receptionSupport{{0,0,0}};int receptionSupportBone=-1;
   int reachBone=-1;
   float reachWeight=0,opponentDistance=100;
-  Vec ballImpact{{0,0,0}};float ballImpactAge=-1;
+  Vec ballImpact{{0,0,0}},ballImpactLever{{0,0,.5f}};float ballImpactAge=-1;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
   bool staggering=false,passiveTracking=false,touchPending=false,grounding=false;
   football_situations::Context situation;

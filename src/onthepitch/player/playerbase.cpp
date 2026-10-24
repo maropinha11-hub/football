@@ -100,7 +100,8 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
           command.desiredVelocityFloat=std::min(command.desiredVelocityFloat,manual);
       }
     }else if(fieldPlayer&&PlayerMatchEnabled()&&fieldPlayer->GetFormationEntry().role!=e_PlayerRole_GK&&
-             !match->GetBallRetainer()&&match->GetLastTouchPlayer()!=this){
+             !match->GetBallRetainer()&&(match->GetLastTouchPlayer()!=this||
+               (match->GetBall()->Predict(0).coords[2]>.35f&&GetLastTouchType()!=e_TouchType_Intentional_Kicked))){
       auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};
       Player *last=match->GetLastTouchPlayer();
       const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;

@@ -6,6 +6,28 @@ nem uma política de locomoção do corpo inteiro treinada por reforço.
 
 ## O que mudou no jogo
 
+As recepções de meia altura agora podem usar uma referência corporal completa
+derivada dos domínios nativos de joelho/coxa, barriga e peito. A altura prevista
+seleciona a referência; o movimento prepara o corpo e recolhe a perna após um
+contato real. A perna oposta conserva um alvo de apoio com IK. A camada cede
+antes do contato de uma ação nativa e mantém os braços e o tronco da recepção,
+sem trocar a locomoção aprovada nem acrescentar impulso por proximidade.
+Essa é uma adaptação das animações existentes, não novas capturas de movimento.
+
+O atrito da bola no corpo passa a ser limitado pelo impulso normal de contato.
+A redução percentual de toda a velocidade tangencial em cada passo fazia uma
+bola deslizando pela coxa ou pelas costas perder sua queda repetidamente.
+O novo cálculo permite o deslizamento sob gravidade e dissipa energia quando
+há carga real contra a pele. O primeiro toque de uma recepção ainda no alto
+também não encerra mais automaticamente a assistência do jogador ou da CPU.
+Boladas descendentes agora usam o braço de alavanca real em relação ao
+quadril para orientar a reação muscular. O cálculo anterior zerava essa
+resposta quando a velocidade era vertical. Pequenos contatos sucessivos
+preservam a fase de absorção inicial, em vez de reiniciá-la a cada passo.
+Durante a preparação de passe/chute, manter a mesma direção do analógico
+não reinicia uma virada automática para a nova frente. Uma mudança explícita
+de direção continua permitindo mudar a mira.
+
 Esta correção liga a pose física completa à pose desenhada: inclinação e
 deslocamento vertical do quadril acompanham a solução das pernas. Antes,
 aplicar apenas as rotações dos membros escondia parte da resposta de apoio.
@@ -166,5 +188,8 @@ camada ligada/desligada. Segure **H** e aperte F4/F5/F6 para direcionar um
 lançamento de teste a um companheiro controlado pela CPU. H+Ctrl+Shift+F4
 afasta a bola para comparar a caminhada sem posse. Esses atalhos só montam
 o cenário; os contatos, decisões e reações continuam sendo simulados.
+Para variar as chegadas, segure **7/8/9/0** e aperte **F5**: canela, coxa,
+bola descendente na parte superior e bola caindo por trás, respectivamente.
+Acrescente H para o companheiro da CPU na partida física.
 A versão Windows é compilada e verificada aqui;
 os testes gráficos automatizados rodam na versão Linux com controle virtual.

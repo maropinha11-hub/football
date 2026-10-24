@@ -22,8 +22,9 @@ try:
     reset(g);key(g,'F4',['h','Control_L','Shift_L']);start=len(g.read_log());yaw=g.frames()[-1]['player_yaw'];g.pad(math.cos(yaw)*strength,-math.sin(yaw)*strength);f=g.advance(5000);capture(g,'walk-'+str(strength)+'.png');g.pad(0,0)
     rows=[x for x in visible(g,start)if x['human'] and x['t']>f[0]['t']+800];tail=f[-25:]
     speed=math.dist(tail[0]['player'][:2],tail[-1]['player'][:2])/((tail[-1]['t']-tail[0]['t'])/1000);speeds.append(speed)
-    walk=[x for x in rows if x['walk']>.90 and x['slow']]
-    check('off-ball ordinary stick '+str(strength)+' displays a complete walking gait',bool(rows)and len(walk)/len(rows)>.75 and .25<speed<1.8,dict(speed=speed,samples=len(rows),walking=len(walk),kinds=sorted({x['kind']for x in rows})))
+    moving=[x for x in rows if min(f,key=lambda frame:abs(frame['t']-x['t']))['speed']>.20]
+    walk=[x for x in moving if x['walk']>.90 and x['slow']]
+    check('off-ball ordinary stick '+str(strength)+' displays a complete walking gait',len(moving)>=15 and len(walk)/len(moving)>.75 and .25<speed<1.8,dict(speed=speed,samples=len(rows),moving_samples=len(moving),walking=len(walk),kinds=sorted({x['kind']for x in rows})))
     heights={foot:[x[foot][2]for x in walk]for foot in ['left','right']}
     support=sum(min(x['left'][2],x['right'][2])<.16 for x in walk)/max(1,len(walk))
     slip=[]
@@ -35,7 +36,8 @@ try:
        slip.append(math.dist(previous[foot][:2],current[foot][:2])/dt)
     check('off-ball stick '+str(strength)+' has alternating visible swing and grounded support',bool(walk)and all(max(v,default=0)-min(v,default=0)>.02 for v in heights.values())and support>.80,dict(height_ranges={k:[min(v,default=0),max(v,default=0)]for k,v in heights.items()},support_fraction=support))
     check('off-ball stick '+str(strength)+' support feet stay on the pitch rather than sliding at root speed',bool(slip)and statistics.median(slip)<.55,dict(stance_samples=len(slip),median_slip_mps=statistics.median(slip)if slip else None,root_speed=speed))
-   check('walking fixture stays in play without teleporting the human',max(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(f,f[1:]))<.30,dict(maximum_frame_displacement=max(math.dist(x['player'][:2],y['player'][:2])for x,y in zip(f,f[1:]))))
+   prepared=[int(x['t'])for x in ev(g,'RESTART_PREPARED')];continuous=[math.dist(x['player'][:2],y['player'][:2])for x,y in zip(f,f[1:])if not any(x['t']-100<=t<=y['t']+100 for t in prepared)]
+   check('walking has no unexplained player relocation outside native restart preparation',len(continuous)>30 and max(continuous)<.30,dict(frame_pairs=len(continuous),maximum_displacement=max(continuous,default=999),native_preparations=prepared))
    check('ordinary walking pressures give progressively greater travel',speeds[0]+.06<speeds[-1],speeds)
   else:
    for cpu in [False,True]:

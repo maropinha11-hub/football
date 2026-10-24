@@ -38,12 +38,17 @@ try:
   # Start the independent off-ball grip fixture from a settled native pose.
   # Otherwise the preceding shield/contact trial leaves a pose-dependent
   # shoulder/partner arrangement, which can be outside real shirt reach.
-  g.reset();key(g,'F11');g.advance(800);start=len(g.read_log())
-  # Changing possession also changes the native look/approach target. Let
-  # that turn finish before measuring a sustained calm hold; an immediate
-  # grip may correctly lose its real shirt contact during the turn. All
-  # acquisition/release, traction and escape thresholds remain unchanged.
-  g.pad(0,0,left_trigger=1);g.advance(2000);capture(g,'lt-grip')
+  g.reset();g.advance(800);start=len(g.read_log())
+  # Settle before changing possession, and keep contextual LT held across
+  # that change. Waiting off-ball without LT lets a legitimate native touch
+  # recover possession first, in which case LT correctly protects instead
+  # of gripping. No hand/force/escape threshold or contact outcome is forced.
+  g.pad(0,0,left_trigger=1);key(g,'F11')
+  # The settled side-by-side arrangement can be just beyond actual shirt
+  # reach. Take a real short analog step toward the partner; do not expand
+  # the 10 cm acquisition gate or attach a hand outside anatomical reach.
+  g.pad(0,-.35,left_trigger=1);g.advance(250);g.pad(0,0,left_trigger=1)
+  g.advance(2000);capture(g,'lt-grip')
   grips=events(g,'PHYSICAL_GRIP',start);forces=events(g,'PHYSICAL_GRIP_FORCE',start);partner=events(g,'PHYSICAL_PARTNER',start)
   check('LT without the ball reaches then grips actual shirt surface',any(x['state']=='begin'and float(x['hand_gap'])<.10 for x in grips)and any(x['with_ball']=='0'and x['reaching']=='1'for x in partner),grips)
   check('held partner actively attempts to escape',any(float(x.get('intended_speed','0'))>.30 and float(x.get('actual_speed','0'))>0 for x in forces),forces[-12:])

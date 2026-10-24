@@ -152,18 +152,22 @@ void Match::LaunchTrainingBall(int delivery) {
     printf("WALK_LAB_SETUP t=%lu human=%d\n",actualTime_ms,trainingPlayer->GetID());return;
   }
   const Vector3 chest=player->GetHumanoid()->GetStandingChestTarget();
+  const int heightFixture=delivery==1?(events.GetKeyboardState(SDLK_7)?1:events.GetKeyboardState(SDLK_8)?2:
+    events.GetKeyboardState(SDLK_9)?3:events.GetKeyboardState(SDLK_0)?4:0):0;
   const bool driven=delivery==1 && events.GetKeyboardState(SDLK_LSHIFT);
   const bool belly=delivery==1 && events.GetKeyboardState(SDLK_LCTRL);
   const bool impact=driven&&belly;
-  const float flight=delivery==0?1.0f:delivery==1?(impact?.13f:driven?.23f:.45f):1.15f;
+  const float flight=heightFixture==4?.30f:heightFixture==1||heightFixture==2?.42f:heightFixture?.60f:delivery==0?1.0f:delivery==1?(impact?.13f:driven?.23f:.45f):1.15f;
   const float offset=events.GetKeyboardState(SDLK_LSHIFT)?.65f:events.GetKeyboardState(SDLK_LCTRL)?-.65f:0.f;
   const Vector3 lateral=forward.GetRotated2D(-.5f*pi)*offset;
   Vector3 target=delivery==0 ? root+forward*.55f+lateral+Vector3(0,0,.11f) :
     delivery==1 ? chest+Vector3(0,0,impact?0.f:belly?-.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
+  if(heightFixture)target=root+forward*(heightFixture==4?-.18f:.23f)+
+    forward.GetRotated2D(.5f*pi)*(heightFixture<3?-.12f:0.f)+Vector3(0,0,heightFixture==1?.43f:heightFixture==2?.74f:1.43f);
   const float roughness=GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0;
   if(delivery==0)target.coords[2]+=football_turf::sample(target.coords[0],target.coords[1],roughness).height;
-  const Vector3 origin=root+(impact?Vector3(0):lateral)+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+
-    Vector3(0,0,delivery==0?.11f:delivery==1?1.35f:3.6f);
+  const Vector3 origin=heightFixture==4?root-forward*.18f+Vector3(0,0,2.45f):heightFixture?root+forward*4.f+Vector3(0,0,heightFixture==1?.25f:heightFixture==2?.68f:3.2f):
+    root+(impact?Vector3(0):lateral)+forward*(delivery==0?8.0f:delivery==1?4.5f:10.0f)+Vector3(0,0,delivery==0?.11f:delivery==1?1.35f:3.6f);
   ball->SetPosition(origin);
   Vector3 velocity=(target-origin)/flight;
   if(delivery)velocity.coords[2]+=4.905f*flight;
@@ -177,7 +181,8 @@ void Match::LaunchTrainingBall(int delivery) {
   }
   ball->SetMomentum(velocity);
   UpdateLatestMentalImageBallPredictions();
-  SpamMessage(delivery==0?"Passe rasteiro recebido | F4: repetir":
+  SpamMessage(heightFixture==1?"Recepcao na canela | 7 + F5: repetir":heightFixture==2?"Recepcao na coxa | 8 + F5: repetir":
+      heightFixture==3?"Recepcao descendente | 9 + F5: repetir":heightFixture==4?"Bola por tras | 0 + F5: repetir":delivery==0?"Passe rasteiro recebido | F4: repetir":
       delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
   printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d actor=%d\n",
     delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0,player->GetID());
@@ -220,10 +225,11 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   // do not turn every loose ball or the player's own shot into a reception.
   bool receiving=false;
   const Vector3 incoming=ball->GetMovement();
-  if(GetLastTouchPlayer()!=trainingPlayer && delta.Get2D().GetLength()<14 && incoming.GetLength()>.5f &&
+  const bool ownDrop=GetLastTouchPlayer()==trainingPlayer&&delta.coords[2]>.35f&&delta.Get2D().GetLength()<1.15f&&trainingPlayer->GetLastTouchType()!=e_TouchType_Intentional_Kicked;
+  if((GetLastTouchPlayer()!=trainingPlayer||ownDrop) && delta.Get2D().GetLength()<14 && incoming.GetLength()>.5f &&
       (delta.Get2D().GetDotProduct(incoming.Get2D())<0 ||
        (delta.Get2D().GetLength()<.75f && delta.coords[2]>0 && incoming.coords[2]<-.2f)) &&
-      trainingPlayer->GetLastTouchBias(350)<.01f) {
+      (ownDrop||trainingPlayer->GetLastTouchBias(350)<.01f)) {
     for(unsigned ms=100;ms<=1400;ms+=50) {
       const Vector3 arrival=ball->Predict(ms)-trainingPlayer->GetPosition();
       if(arrival.Get2D().GetLength()<1.25f && arrival.coords[2]<2.5f) {receiving=true;break;}
@@ -253,7 +259,9 @@ void Match::UpdateTrainingView(IHIDevice *input) {
   const float ballSpeed = ballVelocity.GetLength();
   // A reversal must finish its real touch, not just reverse the player's
   // velocity while the ball is still departing in the old direction.
-  const bool canRepeat = delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
+  const bool preparingAction=trainingPlayer->GetExternalController()&&
+    static_cast<HumanController*>(trainingPlayer->GetExternalController())->GetActionMode()==2;
+  const bool canRepeat = !preparingAction && delta.Get2D().GetLength() < 0.95f && relativeSpeed < 4.0f &&
       (ballSpeed > 0.5f ? ballVelocity.GetNormalized(0).GetDotProduct(
           training::forward(trainingView.travelYaw)) > 0.8f :
           trainingPlayer->GetMovement().GetLength() < 0.5f);
