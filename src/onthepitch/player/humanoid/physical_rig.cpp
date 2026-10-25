@@ -17,7 +17,7 @@ void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){r
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
 void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){deliberateFall=false;arrestTime=0;impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 bool PhysicalRig::adoptContactHand(Vec target){
@@ -195,12 +195,13 @@ void PhysicalRig::step(const Input &input,float dt){
   }
   if(state==Mode::Active && (forcedFall || lostBalance)){
     state=Mode::Falling;stateAge=settled=0;
-    articulated.reset(new ArticulatedBody);
+    deliberateFall=forcedFall;fallStandingHeight=root[2];arrestTime=0;
+    if(!articulated)articulated.reset(new ArticulatedBody);
     // Torque is converted to a whole-body angular velocity using the actual
     // assembly inertia, instead of spinning a single pelvis with arbitrary I.
     const Vec lever=impulseSize>0?scalePoint(crossPoint(pendingImpulse,pendingTorque),1/(impulseSize*impulseSize)):Vec{{0,0,0}};
     const Vec fallImpulse=forcedFall?pendingImpulse:balance->remainingImpulse();
-    articulated->start(reference,scale,local,root,input.velocity,fallImpulse,forcedFall?lever:Vec{{0,0,.28f}});
+    articulated->release(reference,scale,local,root,input.velocity,fallImpulse,forcedFall?lever:Vec{{0,0,.28f}});
   }else if(state==Mode::Active && impulseSize>0){
     swayVelocity=addPoint(swayVelocity,scalePoint(pendingTorque,1/14.f));
   }
@@ -219,19 +220,32 @@ void PhysicalRig::step(const Input &input,float dt){
       }
     }
     physicalUpperValid=false;evaluate(input);
-    if(!input.passiveTracking || impulseSize>0 || debug.balanceRisk>.02f){
-      if(!articulated)articulated.reset(new ArticulatedBody);
-      articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
-      physicalUpperValid=true;evaluate(input);
-    }else articulated.reset();
+    // Retain the physical state when a CPU stops. Destroying and rebuilding
+    // thirteen bodies repeatedly both loses muscle state and causes hitches.
+    if(!articulated)articulated.reset(new ArticulatedBody);
+    articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
+    physicalUpperValid=true;evaluate(input);
   }else if(state==Mode::Falling){
+    const Vec previous=root;
     for(unsigned sub=0;sub<2;++sub)articulated->step(dt*.5f,local,root,debug);
     forwardKinematics();separateArms();
+    // A dynamically arrested stumble can return to standing control. A
+    // recovered upright body must not play a lying get-up or wait on a timer.
+    const float upright=rotatePoint(world[0],{{0,0,1}})[2];
+    const float speed=length(subtractPoint(root,previous))/dt;
+    if(!deliberateFall&&stateAge>.4f&&debug.supportFeet>0&&upright>.97f&&
+       std::fabs(root[2]-fallStandingHeight)<.02f*scale&&speed<.45f)arrestTime+=dt;
+    else arrestTime=0;
+    if(arrestTime>.16f){
+      state=Mode::Active;stateAge=settled=0;balance.reset(new BalanceController);
+      reachOffsets={};sway=swayVelocity={{0,0,0}};physicalUpperValid=false;
+      debug.arrestedFall=true;return;
+    }
     // Rest is measured from kinetic energy, not from a root whose velocity
     // was zeroed by a penetration correction.
     if(stateAge>1.2f && debug.kineticEnergy<8.f)settled+=dt;else settled=0;
     if(settled>.65f || stateAge>4.2f){
-      state=Mode::Recovering;stateAge=0;recoveryStart=root;recoveryPose=local;articulated.reset();
+      state=Mode::Recovering;stateAge=0;recoveryStart=root;recoveryPose=local;
       recoveryMotion=rotatePoint(world[0],{{0,-1,0}})[2]<0?&recoveryFront:&recoveryBack;
       if(recoveryMotion->empty())recoveryMotion=nullptr;
       recoveryDuration=recoveryMotion?.45f+(recoveryMotion->size()-1)*.016f+.25f:2.f;

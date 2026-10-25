@@ -1,5 +1,6 @@
 #include "articulated_body.hpp"
 #include "learned_muscle_policy.hpp"
+#include "anatomical_arms.hpp"
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #include <vector>
@@ -36,8 +37,11 @@ struct ArticulatedBody::World {
   std::array<Vec,13> previousReferenceVelocity{};
   bool referenceReady=false;
   Vec carrierPelvis{{0,0,0}};
-  float age=0;
+  float age=0,bodyScale=1;
   bool tracking=false;
+  Pose protectionTarget{};
+  Vec landingTarget[2]{};
+  bool protectionReady=false;
   World(){
     dynamics.setGravity(btVector3(0,0,-9.81f));
     dynamics.getSolverInfo().m_numIterations=40;
@@ -54,7 +58,9 @@ struct ArticulatedBody::World {
 ArticulatedBody::ArticulatedBody()=default;
 ArticulatedBody::~ArticulatedBody()=default;
 void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose &pose,Vec pelvis,Vec velocity,Vec impulse,Vec lever,bool tracking){
-  state.reset(new World);auto &s=*state;
+  const bool construct=!state;
+  if(construct){state.reset(new World);++builds;}
+  auto &s=*state;s.bodyScale=scale;s.age=0;s.referenceReady=false;s.protectionReady=false;
   s.tracking=tracking;s.carrierPelvis=pelvis;
   s.muscleTarget=pose;
   std::array<btTransform,13> frames;
@@ -62,6 +68,15 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
     int parent=pes3::nativeParents[i];
     frames[i]=parent<0?btTransform(bq(pose[i]),bv(pelvis)):
       frames[parent]*btTransform(bq(pose[i]),bv(scalePoint(bind.offsets[i],scale)));
+    if(!construct){
+      auto &body=*s.bodies[i+1];btVector3 inertia;
+      const float mass=PhysicalRig::mass*fraction[i];body.getCollisionShape()->calculateLocalInertia(mass,inertia);
+      body.setCollisionFlags(body.getCollisionFlags()&~btCollisionObject::CF_KINEMATIC_OBJECT);
+      body.setMassProps(mass,inertia);body.updateInertiaTensor();body.clearForces();body.setActivationState(ACTIVE_TAG);
+      const auto transform=frames[i]*btTransform(btQuaternion::getIdentity(),s.centers[i]);
+      body.setCenterOfMassTransform(transform);body.setInterpolationWorldTransform(transform);
+      continue;
+    }
     const Vec axis=scalePoint(segment(bind,i),scale);
     s.centers[i]=i==0?btVector3(0,0,.025f):bv(scalePoint(axis,.5f));
     s.shapes.emplace_back(new btCapsuleShape(radius[i]*scale,std::max(.01f,length(axis)-2*radius[i]*scale)));
@@ -75,6 +90,7 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
     btRigidBody::btRigidBodyConstructionInfo info(mass,nullptr,compound,inertia);
     info.m_linearDamping=.12f;info.m_angularDamping=.65f;info.m_friction=.8f;info.m_restitution=0;
     s.bodies.emplace_back(new btRigidBody(info));auto &body=*s.bodies.back();
+    body.setUserIndex(int(i));
     body.setCenterOfMassTransform(frames[i]*btTransform(btQuaternion::getIdentity(),s.centers[i]));
     body.setLinearVelocity(bv(velocity));body.setSleepingThresholds(.12f,.16f);
     body.setCcdMotionThreshold(.05f);body.setCcdSweptSphereRadius(radius[i]*scale*.7f);
@@ -107,7 +123,7 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
   // by the native pose, applied once, before impulses or integration.
   float lift=0;
   for(unsigned i=0;i<13;++i){btVector3 lo,hi;s.bodies[i+1]->getAabb(lo,hi);lift=std::max(lift,float(-lo.z()+.002f));}
-  if(tracking)lift=0;
+  if(tracking||!construct)lift=0;
   for(unsigned i=0;i<13;++i){auto t=s.bodies[i+1]->getWorldTransform();t.getOrigin().setZ(t.getOrigin().z()+lift);s.bodies[i+1]->setCenterOfMassTransform(t);}
   btVector3 center(0,0,0);for(unsigned i=0;i<13;++i)center+=s.bodies[i+1]->getCenterOfMassPosition()*fraction[i];
   btMatrix3x3 inertia;inertia.setZero();
@@ -124,6 +140,21 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
       body.setCollisionFlags(body.getCollisionFlags()|btCollisionObject::CF_KINEMATIC_OBJECT);
       body.setActivationState(DISABLE_DEACTIVATION);
     }
+  }
+}
+void ArticulatedBody::release(const pes3::NativeBind &bind,float scale,const Pose &pose,
+    Vec pelvis,Vec velocity,Vec impulse,Vec lever){
+  std::array<btVector3,13> relative{},angular{};
+  const bool preserve=state&&state->tracking;
+  if(preserve)for(unsigned i=0;i<13;++i)
+    {relative[i]=state->bodies[i+1]->getLinearVelocity();angular[i]=state->bodies[i+1]->getAngularVelocity();}
+  // Reconfigure the existing body assembly. Do not allocate another world
+  // or lift the actor when transferring from supported motion into a fall.
+  start(bind,scale,pose,pelvis,velocity,impulse,lever,false);
+  if(preserve)for(unsigned i=0;i<13;++i){auto &body=*state->bodies[i+1];
+    const btVector3 kept=i==9||i==12?relative[i]:bv(capped(vec(relative[i]),2.f));
+    body.setLinearVelocity(body.getLinearVelocity()+kept);
+    body.setAngularVelocity(body.getAngularVelocity()+bv(capped(vec(angular[i]),8.f)));
   }
 }
 void ArticulatedBody::impulse(Vec value,Vec lever){
@@ -205,64 +236,102 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
 }
 void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
   auto &s=*state;
+  metrics.physicalWorldBuilds=builds;
   if(!s.tracking){
     s.age+=dt;
     // Retain joint muscle tone during a fall. These are internal equal and
     // opposite torques: they cannot lift or suspend the complete body.
     const float height=s.bodies[1]->getCenterOfMassPosition().z();
-    const float tone=.20f+.80f*std::exp(-s.age/1.3f);
+    float tone=.45f+.55f*std::exp(-s.age/1.3f);
     Pose targets=s.muscleTarget;
-    const float tuck=smooth((.85f-height)/.55f);
+    std::array<bool,13> floor{};
+    for(int m=0;m<s.dispatcher.getNumManifolds();++m){const auto *contact=s.dispatcher.getManifoldByIndexInternal(m);
+      const auto *a=contact->getBody0(),*b=contact->getBody1();
+      const int bone=a==s.bodies[0].get()?b->getUserIndex():b==s.bodies[0].get()?a->getUserIndex():-1;
+      if(bone<0||bone>=13)continue;
+      for(int c=0;c<contact->getNumContacts();++c)if(contact->getContactPoint(c).getDistance()<.003f)floor[bone]=true;
+    }
+    const unsigned feet=unsigned(floor[9])+unsigned(floor[12]);
+    const bool bodyLoaded=floor[0]||floor[1]||floor[2];
+    if(bodyLoaded)tone*=.28f;
+    const bool supported=feet>0&&height>.62f;
+    const float tuck=supported?.12f:smooth((.85f-height)/.55f);
     for(unsigned i:{8u,11u})targets[i]=blended(targets[i],exponential({{.85f,0,0}}),tuck*.65f);
-    for(unsigned i:{4u,6u})targets[i]=blended(targets[i],exponential({{-.95f,0,0}}),.35f+.35f*tuck);
+    for(unsigned i:{7u,10u})targets[i]=blended(targets[i],exponential({{-.40f,0,0}}),tuck*.50f);
+    for(unsigned i:{4u,6u})targets[i]=blended(targets[i],exponential({{-.75f,0,0}}),.35f+.35f*tuck);
     // Arms extend toward the impending ground contact, while elbows retain
     // flexion to absorb it. The shoulder and its parent receive opposite work.
     const Vec velocity=vec(s.bodies[1]->getLinearVelocity());
     const Quat trunk=quat(s.bodies[2]->getWorldTransform().getRotation());
-    if(height>.24f && (velocity[2]<-.15f || (height<.85f&&dotPoint(velocity,velocity)>1.5f))){
-      for(unsigned i:{3u,5u}){
-        const Vec side=rotatePoint(trunk,{{i==3?.20f:-.20f,0,0}});
-        const Vec direction=unit({{velocity[0]*.28f+side[0],velocity[1]*.28f+side[1],-1.f}});
-        const Quat desired=normalized(productRotation(pes3::swingRotation(rotatePoint(trunk,{{0,0,-1}}),direction),trunk));
-        targets[i]=blended(targets[i],normalized(productRotation(inverseRotation(trunk),desired)),.7f);
+    const float impactTime=bounded((velocity[2]+std::sqrt(velocity[2]*velocity[2]+19.62f*std::max(0.f,height-.30f)))/9.81f,0.f,1.f);
+    const float tilt=1-rotatePoint(quat(s.bodies[1]->getWorldTransform().getRotation()),{{0,0,1}})[2];
+    const float guard=smooth((.65f-impactTime)/.40f)*smooth(s.age/.12f)*
+      bounded((length(velocity)+tilt*3.f)/1.2f,0,1);
+    if(guard>.001f && height>.20f){
+      for(unsigned shoulder:{3u,5u}){
+        const unsigned elbow=shoulder+1;
+        const Vec origin=vec(s.bodies[shoulder+1]->getWorldTransform()*(-s.centers[shoulder]));
+        const Vec joint=vec(s.bodies[elbow+1]->getWorldTransform()*(-s.centers[elbow]));
+        const float a=length(subtractPoint(joint,origin)),b=.25f*s.bodyScale;
+        const Vec side=rotatePoint(trunk,{{shoulder==3?.23f:-.23f,-.08f,0}});
+        const Vec landing=addPoint(vec(s.bodies[1]->getCenterOfMassPosition()),
+          addPoint(scalePoint(velocity,std::min(.30f,impactTime)),side));
+        const Vec target{{landing[0],landing[1],.05f}};
+        const Vec direction=unit(subtractPoint(target,origin));
+        const float distance=bounded(length(subtractPoint(target,origin)),std::fabs(a-b)+.02f,a+b-.025f);
+        const Vec outward=rotatePoint(trunk,{{shoulder==3?.45f:-.45f,.08f,-1.f}});
+        const Vec pole=unit(subtractPoint(outward,scalePoint(direction,dotPoint(outward,direction))));
+        const float along=(a*a-b*b+distance*distance)/(2*distance);
+        const Vec upper=unit(addPoint(scalePoint(direction,along),scalePoint(pole,std::sqrt(std::max(0.f,a*a-along*along)))));
+        const Vec lower=unit(subtractPoint(scalePoint(direction,distance),scalePoint(upper,a)));
+        Quat arm=pes3::swingRotation({{0,0,-1}},upper);
+        const Vec hinge=unit(scalePoint(crossPoint(upper,lower),-1.f));
+        const Vec axis=unit(rotatePoint(arm,{{1,0,0}}));
+        const float twist=std::atan2(dotPoint(upper,crossPoint(axis,hinge)),dotPoint(axis,hinge));
+        arm=normalized(productRotation(exponential(scalePoint(upper,twist)),arm));
+        const Quat shoulderTarget=anatomicalArm(shoulder,productRotation(inverseRotation(trunk),arm));
+        const Quat elbowTarget=anatomicalArm(elbow,exponential({{-std::acos(bounded(dotPoint(upper,lower),-1.f,1.f)),0,0}}));
+        targets[shoulder]=blended(targets[shoulder],shoulderTarget,guard);
+        targets[elbow]=blended(targets[elbow],elbowTarget,guard);
+        s.landingTarget[shoulder==5]=target;
+        metrics.protectiveReach=std::max(metrics.protectiveReach,guard);
       }
-      metrics.brace=1;
+      targets[2]=blended(targets[2],exponential({{.18f,0,0}}),guard*.6f);
+      metrics.brace=guard;
     }
+    if(!s.protectionReady){s.protectionTarget=s.muscleTarget;s.protectionReady=true;}
+    for(unsigned i=1;i<13;++i){const Vec delta=capped(logarithm(productRotation(targets[i],inverseRotation(s.protectionTarget[i]))),4.f*dt);
+      s.protectionTarget[i]=normalized(productRotation(exponential(delta),s.protectionTarget[i]));}
+    targets=s.protectionTarget;
     for(unsigned i=1;i<13;++i){
       const int parent=pes3::nativeParents[i];auto &child=*s.bodies[i+1];auto &base=*s.bodies[parent+1];
       const btQuaternion wanted=base.getWorldTransform().getRotation()*bq(targets[i]);
       const Vec error=logarithm(quat(wanted*child.getWorldTransform().getRotation().inverse()));
       const Vec relative=vec(child.getAngularVelocity()-base.getAngularVelocity());
-      const float stiffness=i<=2?30.f:i>=7?22.f:12.f;
-      const float limit=(i<=2?32.f:i>=7?26.f:9.f)*tone;
-      Vec muscle=subtractPoint(scalePoint(error,stiffness*tone),scalePoint(relative,2.f*std::sqrt(tone)));
-      if(i<=6){
-        Vec acceleration;for(unsigned axis=0;axis<3;++axis)acceleration[axis]=football_muscle::acceleration(error[axis],-relative[axis]);
-        muscle=scalePoint(vec(child.getInvInertiaTensorWorld().inverse()*bv(acceleration)),tone);
-        metrics.motorError=std::max(metrics.motorError,length(error));++metrics.neuralMotorSamples;
-      }
+      const float stiffness=i==1?100.f:i==2?25.f:i>=7?(feet&&!bodyLoaded?95.f:60.f):i==3||i==5?55.f:32.f;
+      const float limit=(i==1?90.f:i==2?18.f:i>=7?(feet&&!bodyLoaded?105.f:65.f):i==3||i==5?45.f:28.f)*tone;
+      Vec muscle=subtractPoint(scalePoint(error,stiffness*tone),scalePoint(relative,(i>=7?8.f:5.f)*std::sqrt(tone)));
+      Vec acceleration;for(unsigned axis=0;axis<3;++axis)acceleration[axis]=football_muscle::acceleration(error[axis],-relative[axis]);
+      muscle=addPoint(scalePoint(muscle,.75f),scalePoint(vec(child.getInvInertiaTensorWorld().inverse()*bv(acceleration)),.25f*tone));
+      metrics.motorError=std::max(metrics.motorError,length(error));++metrics.neuralMotorSamples;
       const Vec torque=capped(muscle,limit);
       child.applyTorque(bv(torque));base.applyTorque(-bv(torque));
       child.activate();base.activate();metrics.muscleEffort+=length(torque)*dt;
+      metrics.fallControl=std::max(metrics.fallControl,length(torque));
     }
     // Supported ankles can exchange an upright correction with the pelvis
     // only while an actual floor manifold still carries a foot.
-    std::vector<unsigned> supports;
-    for(int m=0;m<s.dispatcher.getNumManifolds();++m){auto *manifold=s.dispatcher.getManifoldByIndexInternal(m);
-      for(unsigned foot:{9u,12u})if((manifold->getBody0()==s.bodies[0].get() && manifold->getBody1()==s.bodies[foot+1].get()) ||
-          (manifold->getBody1()==s.bodies[0].get() && manifold->getBody0()==s.bodies[foot+1].get())){
-        for(int c=0;c<manifold->getNumContacts();++c)if(manifold->getContactPoint(c).getDistance()<.003f){supports.push_back(foot);break;}
-      }
-    }
-    if(!supports.empty() && height>.6f && s.age<.65f){
+    metrics.protectiveHands=unsigned(floor[4])+unsigned(floor[6]);
+    if(feet && !bodyLoaded && height>.6f){
       auto &hips=*s.bodies[1];const Quat q=quat(hips.getWorldTransform().getRotation());
       const Vec error=logarithm(pes3::swingRotation(rotatePoint(q,{{0,0,1}}),{{0,0,1}}));
-      const Vec torque=capped(subtractPoint(scalePoint(error,32.f),scalePoint(vec(hips.getAngularVelocity()),4.f)),24.f);
-      hips.applyTorque(bv(torque));for(unsigned foot:supports)s.bodies[foot+1]->applyTorque(-bv(scalePoint(torque,1.f/supports.size())));
+      const Vec torque=capped(subtractPoint(scalePoint(error,120.f),scalePoint(vec(hips.getAngularVelocity()),10.f)),90.f);
+      hips.applyTorque(bv(torque));for(unsigned foot:{9u,12u})if(floor[foot])s.bodies[foot+1]->applyTorque(-bv(scalePoint(torque,1.f/feet)));
       metrics.supportTorque=std::max(metrics.supportTorque,length(torque));
     }
   }
   s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;
+  std::array<bool,2> support{};
   for(unsigned i=0;i<13;++i){
     auto &body=*s.bodies[i+1];const auto q=quat(body.getWorldTransform().getRotation());
     // Contact impulses on very light feet/forearms can otherwise create
@@ -281,9 +350,13 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
   for(int i=0;i<s.dispatcher.getNumManifolds();++i){auto *m=s.dispatcher.getManifoldByIndexInternal(i);
     const bool floor=m->getBody0()==s.bodies[0].get() || m->getBody1()==s.bodies[0].get();
     for(int p=0;p<m->getNumContacts();++p)if(m->getContactPoint(p).getDistance()<.003f){
-      if(floor){++metrics.groundContacts;metrics.penetration=std::max(metrics.penetration,float(-m->getContactPoint(p).getDistance()));}
+      if(floor){++metrics.groundContacts;metrics.penetration=std::max(metrics.penetration,float(-m->getContactPoint(p).getDistance()));
+        const int bone=(m->getBody0()==s.bodies[0].get()?m->getBody1():m->getBody0())->getUserIndex();
+        if(bone==9||bone==12)support[bone==12]=true;
+      }
       else metrics.selfPenetration=std::max(metrics.selfPenetration,float(-m->getContactPoint(p).getDistance()));
     }
   }
+  metrics.supportFeet=unsigned(support[0])+unsigned(support[1]);
 }
 }

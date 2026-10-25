@@ -3,15 +3,31 @@
 
 namespace football_walk {
 using namespace football_physics;
+constexpr float stanceFraction=.52f;
 // A walking cycle has overlapping support, not the flight phase of a
 // retimed jog. Coordinates are relative to the pelvis, forward is -Y.
 inline Vec foot(float phase,float stride,float lateral){
   phase-=std::floor(phase);
-  const float stance=.64f;
+  const float stance=stanceFraction;
   if(phase<stance)return {{lateral,stride*(phase/stance-.5f),0}};
   const float swing=(phase-stance)/(1-stance);
   const float eased=swing*swing*(3-2*swing);
   return {{lateral,stride*(.5f-eased),.045f*std::pow(std::sin(3.14159265f*swing),2.f)}};
+}
+// The stance height follows leg reach, rather than lowering every walker
+// eight centimetres regardless of stride. Leave a small extension reserve.
+inline float pelvisHeight(const pes3::NativeBind &bind,float phase,float stride,Vec travel={{0,-1,0}}){
+  float height=bind.offsets[0][2]-.005f;
+  for(unsigned side=0;side<2;++side){
+    const unsigned hip=side?10:7;
+    const Vec offset=foot(phase+.5f*side,stride,bind.offsets[hip][0]);
+    const Vec target=addPoint({{offset[0],0,0}},scalePoint(unit(travel),-offset[1]));
+    const float dx=target[0]-bind.offsets[hip][0],dy=target[1]-bind.offsets[hip][1];
+    const float reach=length(bind.offsets[hip+1])+length(bind.offsets[hip+2])-.005f;
+    height=std::min(height,.075f+offset[2]-bind.offsets[hip][2]+
+      std::sqrt(std::max(.01f,reach*reach-dx*dx-dy*dy)));
+  }
+  return std::min(height,bind.offsets[0][2]-.02f-std::max(0.f,stride-.55f)*.15f);
 }
 inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase,float stride,Vec travel={{0,-1,0}}){
   Points p{};Pose world{};
@@ -44,7 +60,7 @@ inline void pose(const pes3::NativeBind &bind,Pose &local,Vec pelvis,float phase
     local[knee]=normalized(productRotation(inverseRotation(world[hip]),lower));fk();
     // Small heel/toe roll while the sole has a support phase.
     const float t=legPhase-std::floor(legPhase);
-    const float roll=t<.64f?.10f*std::sin(3.14159265f*(2*t/.64f-1)):-.08f*std::sin(3.14159265f*(t-.64f)/.36f);
+    const float roll=t<stanceFraction?.10f*std::sin(3.14159265f*(2*t/stanceFraction-1)):-.08f*std::sin(3.14159265f*(t-stanceFraction)/(1-stanceFraction));
     local[ankle]=normalized(productRotation(inverseRotation(world[knee]),productRotation(world[0],exponential({{roll,0,0}}))));fk();
   }
 }

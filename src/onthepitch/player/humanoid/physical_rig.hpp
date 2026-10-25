@@ -54,6 +54,10 @@ struct Metrics {
   float balanceRisk=0,stepDemand=0,armSpeed=0,elbowAngle=0;
   float armLimitError=0,armPenetration=0;
   float muscleEffort=0,supportTorque=0;
+  float protectiveReach=0,fallControl=0;
+  unsigned physicalWorldBuilds=0,protectiveHands=0;
+  unsigned supportFeet=0;
+  bool arrestedFall=false;
   float motorError=0,motorAcceleration=0;
   unsigned neuralMotorSamples=0;
   float counterbalance=0;
@@ -117,6 +121,8 @@ class PhysicalRig {
   int balanceChoice=-1,handShoulder=3;
   float balanceMotionTime=0,handEnvelope=0,handDt=.01f;
   bool forcedFall=false,handUpdatePending=false,handInitialized=false;
+  bool deliberateFall=false;
+  float fallStandingHeight=.96f,arrestTime=0;
   Quat handPose[2];
   Vec handVelocity[2]{};
   Vec lastHandTarget{{0,0,0}};

@@ -45,9 +45,49 @@ int main(int argc,char **argv){
       if(f==0)start=pose;if(f==200)end=pose;
       for(const auto &q:pose){float n=0;for(float x:q)n+=x*x;links&=std::isfinite(n)&&std::fabs(n-1)<.001f;}
     }
+    const float touchPhase=football_walk::stanceFraction*.5f+.5f;
+    const auto contact=football_walk::foot(touchPhase,.52f,0);
+    check(std::fabs(contact[1])<1e-6f&&contact[2]>.044f,"walking contact remains at mid-swing when the support duration changes");
     float seam=0;for(unsigned b=7;b<13;++b)seam=std::max(seam,length(logarithm(productRotation(start[b],inverseRotation(end[b])))));
     check(support&&maxLift>.04f&&maxLift<.05f,"walking has overlapping ground support with a low lifted swing rather than a jogging flight phase");
     check(links&&seam<.001f,"the derived walking leg cycle stays finite and loops continuously on the native skeleton");
+  }
+  {
+    bool taller=true,extended=true,links=true;float minimum=10,maximum=0;
+    for(unsigned frame=0;frame<240;++frame){
+      const float phase=frame/240.f;Pose pose=standing().pose;
+      Vec pelvis{{0,0,football_walk::pelvisHeight(bind,phase,.52f)}};
+      minimum=std::min(minimum,pelvis[2]);maximum=std::max(maximum,pelvis[2]);
+      football_walk::pose(bind,pose,pelvis,phase,.52f);
+      taller&=pelvis[2]>.90f;extended&=std::min(length(logarithm(pose[8])),length(logarithm(pose[11])))<.40f;
+      Input source=standing();source.pose=pose;source.pelvis=pelvis;PhysicalRig walk;walk.configure(bind,1);walk.step(source);
+      links&=boneError(walk,bind)<1e-5f;
+    }
+    check(taller&&extended,"walking has an extended support leg instead of keeping both knees squatted");
+    check(links&&maximum-minimum<.04f,"walking stance follows reachable leg geometry with bounded pelvic bob");
+  }
+  {
+    PhysicalRig persistent;persistent.configure(bind,1);Input quiet=standing();quiet.passiveTracking=true;
+    unsigned maximumBuilds=0;bool activeMuscles=true;
+    for(unsigned tick=0;tick<600;++tick){quiet.passiveTracking=(tick/30)%2==0;persistent.step(quiet);
+      maximumBuilds=std::max(maximumBuilds,persistent.metrics().physicalWorldBuilds);
+      activeMuscles&=persistent.metrics().neuralMotorSamples>0;
+    }
+    check(activeMuscles&&maximumBuilds==1,"stopping and starting CPU tracking preserves one continuously controlled body world");
+    persistent.impulse({{165,0,0}},{{0,0,.18f}},true);
+    float protection=0,hand=10,torque=0;unsigned protectedFrames=0;
+    for(unsigned tick=0;tick<850;++tick){persistent.step(quiet);maximumBuilds=std::max(maximumBuilds,persistent.metrics().physicalWorldBuilds);
+      if(persistent.mode()==Mode::Falling){
+        const auto &m=persistent.metrics();protection=std::max(protection,m.protectiveReach);torque=std::max(torque,m.fallControl);
+        if(m.protectiveReach>.25f)++protectedFrames;
+        for(unsigned elbow:{4u,6u}){
+          const Vec tip=addPoint(persistent.points()[elbow],rotatePoint(persistent.worldRotations()[elbow],{{0,0,-.25f}}));
+          if(m.protectiveReach>.25f)hand=std::min(hand,tip[2]);
+        }
+      }
+    }
+    check(protection>.5f&&protectedFrames>12&&hand<.15f&&torque>12.f,"a falling body actively places protective arms toward the ground with muscular effort");
+    check(maximumBuilds==1&&persistent.mode()==Mode::Active,"fall and get-up reuse the physical assembly instead of reallocating it");
   }
   // Unauthored support steps must lift a shoe under a recoverable push,
   // keep the opposite support and return smoothly without a trip animation.

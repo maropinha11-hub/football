@@ -433,7 +433,7 @@ void HumanoidBase::ComposeWalkingReference(football_physics::Input &input,bool a
       release=std::max(.025f,std::min(release,(currentAnim->touchFrame-currentAnim->frameNum)*.005f));
     physicalWalkWeight=bounded(physicalWalkWeight+(wanted?.01f/.20f:-.01f/release),0,1);
     if(wanted){
-      physicalWalkPhase+=spatialState.movement.Get2D().GetLength()*.01f/(stride/.64f);
+      physicalWalkPhase+=spatialState.movement.Get2D().GetLength()*.01f/(stride/football_walk::stanceFraction);
       physicalWalkPhase-=std::floor(physicalWalkPhase);
     }
   }
@@ -442,8 +442,9 @@ void HumanoidBase::ComposeWalkingReference(football_physics::Input &input,bool a
   if(wanted){
     auto bind=pes3NativeReference;for(auto &offset:bind.offsets)offset=scalePoint(offset,zMultiplier);
     auto pose=input.pose;
-    Vec pelvis=input.pelvis;pelvis[2]=(pes3NativeReference.offsets[0][2]-.08f+.012f*std::cos(12.5663706f*physicalWalkPhase))*zMultiplier;
+    Vec pelvis=input.pelvis;
     Vec travel=rotatePoint(inverseRotation(pose[0]),point(spatialState.movement));travel[2]=0;
+    pelvis[2]=football_walk::pelvisHeight(bind,physicalWalkPhase,stride,travel);
     football_walk::pose(bind,pose,pelvis,physicalWalkPhase,stride,travel);
     football_walk::upperBody(bind,pose,physicalWalkPhase);
     for(unsigned bone=1;bone<13;++bone)input.pose[bone]=blended(physicalWalkEntry[bone],pose[bone],weight);
@@ -547,8 +548,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       const Vector3 delta=opponent->GetPosition()-spatialState.position;
       if(delta.GetLength()<input.opponentDistance){input.opponentDistance=delta.GetLength();input.opponent=point(delta);}
     }
-    input.passiveTracking=PlayerMatchEnabled() && !player->GetExternalController() && input.opponentDistance>2.f &&
-      spatialState.movement.GetLength()<.20f && !input.action && !input.staggering && !input.gripped;
+    input.passiveTracking=false; // Physical muscles stay active for every CPU actor.
     ComposeWalkingReference(input,physicalRigTime!=match->GetActualTime_ms());
     ComposeReceptionReference(input,physicalRigTime!=match->GetActualTime_ms());
     BuildSituationalInput(input);
@@ -627,6 +627,8 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       const auto &d=physicalRig->metrics();const auto root=physicalRig->points()[0];const auto q=physicalRig->worldRotations()[0];
       if(player->GetExternalController())printf("PHYSICAL_RIG_FRAME {\"t\":%lu,\"mode\":%d,\"root\":[%.5f,%.5f,%.5f],\"lean\":%.5f,\"turn\":%.5f,\"reach\":%.5f,\"support_margin\":%.5f,\"effort\":%.5f,\"ground_contacts\":%u,\"ground_correction\":%.6f,\"angular_speed\":%.5f,\"energy\":%.5f,\"joint_error\":%.6f,\"self_penetration\":%.6f,\"brace\":%.2f,\"recovery_phase\":%.4f,\"root_q\":[%.6f,%.6f,%.6f,%.6f]}\n",
         physicalRigTime,after,root[0],root[1],root[2],d.lean,d.turnRate,d.reach,d.supportMargin,d.effort,d.groundContacts,d.penetration,d.angularSpeed,d.kineticEnergy,d.jointError,d.selfPenetration,d.brace,d.recoveryPhase,q[0],q[1],q[2],q[3]);
+      if(physicalRigTime%500==0)printf("PHYSICAL_ACTIVE_STATE t=%lu actor=%d human=%d mode=%d world_builds=%u muscles=%u\n",physicalRigTime,player->GetID(),player->GetExternalController()?1:0,after,d.physicalWorldBuilds,d.neuralMotorSamples);
+      if(after==1)printf("PROTECTIVE_FALL t=%lu actor=%d brace=%.5f reach=%.5f hands=%u torque=%.5f support=%.5f world_builds=%u\n",physicalRigTime,player->GetID(),d.brace,d.protectiveReach,d.protectiveHands,d.fallControl,d.supportTorque,d.physicalWorldBuilds);
       if(input.grounding)printf("PHYSICAL_FOOT_PLANT t=%lu actor=%d correction=%.6f\n",physicalRigTime,player->GetID(),d.plantedCorrection);
       if(d.recoveryStep>.001f)printf("PROCEDURAL_SUPPORT_STEP t=%lu actor=%d foot=%d weight=%.6f lift=%.6f support_error=%.6f pending=%d\n",physicalRigTime,player->GetID(),d.recoveryFoot,d.recoveryStep,d.recoveryLift,d.recoverySupportError,input.touchPending?1:0);
       printf("PHYSICAL_BALANCE t=%lu actor=%d phase=%d risk=%.5f step=%.5f choice=%d arm_speed=%.5f elbow=%.5f counter=%.5f\n",physicalRigTime,player->GetID(),d.balancePhase,d.balanceRisk,d.stepDemand,d.balanceChoice,d.armSpeed,d.elbowAngle,d.counterbalance);

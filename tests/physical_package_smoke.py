@@ -41,6 +41,8 @@ def main():
             check('Windows includes exact-skin indexing, supported reach and calibrated passes',all(token in exe for token in [b'CONTACT_SKIN_PROFILE',b'NATIVE_REACH_PLAN',b'PASS_FLIGHT_RELEASE',b'SIMULATION_PERFORMANCE',b'BOUNDARY_RECEIVE_SETUP']))
             research=full.read(prefix+'fluid-reception-research.json')
             check('current physical research and limits accompany both portable packages',research==patch.read('fluid-reception-research.json')==Path('docs/fluid-reception-research.json').read_bytes() and bool(json.loads(research)['limitations']))
+            check('Windows includes persistent active bodies, protective falls and automatic hitch diagnostics',all(token in exe for token in [b'PHYSICAL_ACTIVE_STATE',b'PROTECTIVE_FALL',b'PHYSICAL_FALL_STRESS',b'pace=%.4f mean_logic_ms=',b'fixed_tick_ms=10']))
+            check('the full and update packages explain protected falls and the hybrid model limits',full.read(prefix+'LEIA-QUEDAS.txt')==patch.read('LEIA-QUEDAS.txt')==Path('docs/QUEDAS-PROTEGIDAS.md').read_bytes())
             check('packaged executable implements physical CLI and solver telemetry', all(token in exe
                   for token in [b'--physical-rig', b'PHYSICAL_RIG_STATE', b'PHYSICAL_RIG_RECOVERED', b'PHYSICAL_RIG_FRAME']))
             check('full and update use the same executable', exe == patch.read('gameplayfootball.exe'))

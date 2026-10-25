@@ -203,3 +203,9 @@ permitindo observar a resposta gradual e a recuperação de apoio.
 
 A pesquisa e os limites desta revisão estão em
 [fluid-reception-research.json](fluid-reception-research.json).
+
+
+A revisão seguinte mantém os corpos físicos carregados, acrescenta proteção
+procedural das quedas e calcula a altura da caminhada pelo alcance das pernas.
+Veja [Quedas protegidas e postura](QUEDAS-PROTEGIDAS.md); no pacote,
+LEIA-QUEDAS.txt inclui os testes e os limites do controlador híbrido.

@@ -49,7 +49,13 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
     body->AddPhysicalImpulse(side*impulse,Vector3(0,0,.18f));
     printf("PHYSICAL_IMPACT_TEST t=%lu impulse=%.1f level=%s forced=0 direction=%u\n",time,impulse,control?"overload":shift?"strong":"medium",direction);
   }
-  if(events.ConsumeKeyPress(SDLK_F9))body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f),true);
+  if(events.ConsumeKeyPress(SDLK_F9)){
+    if(PlayerMatchEnabled()&&events.GetKeyboardState(SDLK_LCTRL)&&events.GetKeyboardState(SDLK_LSHIFT)){
+      std::vector<Player*> actors;match->GetActiveTeamPlayers(0,actors);match->GetActiveTeamPlayers(1,actors);
+      for(auto *other:actors)other->GetHumanoid()->AddPhysicalImpulse(other->GetBodyDirectionVec().GetRotated2D(.5f*pi)*165.f,Vector3(0,0,.18f),true);
+      printf("PHYSICAL_FALL_STRESS t=%lu actors=%zu\n",time,actors.size());
+    }else body->AddPhysicalImpulse(side*165.f,Vector3(0,0,.18f),true);
+  }
 }
 }
 
@@ -157,7 +163,7 @@ void Match::LaunchTrainingBall(int delivery) {
     if(player->GetExternalController())player->GetExternalController()->Reset();
     if(!cpu){trainingView.reset(std::atan2(forward.coords[1],forward.coords[0]));trainingEyeInitialized=false;}
   }
-  if(cpu&&delivery==0&&events.GetKeyboardState(SDLK_LSHIFT)&&events.GetKeyboardState(SDLK_LCTRL)){
+  if((cpu||!PlayerMatchEnabled())&&delivery==0&&events.GetKeyboardState(SDLK_LSHIFT)&&events.GetKeyboardState(SDLK_LCTRL)){
     ball->SetPosition(Vector3(0,trainingPlayer->GetPosition().coords[1]<0?20.f:-20.f,.112f));ball->SetMomentum(Vector3(0));
     UpdateLatestMentalImageBallPredictions();
     SpamMessage("Caminhada sem bola: use o analogico levemente",4000);

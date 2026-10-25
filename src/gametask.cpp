@@ -135,14 +135,32 @@ void GameTask::ProcessPhase() {
     // Resets and physics toggles inside Process also clear/replace snapshot
     // containers. Guard that work with the reader's mutex, not only the final
     // publication, so graphics cannot copy a map or buffer being destroyed.
+    const auto waiting=std::chrono::steady_clock::now();
     boost::timed_mutex::scoped_lock snapshotLock(matchPutBufferMutex);
     const bool profile=GetConfiguration()->GetBool("training_performance",false);
-    const auto started=profile?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
+    const auto started=std::chrono::steady_clock::now();
     match->Process();
     match->PreparePutBuffers();
+    const auto completed=std::chrono::steady_clock::now();
+    const double logicMs=std::chrono::duration<double,std::milli>(completed-started).count();
+    const double lockMs=std::chrono::duration<double,std::milli>(started-waiting).count();
+    struct Timing { std::chrono::steady_clock::time_point last{};unsigned long game=0;unsigned count=0;double total=0,peak=0,lock=0; };
+    static Timing timing;
+    if(timing.last==std::chrono::steady_clock::time_point{}){timing.last=completed;timing.game=match->GetActualTime_ms();}
+    ++timing.count;timing.total+=logicMs;timing.peak=std::max(timing.peak,logicMs);timing.lock=std::max(timing.lock,lockMs);
+    const double elapsed=std::chrono::duration<double,std::milli>(completed-timing.last).count();
+    if(elapsed>=2000){
+      const unsigned long now=match->GetActualTime_ms();
+      const double pace=now>=timing.game?(now-timing.game)/elapsed:1.;
+      if(TrainingEnabled()&&!match->GetPause()&&match->IsInPlay()&&(pace<.90||timing.peak>25||timing.lock>15)){
+        char message[256];std::snprintf(message,sizeof(message),"pace=%.4f mean_logic_ms=%.3f peak_logic_ms=%.3f snapshot_wait_ms=%.3f fixed_tick_ms=10",pace,timing.total/timing.count,timing.peak,timing.lock);
+        Log(e_Notice,"Performance","SimulationHitch",message);
+      }
+      timing.last=completed;timing.game=now;timing.count=0;timing.total=timing.peak=timing.lock=0;
+    }
     if(profile){
       static std::vector<double> samples;
-      samples.push_back(std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-started).count());
+      samples.push_back(logicMs);
       if(samples.size()==500){
         double total=0;unsigned late=0;for(double ms:samples){total+=ms;if(ms>10)++late;}
         std::sort(samples.begin(),samples.end());

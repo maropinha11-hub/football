@@ -517,7 +517,7 @@ void AnimCollection::Load(boost::filesystem::path directory) {
           const Animation authored=*animation;
           // Bake overlapping support into the whole selected slow gait.
           // Rebind the timed ball event to this walking shoe at runtime.
-          const float stride=clamp(v.Get2D().GetLength()*.64f,.28f,.80f);
+          const float stride=clamp(v.Get2D().GetLength()*football_walk::stanceFraction,.28f,.80f);
           for(int frame=0;frame<=end;++frame){
             football_physics::Pose pose;Quaternion q;Vector3 root,unused;
             authored.GetKeyFrame("player",frame,q,root);
@@ -527,8 +527,8 @@ void AnimCollection::Load(boost::filesystem::path directory) {
             // Contact during the advancing swing, before the foot reaches
             // its furthest point. A frontmost planted toe would require the
             // root to retreat from a ball rolling close to walking pace.
-            const float phase=float(frame-walkTouchFrame)/end+(rightTouch?.32f:.82f);
-            root.coords[2]=-.08f+.012f*std::cos(12.5663706f*phase);
+            const float phase=float(frame-walkTouchFrame)/end+football_walk::stanceFraction*.5f+(rightTouch?0.f:.5f);
+            root.coords[2]=football_walk::pelvisHeight(walkingBind,phase,stride)-walkingBind.offsets[0][2];
             animation->SetKeyFrame("player",frame,QUATERNION_IDENTITY,root);
             football_walk::pose(walkingBind,pose,{{root.coords[0],root.coords[1],root.coords[2]+walkingBind.offsets[0][2]}},phase,stride);
             football_walk::upperBody(walkingBind,pose,phase);

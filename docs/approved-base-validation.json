@@ -1,7 +1,7 @@
 {
   "result": "passed",
   "date": "2026-10-25",
-  "previous_release_commit": "c5f857cfffdeb9b9f3e970aa80ec032fc702d852",
+  "previous_release_commit": "8e3f37186501ab82761842d5923125e550ae349e",
   "provenance": {
     "base_commit": "fa0dfa6d2785b39ef73ce8e6ad16dedc6ab547aa",
     "uploaded_executable_sha256": "23230593d0f2735381a5522e21c71abc4977f76d32352bee814ebd096b4a30a3",
@@ -9,12 +9,12 @@
     "new_external_capture_clips": 0
   },
   "changes": {
-    "reception": "Bounded real-shoe reach with optional pelvis lowering and opposite-ankle support; clear stale action/reach on reset; anticipate the best nearby CPU receiver throughout the 1.2-second forecast.",
-    "boundary": "The physical interception search keeps the last20cm inside the field in play and uses the ball radius for its boundary, leaving referee decisions authoritative.",
-    "passes": "Linear range charge for human crosses/through passes; solve reference drag/bounce/ground-braking range for CPU and human, preserve bounded release variation and measured spin.",
-    "fluidity": "Lower critically damped support/counter-tilt stiffness and modestly more loaded articulated torso/arm output, with anatomical limits and native movement retained.",
-    "performance": "Immutable indexed skin groups and bind-local influences, thread-local per-query vertex transforms; adaptive12/24 active iterations with40 for falls, preserving100Hz/two substeps.",
-    "packaging": "Preserve the PE timestamp during stripping so the packaged executable is reproducible from the final Windows build; full/update include research and explicit model limits."
+    "active_state": "Track muscles for quiet CPU as well as movement. Keep each articulated world instead of destroying it between passive/active hints; reuse bodies and constraints on entering and leaving a fall.",
+    "handoff": "Transfer the actual visible joint pose into free dynamics without a lift/reallocation; preserve relative limb linear/angular velocities and global travel.",
+    "fall_protection": "Predict floor arrival; prepare bounded anatomically limited shoulder/elbow targets, tuck the head and adapt knee/hip targets. Retain reciprocal internal muscular torque, increase support correction only at real foot contacts, and dissipate effort after trunk/pelvis floor loading to prevent repeated rolls.",
+    "walking": "Use leg-reach pelvis height for the free walking layer and baked slow ball-control gait; keep stance/stride/distance consistent and the contact at mid-swing. Limit excess pelvic bob at long strides without changing the simulation tick.",
+    "performance": "Avoid body-world allocation on quiet CPU transitions and falls/get-up. Add automatic Performance::SimulationHitch diagnostics separating logic time, snapshot wait and simulation pace.",
+    "laboratory": "Ctrl+Shift+F9 applies deliberate simultaneous fall impulses in a match; Ctrl+Shift+F4 in solo clears the ball for off-ball walking. Existing continuous U force levels and F8 unforced impacts remain."
   },
   "learned_balance": {
     "result": "passed",
@@ -48,7 +48,6 @@
     "header_sha256": "dda455abb3d460ee3e1ff08aa37a06cca09c540e7801ac1c00e8bda1c9d8e96f",
     "new_training_this_revision": false
   },
-  "research": "docs/fluid-reception-research.json",
   "validation": {
     "native_ctest_suites": 11,
     "numerical_results": [
@@ -76,15 +75,15 @@
       },
       {
         "result": "passed",
-        "checks": 93,
+        "checks": 99,
         "failures": 0,
         "parameter_contexts": 270,
         "unsafe_cut_contexts": 0,
-        "maximum_bone_error_m": 1.19209e-07,
-        "minimum_pelvis_height_m": 0.0931863,
-        "pelvis_rotation_rad": 3.36194,
+        "maximum_bone_error_m": 1.78814e-07,
+        "minimum_pelvis_height_m": 0.0933257,
+        "pelvis_rotation_rad": 4.29604,
         "peak_angular_speed_rad_s": 12,
-        "peak_joint_error_m": 0.00373146,
+        "peak_joint_error_m": 0.018914,
         "maximum_foot_step_m": 0.00280002
       },
       {
@@ -111,209 +110,229 @@
     "python_total": 206,
     "python_passed": 200,
     "python_skipped": 6,
-    "python_skips": "Intentional absent private/reverted imported mocap inputs; no failing test skipped.",
+    "python_skips": "Intentional absent private/reverted imported mocap inputs.",
     "rendered_scenarios": 16,
-    "rendered_checks": 270,
+    "rendered_checks": 230,
+    "all_rendered_cases_same_final_binary": true,
     "rendered_cases": [
       {
-        "scenario": "active_reception",
+        "scenario": "malleable_solo",
         "result": "passed",
-        "checks": 20,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "7fad98eda12d03d78abe20e30b955d5916b42c503783ff48cead374477ad763a"
+        "checks": 11,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "b0257c72ba51bb4d79afd755eddbebb8ed796b1b10952d47d5c4203cd038beda"
       },
       {
-        "scenario": "central_receive",
+        "scenario": "protective_fall",
         "result": "passed",
-        "checks": 10,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "f53305effc87cb8bcc7b38d5bc7da799361193af610d3d8cac37a0ac85590579"
+        "checks": 16,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "39731ea98542cbb7c28ab01cbe2b24543daebae230ea0ff601a2a4336937e909"
       },
       {
-        "scenario": "boundary_negative",
+        "scenario": "protective_match",
         "result": "passed",
-        "checks": 10,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "d15598859b89495cdb94def660a5be74e80cada33c4006126ddd6522fd92877c"
+        "checks": 6,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "9c11b73781b012dd7631ca2526a2bc16cf4f380e878c8427682bb86aa535e34a"
       },
       {
         "scenario": "visible_walk",
         "result": "passed",
         "checks": 13,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "1891e325de0f6fb3d478a6493348d361d6a6af4d8c72ab68286a8b90182081e2"
-      },
-      {
-        "scenario": "firstperson_sync",
-        "result": "passed",
-        "checks": 26,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "df7d3da0ded56b0be5508f78c3feb2f93c11c314f99984651026ec5d0c51dfa8"
-      },
-      {
-        "scenario": "keeper_arrivals",
-        "result": "passed",
-        "checks": 23,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "8965b9ecaa2fcb24d2245887c4811124c3bea4738774530ee4517a9f54caaa99"
-      },
-      {
-        "scenario": "restart_lifecycle",
-        "result": "passed",
-        "checks": 17,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "cc25735efd61d2db362706b2e87e85fb24c8574e01d2cc93030746a82d5c8778"
-      },
-      {
-        "scenario": "malleable_match",
-        "result": "passed",
-        "checks": 8,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "bb2bef28d24c45275f40b367e1cf870ec47276e30626afbd381d941eb14a36c6"
-      },
-      {
-        "scenario": "contact_performance",
-        "result": "passed",
-        "checks": 7,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "c98f51cafa314f65f73b9bc9a1fb636389cb123f78d948509621f84046956524"
-      },
-      {
-        "scenario": "pass_flight",
-        "result": "passed",
-        "checks": 21,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "05f5318bc8185cc12f6cc02db624a329185a88fd9db7f3dc58826456515643c2"
-      },
-      {
-        "scenario": "physical_actions",
-        "result": "passed",
-        "checks": 14,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "7f8d9bcfbb7d79d3e99fd527f50cca0d401d1dae3d50a830606d54ee6f521051"
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "24c782cb2cfba50a2581bc05e64de863d818f1275815d1d61f9526316c035c64"
       },
       {
         "scenario": "active_body",
         "result": "passed",
         "checks": 19,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "b3591ddf20b752d4605fb5845cca24ef27dab556916c4e0c38f5438802a8f298"
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "1ae376d85d6020a40a696bb2f53f7163dfbbb511019baed5b186ab5437c02f49"
+      },
+      {
+        "scenario": "firstperson_sync",
+        "result": "passed",
+        "checks": 26,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "a3c5dd56cffeee779324ab6bba5f26fd04830cff1e68c77e14202dcdf12b2d21"
+      },
+      {
+        "scenario": "active_reception",
+        "result": "passed",
+        "checks": 20,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "9a0e25884f68b789715375e6886e8cbd9d52aebed53044652baa3a5ca89c5428"
+      },
+      {
+        "scenario": "central_receive",
+        "result": "passed",
+        "checks": 10,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "91012908bcce5e38cf39407766ba36e8c4f1590d4a1f5561bcad3cb4691f16ee"
+      },
+      {
+        "scenario": "pass_flight",
+        "result": "passed",
+        "checks": 21,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "3a34a068fc614e84529dc5480870c89d062494cf3275c2087995703157c2c508"
+      },
+      {
+        "scenario": "physical_actions",
+        "result": "passed",
+        "checks": 14,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "6301c56771c95037e227fdf2930ad5533f0d1522863a100d70c301df7b2a183f"
       },
       {
         "scenario": "support_step",
         "result": "passed",
         "checks": 16,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "bab27740eefe2f7f9048af852a30a52d66687c1632158a55a9286767821f8752"
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "d43462f3947c6156dcc2093bc1a8dfcbb3ed6b706c84a03fb794b30f0fc89cac"
       },
       {
-        "scenario": "pass_turn_fps",
+        "scenario": "body_duel",
         "result": "passed",
-        "checks": 13,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "f841c640df3e976bb8c51b772eef69bceeeaf573c9a8b0cacecf04c25bfc2831"
+        "checks": 4,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "7d8bc5bc0819176d8409b8a15e44691c3adf9b99ff8291e6c68870df3ecd6b00"
+      },
+      {
+        "scenario": "balance_lab",
+        "result": "passed",
+        "checks": 17,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "88f5e5306eb7a4ba8960ddbfba7060d56e87173228d4d117977388947d12ea88"
+      },
+      {
+        "scenario": "restart_lifecycle",
+        "result": "passed",
+        "checks": 17,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "e04ec4c7bea6c0909d1acf346977ca2a1d338d69e04a33c76e55cf23d2aa5189"
+      },
+      {
+        "scenario": "startup_cycles",
+        "result": "passed",
+        "checks": 12,
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "1a83856ddd580e1840b37bff3d3111674e36797fe8848a9aa184c74e985a4b3d"
       },
       {
         "scenario": "physical_quality",
         "result": "passed",
         "checks": 8,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "c324aa84397c9c80b96fabd8fa45ba87e2a00b5e80dce70d71f2f236b0b0a46f"
-      },
-      {
-        "scenario": "elevated_reception",
-        "result": "passed",
-        "checks": 45,
-        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-        "evidence_sha256": "bf4b8ac70a5eb7cd8983ef4f47ea4fec6ba8725b07da652c24fe0a8af7e03e61"
+        "executable_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+        "evidence_sha256": "fd48d9657a020df7057e04a4ed15600d162eadc3b4ac2e9ae5605fbb7c2c8baf"
       }
     ],
-    "all_rendered_cases_same_final_binary": true,
     "windows_portable_checks": 49,
-    "windows_physical_checks": 51,
+    "windows_physical_checks": 53,
     "windows_gui_executed": false
   },
-  "performance": {
-    "paired_query": {
-      "profiles": [
-        {
-          "samples": "100000",
-          "optimized_us": "6.20123",
-          "reference_us": "17.41265",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "102000",
-          "optimized_us": "6.20069",
-          "reference_us": "17.41267",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "104000",
-          "optimized_us": "6.19992",
-          "reference_us": "17.41347",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "106000",
-          "optimized_us": "6.20079",
-          "reference_us": "17.41541",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "108000",
-          "optimized_us": "6.20092",
-          "reference_us": "17.41836",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "110000",
-          "optimized_us": "6.20075",
-          "reference_us": "17.41922",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "2000",
-          "optimized_us": "49.66841",
-          "reference_us": "88.90817",
-          "max_error": "0.000000000"
-        },
-        {
-          "samples": "2000",
-          "optimized_us": "44.62545",
-          "reference_us": "95.15078",
-          "max_error": "0.000000000"
-        }
+  "observations": {
+    "walking": {
+      "median_hip_above_ankle": 0.7498499999999999,
+      "range": [
+        0.71908,
+        0.75037
       ],
-      "median_speedup": 2.807581808582654
+      "samples": 69
     },
-    "match_pace": {
-      "reference_ms": 5.87099,
-      "indexed_ms": 4.480404999999999,
-      "reference_pace": 0.9989107888740623,
-      "indexed_pace": 0.9987403432363613
+    "carrying_bob": {
+      "samples": 48,
+      "range_m": 0.04949999999999999
     },
-    "interpretation": "Two uncontrolled live AI segments are descriptive, not an identical workload. Exact paired queries isolate contact speed. The real-time sample lasts20 simulated seconds; this is not a guarantee of performance on every PC."
+    "actual_arm_floor_contacts": {
+      "trials_with_forearm_ground_contact": 4,
+      "trials": 4
+    },
+    "simultaneous_fall_pace": {
+      "simulated_seconds": 13.5,
+      "wall_seconds": 13.481646836036816,
+      "pace": 1.001361344365892
+    },
+    "persistent_worlds": {
+      "samples": 594,
+      "max_builds": 1
+    },
+    "protection_player_cpu": {
+      "falling": [
+        "0",
+        "1",
+        "10",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "protected": [
+        "0",
+        "1",
+        "10",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "already_in_physical_fall": [],
+      "prior_protection": []
+    }
   },
   "correction_history": [
-    "The first precision diagnostic rejected a different equidistant nearest point despite zero gap error; preserved the reference outer-distance tie comparison and reran exact geometry verification.",
-    "The first central-reception test filtered on an actor field absent from skin telemetry; corrected the test to join the delivered actor action with same-time/same-part skin acceptance. All central cases reran.",
-    "An airborne CPU regression exposed stale originating commands after ResetPosition and insufficient early receiver reservation; fixed the production paths and reran player/CPU airborne, central, goalkeeper and restart scenarios.",
-    "The first performance assertion compared overall logic time across different live AI actions. Replaced that attribution with paired same-pose queries, while retaining both full-segment timings and a separate real-time pacing assertion."
+    "Early high-effort fall tuning caused excessive post-impact roll. Reduced effort after actual trunk/pelvis ground loading and retained full protection before impact; bounded-rotation tests then passed.",
+    "The first new walking fixture still owned the ball and never entered the free-walk layer. Added an explicit solo ball-away fixture and separately measured the carried-ball gait.",
+    "The first multi-actor protection assertion expected a fresh guard from an actor already lying on the floor before the lab impulse. The test now requires a fresh guard for every upright participant and checks previous actual protection for participants already in a physical fall.",
+    "A steady-state inspection exposed excessive pelvic bob with the long slow-stride reference. Corrected stance/stride/cadence, then fixed its formerly hard-coded contact phase after the weak-stick test detected a backwards approach. Revalidated all final scenarios on the final binary.",
+    "An intermediate regression queue was stopped after reproducing the weak-stick issue; its interrupted results are not counted as passes."
   ],
   "binaries": {
-    "native_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
-    "windows_unstripped_sha256": "004eb3851a1b57561aaa0d35028df63938e9e38e14233121237c37d727041e15",
-    "windows_packaged_sha256": "436f24a3730120caf3f9fa4f7c5264de3434b79faecb37bbe2c847e6e553e0e8"
+    "native_sha256": "3c862eb57ea31fa324b9e7f148ad2c82f9d18c91039cec4e7d6e1faf8f54e7c1",
+    "windows_unstripped_sha256": "307a007b03d36e39ded41806683a9e91765c2355856864a3991c11346e42d2fe",
+    "windows_packaged_sha256": "8152c63a7294ab1c78012b53103507e504514c9f71e9e589c9cd3859358c3c39"
   },
   "artifacts": {
-    "full_zip_bytes": 35164302,
-    "full_zip_sha256": "1b6d8591cad66760f348beeef2a3a42b22692285e6433f5dcf6228944e7b32bc",
-    "update_zip_sha256": "a9f4b9eba54fb9386ccd30dcdeeab9c0755f5bac8d76db7fc6495b525de7f7f1"
+    "full_zip_bytes": 35171779,
+    "full_zip_sha256": "ebda336bd3c0b537b38ef192afcd3f3ab9bce6c936415cad6c4cd76fcb009bdf",
+    "update_zip_sha256": "94e6b1e81207cb257ce1bb4ad04be24098641fc4dba3f04c0dfe69819e9d5f7f"
   },
-  "limitations": [
-    "Rendered game validation used native Linux/X11 software rendering; Windows11 was cross-compiled and its portable runtime/files checked, without a native Windows GUI run.",
-    "Active pelvis/shoe trajectory remains guided by native movement; this is not a full-body RL football policy, a new captured animation bank, or Euphoria.",
-    "Range planning is a reference model; actual irregular turf and measured contact spin still affect flight."
+  "limits": [
+    "Active tracking still has a native carrier pelvis and two shoe targets; ten segments use dynamics. All13segments are dynamic during a fall; authored ground recovery remains guided by native get-up references.",
+    "An exploratory16-impact diagnostic did not observe a dynamic fall arrest after entering free fall; moderate recoveries occurred in supported active mode. Do not present dynamic fall arrest as a validated result.",
+    "The existing reduced learned balance planner and angular muscle model remain in use. No full-body reinforcement-learning policy was trained and no complete procedural football skill bank or Euphoria reproduction is claimed.",
+    "All rendered execution validation used Linux/X11 software rendering. Windows11 was cross-compiled and its portable files/runtime checked, without a native Windows GUI run.",
+    "The22actor stress sample maintained real-time pace in this environment. User-machine slowdowns may have other causes; automatic hitch diagnostics are included to distinguish them."
   ]
 }
