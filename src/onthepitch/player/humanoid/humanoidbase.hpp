@@ -104,6 +104,7 @@ struct Anim {
   radian rotationSmuggleOffset;
   signed int touchFrame;
   bool touchMade;
+  Vector3 contactLegOffset = Vector3(0); // body-local, planned before selection
   float radiusOffset;
   Vector3 touchPos;
 
@@ -284,7 +285,7 @@ class HumanoidBase {
     Vector3 GetStandingChestTarget() const;
     void CaptureContactMesh();
     void SampleContactAnimation(const Animation *animation, float phase, const Vector3 &root,
-                               radian facing, bool source, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+                               radian facing, bool source, Quaternion *local, Quaternion *global, Vector3 *positions, bool fitPlannedLeg=true) const;
     void ContactForwardKinematics(Quaternion *local, Quaternion *global, Vector3 *positions) const;
     float ContactSurface(const Vector3 &ballPosition, const std::string &part, const Quaternion *global,
                          const Vector3 *positions, Vector3 *closest = nullptr, std::string *hitPart = nullptr) const;

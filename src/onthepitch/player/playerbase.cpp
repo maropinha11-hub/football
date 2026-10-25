@@ -84,6 +84,25 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
                      else controller->RequestCommand(commandQueue);
   if(TrainingEnabled()){
     auto *fieldPlayer=dynamic_cast<Player*>(this);
+    if(fieldPlayer&&humanoid->PhysicalRigEnabled()&&!match->GetBallRetainer()&&
+       (match->GetLastTouchPlayer()==this||fieldPlayer->HasPossession())&&
+       GetMovement().GetLength()<.20f&&match->GetBall()->Predict(0).coords[2]<.30f&&
+       match->GetBall()->GetMovement().GetLength()<1.f){
+      auto *input=GetController();
+      const Vector3 toBall=(match->GetBall()->Predict(0)-GetPosition()).Get2D();
+      const bool manual=!externalController||static_cast<HumanController*>(externalController)->GetActionMode()==0;
+      if(manual&&input->GetFloatVelocity()>.20f&&toBall.GetLength()>.25f&&toBall.GetLength()<.90f&&
+         input->GetDirection().GetDotProduct(toBall.GetNormalized(0))>.50f){
+        // The magnet's ideal front-of-foot point can already equal the root
+        // after a tired sprint. Start a reachable native walk/control step
+        // rather than holding still forever while full input requests sprint.
+        for(auto &command:commandQueue)if(command.useDesiredMovement&&
+            (command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl)){
+          command.desiredDirection=input->GetDirection();
+          command.desiredVelocityFloat=std::min(walkVelocity,input->GetFloatVelocity());
+        }
+      }
+    }
     sprintRequested=false;
     for(auto &command:commandQueue)if(command.useDesiredMovement){
       sprintRequested|=command.desiredVelocityFloat>4.5f;
@@ -105,7 +124,8 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
       auto point=[](const Vector3 &p)->football_reception::Vec{return {{p.coords[0],p.coords[1],p.coords[2]}};};
       Player *last=match->GetLastTouchPlayer();
       const bool free=!last||last->GetTeamID()==fieldPlayer->GetTeamID()||(last->GetPosition()-match->GetBall()->Predict(0)).Get2D().GetLength()>1.15f;
-      const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free);
+      const float maximumHeight=std::min(2.65f,GetPlayerData()->GetHeight()+.60f);
+      const auto plan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},point(GetPosition()),point(GetMovement()),point(match->GetBall()->GetMovement()),free,maximumHeight);
       if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0&&
          (match->GetBall()->Predict(1000).Get2D()-GetPosition()).GetLength()<2.f&&match->GetBall()->Predict(0).coords[2]>2.5f)
         printf("CPU_AIR_FORECAST t=%lu actor=%d valid=%d free=%d speed=%.4f future_height=%.4f\n",match->GetActualTime_ms(),GetID(),plan.valid?1:0,free?1:0,GetMovement().GetLength(),match->GetBall()->Predict(1000).coords[2]);
@@ -125,15 +145,26 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
           receiving=!better;
         }
         const Vector3 facing=(match->GetBall()->Predict(0)-GetPosition()).Get2D().GetNormalized(GetDirectionVec());
-        const Vector3 meeting=Vector3(plan.point[0],plan.point[1],0)-facing*.34f;
+        // The shoe's receiving offset is not a head/chest offset. Standing
+        // behind a head arrival by34cm made the CPU shuffle away while trying
+        // to catch the trajectory above its own reachable jump height.
+        const float lead=(plan.height>1.65f?.18f:plan.height>1.f?.25f:.34f)*GetPlayerData()->GetHeight()/1.8f;
+        const Vector3 meeting=Vector3(plan.point[0],plan.point[1],0)-facing*lead;
         const Vector3 step=meeting-GetPosition().Get2D();
-        const float approach=clamp(step.GetLength()/std::max(.25f,plan.time),0.f,2.2f);
+        const float approach=plan.height>1.f&&step.GetLength()<.18f?0.f:clamp(step.GetLength()/std::max(.25f,plan.time),0.f,2.2f);
         for(auto &command:commandQueue)if(command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl||command.desiredFunctionType==e_FunctionType_Trap){
           command.useDesiredLookAt=true;command.desiredLookAt=match->GetBall()->Predict(0).Get2D();
           if(receiving){command.useDesiredMovement=true;command.desiredDirection=step.GetNormalized(facing);command.desiredVelocityFloat=approach;}
         }
-        const bool action=std::any_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType!=e_FunctionType_Movement&&c.desiredFunctionType!=e_FunctionType_BallControl&&c.desiredFunctionType!=e_FunctionType_Trap;});
-        if(receiving&&!action&&!fieldPlayer->TouchPending()&&plan.time<1.10f&&plan.height<2.65f){
+        const bool action=std::any_of(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return
+          c.desiredFunctionType>=e_FunctionType_ShortPass&&c.desiredFunctionType<=e_FunctionType_Shot;});
+        const float goalDistance=(Vector3(-fieldPlayer->GetTeam()->GetSide()*pitchHalfW,0,0)-GetPosition()).Get2D().GetLength();
+        const bool finishFirstTime=action&&plan.height>.90f&&goalDistance<24.f;
+        const bool prepareControl=!action||(plan.height>.27f&&!finishFirstTime);
+        // A speculative pass has not yet acquired a feasible native contact.
+        // It must not suppress a reachable mid-air reception indefinitely.
+        // Already committed contacts and near-goal finishing keep priority.
+        if(receiving&&prepareControl&&!fieldPlayer->TouchPending()&&plan.time<1.10f&&plan.height<2.65f){
           PlayerCommand trap;trap.desiredFunctionType=e_FunctionType_Trap;trap.useDesiredMovement=trap.useDesiredLookAt=true;
           trap.desiredDirection=step.GetNormalized(facing);trap.desiredVelocityFloat=approach;trap.desiredLookAt=match->GetBall()->Predict(0).Get2D();
           commandQueue.erase(std::remove_if(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_Trap;}),commandQueue.end());
@@ -141,6 +172,8 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
         }
         if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0)
           printf("CPU_RECEIVE_ORIENT t=%lu actor=%d arrival=%.4f height=%.4f step=%.5f approach=%.5f active=%d\n",match->GetActualTime_ms(),GetID(),plan.time,plan.height,step.GetLength(),approach,receiving?1:0);
+        if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0&&receiving&&plan.height>1.8f)
+          printf("CPU_RECEIVE_QUEUE t=%lu actor=%d pending=%d strike=%d arrival=%.4f height=%.4f\n",match->GetActualTime_ms(),GetID(),fieldPlayer->TouchPending()?1:0,action?1:0,plan.time,plan.height);
       }
     }
   }
@@ -161,6 +194,16 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
   }else if(referee->KeepThrowerOutside(this)){
     for(auto &command:commandQueue)if(command.desiredFunctionType==e_FunctionType_Movement){
       command.useDesiredMovement=true;command.desiredVelocityFloat=idleVelocity;
+    }
+  }
+  if(TrainingEnabled()&&externalController&&GetMovement().GetLength()<.20f&&
+     GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0){
+    auto *human=static_cast<HumanController*>(externalController);
+    if(human->GetHIDevice()->GetDirection().GetLength()>.75f){
+      const auto *actor=dynamic_cast<Player*>(this);
+      const Vector3 delta=(match->GetBall()->Predict(0)-GetPosition()).Get2D();
+      float movement=0;for(const auto &c:commandQueue)if(c.desiredFunctionType==e_FunctionType_Movement)movement=c.desiredVelocityFloat;
+      printf("NATIVE_START_RECOVERY t=%lu own=%d possession=%d gap=%.5f raw=%.5f dot=%.5f commanded=%.5f waiting=%d mode=%d\n",match->GetActualTime_ms(),match->GetLastTouchPlayer()==this?1:0,actor?actor->HasPossession():0,delta.GetLength(),human->GetFloatVelocity(),human->GetDirection().GetDotProduct(delta.GetNormalized(0)),movement,referee->WaitingForRestart()?1:0,human->GetActionMode());
     }
   }
 }

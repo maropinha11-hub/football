@@ -1,0 +1,29 @@
+{
+  "result": "passed",
+  "seed": 20261025,
+  "algorithm": "supervised distillation of constrained capture-point planner",
+  "inputs": [
+    "CoM displacement",
+    "disturbance velocity",
+    "pelvis height",
+    "stance width",
+    "brace"
+  ],
+  "outputs": [
+    "support step metres",
+    "hip rotation radians"
+  ],
+  "architecture": [
+    5,
+    24,
+    2
+  ],
+  "train_states": 16000,
+  "validation_states": 3000,
+  "test_states": 5000,
+  "held_out_rmse": {
+    "step_metres": 0.014365686805798528,
+    "hip_radians": 0.009616734598235973
+  },
+  "scope": "Reduced balance planner only; no trained whole-body RL, no learned football skill or Euphoria implementation."
+}

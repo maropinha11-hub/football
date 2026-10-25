@@ -18,6 +18,11 @@ Abra `treino-fisico.bat` ou `partida-fisica.bat` em uma extração nova do pacot
 completo. Veja [a base recuperada e os controles](docs/BASE-APROVADA.md) e
 [o relatório de validação](docs/approved-base-validation.json).
 
+A revisão de equilíbrio acrescenta **empurrão contínuo com U** (Shift: forte; Ctrl: sobrecarga),
+planejamento aprendido de apoio e motores relativos nas articulações. A recepção
+rasteira pode preparar a perna antes de o passe atravessar o espaço entre os pés.
+Veja [os controles, a pesquisa e os limites do teste](docs/EQUILIBRIO-CONTINUO.md).
+
 O modo físico agora acrescenta **194 adaptações temporizadas de cinco movimentos
 nativos** para recepções por altura e batidas no ar. O seletor pode preparar uma
 extensão da perna, amortecer com a coxa/peito/cabeça ou saltar antes de a bola
@@ -34,7 +39,7 @@ muscular neural treinado com referências nativas. Veja
 
 O **teste de física corporal** abre por `treino-fisico.bat`, no
 [pacote Windows completo](artifacts/football-training-windows-x86_64.zip).
-A revisão usa **Bullet 3.25**, motores físicos no tronco e braços, busca por
+A revisão usa **Bullet 3.25**, motores físicos no tronco, braços, coxas e canelas, busca por
 pose/velocidade/trajetória, alcance gradual, queda articulada e recuperação
 assistida sobre as animações existentes. A câmera está mais sensível. **F7** compara ligado/desligado,
 **F8** aplica um impacto médio, **Shift+F8** um forte e **Ctrl+F8** uma

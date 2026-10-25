@@ -8,6 +8,8 @@ def mul(a,b):
  return (w*u+x*t+y*s-z*v,w*v-x*s+y*t+z*u,w*s+x*v-y*u+z*t,w*t-x*u-y*v-z*s)
 def rotate(q,v):return mul(mul(q,(*v,0)),(-q[0],-q[1],-q[2],q[3]))[:3]
 def add(a,b):return tuple(x+y for x,y in zip(a,b))
+@unittest.skipUnless(any((ROOT/'data/media/animations/mocap').glob('*.anim')),
+                     'Imported locomotion was explicitly removed from the approved native gameplay')
 class MocapBank(unittest.TestCase):
  def test_native_support_and_loops(self):
   rig=json.loads((ROOT/'tools/animations/native_rig_reference.json').read_text())

@@ -1,0 +1,77 @@
+{
+  "sources": [
+    {
+      "name": "deepmimic-readme",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/README.md",
+      "status": 200,
+      "bytes": 8318,
+      "sha256": "a9f216f33fae935e017e03de379f2773452206ca8ff56e8cbb51a95715dec0d7"
+    },
+    {
+      "name": "deepmimic-pd",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/CtPDController.cpp",
+      "status": 200,
+      "bytes": 3936,
+      "sha256": "87219ca8644799b0a0286b40a3ad1a5bfff7091ed13716b0d83af6ca1d71d102"
+    },
+    {
+      "name": "deepmimic-implicit-pd",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/ImpPDController.cpp",
+      "status": 200,
+      "bytes": 6641,
+      "sha256": "222bda44fa418316705fecd7a1af28bd6fff70c37cc8caef0f9dcbbc276ac29f"
+    },
+    {
+      "name": "mimickit-readme",
+      "url": "https://raw.githubusercontent.com/xbpeng/MimicKit/main/README.md",
+      "status": 200,
+      "bytes": 8149,
+      "sha256": "dc6841da6854b3594a4b408e83ee604469e3f4690e12098c37a839040c342dac"
+    },
+    {
+      "name": "motion-matching",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/controller.cpp",
+      "status": 200,
+      "bytes": 90602,
+      "sha256": "e52bb8998210d7fa8cc5807f42a358cfe202d62097ac605b6f6120e6d655a8a8"
+    },
+    {
+      "name": "motion-springs",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/spring.h",
+      "status": 200,
+      "bytes": 5374,
+      "sha256": "b514bf7c80c49280c784ead654b6dfa1ce709a5c944754f9da6b997e6e906e19"
+    },
+    {
+      "name": "jolt-ragdoll",
+      "url": "https://raw.githubusercontent.com/jrouwe/JoltPhysics/master/Jolt/Physics/Ragdoll/Ragdoll.cpp",
+      "status": 200,
+      "bytes": 27484,
+      "sha256": "01096a2955ea4ffb4dbba3ad854f44ce0b3714974842c76a07181e7b453c6a19"
+    },
+    {
+      "name": "phc-readme",
+      "url": "https://raw.githubusercontent.com/ZhengyiLuo/PHC/master/README.md",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "findings": [
+    {
+      "source": "DeepMimic ImpPDController",
+      "finding": "Implicit damping and joint-relative target pose/velocity; imitation needs a trained policy and a matching physical humanoid."
+    },
+    {
+      "source": "orangeduck Motion-Matching",
+      "finding": "Pose/velocity and future trajectory choose candidates; inertialization preserves transition continuity. A number of additive profiles is not a number of captured motions."
+    },
+    {
+      "source": "Jolt Ragdoll",
+      "finding": "Connected bodies, limited joints and stable motor targets are separate from motion selection."
+    },
+    {
+      "source": "MimicKit",
+      "finding": "Motion imitation requires simulated training environments, reference motion, and separate policy evaluation. Public sample policies are not calibrated for this game skeleton."
+    }
+  ],
+  "implementation_scope": "Native contacts and trajectories remain authoritative; reduced learned balance planner and relative joint muscles, not Euphoria or a trained football whole-body RL policy."
+}

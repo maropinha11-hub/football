@@ -218,7 +218,9 @@ class ELFTests(unittest.TestCase):
 class CatalogueTests(unittest.TestCase):
     def test_actual_authored_animation_inventory(self):
         result = catalogue.build_catalogue(ROOT / "data/media/animations")
-        self.assertEqual(result["animation_count"], 293)
+        original = [a for a in result["animations"] if not a["path"].startswith("procedural_actions/")]
+        self.assertEqual(len(original), 293)
+        self.assertEqual(result["animation_count"], 293 + len(list((ROOT / "data/media/animations/procedural_actions").glob("*.anim"))))
         self.assertEqual(result["errors"], [])
         header = next(a for a in result["animations"] if a["path"] == "pass/idle/nonbase/000_header.anim")
         self.assertEqual(header["type"], "shortpass")

@@ -2,7 +2,7 @@
 import argparse,hashlib,json,re,subprocess
 from pathlib import Path
 from native_training_harness import NativeTraining
-p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':1091');p.add_argument('--match',action='store_true');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':1091');p.add_argument('--match',action='store_true');p.add_argument('--phase-delay-ms',type=int,default=0);a=p.parse_args()
 r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
@@ -24,7 +24,9 @@ try:
    g.reset();g.pad(0,-.4);g.advance(3200);capture(g,'walking.png');g.pad(0,0)
    clips=ev(g,'TRAINING_NATIVE_START')
    check('light stick selects the overlapping-support native-skeleton walking cycle',any(x.get('walk_support')=='overlap'for x in clips),[x for x in clips if '_slow_'in x.get('name','')][-8:])
-   g.reset();start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(22000);g.pad(0,0);capture(g,'stamina-low.png')
+   g.reset()
+   if a.phase_delay_ms:g.advance(a.phase_delay_ms)
+   start=len(g.read_log());g.pad(0,-1,sprint=True);g.advance(22000);g.pad(0,0);capture(g,'stamina-low.png')
    rows=[x for x in ev(g,'SPRINT_ENERGY',start)if x['human']=='1'];low=min([float(x['energy'])for x in rows]or[1]);tired=[x for x in rows if x['depleted']=='1']
    check('holding RB spends reserve and reaches the depleted speed cap',low<.04 and bool(tired)and all(float(x['limit'])<=4.36 for x in tired),dict(minimum=low,depleted_samples=len(tired),tail=rows[-5:]))
    start=len(g.read_log());g.advance(4500);recovery=[x for x in ev(g,'SPRINT_ENERGY',start)if x['human']=='1']

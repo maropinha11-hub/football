@@ -319,7 +319,7 @@ void HumanoidBase::PutUpperReception() {
 }
 
 void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase,const Vector3 &root,
-    radian facing,bool source,Quaternion *local,Quaternion *global,Vector3 *positions) const {
+    radian facing,bool source,Quaternion *local,Quaternion *global,Vector3 *positions,bool fitPlannedLeg) const {
   phase=clamp(phase,0.0f,float(animation->GetEffectiveFrameCount()));
   const int frame=int(phase),next=std::min(frame+1,animation->GetEffectiveFrameCount());
   Quaternion a,b;Vector3 p,q;
@@ -341,6 +341,14 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
   if(!source && animation->GetVariable("added_chest")!="true")
     BlendUpperReception(upperReceptionClip,upperReceptionPhase,upperReceptionWeight,facing,local,upperReceptionArmWeight);
   ContactForwardKinematics(local,global,positions);
+  if(fitPlannedLeg && !source && animation==currentAnim->anim && currentAnim->touchFrame>0 &&
+      currentAnim->contactLegOffset.GetLength()>.0001f){
+    const float contact=currentAnim->touchFrame;
+    const float amount=football_physics::smooth(phase/contact)*
+      (1-football_physics::smooth((phase-contact)/18.f));
+    const bool right=animation->GetVariable("touch_bodypart")=="right_foot";
+    FitContactLeg(right?1:0,currentAnim->contactLegOffset.GetRotated2D(facing)*amount,local,global,positions);
+  }
   if(PhysicalRigEnabled()&&animation->GetAnimType()=="deflect"){
     // Save markers and reach planning must use the same anatomical arms as
     // the active rig and renderer. Projecting only after selection moved a
@@ -688,6 +696,7 @@ void HumanoidBase::UpdateTrainingContactPose() {
     const float enter=football_physics::smooth(currentAnim->frameNum/std::max(1.f,std::min(8.f,currentAnim->touchFrame*.5f)));
     contactPoseBlend=nativeBlend*enter;
     if(physicalWalkWeight>.001f)contactPoseBlend=1.f;
+    if(currentAnim->contactLegOffset.GetLength()>.0001f)contactPoseBlend=1.f;
     if(physicalReceptionApplied>.001f)contactPoseBlend=1.f;
     if(physicalRig&&physicalRig->initialized())contactPoseBlend=std::max(contactPoseBlend,physicalRig->metrics().recoveryStep);
   }

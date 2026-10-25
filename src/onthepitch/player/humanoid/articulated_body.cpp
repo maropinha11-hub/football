@@ -35,6 +35,7 @@ struct ArticulatedBody::World {
   Pose previousReference{};
   std::array<Vec,13> previousReferenceVelocity{};
   bool referenceReady=false;
+  Vec carrierPelvis{{0,0,0}};
   float age=0;
   bool tracking=false;
   World(){
@@ -54,7 +55,7 @@ ArticulatedBody::ArticulatedBody()=default;
 ArticulatedBody::~ArticulatedBody()=default;
 void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose &pose,Vec pelvis,Vec velocity,Vec impulse,Vec lever,bool tracking){
   state.reset(new World);auto &s=*state;
-  s.tracking=tracking;
+  s.tracking=tracking;s.carrierPelvis=pelvis;
   s.muscleTarget=pose;
   std::array<btTransform,13> frames;
   for(unsigned i=0;i<13;++i){
@@ -83,6 +84,7 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
       btTransform b(btQuaternion::getIdentity(),-s.centers[i]);
       s.joints.emplace_back(new btGeneric6DofSpring2Constraint(*s.bodies[parent+1],body,a,b));
       auto &joint=*s.joints.back();joint.setLinearLowerLimit(btVector3(0,0,0));joint.setLinearUpperLimit(btVector3(0,0,0));
+      for(unsigned axis=0;axis<3;++axis)joint.setParam(BT_CONSTRAINT_STOP_ERP,.35f,axis);
       btVector3 lo(-.8f,-.7f,-.7f),hi(.8f,.7f,.7f);
       if(i==7||i==10){lo=btVector3(-.9f,-.7f,-.7f);hi=btVector3(1.9f,.7f,.7f);}
       if(i==8||i==11){lo=btVector3(-2.65f,-.04f,-.04f);hi=btVector3(.03f,.04f,.04f);}
@@ -117,7 +119,7 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
   for(unsigned i=0;i<13;++i){auto &body=*s.bodies[i+1];
     body.setLinearVelocity(bv(velocity)+bv(scalePoint(impulse,1/PhysicalRig::mass))+angular.cross(body.getCenterOfMassPosition()-center));
     body.setAngularVelocity(angular);body.activate();
-    if(tracking && (i==0 || i>=7)){
+    if(tracking && (i==0 || i==9 || i==12)){
       body.setMassProps(0,btVector3(0,0,0));
       body.setCollisionFlags(body.getCollisionFlags()|btCollisionObject::CF_KINEMATIC_OBJECT);
       body.setActivationState(DISABLE_DEACTIVATION);
@@ -130,7 +132,21 @@ void ArticulatedBody::impulse(Vec value,Vec lever){
 }
 void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics){
   if(!state || !state->tracking)start(bind,scale,target,pelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},true);
-  auto &s=*state;std::array<btTransform,13> desired,previous;
+  auto &s=*state;
+  // Simulate joint dynamics in the translating native carrier frame. If
+  // only the kinematic pelvis/shoes are transported, Bullet integrates the
+  // dynamic links another half-tick beyond them at sprint speed. Transport
+  // every segment and its interpolation transform by the same translation;
+  // retain relative velocities, actual joint torques, gravity and contacts.
+  // A free fall starts a new world with the actual global player velocity.
+  const btVector3 transport(pelvis[0]-s.carrierPelvis[0],pelvis[1]-s.carrierPelvis[1],0);
+  for(unsigned i=0;i<13;++i){auto &body=*s.bodies[i+1];
+    auto t=body.getWorldTransform(),old=body.getInterpolationWorldTransform();
+    t.getOrigin()+=transport;old.getOrigin()+=transport;
+    body.setCenterOfMassTransform(t);body.setInterpolationWorldTransform(old);
+  }
+  s.carrierPelvis=pelvis;
+  std::array<btTransform,13> desired,previous;
   std::array<Vec,13> referenceVelocity{},referenceAcceleration{};
   for(unsigned i=0;i<13;++i){int parent=pes3::nativeParents[i];
     desired[i]=parent<0?btTransform(bq(target[i]),bv(pelvis)):
@@ -147,7 +163,7 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
   s.referenceReady=true;
   if(length(impulse)>0)s.bodies[2]->applyImpulse(bv(scalePoint(impulse,.35f)),btVector3(0,0,.12f));
   for(unsigned sub=0;sub<2;++sub){
-    for(unsigned i=0;i<13;++i)if(i==0 || i>=7){
+    for(unsigned i=0;i<13;++i)if(i==0 || i==9 || i==12){
       auto &body=*s.bodies[i+1];const auto final=desired[i]*btTransform(btQuaternion::getIdentity(),s.centers[i]);
       const float t=(sub+1)*.5f;
       const btTransform next(previous[i].getRotation().slerp(final.getRotation(),t),previous[i].getOrigin().lerp(final.getOrigin(),t));
@@ -157,16 +173,29 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
       body.setInterpolationWorldTransform(body.getWorldTransform());
       body.setWorldTransform(next);body.activate();
     }
-    for(unsigned i=1;i<=6;++i){auto &body=*s.bodies[i+1];
-      const Vec error=logarithm(quat(desired[i].getRotation()*body.getWorldTransform().getRotation().inverse()));
-      const Vec relative=subtractPoint(referenceVelocity[i],vec(body.getAngularVelocity()));
+    for(unsigned i=1;i<13;++i){
+      if(i==9 || i==12)continue;
+      auto &body=*s.bodies[i+1];const int parent=pes3::nativeParents[i];
+      auto &base=*s.bodies[parent+1];
+      // Muscles control a joint relative to its parent. A world-space servo
+      // fights the reference's own pelvis/trunk turn and arrests arm swing.
+      const btQuaternion targetOrientation=base.getWorldTransform().getRotation()*bq(target[i]);
+      const Vec error=logarithm(quat(targetOrientation*body.getWorldTransform().getRotation().inverse()));
+      const Vec wantedVelocity=subtractPoint(referenceVelocity[i],referenceVelocity[parent]);
+      const Vec relative=subtractPoint(wantedVelocity,vec(body.getAngularVelocity()-base.getAngularVelocity()));
       Vec wanted;
-      for(unsigned axis=0;axis<3;++axis)wanted[axis]=football_muscle::acceleration(error[axis],relative[axis])+referenceAcceleration[i][axis];
+      for(unsigned axis=0;axis<3;++axis){
+        const float feed=referenceAcceleration[i][axis]-referenceAcceleration[parent][axis];
+        // Implicit local damping bounds a changing target without freezing
+        // authored motion. Lower limbs now exchange actual internal torques.
+        wanted[axis]=(football_muscle::acceleration(error[axis],relative[axis])+feed)/(1.f+18.f*dt*.5f);
+      }
       const Vec acceleration=capped(wanted,140.f);
       metrics.motorError=std::max(metrics.motorError,length(error));
       metrics.motorAcceleration=std::max(metrics.motorAcceleration,length(acceleration));++metrics.neuralMotorSamples;
       const btVector3 torque=body.getInvInertiaTensorWorld().inverse()*bv(acceleration);
-      body.applyTorque(bv(capped(vec(torque),i==1?90.f:12.f)));body.activate();
+      const Vec muscle=capped(vec(torque),i==1?110.f:i>=7?90.f:18.f);
+      body.applyTorque(bv(muscle));base.applyTorque(-bv(muscle));body.activate();base.activate();
     }
     Vec unused;step(dt*.5f,output,unused,metrics);
   }

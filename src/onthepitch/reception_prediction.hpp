@@ -10,8 +10,9 @@ struct Plan {bool valid=false;float time=0,gap=0,height=0;Vec point{};};
 // Scan the same future trajectory the real ball integrator uses, including
 // bounces. A straight horizontal closest-point estimate misses arrivals that
 // enter receiving height later, especially lofted and descending passes.
-template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec velocity,Vec ballVelocity,bool freeBall){
-  Plan best;if(!freeBall)return best;
+template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec velocity,Vec ballVelocity,bool freeBall,float maximumHeight=2.65f){
+  Plan best;if(!freeBall||!std::isfinite(maximumHeight)||maximumHeight<.055f)return best;
+  maximumHeight=std::min(2.65f,maximumHeight);
   const Vec now=ball(0);Vec relative{};float speed2=0,gap2=0,approach=0;
   for(unsigned i=0;i<3;++i){relative[i]=ballVelocity[i]-velocity[i];speed2+=relative[i]*relative[i];if(i<2){const float delta=now[i]-actor[i];gap2+=delta*delta;approach-=delta*relative[i];}}
   const float speed=std::sqrt(speed2),gap=std::sqrt(gap2);
@@ -29,7 +30,7 @@ template<class Predictor> Plan predict(const Predictor &ball,Vec actor,Vec veloc
     // Allow a short adjustment step, with finite acceleration, instead of
     // ignoring a pass just outside the receiver's present footprint.
     const float corridor=.65f+std::min(.95f,2.5f*time*time);
-    if(!std::isfinite(distance)||!std::isfinite(height)||distance>corridor||height<.055f||height>2.65f)continue;
+    if(!std::isfinite(distance)||!std::isfinite(height)||distance>corridor||height<.055f||height>maximumHeight)continue;
     const float rating=distance+.12f*time;
     if(rating<score){score=rating;best={true,time,distance,height,p};}
   }

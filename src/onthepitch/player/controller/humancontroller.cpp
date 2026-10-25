@@ -534,13 +534,22 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
       const bool close=(match->GetBall()->Predict(0)-player->GetPosition()).Get2D().GetLength()<1.25f && match->GetBall()->Predict(0).coords[2]<.45f;
       const float facing=direction.GetDotProduct(player->GetBodyDirectionVec());
       const bool lightHeel=pass.desiredFunctionType==e_FunctionType_ShortPass&&football_rules::userBackheel(facing,player->GetMovement().GetLength(),gauge_ms);
+      if(!lightHeel&&close&&facing<.60f){
+        // Keep the queued receiving/pivot stance looking toward its pass.
+        // The normal ball magnet otherwise turns it back to the ball during
+        // the handoff and starts a second unnecessary pivot.
+        for(auto &movement:commandQueue)if(movement.desiredFunctionType==e_FunctionType_Movement||movement.desiredFunctionType==e_FunctionType_BallControl){
+          movement.useDesiredLookAt=true;movement.desiredLookAt=player->GetPosition()+direction*10.f;
+        }
+      }
       if(lightHeel)turningPass=false;
-      if(!turningPass && !lightHeel && close && facing<-.20f){
+      const bool slowPivot=player->GetMovement().GetLength()<1.8f;
+      if(!turningPass && !lightHeel && close && facing<(slowPivot?.55f:-.20f)){
         turningPass=true;turningPassDirection=direction;turningPassUntil=match->GetActualTime_ms()+1400;
         if(GetConfiguration()->GetBool("training_telemetry",false))printf("PHYSICAL_PASS_TURN t=%lu state=begin\n",match->GetActualTime_ms());
       }
       if(turningPass){
-        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>.40f;
+        const bool aligned=turningPassDirection.GetDotProduct(player->GetBodyDirectionVec())>(slowPivot?.75f:.40f);
         if(!aligned && close && match->GetActualTime_ms()<turningPassUntil){
           for(auto &movement:commandQueue)if(movement.desiredFunctionType==e_FunctionType_Movement||movement.desiredFunctionType==e_FunctionType_BallControl){
             movement.useDesiredLookAt=true;movement.useDesiredMovement=true;

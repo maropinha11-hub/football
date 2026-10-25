@@ -563,7 +563,7 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
     const std::string part=currentAnim->anim->GetVariable("touch_bodypart");
     const bool saveHand=currentAnim->functionType==e_FunctionType_Deflect&&(part=="left_lowerarm"||part=="right_lowerarm");
-    if(UsesTrainingContacts() && currentAnim->touchFrame>=0 && !currentAnim->touchMade && remaining>=0 && remaining<=24 &&
+    if(UsesTrainingContacts() && currentAnim->contactLegOffset.GetLength()<.0001f && currentAnim->touchFrame>=0 && !currentAnim->touchMade && remaining>=0 && remaining<=24 &&
        (part=="right_foot" || part=="left_foot" || part=="head" || part=="trunk" || saveHand)) {
       Quaternion q[13],global[13];Vector3 p[13];
       const unsigned frame=std::min<unsigned>(currentAnim->touchFrame,currentAnim->positions.size()-1);

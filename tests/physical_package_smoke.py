@@ -43,6 +43,8 @@ def main():
             check('full and update use the same executable', exe == patch.read('gameplayfootball.exe'))
             policy=full.read(prefix+'learned-muscle-policy.json')
             model=json.loads(policy)
+            balance=full.read(prefix+'learned-balance-policy.json')
+            check('reduced learned balance planner and continuous-load controls accompany both packages',balance==patch.read('learned-balance-policy.json')==Path('config/learned-balance-policy.json').read_bytes() and json.loads(balance)['result']=='passed' and b'PHYSICAL_CONTINUOUS_PUSH'in exe and full.read(prefix+'LEIA-EQUILIBRIO.txt')==patch.read('LEIA-EQUILIBRIO.txt'))
             check('the trained motor provenance and weights accompany both archives',policy==patch.read('learned-muscle-policy.json')==Path('config/learned-muscle-policy.json').read_bytes() and model['result']=='passed' and model['architecture']['parameters']==18)
             check('learned muscles and CPU protective banks are compiled and documented',all(token in exe for token in [b'ML_MUSCLE',b'PHYSICAL_CPU_BALANCE_BANK',b'CPU_RECEIVE_ORIENT']) and full.read(prefix+'LEIA-CONTROLE-FISICO.txt')==patch.read('LEIA-CONTROLE-FISICO.txt') and b'sem RB nao gasta' in full.read(prefix+'LEIA-FISICA.txt'))
             check('Windows includes procedural support, reception loading and header-specific power',all(token in exe for token in [b'PROCEDURAL_SUPPORT_STEP',b'RECEPTION_BODY_LOAD',b'HEADER_CONTACT_POWER',b'physical_header_load']))

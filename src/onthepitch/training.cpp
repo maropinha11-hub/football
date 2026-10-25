@@ -33,6 +33,15 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
     printf("PHYSICAL_SITUATION_TOGGLE t=%lu enabled=%d\n",time,enabled?1:0);
   }
   const Vector3 side=actor->GetBodyDirectionVec().GetRotated2D((1-int(direction))*.5f*pi);
+  if(events.GetKeyboardState(SDLK_u)){
+    const bool strong=events.GetKeyboardState(SDLK_LSHIFT)||events.GetKeyboardState(SDLK_RSHIFT);
+    const bool overload=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);
+    const float force=overload?900.f:strong?480.f:220.f;
+    // Force integrated at the simulation's fixed 100 Hz, never a repeated
+    // key-down impact. Hold to watch the support yield and recover gradually.
+    body->AddPhysicalImpulse(side*(force*.01f),Vector3(0,0,.30f));
+    if(time%100==0)printf("PHYSICAL_CONTINUOUS_PUSH t=%lu actor=%d force=%.1f direction=%u\n",time,actor->GetID(),force,direction);
+  }
   if(events.ConsumeKeyPress(SDLK_F8)){
     const bool control=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);
     const bool shift=events.GetKeyboardState(SDLK_LSHIFT)||events.GetKeyboardState(SDLK_RSHIFT);
@@ -162,6 +171,9 @@ void Match::LaunchTrainingBall(int delivery) {
   const Vector3 lateral=forward.GetRotated2D(-.5f*pi)*offset;
   Vector3 target=delivery==0 ? root+forward*.55f+lateral+Vector3(0,0,.11f) :
     delivery==1 ? chest+Vector3(0,0,impact?0.f:belly?-.35f:0.f) : root+forward*.18f+Vector3(0,0,1.92f);
+  if(delivery==0&&GetConfiguration()->GetBool("training_physical_lab",false)&&
+      events.GetKeyboardState(SDLK_z))
+    target=root+forward*.04f+lateral*.20f+Vector3(0,0,.11f);
   if(delivery==2&&GetConfiguration()->GetBool("training_physical_lab",false)){
     if(events.GetKeyboardState(SDLK_LSHIFT))target.coords[2]=2.38f;
     else if(events.GetKeyboardState(SDLK_LCTRL))target.coords[2]=2.16f;
@@ -304,7 +316,16 @@ void Match::ProcessTraining() {
     if (keyOnce(SDLK_c)) SpamMessage(pes3Preview->capturedClip(),7000);
   }
   if (keyOnce(SDLK_r)) ResetTraining(trainingExercise);
-  if (keyOnce(SDLK_F2)) ResetTraining(trainingExercise, true);
+  if (keyOnce(SDLK_F2)) {
+    ResetTraining(trainingExercise,true);
+    if(GetConfiguration()->GetBool("training_physical_lab",false)&&events.GetKeyboardState(SDLK_z)){
+      ball->SetPosition(trainingPlayer->GetPosition()+trainingPlayer->GetBodyDirectionVec()*.12f+Vector3(0,0,.112f));
+      ball->SetMomentum(Vector3(0));
+      trainingPlayer->GetTeam()->SetLastTouchPlayer(trainingPlayer,e_TouchType_Intentional_Nonkicked);
+      UpdateLatestMentalImageBallPredictions();
+      printf("CLOSE_CONTROL_LAB t=%lu actor=%d gap=0.12\n",actualTime_ms,trainingPlayer->GetID());
+    }
+  }
   if (keyOnce(SDLK_F3) || keyOnce(SDLK_5)) ResetTraining(4);
   if (keyOnce(SDLK_6)) ResetTraining(5);
   if (keyOnce(SDLK_F4)) LaunchTrainingBall(0);

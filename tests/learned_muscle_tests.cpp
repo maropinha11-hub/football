@@ -1,9 +1,16 @@
 #include "onthepitch/player/humanoid/learned_muscle_policy.hpp"
+#include "onthepitch/player/humanoid/learned_balance_policy.hpp"
 #include "onthepitch/player/analog_locomotion.hpp"
 #include <iostream>
 int main(){
  int failures=0,checks=0;auto check=[&](bool ok,const char *name){++checks;if(!ok){++failures;std::cerr<<"FAIL "<<name<<'\n';}};
  using football_muscle::acceleration;
+ bool supportPolicy=true;for(float speed:{-2.5f,-1.f,0.f,1.f,2.5f})for(float height:{.68f,.9f,1.2f}){
+  float step,hip;football_balance_ml::predict(0,speed,height,.2f,false,step,hip);
+  supportPolicy&=std::isfinite(step)&&std::isfinite(hip)&&std::fabs(step)<=.42f&&std::fabs(hip)<=.32f;
+  if(std::fabs(speed)>1.f)supportPolicy&=step*speed>0;
+ }
+ check(supportPolicy,"trained balance inference proposes bounded reachable steps in the disturbance direction across body heights");
  bool symmetry=true,bounded=true;for(int e=-60;e<=60;++e)for(int v=-120;v<=120;v+=4){const float a=acceleration(e*.01f,v*.1f);bounded&=std::isfinite(a)&&std::fabs(a)<=140.001f;symmetry&=std::fabs(a+acceleration(-e*.01f,-v*.1f))<.0001f;}
  check(symmetry&&bounded,"learned motor is bounded and responds symmetrically to mirrored disturbances");
  check(acceleration(0,0)==0&&acceleration(.12f,0)>0&&acceleration(-.12f,0)<0,"resting muscles stay at rest and a displaced joint pulls toward its reference");

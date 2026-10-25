@@ -88,7 +88,7 @@ int main(int argc,char **argv){
   }
   for(bool reaching:{false,true}){
     PhysicalRig recovery;recovery.configure(bind,1);Input v=standing();
-    v.handTargetActive=reaching;v.handTarget={{.25f,-.20f,1.25f}};v.opponentDistance=reaching?1.f:.50f;
+    v.handTargetActive=reaching;v.handTarget={{.25f,-.20f,1.25f}};v.opponentDistance=reaching?1.f:.30f;
     recovery.step(v);recovery.impulse({{125,0,0}});float stepWeight=0,counter=0;
     for(unsigned i=0;i<80;++i){recovery.step(v);stepWeight=std::max(stepWeight,recovery.metrics().recoveryStep);counter=std::max(counter,recovery.metrics().counterbalance);}
     check(stepWeight==0&&counter>.01f&&finite(recovery),"hand constraints and close bodies retain muscle balance without a conflicting free step");
@@ -140,6 +140,21 @@ int main(int argc,char **argv){
     check(visible>.07f&&boneError(hit,bind)<1e-5f,"a descending ball has a visible shoulder/back reflex through its actual moment arm");
   }
   PhysicalRig rig;Input input=standing();rig.configure(bind,1);
+  {
+    float sink[2]={0,0},knees[2]={0,0},feet=0;
+    for(unsigned strength=0;strength<2;++strength){
+      PhysicalRig strike;strike.configure(bind,1);Input action=standing();action.action=action.touchPending=true;
+      action.situation.kind=football_situations::ActionKind::Shot;action.situation.contactPhase=.6f;
+      action.situation.power=strength?.95f:.1f;action.situation.signedTurn=.7f;
+      for(unsigned tick=0;tick<50;++tick){action.situation.phase=tick*.01f;strike.step(action);
+        sink[strength]=std::max(sink[strength],strike.metrics().supportSink);
+        knees[strength]=std::max(knees[strength],strike.metrics().supportKnee);
+        feet=std::max(feet,strike.metrics().supportFootError);
+      }
+    }
+    check(sink[1]>sink[0]*1.5f&&knees[1]>knees[0]*1.2f,"stronger shots recruit visibly more pelvis and knee preparation before contact");
+    check(feet<.0035f,"whole-body shot preparation keeps both actual support shoes in place");
+  }
   float maximumBoneError=0,peakLean=0,peakCounterbalance=0;
   rig.step(input);const Vec initialLeft=rig.points()[9],initialRight=rig.points()[12];
   rig.impulse({{65,0,0}});
@@ -212,7 +227,8 @@ int main(int argc,char **argv){
   check(supportSinkPeak>.002f&&supportKneePeak>.003f,"a grounded release recruits the pelvis and knees instead of a rigid lower body");
   check(supportFootPeak<.0035f&&supportKneeStep<.008f&&boneError(supported,bind)<1e-5f,"support bends smoothly while preserving planted shoes and bone lengths");
   check(std::hypot(supported.points()[0][0],supported.points()[0][1])<1e-6f,"support compliance never replaces the commanded horizontal root travel");
-  planted.touchPending=true;for(unsigned tick=0;tick<200;++tick)supported.step(planted);
+  planted.touchPending=true;planted.situation.contactMade=false;planted.situation.phase=0;
+  for(unsigned tick=0;tick<200;++tick)supported.step(planted);
   check(supported.metrics().supportSink<.0001f&&supported.metrics().supportTilt<.0001f,"preparing the next ball contact gradually restores the original support pose");
   supported.reset();supported.step(standing());check(supported.metrics().supportSink==0&&supported.metrics().supportTilt==0,"reset clears support compression and its velocities");
   PhysicalRig sourceSupport;sourceSupport.configure(bind,1);Input sourceInput=standing();sourceInput.action=true;sourceSupport.step(sourceInput);

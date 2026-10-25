@@ -73,6 +73,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
                  stage / "situational-motion-catalog.json")
     shutil.copy2(project / "config" / "procedural-strikes.json", stage / "procedural-strikes.json")
     shutil.copy2(project / "config" / "learned-muscle-policy.json", stage / "learned-muscle-policy.json")
+    shutil.copy2(project / "config" / "learned-balance-policy.json", stage / "learned-balance-policy.json")
     shutil.copy2(project / "config" / "muscle-policy-rejected-candidate.json", stage / "muscle-policy-rejected-candidate.json")
     for filename in ["LICENSE", "NOTICE"]:
         shutil.copy2(project / filename, stage / filename)
@@ -83,6 +84,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         shutil.copy2(project / "scripts" / filename, stage / filename)
     shutil.copy2(project / "docs/BASE-APROVADA.md",stage / "LEIA-BASE-APROVADA.txt")
     shutil.copy2(project / "docs/CONTROLE-FISICO-APRENDIDO.md",stage / "LEIA-CONTROLE-FISICO.txt")
+    shutil.copy2(project / "docs/EQUILIBRIO-CONTINUO.md",stage / "LEIA-EQUILIBRIO.txt")
     shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -166,6 +168,9 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         "RT fica reservado no treino; os gestos de sola foram removidos.\n"
         "Na recepcao, mire com o analogico esquerdo e prepare A/X/Y/B antes\n"
         "do contato; apertos repetidos mantem o comando e a direcao escolhida.\n"
+        "Segure U: empurrao continuo; Shift+U: forte; Ctrl+U: sobrecarga.\n"
+        "Z+F4: passe central entre os pes para testar a recepcao.\n"
+        "Z+F2 no treino: bola parada bem perto dos pes para testar a saida.\n"
         "F3: mudar direcao do impacto (direita/frente/esquerda/tras).\n"
         "F8: impacto lateral medio (125 N.s), com tentativa de equilibrio.\n"
         "Shift+F8: impacto forte (190 N.s), para testar passos de recuperacao.\n"
@@ -344,7 +349,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
-                         "learned-muscle-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt",
+                         "learned-muscle-policy.json","learned-balance-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt","LEIA-EQUILIBRIO.txt",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):

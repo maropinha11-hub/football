@@ -19,7 +19,11 @@ try:
   if a.mode=='walk':
    speeds=[]
    for strength in [.35,.50,.68]:
-    reset(g);key(g,'F4',['h','Control_L','Shift_L']);start=len(g.read_log());yaw=g.frames()[-1]['player_yaw'];g.pad(math.cos(yaw)*strength,-math.sin(yaw)*strength);f=g.advance(5000);capture(g,'walk-'+str(strength)+'.png');g.pad(0,0)
+    reset(g);key(g,'F4',['h','Control_L','Shift_L']);start=len(g.read_log());yaw=g.frames()[-1]['player_yaw'];g.pad(math.cos(yaw)*strength,-math.sin(yaw)*strength);f=g.advance(5000);capture(g,'walk-'+str(strength)+'.png')
+    # The screenshot can take several simulation ticks. Measure braking from
+    # the actual release, not a sample taken before that held-input interval.
+    release=g.frames()[-1];g.pad(0,0)
+    stopped=g.advance(650)if strength==.35 else None
     rows=[x for x in visible(g,start)if x['human'] and x['t']>f[0]['t']+800];tail=f[-25:]
     speed=math.dist(tail[0]['player'][:2],tail[-1]['player'][:2])/((tail[-1]['t']-tail[0]['t'])/1000);speeds.append(speed)
     moving=[x for x in rows if min(f,key=lambda frame:abs(frame['t']-x['t']))['speed']>.20]
@@ -37,7 +41,7 @@ try:
     check('off-ball stick '+str(strength)+' has alternating visible swing and grounded support',bool(walk)and all(max(v,default=0)-min(v,default=0)>.02 for v in heights.values())and support>.80,dict(height_ranges={k:[min(v,default=0),max(v,default=0)]for k,v in heights.items()},support_fraction=support))
     check('off-ball stick '+str(strength)+' support feet stay on the pitch rather than sliding at root speed',bool(slip)and statistics.median(slip)<.55,dict(stance_samples=len(slip),median_slip_mps=statistics.median(slip)if slip else None,root_speed=speed))
     if strength==.35:
-     stopped=g.advance(650);drift=math.dist(f[-1]['player'][:2],stopped[-1]['player'][:2])
+     drift=math.dist(release['player'][:2],stopped[-1]['player'][:2])
      check('releasing an ordinary walking stick brakes before the long cycle ends',drift<.25 and stopped[-1]['speed']<.20,dict(drift_m=drift,final_speed=stopped[-1]['speed'],observation_ms=650))
    prepared=[int(x['t'])for x in ev(g,'RESTART_PREPARED')];continuous=[math.dist(x['player'][:2],y['player'][:2])for x,y in zip(f,f[1:])if not any(x['t']-100<=t<=y['t']+100 for t in prepared)]
    check('walking has no unexplained player relocation outside native restart preparation',len(continuous)>30 and max(continuous)<.30,dict(frame_pairs=len(continuous),maximum_displacement=max(continuous,default=999),native_preparations=prepared))

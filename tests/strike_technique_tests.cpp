@@ -52,5 +52,12 @@ int main(){
   auto nearMiss=[](unsigned ms){return football_reception::Vec{{4-8*ms*.001f,1.25f,.15f}};};
   check(football_reception::predict(nearMiss,{{0,0,0}},{{0,0,0}},{{-8,0,0}},true).valid,"receiver takes a reachable adjustment step for an off-centre pass");
   check(!football_reception::predict(nearMiss,{{0,-1,0}},{{0,0,0}},{{-8,0,0}},true).valid,"receiver cannot invent a two-metre side contact");
+  auto descending=[](unsigned ms){return football_reception::Vec{{.2f,0,3.f-4.f*ms*.001f}};};
+  const auto high=football_reception::predict(descending,{{0,0,0}},{{0,0,0}},{{0,0,-4}},true);
+  const auto reachable=football_reception::predict(descending,{{0,0,0}},{{0,0,0}},{{0,0,-4}},true,2.25f);
+  check(high.valid&&reachable.valid&&reachable.height<=2.25f&&reachable.time>high.time,
+    "a shorter receiver waits for its reachable height rather than chasing a point above its jump");
+  check(!football_reception::predict(descending,{{0,0,0}},{{0,0,0}},{{0,0,-4}},true,-1.f).valid,
+    "invalid receiving height cannot create a physical interception");
   std::cout<<"{\"result\":\""<<(failures?"failed":"passed")<<"\",\"checks\":"<<checks<<",\"failures\":"<<failures<<"}\n";return failures?1:0;
 }

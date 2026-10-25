@@ -177,19 +177,21 @@ void PhysicalRig::step(const Input &input,float dt){
     const float phase=bounded(c.phase,0,1),at=bounded(c.contactPhase,.12f,.88f);
     const float release=c.enabled&&c.kind!=football_situations::ActionKind::None&&c.contactMade?
       smooth((phase-at+.08f)/.20f)*smooth((1-phase)/.30f):0;
-    const float load=release*(.25f+.75f*bounded(std::max(c.power,c.difficulty),0,1));
+    const bool groundStrike=c.enabled&&(c.kind==football_situations::ActionKind::Pass||c.kind==football_situations::ActionKind::Shot||c.kind==football_situations::ActionKind::Cross)&&c.ball[2]<-.50f;
+    const float preparation=groundStrike?smooth(phase/std::max(.08f,at*.75f))*(1-smooth((phase-at)/.35f)):0;
+    const float load=std::max(release,preparation)*(.25f+.75f*bounded(std::max(c.power,c.difficulty),0,1));
     const float plant=1-smooth((std::min(positions[9][2],positions[12][2])-.14f)/.12f);
-    const float freedom=input.upperReception||input.staggering||input.touchPending?0.f:plant;
-    Vec wantedSupport=addPoint(scalePoint(balance->lean(),.35f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.012f));
-    const Vec localRelease{{-.015f*load,.020f*load*bounded(c.signedTurn,-1,1),0}};
+    const float freedom=input.upperReception||input.staggering||(input.touchPending&&!groundStrike)?0.f:plant;
+    Vec wantedSupport=addPoint(scalePoint(balance->lean(),.72f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.012f));
+    const Vec localRelease{{-(.015f+.035f*preparation)*load,.035f*load*bounded(c.signedTurn,-1,1),.065f*load*bounded(c.signedTurn,-1,1)}};
     wantedSupport=capped(scalePoint(addPoint(wantedSupport,rotatePoint(input.pose[0],localRelease)),freedom),.12f);
     const Vec supportAcceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedSupport,supportTilt),100),scalePoint(supportTiltVelocity,20)),3.f);
     supportTiltVelocity=capped(addPoint(supportTiltVelocity,scalePoint(supportAcceleration,dt)),.55f);
     supportTilt=capped(addPoint(supportTilt,scalePoint(supportTiltVelocity,dt)),.12f);
-    const float wantedSink=freedom*std::min(.022f,.014f*load+.012f*debug.balanceRisk+.002f*debug.effort);
+    const float wantedSink=freedom*std::min(.038f,.014f*load+.032f*debug.balanceRisk+.002f*debug.effort);
     const float sinkAcceleration=bounded(100*(wantedSink-supportSink)-20*supportSinkVelocity,-.5f,.5f);
     supportSinkVelocity=bounded(supportSinkVelocity+sinkAcceleration*dt,-.055f,.055f);
-    supportSink=bounded(supportSink+supportSinkVelocity*dt,0,.022f);
+    supportSink=bounded(supportSink+supportSinkVelocity*dt,0,.038f);
   }
   if(state==Mode::Active && (forcedFall || lostBalance)){
     state=Mode::Falling;stateAge=settled=0;
@@ -252,14 +254,18 @@ void PhysicalRig::step(const Input &input,float dt){
 }
 void PhysicalRig::updateSupportStep(const Input &input,const Points &source,float dt,float impulseSize){
   stepCooldown=std::max(0.f,stepCooldown-dt);
-  const bool available=!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering&&!input.gripped&&!input.handTargetActive&&input.opponentDistance>.65f&&length(input.velocity)<4.8f;
+  const bool available=!input.action&&!input.touchPending&&!input.upperReception&&!input.staggering&&!input.gripped&&!input.handTargetActive&&input.opponentDistance>.35f&&length(input.velocity)<4.8f;
   // A free support step must not compete with an anchored hand or step
   // through a close body. Those constraints retain upper-body balance.
   // A fresh external impulse or a sustained capture-point deficit can require
   // a new support. Neither the animation bank nor the ball supplies this target.
   if(recoveryFoot<0&&stepCooldown<=0&&available&&balance->stepDemand>.045f&&
      (impulseSize>45.f||balance->risk>.30f)&&std::min(source[9][2],source[12][2])<.22f){
-    const Vec direction=unit(balance->remainingImpulse(),input.forward);
+    Vec direction=unit(balance->remainingImpulse(),input.forward);
+    if(input.opponentDistance<.80f){
+      const Vec toward=unit(input.opponent,input.forward);
+      if(dotPoint(direction,toward)>0)direction=unit(subtractPoint(direction,scalePoint(toward,dotPoint(direction,toward)+.25f)),scalePoint(toward,-1));
+    }
     const Vec lateral=rotatePoint(input.pose[0],{{1,0,0}});
     const float side=dotPoint(direction,lateral);
     recoveryFoot=std::fabs(side)>.25f?(side>0?0:1):
@@ -426,10 +432,26 @@ void PhysicalRig::evaluate(const Input &input){
       // Bullet's own constraint was valid. Free falls still use full dynamics.
       const bool arm=i>=3;
       if(!arm&&input.touchPending&&input.situation.kind==football_situations::ActionKind::Header)continue;
-      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.22f:i==1?.28f:.18f);
-      local[i]=normalized(productRotation(exponential(scalePoint(error,arm?.48f:.80f)),local[i]));
+      const Vec error=capped(logarithm(productRotation(physicalUpper[i],inverseRotation(local[i]))),arm?.20f:i==1?.24f:.14f);
+      // Preserve authored locomotion swing at rest. Dynamics add compliance
+      // under actual load, instead of a permanent hunched/locked arm pose.
+      const float loading=bounded(debug.balanceRisk*1.8f+length(sway)*2.f+length(impactReflex)*3.f,0,1);
+      const float gain=arm?.08f+.50f*loading:.15f+.55f*loading;
+      local[i]=normalized(productRotation(exponential(scalePoint(error,gain)),local[i]));
     }
     forwardKinematics();
+    if(!input.action&&!input.touchPending&&!input.staggering){
+      const Vec shoes[2]={positions[9],positions[12]};
+      const float loading=bounded(debug.balanceRisk*1.8f+length(sway)*2.f,0,1);
+      for(unsigned bone:{7u,8u,10u,11u}){
+        const Vec error=capped(logarithm(productRotation(physicalUpper[bone],inverseRotation(local[bone]))),.14f);
+        local[bone]=normalized(productRotation(exponential(scalePoint(error,.60f*loading)),local[bone]));
+      }
+      forwardKinematics();
+      // Dynamic knee/pelvic response can alter the bend plane, but the
+      // support shoe keeps its real target and every segment keeps its length.
+      solveLeg(7,shoes[0],1e-5f);solveLeg(10,shoes[1],1e-5f);
+    }
   }
   if(handEnvelope>.002f && !input.upperReception && !input.action){
     if(!handInitialized){handShoulder=length(subtractPoint(input.handTarget,positions[3]))<length(subtractPoint(input.handTarget,positions[5]))?3:5;handPose[0]=local[handShoulder];handPose[1]=local[handShoulder+1];handInitialized=true;}
