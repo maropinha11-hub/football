@@ -133,8 +133,11 @@ void Match::LaunchTrainingBall(int delivery) {
       const float distance=(mate->GetPosition()-trainingPlayer->GetPosition()).Get2D().GetLength();
       if(distance<closest){closest=distance;player=mate;}
     }
-    const Vector3 front=trainingPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
-    const Vector3 spot=trainingPlayer->GetPosition().Get2D()+front.GetRotated2D(.5f*pi)*3.f;
+    const bool boundary=GetConfiguration()->GetBool("training_physical_lab",false)&&events.GetKeyboardState(SDLK_b);
+    const Vector3 front=boundary?Vector3(0,-1,0):trainingPlayer->GetBodyDirectionVec().Get2D().GetNormalized(Vector3(1,0,0));
+    const float boundarySide=GetConfiguration()->GetReal("training_boundary_side",1.f)<0?-1.f:1.f;
+    const Vector3 spot=boundary?Vector3(boundarySide*(pitchHalfW-.08f),12,0):
+      trainingPlayer->GetPosition().Get2D()+front.GetRotated2D(.5f*pi)*3.f;
     player->ResetPosition(spot,spot+front*10.f);
     std::vector<Player*> actors;GetTeam(0)->GetActivePlayers(actors);GetTeam(1)->GetActivePlayers(actors);
     for(auto *actor:actors)if(actor!=player&&actor!=trainingPlayer&&actor->GetFormationEntry().role!=e_PlayerRole_GK&&
@@ -202,6 +205,7 @@ void Match::LaunchTrainingBall(int delivery) {
       delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
   printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d actor=%d\n",
     delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0,player->GetID());
+  if(cpu&&events.GetKeyboardState(SDLK_b))printf("BOUNDARY_RECEIVE_SETUP t=%lu actor=%d distance_to_line=%.5f\n",actualTime_ms,player->GetID(),pitchHalfW-std::fabs(target.coords[0]));
   fflush(stdout);
 }
 

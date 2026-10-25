@@ -9,6 +9,7 @@
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../physical_match_rules.hpp"
 #include "../../reception_prediction.hpp"
+#include "../../pass_flight.hpp"
 
 #include "../../../main.hpp"
 #include "../../../hid/gamepad.hpp"
@@ -192,7 +193,9 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredMovement = false;
         command.useDesiredLookAt = false;
 
-        float inputPower = clamp(pow(gaugeFactor, 0.65f), 0.01f, 1.0f);
+        float inputPower = player->GetHumanoid()->PhysicalRigEnabled()?football_pass::chargedRange(std::max(10,gauge_ms),false)/60.f:
+          clamp(pow(gaugeFactor, 0.65f), 0.01f, 1.0f);
+        command.touchInfo.charge_ms=std::max(10,gauge_ms);
         command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_throughpass_autodirection", _default_ThroughPass_AutoDirection);
@@ -209,7 +212,9 @@ void HumanController::RequestCommand(PlayerCommandQueue &commandQueue) {
         command.useDesiredMovement = false;
         command.useDesiredLookAt = false;
 
-        float inputPower = clamp(pow(gaugeFactor, 0.55f), 0.01f, 1.0f);
+        float inputPower = player->GetHumanoid()->PhysicalRigEnabled()?football_pass::chargedRange(std::max(10,gauge_ms),true)/60.f:
+          clamp(pow(gaugeFactor, 0.55f), 0.01f, 1.0f);
+        command.touchInfo.charge_ms=std::max(10,gauge_ms);
         command.touchInfo.inputDirection = TrainingEnabled() && match->TrainingReceivingBall() ? GetDirection() : inputDirection;
         command.touchInfo.inputPower = inputPower;
         command.touchInfo.autoDirectionBias = GetConfiguration()->GetReal("gameplay_highpass_autodirection", _default_HighPass_AutoDirection);

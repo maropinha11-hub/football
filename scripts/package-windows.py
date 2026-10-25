@@ -59,7 +59,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     if approved_binary is not None:
         stripped.write_bytes(approved_binary)
     else:
-        subprocess.run([stripper, "--strip-debug", "-o", str(stripped), str(executable)], check=True)
+        subprocess.run([stripper, "--preserve-dates", "--strip-debug", "-o", str(stripped), str(executable)], check=True)
 
     for entry in (project / "data").iterdir():
         if entry.name == "pes3":
@@ -85,6 +85,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "docs/BASE-APROVADA.md",stage / "LEIA-BASE-APROVADA.txt")
     shutil.copy2(project / "docs/CONTROLE-FISICO-APRENDIDO.md",stage / "LEIA-CONTROLE-FISICO.txt")
     shutil.copy2(project / "docs/EQUILIBRIO-CONTINUO.md",stage / "LEIA-EQUILIBRIO.txt")
+    shutil.copy2(project / "docs/fluid-reception-research.json",stage / "fluid-reception-research.json")
     shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -349,7 +350,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
-                         "learned-muscle-policy.json","learned-balance-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt","LEIA-EQUILIBRIO.txt",
+                         "learned-muscle-policy.json","learned-balance-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt","LEIA-EQUILIBRIO.txt","fluid-reception-research.json",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):
             output.write(stage/filename,filename)
         for filename in ("LICENSE","NOTICE","BULLET-LICENSE.txt","MOTION-MATCHING-LICENSE.txt"):

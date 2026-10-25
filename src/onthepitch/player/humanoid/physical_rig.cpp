@@ -167,9 +167,9 @@ void PhysicalRig::step(const Input &input,float dt){
       wanted=addPoint(scalePoint(crossPoint({{0,0,1}},filteredAcceleration),cut*.022f),scalePoint(balance->lean(),.60f));
       wanted=capped(wanted,.16f);
     }
-    const Vec response=capped(subtractPoint(scalePoint(subtractPoint(wanted,counterTilt),144.f),scalePoint(counterTiltVelocity,24.f)),12.f);
+    const Vec response=capped(subtractPoint(scalePoint(subtractPoint(wanted,counterTilt),100.f),scalePoint(counterTiltVelocity,20.f)),12.f);
     counterTiltVelocity=capped(addPoint(counterTiltVelocity,scalePoint(response,dt)),.9f);
-    counterTilt=capped(addPoint(counterTilt,scalePoint(counterTiltVelocity,dt)),.16f);
+    counterTilt=capped(addPoint(counterTilt,scalePoint(counterTiltVelocity,dt)),.19f);
     // Muscular support compresses the stance under load. The animation still
     // owns travel and timing; this response is integrated once per physics
     // tick, then both animated shoes are pinned by two-bone IK in evaluate().
@@ -185,7 +185,7 @@ void PhysicalRig::step(const Input &input,float dt){
     Vec wantedSupport=addPoint(scalePoint(balance->lean(),.72f),scalePoint(crossPoint({{0,0,1}},filteredAcceleration),.012f));
     const Vec localRelease{{-(.015f+.035f*preparation)*load,.035f*load*bounded(c.signedTurn,-1,1),.065f*load*bounded(c.signedTurn,-1,1)}};
     wantedSupport=capped(scalePoint(addPoint(wantedSupport,rotatePoint(input.pose[0],localRelease)),freedom),.12f);
-    const Vec supportAcceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedSupport,supportTilt),100),scalePoint(supportTiltVelocity,20)),3.f);
+    const Vec supportAcceleration=capped(subtractPoint(scalePoint(subtractPoint(wantedSupport,supportTilt),81),scalePoint(supportTiltVelocity,18)),3.f);
     supportTiltVelocity=capped(addPoint(supportTiltVelocity,scalePoint(supportAcceleration,dt)),.55f);
     supportTilt=capped(addPoint(supportTilt,scalePoint(supportTiltVelocity,dt)),.12f);
     const float wantedSink=freedom*std::min(.038f,.014f*load+.032f*debug.balanceRisk+.002f*debug.effort);
@@ -436,7 +436,7 @@ void PhysicalRig::evaluate(const Input &input){
       // Preserve authored locomotion swing at rest. Dynamics add compliance
       // under actual load, instead of a permanent hunched/locked arm pose.
       const float loading=bounded(debug.balanceRisk*1.8f+length(sway)*2.f+length(impactReflex)*3.f,0,1);
-      const float gain=arm?.08f+.50f*loading:.15f+.55f*loading;
+      const float gain=arm?.12f+.56f*loading:.20f+.60f*loading;
       local[i]=normalized(productRotation(exponential(scalePoint(error,gain)),local[i]));
     }
     forwardKinematics();

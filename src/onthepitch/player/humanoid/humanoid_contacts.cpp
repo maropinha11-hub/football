@@ -12,6 +12,8 @@
 #include "utils/animationextensions/footballanimationextension.hpp"
 #include <cmath>
 #include <limits>
+#include <chrono>
+#include <stdexcept>
 
 namespace {
 std::string skinPart(const std::string &part) {
@@ -36,8 +38,8 @@ Quaternion rotationBetween(const Vector3 &from,const Vector3 &to) {
 }
 float ease(float t) {t=clamp(t,0.0f,1.0f);return t*t*(3-2*t);}
 Vector3 triangleClosest(const Vector3 &p,const Vector3 *t) {
-  Vector3 result=t[0];float best=(p-result).GetLength();
-  auto consider=[&](const Vector3 &q){const float d=(p-q).GetLength();if(d<best){best=d;result=q;}};
+  Vector3 result=t[0];float best=(p-result).GetSquaredLength();
+  auto consider=[&](const Vector3 &q){const float d=(p-q).GetSquaredLength();if(d<best){best=d;result=q;}};
   const Vector3 ab=t[1]-t[0],ac=t[2]-t[0],ap=p-t[0];
   const float aa=ab.GetDotProduct(ab),bb=ac.GetDotProduct(ac),cross=ab.GetDotProduct(ac);
   const float det=aa*bb-cross*cross;
@@ -86,6 +88,7 @@ bool HumanoidBase::TackleLegContact(const HumanoidBase &victim,Vector3 &point)co
 
 void HumanoidBase::CaptureContactMesh() {
   if(PlayerMatchEnabled() && !UsesTrainingContacts() && !PhysicalRigEnabled())return;
+  contactTriangles.clear();contactVertices.clear();contactVertexIndices.clear();contactParts.clear();
   contactJointBone.fill(-1);
   for(unsigned j=0;j<joints.size();++j)for(unsigned i=0;i<13;++i)
     if(joints[j].node->GetName()==pes3::nativeBoneNames[i])contactJointBone[j]=int(i);
@@ -93,6 +96,15 @@ void HumanoidBase::CaptureContactMesh() {
   geometry->resourceMutex.lock();
   const auto &meshes=geometry->GetResource()->GetTriangleMeshesRef();
   for(unsigned m=0;m<meshes.size();++m) {
+    const unsigned base=contactVertices.size();
+    for(const auto &v:weightedVerticesVec[m]) {
+      const float *data=&uniqueFullbodyMesh[m].data[v.vertexID*3];
+      const Vector3 original(data[0],data[1],data[2]);
+      std::vector<ContactInfluence> influences;
+      for(const auto &b:v.bones)if(contactJointBone[b.jointID]>=0)
+        influences.push_back({unsigned(contactJointBone[b.jointID]),original-joints[b.jointID].origPos*zMultiplier,b.weight});
+      contactVertices.push_back(std::move(influences));
+    }
     const auto &indices=meshes[m].indices;
     for(unsigned t=0;t+2<indices.size();t+=3) {
       float weights[13]={};
@@ -101,7 +113,20 @@ void HumanoidBase::CaptureContactMesh() {
       }
       const unsigned dominant=std::max_element(weights,weights+13)-weights;
       const std::string part=dominant<=1?"middle":pes3::nativeBoneNames[dominant];
-      if(!part.empty())contactTriangles.push_back({m,{{indices[t],indices[t+1],indices[t+2]}},part});
+      if(!part.empty()) {
+        const unsigned index=contactTriangles.size();
+        contactTriangles.push_back({m,{{indices[t],indices[t+1],indices[t+2]}},part});
+        contactVertexIndices.push_back({{base+indices[t],base+indices[t+1],base+indices[t+2]}});
+        contactParts[""].push_back(index);contactParts[part].push_back(index);
+        if(part=="middle") {
+          float height=0,forward=0;
+          for(unsigned c=0;c<3;++c){
+            height+=uniqueFullbodyMesh[m].data[indices[t+c]*3+2]/(3*zMultiplier);
+            forward-=uniqueFullbodyMesh[m].data[indices[t+c]*3+1]/(3*zMultiplier);
+          }
+          if(height>=1.23f&&height<=1.52f&&forward>=.015f)contactParts["chest"].push_back(index);
+        }
+      }
     }
   }
   geometry->resourceMutex.unlock();
@@ -347,7 +372,8 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
     const float amount=football_physics::smooth(phase/contact)*
       (1-football_physics::smooth((phase-contact)/18.f));
     const bool right=animation->GetVariable("touch_bodypart")=="right_foot";
-    FitContactLeg(right?1:0,currentAnim->contactLegOffset.GetRotated2D(facing)*amount,local,global,positions);
+    FitContactReach(right?1:0,currentAnim->contactLegOffset.GetRotated2D(facing)*amount,
+      currentAnim->contactPelvisLowering*amount,local,global,positions);
   }
   if(PhysicalRigEnabled()&&animation->GetAnimType()=="deflect"){
     // Save markers and reach planning must use the same anatomical arms as
@@ -372,6 +398,58 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
 }
 
 float HumanoidBase::ContactSurface(const Vector3 &point,const std::string &requested,const Quaternion *global,
+    const Vector3 *positions,Vector3 *closest,std::string *hitPart) const {
+  if(GetConfiguration()->GetBool("training_contact_reference",false))
+    return ContactSurfaceReference(point,requested,global,positions,closest,hitPart);
+  const bool verify=GetConfiguration()->GetBool("training_contact_verify",false);
+  const auto started=verify?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
+  const auto group=contactParts.find(skinPart(requested));
+  // Scratch belongs to the calling thread: rendering and simulation can
+  // query different poses of the same actor concurrently. Never cache a
+  // posed skin in shared actor state.
+  struct Scratch { std::vector<Vector3> vertices;std::vector<unsigned> stamps;unsigned generation=0; };
+  static thread_local Scratch scratch;
+  scratch.vertices.resize(contactVertices.size());scratch.stamps.resize(contactVertices.size(),0);
+  if(++scratch.generation==0){std::fill(scratch.stamps.begin(),scratch.stamps.end(),0);++scratch.generation;}
+  float best=100.f;Vector3 surface;std::string part;
+  if(group!=contactParts.end())for(unsigned index:group->second) {
+    Vector3 triangle[3];
+    for(unsigned c=0;c<3;++c){
+      const unsigned vertex=contactVertexIndices[index][c];
+      if(scratch.stamps[vertex]!=scratch.generation){
+        Vector3 p(0);
+        for(const auto &influence:contactVertices[vertex])
+          p+=(global[influence.bone]*influence.local+positions[influence.bone])*influence.weight;
+        scratch.vertices[vertex]=p;scratch.stamps[vertex]=scratch.generation;
+      }
+      triangle[c]=scratch.vertices[vertex];
+    }
+    const Vector3 q=triangleClosest(point,triangle);const float d=(point-q).GetLength();
+    if(d<best){best=d;surface=q;part=contactTriangles[index].part;}
+  }
+  const float gap=best-.11f;
+  if(best<100.f){if(closest)*closest=surface;if(hitPart)*hitPart=part;}
+  if(verify){
+    const auto optimized=std::chrono::steady_clock::now();Vector3 reference;std::string referencePart;
+    const float old=ContactSurfaceReference(point,requested,global,positions,&reference,&referencePart);
+    const auto ended=std::chrono::steady_clock::now();
+    const float error=std::fabs(gap-old);
+    const float positionError=best<100.f?(surface-reference).GetLength():0.f;
+    if(error>.00001f || positionError>.0001f){
+      fprintf(stderr,"CONTACT_SKIN_MISMATCH part=%s gap=%.9f reference=%.9f error=%.9f position_error=%.9f fast=[%.7f,%.7f,%.7f] old=[%.7f,%.7f,%.7f] vertices=%zu\n",requested.c_str(),gap,old,error,positionError,surface.coords[0],surface.coords[1],surface.coords[2],reference.coords[0],reference.coords[1],reference.coords[2],contactVertices.size());
+      throw std::runtime_error("indexed contact skin differs from reference");
+    }
+    struct Profile { unsigned count=0;double fast=0,reference=0;float error=0; };
+    static thread_local Profile profile;
+    ++profile.count;profile.error=std::max(profile.error,error);
+    profile.fast+=std::chrono::duration<double,std::micro>(optimized-started).count();
+    profile.reference+=std::chrono::duration<double,std::micro>(ended-optimized).count();
+    if(profile.count%2000==0)printf("CONTACT_SKIN_PROFILE samples=%u optimized_us=%.5f reference_us=%.5f max_error=%.9f\n",profile.count,profile.fast/profile.count,profile.reference/profile.count,profile.error);
+  }
+  return gap;
+}
+
+float HumanoidBase::ContactSurfaceReference(const Vector3 &point,const std::string &requested,const Quaternion *global,
     const Vector3 *positions,Vector3 *closest,std::string *hitPart) const {
   const std::string part=skinPart(requested);
   float best=100;
@@ -420,6 +498,25 @@ void HumanoidBase::FitContactLeg(unsigned side,const Vector3 &offset,Quaternion 
   local[knee]=(thigh.GetInverse()*shin).GetNormalized();
   local[ankle]=(shin.GetInverse()*shoe).GetNormalized();
   ContactForwardKinematics(local,global,positions);
+}
+
+// Lower the hips only as far as the fixed-length reach needs. The other
+// shoe stays planted; sampling, feasibility and rendering share this solver.
+float HumanoidBase::FitContactReach(unsigned side,const Vector3 &offset,float lowering,
+    Quaternion *local,Quaternion *global,Vector3 *positions) const {
+  const unsigned hip=side?10:7,ankle=hip+2,support=side?9:12;
+  const Vector3 target=positions[ankle]+offset,planted=positions[support];
+  if(lowering<0){
+    const float reach=(positions[hip+1]-positions[hip]).GetLength()+
+      (positions[ankle]-positions[hip+1]).GetLength()-.002f;
+    const float horizontal=(target-positions[hip]).Get2D().GetSquaredLength();
+    const float vertical=std::sqrt(std::max(0.f,reach*reach-horizontal));
+    lowering=clamp(positions[hip].coords[2]-target.coords[2]-vertical,0.f,.055f*zMultiplier);
+  }
+  positions[0].coords[2]-=lowering;ContactForwardKinematics(local,global,positions);
+  FitContactLeg(1-side,planted-positions[support],local,global,positions);
+  FitContactLeg(side,target-positions[ankle],local,global,positions);
+  return lowering;
 }
 
 Vector3 HumanoidBase::GetStandingChestTarget() const {

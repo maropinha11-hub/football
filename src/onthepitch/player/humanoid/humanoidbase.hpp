@@ -105,6 +105,7 @@ struct Anim {
   signed int touchFrame;
   bool touchMade;
   Vector3 contactLegOffset = Vector3(0); // body-local, planned before selection
+  float contactPelvisLowering = 0;
   float radiusOffset;
   Vector3 touchPos;
 
@@ -290,6 +291,7 @@ class HumanoidBase {
     float ContactSurface(const Vector3 &ballPosition, const std::string &part, const Quaternion *global,
                          const Vector3 *positions, Vector3 *closest = nullptr, std::string *hitPart = nullptr) const;
     void FitContactLeg(unsigned side, const Vector3 &offset, Quaternion *local, Quaternion *global, Vector3 *positions) const;
+    float FitContactReach(unsigned side, const Vector3 &offset, float lowering, Quaternion *local, Quaternion *global, Vector3 *positions) const;
     void PutTrainingContactPose();
     void PutTrainingHeadLook();
     void AimTrainingHead(Quaternion *local, Quaternion *global, Vector3 *positions, const Vector3 &look) const;
@@ -416,6 +418,12 @@ class HumanoidBase {
     TemporalSmoother<Quaternion> buf_dribbleFacing;
     struct ContactTriangle { unsigned mesh; std::array<unsigned,3> vertices; std::string part; };
     std::vector<ContactTriangle> contactTriangles;
+    struct ContactInfluence { unsigned bone; Vector3 local; float weight; };
+    std::vector<std::vector<ContactInfluence>> contactVertices;
+    std::vector<std::array<unsigned,3>> contactVertexIndices;
+    std::map<std::string,std::vector<unsigned>> contactParts;
+    float ContactSurfaceReference(const Vector3 &point, const std::string &requested, const Quaternion *global,
+        const Vector3 *positions, Vector3 *closest, std::string *hitPart) const;
     std::array<int,13> contactJointBone{};
     std::unique_ptr<Animation> chestAnimation;
     float chestContactFrame = 33.333f;

@@ -161,6 +161,9 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
     s.previousReference[i]=reference;s.previousReferenceVelocity[i]=referenceVelocity[i];
   }
   s.referenceReady=true;
+  // Quiet active tracking needs fewer constraint iterations than an impact
+  // or a free fall. Keep the same 100 Hz tick and both physics substeps.
+  s.dynamics.getSolverInfo().m_numIterations=(length(impulse)>.01f||metrics.balanceRisk>.15f)?24:12;
   if(length(impulse)>0)s.bodies[2]->applyImpulse(bv(scalePoint(impulse,.35f)),btVector3(0,0,.12f));
   for(unsigned sub=0;sub<2;++sub){
     for(unsigned i=0;i<13;++i)if(i==0 || i==9 || i==12){

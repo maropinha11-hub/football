@@ -687,6 +687,7 @@ void Humanoid::Process() {
 
         float zcurve = 0.0f;
         Vector3 touchVec = ballDirection * 36 * (ballPower + 0.3f);
+        const Vector3 plannedPass=touchVec;
 
         if (_PassFiddlingEnabled()) {
           //SetGreenDebugPilon(match->GetBall()->Predict(0).Get2D() + touchVec.Get2D() * 0.4f);
@@ -707,6 +708,18 @@ void Humanoid::Process() {
         }
 
         touchVec = touchVec * (1.0f - bumpyRideBias) + currentBallVec * bumpyRideBias;
+        if(PhysicalRigEnabled()&&currentAnim->anim->GetVariable("touch_bodypart")!="head"&&
+            (currentAnim->functionType==e_FunctionType_HighPass||currentAnim->functionType==e_FunctionType_LongPass)){
+          // Preserve the range estimate through native incoming-momentum and
+          // difficulty blending. Direction/technique errors remain, but a
+          // small target adjustment cannot double or collapse release speed.
+          const float planned=plannedPass.Get2D().GetLength();
+          const float speed=clamp(touchVec.Get2D().GetLength(),planned*.92f,planned*1.08f);
+          touchVec=touchVec.Get2D().GetNormalized(ballDirection)*speed+
+            Vector3(0,0,clamp(touchVec.coords[2],plannedPass.coords[2]-.35f,plannedPass.coords[2]+.35f));
+          if(GetConfiguration()->GetBool("training_telemetry",false))printf("PASS_FLIGHT_RELEASE t=%lu actor=%d function=%d planned=%.5f actual=%.5f vz=%.5f charge=%u\n",
+            match->GetActualTime_ms(),player->GetID(),int(currentAnim->functionType),planned,speed,touchVec.coords[2],currentAnim->originatingCommand.touchInfo.charge_ms);
+        }
         if (player->GetDebug() && bumpyRideBias > 0.01f) printf("bumpyridebias (pass): %f\n", bumpyRideBias);
         if(UsesTrainingContacts()&&player->GetExternalController()&&currentAnim->functionType==e_FunctionType_ShortPass&&currentAnim->anim->GetVariable("touch_bodypart")!="head"){
           const unsigned charge=currentAnim->originatingCommand.touchInfo.charge_ms;
@@ -1369,7 +1382,7 @@ void Humanoid::SelectRetainAnim() {
   currentAnim->id = *dataSet.begin();
   currentAnim->frameNum = 0;
   currentAnim->touchFrame = -1;
-  currentAnim->contactLegOffset=Vector3(0);
+  currentAnim->contactLegOffset=Vector3(0);currentAnim->contactPelvisLowering=0;
   currentAnim->fullActionSmuggle = Vector3(0);
   currentAnim->actionSmuggle = Vector3(0);
   currentAnim->actionSmuggleOffset = Vector3(0);
@@ -2120,7 +2133,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   int touchFrame_tmp = -1;
   float radiusOffset_tmp = 0.0f;
   Vector3 touchPos_tmp;
-  Vector3 contactLegOffset_tmp(0);
+  Vector3 contactLegOffset_tmp(0);float contactPelvisLowering_tmp=0;
   Vector3 fullActionSmuggle_tmp;
   Vector3 actionSmuggle_tmp;
   radian rotationSmuggle_tmp = 0;
@@ -2152,14 +2165,14 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   else if (command.desiredFunctionType == e_FunctionType_BallControl) {
     if (NeedTouch(*dataSet.begin(), command)) {
       float hasteFactor = GetHasteFactor(false);
-      selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
+      selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, contactPelvisLowering_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
     }
   }
   else if (command.desiredFunctionType == e_FunctionType_Trap ||
            command.desiredFunctionType == e_FunctionType_Interfere ||
            command.desiredFunctionType == e_FunctionType_Deflect) {
     float hasteFactor = GetHasteFactor(false);
-    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
+    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, contactPelvisLowering_tmp, hasteFactor, localInterruptAnim, preferPassAndShot);
     if(selectedAnimID<0&&PlayerMatchEnabled()&&command.desiredFunctionType==e_FunctionType_Deflect&&
        CastPlayer()->GetFormationEntry().role==e_PlayerRole_GK&&match->GetActualTime_ms()>=physicalKeeperAttemptUntil&&
        currentAnim->functionType!=e_FunctionType_Deflect&&(currentAnim->touchFrame<0||currentAnim->touchMade)&&
@@ -2224,7 +2237,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
            command.desiredFunctionType == e_FunctionType_HighPass ||
            command.desiredFunctionType == e_FunctionType_Shot) {
     float hasteFactor = GetHasteFactor(false);
-    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, hasteFactor, localInterruptAnim);
+    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, contactPelvisLowering_tmp, hasteFactor, localInterruptAnim);
 /*
     if (player->GetDebug()) {
       if (CastPlayer()->AllowLastDitch()) printf("  * lastditch allowed\n");
@@ -2238,7 +2251,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   }
   else if (command.desiredFunctionType == e_FunctionType_Sliding) {
     float hasteFactor = GetHasteFactor(false);
-    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, hasteFactor, localInterruptAnim);
+    selectedAnimID = GetBestCheatableAnimID(dataSet, command.useDesiredMovement, command.desiredDirection, command.desiredVelocityFloat, command.useDesiredLookAt, desiredBodyDirectionRel, positions_tmp, touchFrame_tmp, radiusOffset_tmp, touchPos_tmp, fullActionSmuggle_tmp, actionSmuggle_tmp, rotationSmuggle_tmp, contactLegOffset_tmp, contactPelvisLowering_tmp, hasteFactor, localInterruptAnim);
     if (selectedAnimID == -1) {
       if (dataSet.size() > 0) {
         selectedAnimID = *dataSet.begin();
@@ -2306,6 +2319,9 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     currentAnim->touchFrame = touchFrame_tmp;
     currentAnim->touchMade = false;
     currentAnim->contactLegOffset = touchFrame_tmp>=0?contactLegOffset_tmp:Vector3(0);
+    currentAnim->contactPelvisLowering=touchFrame_tmp>=0?contactPelvisLowering_tmp:0;
+    if(PhysicalRigEnabled()&&GetConfiguration()->GetBool("training_telemetry",false)&&contactLegOffset_tmp.GetLength()>.001f)
+      printf("NATIVE_REACH_PLAN t=%lu actor=%d function=%d frame=%d offset=%.5f pelvis_lowering=%.5f\n",match->GetActualTime_ms(),player->GetID(),int(command.desiredFunctionType),touchFrame_tmp,contactLegOffset_tmp.GetLength(),currentAnim->contactPelvisLowering);
     if(UsesTrainingContacts() && GetConfiguration()->GetBool("training_telemetry",false))
       printf("TRAINING_ANIMATION_CHANGE t=%lu old_cycle=%d old_chest=%d old_frame=%d old_frames=%d new_cycle=%d new_chest=%d mode=%s function=%d\n",
         match->GetActualTime_ms(),previousAnim->anim->GetVariable("training_dribble")=="true"?1:0,
@@ -2566,7 +2582,7 @@ float Humanoid::GetBodyBallDistanceAdvantage(const Animation *anim, e_FunctionTy
   return result;
 }
 
-signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool useDesiredMovement, const Vector3 &desiredDirection, float desiredVelocityFloat, bool useDesiredBodyDirection, const Vector3 &desiredBodyDirectionRel, std::vector<Vector3> &positions_ret, int &animTouchFrame_ret, float &radiusOffset_ret, Vector3 &touchPos_ret, Vector3 &fullActionSmuggle_ret, Vector3 &actionSmuggle_ret, radian &rotationSmuggle_ret, Vector3 &contactLegOffset_ret, float hasteFactor, e_InterruptAnim localInterruptAnim, bool preferPassAndShot) const {
+signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool useDesiredMovement, const Vector3 &desiredDirection, float desiredVelocityFloat, bool useDesiredBodyDirection, const Vector3 &desiredBodyDirectionRel, std::vector<Vector3> &positions_ret, int &animTouchFrame_ret, float &radiusOffset_ret, Vector3 &touchPos_ret, Vector3 &fullActionSmuggle_ret, Vector3 &actionSmuggle_ret, radian &rotationSmuggle_ret, Vector3 &contactLegOffset_ret, float &contactPelvisLowering_ret, float hasteFactor, e_InterruptAnim localInterruptAnim, bool preferPassAndShot) const {
 
   // never allow touchanims when someone else is holding the ball in his/her hands
   if (match->GetBallRetainer() != 0 && match->GetBallRetainer() != player) return -1;
@@ -2575,8 +2591,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
   signed int bestAnimID = -1;
   Vector3 bestActionSmuggleVec2D;
-  Vector3 bestContactLegOffset(0);
-  contactLegOffset_ret=Vector3(0);
+  Vector3 bestContactLegOffset(0);float bestContactPelvisLowering=0;
+  contactLegOffset_ret=Vector3(0);contactPelvisLowering_ret=0;
   Vector3 bestTouchMovementAbs;
 
   DataSet::const_iterator iter = sortedDataSet.begin();
@@ -2834,13 +2850,17 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         // ball near the ankles can lie behind that marker and deadlock the
         // magnet. Let the bounded real-skin planner below test the candidate;
         // this bypass never accepts a kick or changes the contact gate.
-        if (bodyBallDistanceAdvantage >= 1.0f || closeGroundSkin || match->GetBallRetainer() == player) {
+        const bool centralFootArrival=PhysicalRigEnabled()&&functionType==e_FunctionType_Trap&&
+          spatialState.floatVelocity<2.5f&&animTouchFrame>=8&&animTouchFrame<=60&&
+          anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos&&
+          ballPos.coords[2]<1.15f&&(ballPos.Get2D()-bodyPos.Get2D()).GetLength()<.70f;
+        if (bodyBallDistanceAdvantage >= 1.0f || closeGroundSkin || centralFootArrival || match->GetBallRetainer() == player) {
 
           // Correct the whole-player approach at the predicted ball height.
           // An authored body marker cannot represent every bounce
           // height. Spread this small correction over the native approach;
           // never stretch a limb or apply an impulse without a real runtime contact.
-          Vector3 plannedLegOffset(0);
+          Vector3 plannedLegOffset(0);float plannedPelvisLowering=0;
           const std::string part=anim->GetVariable("touch_bodypart");
           const bool originalStrike=(part.find("foot")!=std::string::npos || part=="head") &&
               (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
@@ -2860,22 +2880,26 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
               part=="head"?std::min(.18f,animTouchFrame*.01f*.45f):airborneFoot?std::min(.20f,animTouchFrame*.01f*.75f):.08f;
             float gap=100;
             for(unsigned iteration=0;iteration<8;++iteration) {
-              plannedLegOffset=Vector3(0);
+              plannedLegOffset=Vector3(0);plannedPelvisLowering=0;
               SampleContactAnimation(anim,float(animTouchFrame),root,spatialState.angle,false,local,global,joints,false);
               gap=ContactSurface(target,part,global,joints,&surface);
               const bool groundReceive=PhysicalRigEnabled() && part.find("foot")!=std::string::npos &&
-                target.coords[2]<.40f && animTouchFrame>=6 &&
+                target.coords[2]<1.15f && animTouchFrame>=6 &&
                 (functionType==e_FunctionType_Trap || functionType==e_FunctionType_BallControl);
               if(groundReceive && gap>.001f){
                 // Prepare a real foot across a central pass instead of
                 // rejecting every clip whose authored shoe misses the gap.
                 // Fixed link lengths, <=0.65 m/s approach, no ball magnet.
-                Vector3 delta=(target-surface).GetNormalized(0)*std::min(gap+.006f,.16f);
-                delta.coords[2]=clamp(delta.coords[2],-.025f,.065f);
-                delta.NormalizeMax(std::min(.16f,animTouchFrame*.01f*(animTouchFrame<12?.42f:.65f)));
-                FitContactLeg(part=="right_foot"?1:0,delta,local,global,joints);
+                Vector3 delta=(target-surface).GetNormalized(0)*std::min(gap+.006f,.24f);
+                delta.coords[2]=clamp(delta.coords[2],-.025f,.12f);
+                delta.NormalizeMax(std::min(.24f,animTouchFrame*.01f*(animTouchFrame<12?.42f:.65f)));
+                const float lowering=FitContactReach(part=="right_foot"?1:0,delta,-1,local,global,joints);
                 const float adjusted=ContactSurface(target,part,global,joints,&surface);
-                if(adjusted<gap){gap=adjusted;plannedLegOffset=delta.GetRotated2D(-spatialState.angle);}
+                if(adjusted<gap){gap=adjusted;plannedLegOffset=delta.GetRotated2D(-spatialState.angle);plannedPelvisLowering=lowering;}
+                else{
+                  SampleContactAnimation(anim,float(animTouchFrame),root,spatialState.angle,false,local,global,joints,false);
+                  gap=ContactSurface(target,part,global,joints,&surface);
+                }
               }
               if(gap<=.001f)break;
               const float dz=target.coords[2]-surface.coords[2];
@@ -2898,7 +2922,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
           found = true;
 
           bestAnimID = (signed int)*iter;
-          bestContactLegOffset=plannedLegOffset;
+          bestContactLegOffset=plannedLegOffset;bestContactPelvisLowering=plannedPelvisLowering;
           bestActionSmuggleVec2D = actionSmuggleVec2D;
           bestTouchMovementAbs = touchMovement.GetRotated2D(spatialState.angle);
           animTouchFrame_ret = animTouchFrame;
@@ -2915,7 +2939,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
     touchPos_ret = currentMentalImage->GetBallPrediction(animTouchFrame_ret * 10);
 
-    contactLegOffset_ret=bestContactLegOffset;
+    contactLegOffset_ret=bestContactLegOffset;contactPelvisLowering_ret=bestContactPelvisLowering;
     fullActionSmuggle_ret = bestActionSmuggleVec2D.GetRotated2D(spatialState.angle);
     actionSmuggle_ret = fullActionSmuggle_ret;
 

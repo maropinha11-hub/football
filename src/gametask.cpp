@@ -11,6 +11,8 @@
 #include "managers/resourcemanagerpool.hpp"
 
 #include "blunted.hpp"
+#include <chrono>
+#include <algorithm>
 
 void UploadFullbodyModel::Update() {
   for (unsigned int i = 0; i < geometryToUpload.size(); i++) {
@@ -134,8 +136,20 @@ void GameTask::ProcessPhase() {
     // containers. Guard that work with the reader's mutex, not only the final
     // publication, so graphics cannot copy a map or buffer being destroyed.
     boost::timed_mutex::scoped_lock snapshotLock(matchPutBufferMutex);
+    const bool profile=GetConfiguration()->GetBool("training_performance",false);
+    const auto started=profile?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
     match->Process();
     match->PreparePutBuffers();
+    if(profile){
+      static std::vector<double> samples;
+      samples.push_back(std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-started).count());
+      if(samples.size()==500){
+        double total=0;unsigned late=0;for(double ms:samples){total+=ms;if(ms>10)++late;}
+        std::sort(samples.begin(),samples.end());
+        printf("SIMULATION_PERFORMANCE samples=500 mean_ms=%.5f p95_ms=%.5f max_ms=%.5f over_budget=%u dt_ms=10\n",total/500,samples[474],samples.back(),late);
+        samples.clear();
+      }
+    }
   }
 
   if (menuScene) {

@@ -167,3 +167,39 @@ perturbações angulares, usado no acompanhamento físico e no tronco/braços
 durante quedas. É uma camada aprendida limitada, não uma política corporal
 completa nem o Euphoria. Veja [pesquisa, treinamento e limites](CONTROLE-FISICO-APRENDIDO.md)
 no repositório, ou LEIA-CONTROLE-FISICO.txt dentro do pacote.
+
+
+## Revisão: recepção, fluidez e desempenho
+
+O domínio pelo centro também testa o alcance da chuteira quando o marcador
+antigo não cobre a bola. A perna mantém os comprimentos dos ossos; quando
+necessário, o quadril baixa até 5,5 cm e o outro pé conserva o apoio. Essa
+preparação é a mesma no planejamento, no contato e na pose desenhada.
+Reiniciar a posição limpa o comando anterior, evitando bloquear um novo domínio.
+A CPU pode reservar a recepção desde o início da previsão de 1,2 segundo.
+
+A faixa final de 20 cm ainda dentro da linha de fundo deixou de ser tratada
+como fora do campo pela busca de interceptação da versão física. A decisão
+do árbitro continua responsável pela bola efetivamente fora de jogo.
+
+Tronco e braços cedem um pouco mais à carga, com amortecimento e limites
+anatômicos mantidos. Não foi reduzida a massa dos atletas. As articulações
+usam menos iterações em acompanhamento tranquilo; quedas conservam a solução
+mais precisa, sem mudar o passo de 10 ms ou acelerar artificialmente o jogo.
+Os contatos reutilizam os vértices da mesma pose dentro de cada consulta,
+com memória separada por thread; a pele e a tolerância não foram aumentadas.
+
+Cruzamentos e passes em profundidade passam a estimar alcance com arrasto,
+quique e resistência do gramado, com carga do botão progressiva. O contato
+real continua determinando a saída e o efeito da bola. O modelo é aproximado:
+spin e terreno podem mudar o alcance real. Passe curto, condução e câmera
+aprovados continuam sendo a base.
+
+Em partida física com laboratório habilitado, H+B+Z+F4 monta uma recepção
+central da CPU a 8 cm da linha de fundo. H+Z+F4 monta a recepção central
+comum. São condições iniciais explícitas de teste, sem decisões ou contatos
+forçados durante a jogada. Os ensaios de empurrão U/Shift+U/Ctrl+U continuam
+permitindo observar a resposta gradual e a recuperação de apoio.
+
+A pesquisa e os limites desta revisão estão em
+[fluid-reception-research.json](fluid-reception-research.json).

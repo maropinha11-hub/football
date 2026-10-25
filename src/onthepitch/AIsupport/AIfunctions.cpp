@@ -25,6 +25,7 @@
 #include "../team.hpp"
 #include "../player/player.hpp"
 #include "../ball.hpp"
+#include "../pass_flight.hpp"
 
 #include "../player/humanoid/humanoid_utils.hpp"
 
@@ -726,9 +727,10 @@ unsigned int AI_GetToBallMovement(Match *match, const MentalImage *mentalImage, 
 
   unsigned int startTime_ms = clamp(player->GetTimeNeededToGetToBall_ms(), 40, ballPredictionSize_ms - 10);
   // we can't start optimized at a later moment, because that would mean we'd aim outside the pitch to start with
+  const float boundaryMargin=player->GetHumanoid()->PhysicalRigEnabled()?.11f:-.20f;
   Vector3 ballPrediction = mentalImage->GetBallPrediction(startTime_ms);
-  if (fabs(ballPrediction.coords[0]) > pitchHalfW - 0.2f ||
-      fabs(ballPrediction.coords[1]) > pitchHalfH - 0.2f) {
+  if (fabs(ballPrediction.coords[0]) > pitchHalfW + boundaryMargin ||
+      fabs(ballPrediction.coords[1]) > pitchHalfH + boundaryMargin) {
     startTime_ms = 80;
   }
 
@@ -748,8 +750,8 @@ unsigned int AI_GetToBallMovement(Match *match, const MentalImage *mentalImage, 
     bool forced = false;
 
     Vector3 targetPos = mentalImage->GetBallPrediction(time_ms);
-    if (fabs(targetPos.coords[0]) > pitchHalfW - 0.2f ||
-        fabs(targetPos.coords[1]) > pitchHalfH - 0.2f) {
+    if (fabs(targetPos.coords[0]) > pitchHalfW + boundaryMargin ||
+        fabs(targetPos.coords[1]) > pitchHalfH + boundaryMargin) {
       forced = true;
     }
     if (!forced) if (targetPos.coords[2] >= 1.0f) continue; // unattainable
@@ -1164,7 +1166,7 @@ void AI_GetPass(Player *player, e_FunctionType passType, const Vector3 &inputDir
   } else {
 
     float bestRating = 10000;
-    autoTarget = playerPos;
+    autoTarget = player->GetHumanoid()->PhysicalRigEnabled()?manualTarget:playerPos;
 
     for (int i = 0; i < (signed int)players.size(); i++) {
       if (players.at(i) != player/* && players.at(i)->IsActive()*/) {
@@ -1252,6 +1254,13 @@ void AI_GetPass(Player *player, e_FunctionType passType, const Vector3 &inputDir
   //SetGreenDebugPilon(playerPos);
 
   AI_GetAutoPass(passType, resultingTargetRel, resultingDirection, resultingPower);
+  if(player->GetHumanoid()->PhysicalRigEnabled()&&
+      (passType==e_FunctionType_HighPass||passType==e_FunctionType_LongPass)){
+    const auto flight=football_pass::plan(resultingTargetRel.Get2D().GetLength(),passType==e_FunctionType_HighPass,
+      player->GetTeam()->GetMatch()->GetBall()->Predict(0).coords[2]);
+    const Vector3 velocity=resultingTargetRel.Get2D().GetNormalized(inputDirection)*flight.horizontal+Vector3(0,0,flight.vertical);
+    resultingDirection=velocity.GetNormalized(0);resultingPower=velocity.GetLength()/36.f-.3f;
+  }
 }
 
 Vector3 AI_GetShotDirection(Player *player, const Vector3 &inputDirection, float autoDirectionBias) {

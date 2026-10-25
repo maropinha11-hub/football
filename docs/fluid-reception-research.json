@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-25",
+  "sources": [
+    {
+      "name": "soccer-kicking-review",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3786235/",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "implicit-joint-control",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/ImpPDController.cpp",
+      "status": 200,
+      "bytes": 6641,
+      "sha256": "222bda44fa418316705fecd7a1af28bd6fff70c37cc8caef0f9dcbbc276ac29f"
+    },
+    {
+      "name": "transition-inertialization",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/spring.h",
+      "status": 200,
+      "bytes": 5374,
+      "sha256": "b514bf7c80c49280c784ead654b6dfa1ce709a5c944754f9da6b997e6e906e19"
+    },
+    {
+      "name": "support-control",
+      "url": "https://raw.githubusercontent.com/ihmcrobotics/ihmc-open-robotics-software/develop/ihmc-common-walking-control-modules/src/main/java/us/ihmc/commonWalkingControlModules/capturePoint/controller/ICPController.java",
+      "status": 200,
+      "bytes": 27096,
+      "sha256": "7454a166dc59f7cf31833a15f68ff33d77fdd6ff3e8a3ee08b92e9e38d349b25"
+    },
+    {
+      "name": "soccer-keypose-footage",
+      "url": "https://raw.githubusercontent.com/nayariml/SoccerKicks/ba737850324430c6274acf214abccd0615f0bb86/overview/gif_over.gif",
+      "status": 200,
+      "bytes": 24040281,
+      "sha256": "261f833bfa7231231736ebb82eed8d1c32b28f74ce00f6f6757603e82515e755"
+    },
+    {
+      "name": "kicking-review-pdf",
+      "url": "https://www.jssm.org/vol6/n2/3/v6n2-3pdf.pdf",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    }
+  ],
+  "observations": [
+    {
+      "source": "SoccerKicks pinned footage",
+      "frames": [
+        26,
+        32,
+        38,
+        44
+      ],
+      "finding": "Observed a flexed support leg and forward/lateral trunk at plant, opposite arm extension and hip/trunk rotation at release, then a recovery support change. This is a qualitative single-kick 2D study, not calibrated 3D capture or evidence for every football action."
+    },
+    {
+      "source": "DeepMimic ImpPDController CalcControlForces",
+      "finding": "Predicted pose error, relative velocity and implicit damping act through articulated mass/inertia. Retain bounded parent-relative muscular torques; soften the supported response without reducing player mass or unbinding joints."
+    },
+    {
+      "source": "orangeduck spring.h simple_spring_damper_exact",
+      "finding": "Damping and stiffness determine settling and continuity. Counter-tilt and support response retain damping near critical with lower stiffness; do not slow the simulation or restart the response each frame."
+    },
+    {
+      "source": "IHMC ICPController compute",
+      "finding": "Balance couples centre-of-mass velocity, capture point and feasible support polygon; the foot must move into reachable support instead of applying arbitrary whole-body translation."
+    }
+  ],
+  "implementation": [
+    "An incoming central foot reception may be evaluated by the real-skin solver instead of failing only the old proxy marker. Fixed-length leg reach can lower the pelvis by at most 5.5 cm while pinning the opposite ankle; selection and live pose use the same curve.",
+    "Clear the previous action and per-actor reach on position resets. Recognize the best nearby CPU receiver throughout the 1.2-second prediction horizon, avoiding an early chase before a high arrival.",
+    "Counter-tilt stiffness 144 to 100 and damping 24 to 20; support stiffness 100 to 81 and damping 20 to 18. Slightly more dynamic torso/arm contribution under actual load with existing anatomical projections.",
+    "Index immutable contact vertices, bind-local weights and triangle part groups. Reuse only thread-local per-query posed vertices, preserving the original nearest-triangle distance comparison and skin contact tolerances.",
+    "Use 12 solver iterations for quiet active tracking and 24 under load; free-fall worlds retain 40 iterations. Keep 100 Hz and both substeps.",
+    "Plan charged cross/through distance with reference drag, bounce and rolling resistance, then constrain native release-power variation to eight percent while preserving direction and measured contact spin."
+  ],
+  "limitations": [
+    "The external journal article and PDF returned HTTP 403; their contents were not treated as retrieved research.",
+    "No new captured 3D animations or full-body reinforcement-learning policy were created. The shipped reduced learned balance and angular muscle controllers remain unchanged.",
+    "A reference range model does not model every turf patch or contact spin; actual match flight remains the live ball integrator.",
+    "This is a bounded hybrid active-body prototype, not a reproduction of the proprietary Euphoria system or exact player-specific motion."
+  ]
+}

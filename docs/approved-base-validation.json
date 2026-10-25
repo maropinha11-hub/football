@@ -1,7 +1,7 @@
 {
   "result": "passed",
   "date": "2026-10-25",
-  "previous_release_commit": "6e530f9723525121740a1c58a9d9a25e46cfe984",
+  "previous_release_commit": "c5f857cfffdeb9b9f3e970aa80ec032fc702d852",
   "provenance": {
     "base_commit": "fa0dfa6d2785b39ef73ce8e6ad16dedc6ab547aa",
     "uploaded_executable_sha256": "23230593d0f2735381a5522e21c71abc4977f76d32352bee814ebd096b4a30a3",
@@ -9,14 +9,12 @@
     "new_external_capture_clips": 0
   },
   "changes": {
-    "supported_balance": "Retain supported displacement under sustained load; learned bounded capture-point proposals select step/hip strategy. Yield through pelvis, knees, spine and arms and attempt support before an unforced fall.",
-    "muscles": "Track joint-local target orientation and relative velocity with reciprocal parent torques. Simulate thighs/calves as well as spine/arms. Keep native carrier/shoes in active mode, preserving authored swing at rest and bounded anatomical arms.",
-    "transport": "Move every articulated segment and its interpolation frame in the same translating carrier frame; keep relative velocities. Removes half-step translational lead at sprint speed without loosening joint tolerance. Free fall inherits actual global velocity.",
-    "ground_reception": "Plan bounded fixed-length foot approach before accepting native ground reception. Sample the same per-actor offset for skin and rendering. Near owned stationary balls can reach the real-skin planner despite the old marker deadband; the strict final contact gate remains.",
-    "acceleration": "Bootstrap a native walk from a stopped controlled ball and permit a requested RB control touch from rest. Restrict the new marker fallback to slow owned/possessed ground balls to preserve original sprint selection.",
-    "cpu": "A speculative uncommitted kick no longer suppresses a reachable airborne reception outside the finishing area. Cap forecast height by actor height plus jump allowance; use separate foot/chest/head meeting offsets and wait quietly for a small high-ball adjustment. Committed actions and near-goal first-time finishing keep priority.",
-    "actions": "Grounded kick effort recruits pelvis/knee preparation with planted-shoe IK. Transfer a completed pivot control into a released queued kick using the native full switch, and retain the queued passing orientation.",
-    "laboratory": "Hold U for220N; Shift+U480N; Ctrl+U900N. F3 changes direction; original F8 impact/F9 fall remain. Z+F4 tests central passes; Z+F2 seeds a close owned ball."
+    "reception": "Bounded real-shoe reach with optional pelvis lowering and opposite-ankle support; clear stale action/reach on reset; anticipate the best nearby CPU receiver throughout the 1.2-second forecast.",
+    "boundary": "The physical interception search keeps the last20cm inside the field in play and uses the ball radius for its boundary, leaving referee decisions authoritative.",
+    "passes": "Linear range charge for human crosses/through passes; solve reference drag/bounce/ground-braking range for CPU and human, preserve bounded release variation and measured spin.",
+    "fluidity": "Lower critically damped support/counter-tilt stiffness and modestly more loaded articulated torso/arm output, with anatomical limits and native movement retained.",
+    "performance": "Immutable indexed skin groups and bind-local influences, thread-local per-query vertex transforms; adaptive12/24 active iterations with40 for falls, preserving100Hz/two substeps.",
+    "packaging": "Preserve the PE timestamp during stripping so the packaged executable is reproducible from the final Windows build; full/update include research and explicit model limits."
   },
   "learned_balance": {
     "result": "passed",
@@ -48,8 +46,9 @@
     "scope": "Reduced balance planner only; no trained whole-body RL, no learned football skill or Euphoria implementation.",
     "model_sha256": "dfe33025fc8087ae228c1c77da2bbdc69b6f84c0e056daaada77860b920a870d",
     "header_sha256": "dda455abb3d460ee3e1ff08aa37a06cca09c540e7801ac1c00e8bda1c9d8e96f",
-    "new_training_this_revision": true
+    "new_training_this_revision": false
   },
+  "research": "docs/fluid-reception-research.json",
   "validation": {
     "native_ctest_suites": 11,
     "numerical_results": [
@@ -60,7 +59,7 @@
       },
       {
         "result": "passed",
-        "checks": 29,
+        "checks": 35,
         "failures": 0
       },
       {
@@ -81,11 +80,11 @@
         "failures": 0,
         "parameter_contexts": 270,
         "unsafe_cut_contexts": 0,
-        "maximum_bone_error_m": 1.78814e-07,
-        "minimum_pelvis_height_m": 0.09604,
-        "pelvis_rotation_rad": 3.61451,
+        "maximum_bone_error_m": 1.19209e-07,
+        "minimum_pelvis_height_m": 0.0931863,
+        "pelvis_rotation_rad": 3.36194,
         "peak_angular_speed_rad_s": 12,
-        "peak_joint_error_m": 0.00376692,
+        "peak_joint_error_m": 0.00373146,
         "maximum_foot_step_m": 0.00280002
       },
       {
@@ -93,486 +92,228 @@
         "checks": 56,
         "failures": 0,
         "recovery_samples": 186,
-        "recovery_pelvis_step_m": 0.0312563,
-        "forearm_trunk_clearance_ratio": 1.55209,
-        "hand_gap_m": 0.0243269,
-        "hand_step_m": 0.0116452,
+        "recovery_pelvis_step_m": 0.0312564,
+        "forearm_trunk_clearance_ratio": 1.55219,
+        "hand_gap_m": 0.0250753,
+        "hand_step_m": 0.0116515,
         "cloth_deformation_m": 0.0302369,
         "cloth_stretch_ratio": 1.02626,
         "running_cloth_jitter_m": 7.92532e-06,
         "cloth_fps_spread_m": 8.13021e-06,
         "ordinary_contact_peak_risk": 1.15905,
         "unrecoverable_fall_tick": 29,
-        "sprint_joint_error_m": 2.79243e-05,
-        "maximum_arm_limit_error_rad": 3.64489e-07,
+        "sprint_joint_error_m": 0.000106099,
+        "maximum_arm_limit_error_rad": 2.55978e-07,
         "maximum_arm_overlap_m": 0,
-        "maximum_elbow_side_bend_rad": 0.0325653
+        "maximum_elbow_side_bend_rad": 0.0366002
       }
     ],
-    "python": {
-      "collected": 206,
-      "passed": 200,
-      "skipped": 6,
-      "skip_scope": "Deliberately excluded imported locomotion and unavailable private research fixtures"
-    },
-    "graphical": {
-      "scenarios": 43,
-      "checks": 754,
-      "final_executable_scenarios": 12,
-      "unchanged_kernel_cases_retained": 31,
-      "measurement_corrections": [
-        "Walking release measured after screenshot acquisition and immediately before actual stick release; braking bounds unchanged.",
-        "Passing orientation measured from physical pelvis quaternion rather than quantized locomotion heading.",
-        "Passing idle handoff measured after real intervening control contacts; out-of-range approach time measured separately from reachable wind-up, with a bounded total response."
-      ],
-      "final_executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-      "validation_scope": "Campaign preserves passing unchanged-kernel cases from the complete pre-adjustment run; all12 cases affected by the final CPU meeting-point/height change or corrected timing measurements were rerun on the release binary. Each case retains its actual executable hash.",
-      "pre_adjustment_failures": [
+    "python_total": 206,
+    "python_passed": 200,
+    "python_skipped": 6,
+    "python_skips": "Intentional absent private/reverted imported mocap inputs; no failing test skipped.",
+    "rendered_scenarios": 16,
+    "rendered_checks": 270,
+    "rendered_cases": [
+      {
+        "scenario": "active_reception",
+        "result": "passed",
+        "checks": 20,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "7fad98eda12d03d78abe20e30b955d5916b42c503783ff48cead374477ad763a"
+      },
+      {
+        "scenario": "central_receive",
+        "result": "passed",
+        "checks": 10,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "f53305effc87cb8bcc7b38d5bc7da799361193af610d3d8cac37a0ac85590579"
+      },
+      {
+        "scenario": "boundary_negative",
+        "result": "passed",
+        "checks": 10,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "d15598859b89495cdb94def660a5be74e80cada33c4006126ddd6522fd92877c"
+      },
+      {
+        "scenario": "visible_walk",
+        "result": "passed",
+        "checks": 13,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "1891e325de0f6fb3d478a6493348d361d6a6af4d8c72ab68286a8b90182081e2"
+      },
+      {
+        "scenario": "firstperson_sync",
+        "result": "passed",
+        "checks": 26,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "df7d3da0ded56b0be5508f78c3feb2f93c11c314f99984651026ec5d0c51dfa8"
+      },
+      {
+        "scenario": "keeper_arrivals",
+        "result": "passed",
+        "checks": 23,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "8965b9ecaa2fcb24d2245887c4811124c3bea4738774530ee4517a9f54caaa99"
+      },
+      {
+        "scenario": "restart_lifecycle",
+        "result": "passed",
+        "checks": 17,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "cc25735efd61d2db362706b2e87e85fb24c8574e01d2cc93030746a82d5c8778"
+      },
+      {
+        "scenario": "malleable_match",
+        "result": "passed",
+        "checks": 8,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "bb2bef28d24c45275f40b367e1cf870ec47276e30626afbd381d941eb14a36c6"
+      },
+      {
+        "scenario": "contact_performance",
+        "result": "passed",
+        "checks": 7,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "c98f51cafa314f65f73b9bc9a1fb636389cb123f78d948509621f84046956524"
+      },
+      {
+        "scenario": "pass_flight",
+        "result": "passed",
+        "checks": 21,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "05f5318bc8185cc12f6cc02db624a329185a88fd9db7f3dc58826456515643c2"
+      },
+      {
+        "scenario": "physical_actions",
+        "result": "passed",
+        "checks": 14,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "7f8d9bcfbb7d79d3e99fd527f50cca0d401d1dae3d50a830606d54ee6f521051"
+      },
+      {
+        "scenario": "active_body",
+        "result": "passed",
+        "checks": 19,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "b3591ddf20b752d4605fb5845cca24ef27dab556916c4e0c38f5438802a8f298"
+      },
+      {
+        "scenario": "support_step",
+        "result": "passed",
+        "checks": 16,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "bab27740eefe2f7f9048af852a30a52d66687c1632158a55a9286767821f8752"
+      },
+      {
+        "scenario": "pass_turn_fps",
+        "result": "passed",
+        "checks": 13,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "f841c640df3e976bb8c51b772eef69bceeeaf573c9a8b0cacecf04c25bfc2831"
+      },
+      {
+        "scenario": "physical_quality",
+        "result": "passed",
+        "checks": 8,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "c324aa84397c9c80b96fabd8fa45ba87e2a00b5e80dce70d71f2f236b0b0a46f"
+      },
+      {
+        "scenario": "elevated_reception",
+        "result": "passed",
+        "checks": 45,
+        "executable_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+        "evidence_sha256": "bf4b8ac70a5eb7cd8983ef4f47ea4fec6ba8725b07da652c24fe0a8af7e03e61"
+      }
+    ],
+    "all_rendered_cases_same_final_binary": true,
+    "windows_portable_checks": 49,
+    "windows_physical_checks": 51,
+    "windows_gui_executed": false
+  },
+  "performance": {
+    "paired_query": {
+      "profiles": [
         {
-          "scenario": "pass_turn",
-          "exit_code": 1,
-          "result": "failed",
-          "checks": 13,
-          "failed_checks": [
-            "behind finishes its native pivot and wind-up without an extra input lock"
-          ]
+          "samples": "100000",
+          "optimized_us": "6.20123",
+          "reference_us": "17.41265",
+          "max_error": "0.000000000"
         },
         {
-          "scenario": "active_reception",
-          "exit_code": 1,
-          "result": "failed",
-          "checks": 18,
-          "failed_checks": [
-            "CPU jump intentionally selects and completes an airborne skin contact",
-            "CPU jump actually lifts both feet off the pitch"
-          ]
+          "samples": "102000",
+          "optimized_us": "6.20069",
+          "reference_us": "17.41267",
+          "max_error": "0.000000000"
         },
         {
-          "scenario": "visible_walk",
-          "exit_code": 1,
-          "result": "failed",
-          "checks": 13,
-          "failed_checks": [
-            "releasing an ordinary walking stick brakes before the long cycle ends"
-          ]
+          "samples": "104000",
+          "optimized_us": "6.19992",
+          "reference_us": "17.41347",
+          "max_error": "0.000000000"
+        },
+        {
+          "samples": "106000",
+          "optimized_us": "6.20079",
+          "reference_us": "17.41541",
+          "max_error": "0.000000000"
+        },
+        {
+          "samples": "108000",
+          "optimized_us": "6.20092",
+          "reference_us": "17.41836",
+          "max_error": "0.000000000"
+        },
+        {
+          "samples": "110000",
+          "optimized_us": "6.20075",
+          "reference_us": "17.41922",
+          "max_error": "0.000000000"
+        },
+        {
+          "samples": "2000",
+          "optimized_us": "49.66841",
+          "reference_us": "88.90817",
+          "max_error": "0.000000000"
+        },
+        {
+          "samples": "2000",
+          "optimized_us": "44.62545",
+          "reference_us": "95.15078",
+          "max_error": "0.000000000"
         }
       ],
-      "results": [
-        {
-          "scenario": "energy_solo",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "energy_phase_90",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "energy_phase_180",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "active_body",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 19,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "pass_turn",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 13,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "pass_turn_fps",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 13,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "active_reception",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 20,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "airborne_actions",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 7,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "body_duel",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 4,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "visible_receive",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 27,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "visible_walk",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 13,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "support_step",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 16,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "balance_lab",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 17,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "physical_quality",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "physical_actions",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 14,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "physical_controls",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 12,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "aerial_contest",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 9,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "aerial_direction_fps",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 39,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "aerial_direction_external",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 39,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "energy_match",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 4,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "malleable_solo",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 11,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "malleable_match",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "elevated_reception",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 45,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "keeper_arrivals",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 23,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "keeper_central",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 8,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "refinement_solo",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 17,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "refinement_match",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 26,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "firstperson_sync",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 26,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "situational_fps",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 74,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "situational_external",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 74,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "anatomy_lab",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 10,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "stagger_lab",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 14,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "stagger_match",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 10,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "physical_match",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 5,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "approved_restore",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 20,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "cpu_grip",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 4,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "toggle_stress",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 7,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "startup_cycles",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 12,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "restart_lifecycle",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 17,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "aerial_taps",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 7,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "tactical_receptions",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 14,
-          "failed_checks": [],
-          "executable_sha256": "7cea892d659630d57b567a3c0c9afd9fd97cdd0615b2140f00924045a1e0f437",
-          "phase": "final_cpu_reception_adjustment"
-        },
-        {
-          "scenario": "pitch_receive",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 6,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        },
-        {
-          "scenario": "pitch_body",
-          "exit_code": 0,
-          "result": "passed",
-          "checks": 18,
-          "failed_checks": [],
-          "executable_sha256": "d316c06b002b4d603bc73472abc5ce776d9d3a69f47ea70b749ce4632cb56cbd",
-          "phase": "unchanged_physics_and_controls"
-        }
-      ]
+      "median_speedup": 2.807581808582654
     },
-    "windows": {
-      "cross_compiled": true,
-      "native_windows_gui_executed": false,
-      "portable_checks": 49,
-      "physical_package_checks": 49,
-      "dlls": 36,
-      "executable_sha256": "e9721fa35f366da3c18a4539c91dba44ccbab6c9e9af784be1ddd8a623573941",
-      "archive_sha256": "a5a8928a9356051df802bfa482954bb1c924e9bad3862c36a03ab72f000c2beb",
-      "archive_bytes": 35147628,
-      "zip_crc": "passed"
-    }
+    "match_pace": {
+      "reference_ms": 5.87099,
+      "indexed_ms": 4.480404999999999,
+      "reference_pace": 0.9989107888740623,
+      "indexed_pace": 0.9987403432363613
+    },
+    "interpretation": "Two uncontrolled live AI segments are descriptive, not an identical workload. Exact paired queries isolate contact speed. The real-time sample lasts20 simulated seconds; this is not a guarantee of performance on every PC."
   },
-  "unchanged_physics_kernel_sha256": {
-    "src/onthepitch/player/humanoid/articulated_body.cpp": "e79fada45dfd6167f2b157fadda1c9ea4f610f2aefb6a607b39f9da10b90d46b",
-    "src/onthepitch/player/humanoid/physical_rig.cpp": "676c163981daf12bd249f89e7181c9dcd4284cb89d803706e8dd595c40edaf34",
-    "src/onthepitch/player/humanoid/balance_controller.cpp": "ffbfce864455ac901e3784d973ce559be4b2c89a7d75abf51f007085ec6cb264",
-    "src/onthepitch/player/humanoid/learned_balance_policy.hpp": "dda455abb3d460ee3e1ff08aa37a06cca09c540e7801ac1c00e8bda1c9d8e96f",
-    "src/onthepitch/player/humanoid/humanoid.cpp": "4aac4cd055ac4025e70e3077e2e91bedba80533fec3cd3e86f4927df2d8d10e0",
-    "src/onthepitch/player/humanoid/humanoid_contacts.cpp": "81cb624e9377f4d05c78cf009673ce24aea8de02b72860c6f9b6d1459e5e53f3",
-    "src/onthepitch/player/humanoid/humanoid_physical.cpp": "fdc4eb95312c3f6e2b0da2e97c91394a369fb33cd5abd403061b91296d8d05e1"
+  "correction_history": [
+    "The first precision diagnostic rejected a different equidistant nearest point despite zero gap error; preserved the reference outer-distance tie comparison and reran exact geometry verification.",
+    "The first central-reception test filtered on an actor field absent from skin telemetry; corrected the test to join the delivered actor action with same-time/same-part skin acceptance. All central cases reran.",
+    "An airborne CPU regression exposed stale originating commands after ResetPosition and insufficient early receiver reservation; fixed the production paths and reran player/CPU airborne, central, goalkeeper and restart scenarios.",
+    "The first performance assertion compared overall logic time across different live AI actions. Replaced that attribution with paired same-pose queries, while retaining both full-segment timings and a separate real-time pacing assertion."
+  ],
+  "binaries": {
+    "native_sha256": "d64fe9f777e9ab4604416a21f022c3cea6ed6067db53ecae5427570fa01ff5c3",
+    "windows_unstripped_sha256": "004eb3851a1b57561aaa0d35028df63938e9e38e14233121237c37d727041e15",
+    "windows_packaged_sha256": "436f24a3730120caf3f9fa4f7c5264de3434b79faecb37bbe2c847e6e553e0e8"
   },
-  "limits": [
-    "Hybrid native-trajectory and joint-physics controller; active pelvis and shoe targets are kinematic, all segments are dynamic during free fall.",
-    "The learned balance network distils a reduced planner; no trained end-to-end football/whole-body reinforcement-learning policy or Euphoria implementation is claimed.",
-    "Matching retains eligible native entry poses and smoothing; no imported Unity locomotion or arbitrary action-phase hopping.",
-    "Graphics regressions ran on Linux with virtual SDL/X11 input; Windows package validation checks AMD64 binary, assets, launchers and transitive DLL closure, not a native Windows GUI session.",
-    "Finite scenarios establish measured regressions, not universal realism or collision guarantees for all possible plays."
+  "artifacts": {
+    "full_zip_bytes": 35164302,
+    "full_zip_sha256": "1b6d8591cad66760f348beeef2a3a42b22692285e6433f5dcf6228944e7b32bc",
+    "update_zip_sha256": "a9f4b9eba54fb9386ccd30dcdeeab9c0755f5bac8d76db7fc6495b525de7f7f1"
+  },
+  "limitations": [
+    "Rendered game validation used native Linux/X11 software rendering; Windows11 was cross-compiled and its portable runtime/files checked, without a native Windows GUI run.",
+    "Active pelvis/shoe trajectory remains guided by native movement; this is not a full-body RL football policy, a new captured animation bank, or Euphoria.",
+    "Range planning is a reference model; actual irregular turf and measured contact spin still affect flight."
   ]
 }

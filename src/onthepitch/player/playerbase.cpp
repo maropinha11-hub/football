@@ -134,7 +134,7 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
         // Possession designation can lag an arrival beside another player.
         // Let the best nearby reachable receiver respond instead of watching
         // the ball pass while a more distant teammate remains designated.
-        if(!receiving&&plan.time<1.10f&&plan.gap<1.10f){
+        if(!receiving&&plan.time<=1.20f&&plan.gap<1.10f){
           const Vector3 arrival(plan.point[0],plan.point[1],0);
           float own=(arrival-GetPosition().Get2D()).GetLength();bool better=false;
           std::vector<Player*> mates;fieldPlayer->GetTeam()->GetActivePlayers(mates);
@@ -164,7 +164,7 @@ void PlayerBase::RequestCommand(PlayerCommandQueue &commandQueue) {
         // A speculative pass has not yet acquired a feasible native contact.
         // It must not suppress a reachable mid-air reception indefinitely.
         // Already committed contacts and near-goal finishing keep priority.
-        if(receiving&&prepareControl&&!fieldPlayer->TouchPending()&&plan.time<1.10f&&plan.height<2.65f){
+        if(receiving&&prepareControl&&!fieldPlayer->TouchPending()&&plan.time<=1.20f&&plan.height<2.65f){
           PlayerCommand trap;trap.desiredFunctionType=e_FunctionType_Trap;trap.useDesiredMovement=trap.useDesiredLookAt=true;
           trap.desiredDirection=step.GetNormalized(facing);trap.desiredVelocityFloat=approach;trap.desiredLookAt=match->GetBall()->Predict(0).Get2D();
           commandQueue.erase(std::remove_if(commandQueue.begin(),commandQueue.end(),[](const PlayerCommand &c){return c.desiredFunctionType==e_FunctionType_Trap;}),commandQueue.end());

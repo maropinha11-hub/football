@@ -1,6 +1,7 @@
 #include "onthepitch/player/humanoid/strike_technique.hpp"
 #include <iostream>
 #include "onthepitch/keeper_trajectory.hpp"
+#include "onthepitch/pass_flight.hpp"
 #include "onthepitch/player/humanoid/native_contact_timing.hpp"
 #include "onthepitch/reception_prediction.hpp"
 #include "onthepitch/player/sprint_energy.hpp"
@@ -15,6 +16,19 @@ int main(){
   check(shortPassSpeed(650)>20.f&&shortPassSpeed(1000)==shortPassSpeed(650),"holding A supplies a bounded firm pass");
   bool increasing=true;for(unsigned n=11;n<650;++n)increasing&=shortPassSpeed(n)>shortPassSpeed(n-1);
   check(increasing,"charging produces a continuous monotonic pass response");
+  for(bool cross:{false,true}){
+    bool smooth=true,accurate=true,bounded=true;float previous=0;
+    for(unsigned distance=3;distance<=(cross?55:32);++distance){
+      const auto flight=football_pass::plan(float(distance),cross);
+      smooth&=flight.horizontal>previous&&flight.horizontal-previous<(distance==3?20.f:1.5f);
+      accurate&=std::fabs(football_pass::range(flight.horizontal,flight.vertical,.11f,flight.time)-distance)<.02f;
+      bounded&=flight.horizontal<=36&&flight.vertical>=0&&std::isfinite(flight.horizontal);
+      previous=flight.horizontal;
+    }
+    check(smooth,cross?"cross range changes continuously without a power cliff":"through-pass range changes continuously without a power cliff");
+    check(accurate,cross?"cross reaches its target under reference drag":"through pass reaches its target under rolling resistance");
+    check(bounded,"pass planning has finite bounded launch speeds");
+  }
   using football_condition::SprintEnergy;
   SprintEnergy energy;float exhaustedAt=0;
   for(int i=0;i<2400;++i){energy.step(.01f,energy.speedLimit(7.5f),true,.7f);if(energy.depleted){exhaustedAt=(i+1)*.01f;break;}}

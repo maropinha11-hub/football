@@ -38,6 +38,9 @@ def main():
                   for f in ['run-training.bat', 'jogar-partida.bat']))
             check('physical instructions accompany both packages', full.read(prefix + 'LEIA-FISICA.txt') == patch.read('LEIA-FISICA.txt'))
             exe = full.read(prefix + 'gameplayfootball.exe')
+            check('Windows includes exact-skin indexing, supported reach and calibrated passes',all(token in exe for token in [b'CONTACT_SKIN_PROFILE',b'NATIVE_REACH_PLAN',b'PASS_FLIGHT_RELEASE',b'SIMULATION_PERFORMANCE',b'BOUNDARY_RECEIVE_SETUP']))
+            research=full.read(prefix+'fluid-reception-research.json')
+            check('current physical research and limits accompany both portable packages',research==patch.read('fluid-reception-research.json')==Path('docs/fluid-reception-research.json').read_bytes() and bool(json.loads(research)['limitations']))
             check('packaged executable implements physical CLI and solver telemetry', all(token in exe
                   for token in [b'--physical-rig', b'PHYSICAL_RIG_STATE', b'PHYSICAL_RIG_RECOVERED', b'PHYSICAL_RIG_FRAME']))
             check('full and update use the same executable', exe == patch.read('gameplayfootball.exe'))

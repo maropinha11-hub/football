@@ -1377,6 +1377,8 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos,
   if(recovering)currentAnim->frameNum=0;
   currentAnim->radiusOffset = 0.0;
   currentAnim->touchFrame = -1;
+  currentAnim->originatingCommand=PlayerCommand();
+  currentAnim->contactLegOffset=Vector3(0);currentAnim->contactPelvisLowering=0;
   currentAnim->originatingInterrupt = e_InterruptAnim_None;
   currentAnim->fullActionSmuggle = Vector3(0);
   currentAnim->actionSmuggle = Vector3(0);
@@ -1400,6 +1402,8 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos,
   previousAnim->frameNum = 0;
   previousAnim->radiusOffset = 0.0;
   previousAnim->touchFrame = -1;
+  previousAnim->originatingCommand=PlayerCommand();
+  previousAnim->contactLegOffset=Vector3(0);previousAnim->contactPelvisLowering=0;
   previousAnim->originatingInterrupt = e_InterruptAnim_None;
   previousAnim->fullActionSmuggle = Vector3(0);
   previousAnim->actionSmuggle = Vector3(0);
