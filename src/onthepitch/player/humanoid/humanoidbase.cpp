@@ -5,6 +5,7 @@
 #include <cmath>
 #include "humanoid.hpp"
 #include "physical_rig.hpp"
+#include "frame_motion_matching.hpp"
 
 #include "humanoid_utils.hpp"
 
@@ -961,7 +962,7 @@ void HumanoidBase::PreparePutBuffers(unsigned long snapshotTime_ms) {
   buf_contactBlend.SetValue(contactPoseBlend,snapshotTime_ms);
   buf_physicalRootDelta.SetValue(physicalRootDelta,snapshotTime_ms);
   buf_visibleWalking.SetValue(Vector3(physicalWalkWeight,physicalWalkPhase,physicalWalkWanted?1.f:0.f),snapshotTime_ms);
-  buf_physicalRig.SetValue(PhysicalRigEnabled()?(PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
+  buf_physicalRig.SetValue(PhysicalRigEnabled()?(physicalRig&&physicalRig->fullyDynamic()?3.f:PhysicalRigBusy()?2.f:1.f):0.f,snapshotTime_ms);
   const auto situation=physicalRig && physicalRig->initialized()?physicalRig->metrics().situation:football_situations::ActionMetrics{};
   buf_situationState.SetValue(Vector3(situation.weight,situation.difficulty,int(situation.kind)),snapshotTime_ms);
   buf_physicalGripPoint.SetValue(physicalGripPoint,snapshotTime_ms);
@@ -1022,6 +1023,7 @@ void HumanoidBase::FetchPutBuffers(unsigned long putTime_ms) {
   fetchedVisibleWalking=buf_visibleWalking.GetValue(putTime_ms);
   fetchedPhysicalRig=buf_physicalRig.GetValue(putTime_ms)>.5f;
   fetchedPhysicalRagdoll=buf_physicalRig.GetValue(putTime_ms)>1.5f;
+  fetchedFreeBody=buf_physicalRig.GetValue(putTime_ms)>2.5f;
   fetchedSituationState=buf_situationState.GetValue(putTime_ms);
   fetchedPhysicalGripPoint=buf_physicalGripPoint.GetValue(putTime_ms);
   fetchedPhysicalGripForce=buf_physicalGripForce.GetValue(putTime_ms);

@@ -302,6 +302,7 @@ int main(int argc, const char** argv) {
   int trainingOverride = -1;
   bool playerMatch = false;
   bool physicalRig = false;
+  bool proceduralLab=false;
   bool controllerTest = false;
   bool telemetry = false;
   bool pes3Preview = false;
@@ -313,6 +314,7 @@ int main(int argc, const char** argv) {
              "  --training        Solo training, original player/field/animations\n"
              "  --player-match    11 vs 11, fixed player and first-person controls\n"
              "  --physical-rig    Experimental physical training and procedural poses\n"
+             "  --procedural-lab  Solo controller comparison; F12 cycles references/free body\n"
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
              "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
@@ -323,6 +325,7 @@ int main(int argc, const char** argv) {
     else if (arg == "--training") trainingOverride = 1;
     else if (arg == "--player-match") { trainingOverride = 1; playerMatch = true; }
     else if (arg == "--physical-rig") {trainingOverride=1;physicalRig=true;}
+    else if(arg=="--procedural-lab"){trainingOverride=1;physicalRig=true;proceduralLab=true;}
     else if (arg == "--match") trainingOverride = 0;
     else if (arg == "--telemetry") telemetry = true;
     else if (arg == "--pes3-preview") pes3Preview = true;
@@ -345,6 +348,7 @@ int main(int argc, const char** argv) {
   if (telemetry) config->SetBool("training_telemetry", true);
   if (playerMatch) config->SetBool("player_match",true);
   if(physicalRig){config->SetBool("training_physical_rig",true);config->SetBool("training_physical_lab",true);}
+  if(proceduralLab){config->SetBool("player_match",false);config->SetInt("training_body_controller",1);}
   if (pes3Preview) { config->SetBool("pes3_preview",true); config->SetBool("training_mode",true); }
 
   Initialize(*config);

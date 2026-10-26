@@ -87,6 +87,11 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     shutil.copy2(project / "docs/EQUILIBRIO-CONTINUO.md",stage / "LEIA-EQUILIBRIO.txt")
     shutil.copy2(project / "docs/fluid-reception-research.json",stage / "fluid-reception-research.json")
     shutil.copy2(project / "docs/QUEDAS-PROTEGIDAS.md",stage / "LEIA-QUEDAS.txt")
+    for source,target in [("docs/LABORATORIO-PROCEDURAL.md","LEIA-LABORATORIO.txt"),
+                          ("docs/PESQUISA-CONTROLE-PROCEDURAL.md","PESQUISA-CONTROLE-PROCEDURAL.md"),
+                          ("docs/procedural-controller-research.json","procedural-controller-research.json"),
+                          ("config/fullbody-policy-candidate.json","fullbody-policy-candidate.json")]:
+        shutil.copy2(project/source,stage/target)
     shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
     for filename, command in [
         ("importar-pes3.bat", 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0import-pes3.ps1"'),
@@ -129,7 +134,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         'gameplayfootball.exe --config training.config --player-match %*\r\n'
         'if errorlevel 1 pause\r\n', encoding="ascii", newline="",
     )
-    for filename, mode in [("treino-fisico.bat", "--training"),
+    for filename, mode in [("laboratorio-procedural.bat","--procedural-lab"),
+                           ("treino-fisico.bat", "--training"),
                            ("partida-fisica.bat", "--player-match")]:
         (stage / filename).write_text(
             '@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
@@ -350,6 +356,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stripped,"gameplayfootball.exe")
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
+                         "laboratorio-procedural.bat","LEIA-LABORATORIO.txt","PESQUISA-CONTROLE-PROCEDURAL.md","procedural-controller-research.json","fullbody-policy-candidate.json",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
                          "learned-muscle-policy.json","learned-balance-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt","LEIA-EQUILIBRIO.txt","LEIA-QUEDAS.txt","fluid-reception-research.json",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):

@@ -22,6 +22,7 @@ using namespace blunted;
 class PlayerBase;
 class Match;
 namespace football_physics {class PhysicalRig;class ShirtCloth;struct Input;}
+namespace football_physics {class FrameMotionPlayer;}
 
 typedef std::map < const std::string, boost::intrusive_ptr<Node> > NodeMap;
 
@@ -249,6 +250,8 @@ class HumanoidBase {
     bool PhysicalRigEnabled() const;
     bool PhysicalRigBusy() const;
     void TogglePhysicalRig();
+    void CycleBodyController();
+    void ComposeMatchedReference(football_physics::Input &input);
     void AddPhysicalImpulse(const Vector3 &impulse, const Vector3 &lever=Vector3(0,0,.35f),bool forceFall=false);
     void PhysicalCollision(const Vector3 &velocityChange);
   void ResetPhysicalRig(bool clearHistory=true);
@@ -449,6 +452,7 @@ class HumanoidBase {
     Vector3 fetchedContactRoot;
     float fetchedContactHeight = 0, fetchedChestPhase = -1;
     std::unique_ptr<football_physics::PhysicalRig> physicalRig;
+    std::unique_ptr<football_physics::FrameMotionPlayer> fullMotionPlayer;
     unsigned long physicalRigTime=~0ul;
     unsigned long physicalCollisionTime=0;
     unsigned long physicalVisibleTelemetryTime=~0ul;
@@ -470,6 +474,7 @@ class HumanoidBase {
     TemporalSmoother<Quaternion> buf_physicalAdditive[13];
     Quaternion fetchedPhysicalAdditive[13];
     bool fetchedPhysicalRagdoll=false;
+    bool fetchedFreeBody=false;
     Vector3 physicalGripPoint{0},physicalGripForce{0};
     Vector3 physicalTraction{0};
     TemporalSmoother<Vector3> buf_physicalGripPoint,buf_physicalGripForce;

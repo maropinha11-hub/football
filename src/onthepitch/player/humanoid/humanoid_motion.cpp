@@ -1,9 +1,82 @@
 #include "humanoidbase.hpp"
 #include "motion_matching.hpp"
+#include "frame_motion_matching.hpp"
 #include "strike_technique.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include <map>
+
+void HumanoidBase::ComposeMatchedReference(football_physics::Input &input){
+  using namespace football_physics;
+  if(input.controller!=2||input.action||input.touchPending||input.upperReception||input.staggering||PhysicalRigBusy()||length(input.velocity)<.15f){
+    if(fullMotionPlayer)fullMotionPlayer->reset();return;
+  }
+  if(!fullMotionPlayer)fullMotionPlayer.reset(new FrameMotionPlayer);
+  static boost::weak_ptr<AnimCollection> owner;
+  static std::shared_ptr<const ReferenceLibrary> cached;
+  auto point=[](Vector3 p){return Vec{{p.coords[0],p.coords[1],p.coords[2]}};};
+  auto rotation=[](Quaternion q){return Quat{{q.elements[0],q.elements[1],q.elements[2],q.elements[3]}};};
+  if(owner.lock()!=anims||!cached){
+    auto bank=std::make_shared<ReferenceLibrary>();unsigned id=0;
+    for(Animation *clip:anims->GetAnimations()){
+      const unsigned clipID=id++;
+      if(clip->GetAnimType()!="movement"||clip->GetEffectiveFrameCount()<4||
+         !clip->GetVariable("incoming_special_state").empty()||!clip->GetVariable("outgoing_special_state").empty()||
+         !clip->GetVariable("incoming_retain_state").empty()||!clip->GetVariable("outgoing_retain_state").empty())continue;
+      const int end=clip->GetEffectiveFrameCount();
+      auto rootAt=[&](int f){Quaternion q;Vector3 root;clip->GetKeyFrame("player",std::min(f,end),q,root);
+        if(f>end)root+=Vector3(0,-clip->GetOutgoingVelocity(),0).GetRotated2D(clip->GetOutgoingAngle())*((f-end)*.01f);
+        return root;};
+      auto sample=[&](int f,Quaternion *q,Quaternion *global,Vector3 *p){
+        Vector3 unused;p[0]=Vector3(0,0,(pes3NativeReference.offsets[0][2]+rootAt(f).coords[2])*zMultiplier);
+        for(unsigned bone=0;bone<13;++bone)clip->GetKeyFrame(pes3::nativeBoneNames[bone],std::min(f,end),q[bone],unused);
+        ContactForwardKinematics(q,global,p);};
+      for(int frame=0;frame<=end;++frame){
+        ReferenceFrame row;row.clip=clipID;row.frame=frame;row.end=end;
+        Quaternion q[13],global[13],nq[13],ng[13];Vector3 p[13],next[13];
+        sample(frame,q,global,p);sample(frame+1,nq,ng,next);
+        for(unsigned bone=0;bone<13;++bone){row.pose[bone]=rotation(q[bone]);
+          row.velocity[bone]=scalePoint(logarithm(productRotation(rotation(nq[bone]),inverseRotation(row.pose[bone]))),100.f);}
+        row.height=p[0].coords[2];
+        const unsigned joints[5]={9,12,2,4,6};
+        for(unsigned j=0;j<5;++j){row.feature.positions[j]=point(p[joints[j]]-p[0]);
+          row.feature.velocities[j]=point(((next[joints[j]]-next[0])-(p[joints[j]]-p[0]))*100.f);}
+        const Vector3 origin=rootAt(frame);
+        for(unsigned t=0;t<3;++t){const int future=frame+(t+1)*15;
+          row.feature.trajectory[t]=point((rootAt(future)-origin).Get2D());
+          Quaternion futureQ;Vector3 ignored;clip->GetKeyFrame("body",std::min(future,end),futureQ,ignored);
+          row.feature.facing[t]=point(futureQ*Vector3(0,-1,0));}
+        for(unsigned side=0;side<2;++side){const unsigned foot=side?12:9;
+          row.support[side]=p[foot].coords[2]<.12f&&std::fabs((next[foot]-p[foot]).coords[2])<.004f?1.f:0.f;}
+        bank->frames.push_back(row);
+      }
+    }
+    owner=anims;cached=bank;
+    printf("FRAME_REFERENCE_BANK frames=%zu source=native_locomotion contact_actions=excluded\n",bank->frames.size());fflush(stdout);
+  }
+  fullMotionPlayer->library=cached;
+  MotionFeature query;const unsigned joints[5]={9,12,2,4,6};
+  const bool actual=physicalRig&&physicalRig->initialized();
+  Quaternion heading;heading.SetAngleAxis(spatialState.angle,Vector3(0,0,1));
+  const Quaternion inverse=heading.GetInverse();
+  const auto &positions=actual?physicalRig->points():Points{};
+  for(unsigned j=0;j<5;++j){const Vector3 p=actual?Vector3(positions[joints[j]][0]-positions[0][0],positions[joints[j]][1]-positions[0][1],positions[joints[j]][2]-positions[0][2]):contactPositions[joints[j]]-contactPositions[0];
+    query.positions[j]=point(inverse*p);}
+  fullMotionPlayer->observeQuery(query,.01f);
+  const Vector3 desired=inverse*Vector3(input.velocity[0],input.velocity[1],input.velocity[2]);
+  for(unsigned t=0;t<3;++t){query.trajectory[t]=point(desired*((t+1)*.15f));query.facing[t]={{0,-1,0}};}
+  std::array<float,2> support{{0,0}};
+  if(actual)for(unsigned side=0;side<2;++side)support[side]=positions[side?12:9][2]<.12f?1.f:0.f;
+  Pose chosen;float height;
+  if(!fullMotionPlayer->step(query,support,.01f,chosen,height))return;
+  const Quat head=input.pose[2];
+  input.pose=chosen;input.pose[0]=normalized(productRotation(rotation(heading),chosen[0]));input.pose[2]=head;
+  input.pelvis[2]=height;input.matchedReference=true;
+  if(GetConfiguration()->GetBool("training_telemetry",false)&&match->GetActualTime_ms()%100==0){
+    const auto &frame=cached->frames[fullMotionPlayer->selectedIndex()];const auto &found=fullMotionPlayer->lastSearch;
+    printf("FRAME_REFERENCE_MATCH t=%lu clip=%u frame=%u indexed=%zu tested=%u cost=%.6f kind=locomotion\n",match->GetActualTime_ms(),frame.clip,frame.frame,cached->frames.size(),found.tested,found.cost);
+  }
+}
 
 void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &command){
   if(!PhysicalRigEnabled() || candidates.empty())return;

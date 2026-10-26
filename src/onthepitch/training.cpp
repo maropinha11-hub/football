@@ -26,6 +26,7 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
     printf("PHYSICAL_IMPACT_DIRECTION t=%lu direction=%u\n",time,direction);
   }
   if(events.ConsumeKeyPress(SDLK_F7))body->TogglePhysicalRig();
+  if(events.ConsumeKeyPress(SDLK_F12))body->CycleBodyController();
   if(events.ConsumeKeyPress(SDLK_F1)){
     const bool enabled=!GetConfiguration()->GetBool("training_situational_motion",true);
     GetConfiguration()->SetBool("training_situational_motion",enabled);
@@ -36,7 +37,8 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
   if(events.GetKeyboardState(SDLK_u)){
     const bool strong=events.GetKeyboardState(SDLK_LSHIFT)||events.GetKeyboardState(SDLK_RSHIFT);
     const bool overload=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);
-    const float force=overload?900.f:strong?480.f:220.f;
+    const bool freeBody=GetConfiguration()->GetInt("training_body_controller",0)==2&&!PlayerMatchEnabled();
+    const float force=freeBody?(overload?160.f:strong?80.f:40.f):(overload?900.f:strong?480.f:220.f);
     // Force integrated at the simulation's fixed 100 Hz, never a repeated
     // key-down impact. Hold to watch the support yield and recover gradually.
     body->AddPhysicalImpulse(side*(force*.01f),Vector3(0,0,.30f));
@@ -45,7 +47,8 @@ void physicalLabInput(Match *match,Player *actor,unsigned long time) {
   if(events.ConsumeKeyPress(SDLK_F8)){
     const bool control=events.GetKeyboardState(SDLK_LCTRL)||events.GetKeyboardState(SDLK_RCTRL);
     const bool shift=events.GetKeyboardState(SDLK_LSHIFT)||events.GetKeyboardState(SDLK_RSHIFT);
-    const float impulse=control?350.f:shift?190.f:125.f;
+    const bool freeBody=GetConfiguration()->GetInt("training_body_controller",0)==2&&!PlayerMatchEnabled();
+    const float impulse=freeBody?(control?60.f:shift?30.f:15.f):(control?350.f:shift?190.f:125.f);
     body->AddPhysicalImpulse(side*impulse,Vector3(0,0,.18f));
     printf("PHYSICAL_IMPACT_TEST t=%lu impulse=%.1f level=%s forced=0 direction=%u\n",time,impulse,control?"overload":shift?"strong":"medium",direction);
   }
@@ -93,6 +96,9 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   if (player->GetExternalController()) player->GetExternalController()->Reset();
   player->RelaxFatigue(1.0f);
   ball->ResetSituation(ballPosition);
+  if(!PlayerMatchEnabled()&&exercise==0&&GetConfiguration()->GetInt("training_body_controller",0)==2){
+    ball->SetPosition(position+direction*8.f+Vector3(0,0,.112f));ball->SetMomentum(Vector3(0));
+  }
   if (exercise == 3) {
     // Arrive at heading height before the first bounce, within a real
     // standing/jumping header's reach rather than landing metres away.

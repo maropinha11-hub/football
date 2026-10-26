@@ -39,6 +39,7 @@ struct ArticulatedBody::World {
   Vec carrierPelvis{{0,0,0}};
   float age=0,bodyScale=1;
   bool tracking=false;
+  bool motorDriven=false;
   Pose protectionTarget{};
   Vec landingTarget[2]{};
   bool protectionReady=false;
@@ -61,7 +62,7 @@ void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose 
   const bool construct=!state;
   if(construct){state.reset(new World);++builds;}
   auto &s=*state;s.bodyScale=scale;s.age=0;s.referenceReady=false;s.protectionReady=false;
-  s.tracking=tracking;s.carrierPelvis=pelvis;
+  s.tracking=tracking;s.motorDriven=false;s.carrierPelvis=pelvis;
   s.muscleTarget=pose;
   std::array<btTransform,13> frames;
   for(unsigned i=0;i<13;++i){
@@ -234,10 +235,96 @@ void ArticulatedBody::track(const pes3::NativeBind &bind,float scale,const Pose 
     Vec unused;step(dt*.5f,output,unused,metrics);
   }
 }
+void ArticulatedBody::motorObservation(float *x)const{
+  for(unsigned i=0;i<motorFeatures;++i)x[i]=0;
+  if(!state)return;const auto &s=*state;
+  const auto &hips=*s.bodies[1];const Quat yaw=quat(hips.getWorldTransform().getRotation());
+  Vec com{{0,0,0}},speed{{0,0,0}},support{{0,0,0}};
+  for(unsigned i=0;i<13;++i){com=addPoint(com,scalePoint(vec(s.bodies[i+1]->getCenterOfMassPosition()),fraction[i]));
+    speed=addPoint(speed,scalePoint(vec(s.bodies[i+1]->getLinearVelocity()),fraction[i]));}
+  for(unsigned foot:{9u,12u})support=addPoint(support,scalePoint(vec(s.bodies[foot+1]->getCenterOfMassPosition()),.5f));
+  const Vec up=rotatePoint(yaw,{{0,0,1}}),omega=vec(hips.getAngularVelocity());
+  const Vec gap=subtractPoint(com,support);
+  x[0]=bounded(up[0],-1,1);x[1]=bounded(up[1],-1,1);
+  for(unsigned i=0;i<3;++i)x[2+i]=bounded(omega[i]/4.f,-1,1);
+  x[5]=bounded(gap[0]/.25f,-2,2);x[6]=bounded(gap[1]/.25f,-2,2);
+  for(unsigned i=0;i<3;++i)x[7+i]=bounded(speed[i]/2.f,-2,2);
+  x[10]=bounded((com[2]-.9f)/.5f,-2,2);x[11]=1;
+}
+void ArticulatedBody::motor(const pes3::NativeBind &bind,float scale,const Pose &target,Vec initialPelvis,
+    Vec desiredVelocity,float dt,Vec impact,Pose &pose,Vec &pelvis,Metrics &metrics,const float *residual,bool supportFeedback){
+  if(!state||!state->motorDriven){
+    start(bind,scale,target,initialPelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},false);
+    auto &s=*state;s.motorDriven=true;
+    // The laboratory uses a finite flat sole. A capsule rolls at a single
+    // point and cannot represent the human foot's support polygon.
+    for(unsigned foot:{9u,12u}){
+      s.shapes.emplace_back(new btBoxShape(btVector3(.050f,.105f,.035f)*scale));auto *sole=s.shapes.back().get();
+      s.shapes.emplace_back(new btCompoundShape);auto *shape=static_cast<btCompoundShape*>(s.shapes.back().get());
+      shape->addChildShape(btTransform(btQuaternion::getIdentity(),btVector3(0,0,-.035f)*scale),sole);
+      auto &body=*s.bodies[foot+1];body.setCollisionShape(shape);btVector3 inertia;
+      shape->calculateLocalInertia(PhysicalRig::mass*fraction[foot],inertia);
+      body.setMassProps(PhysicalRig::mass*fraction[foot],inertia);body.updateInertiaTensor();
+      body.setFriction(.95f);body.setDamping(.04f,.15f);
+    }
+    for(auto &joint:s.joints)for(unsigned axis=3;axis<6;++axis)joint->enableSpring(axis,false);
+  }
+  auto &s=*state;s.dynamics.getSolverInfo().m_numIterations=28;
+  if(length(impact)>0)s.bodies[2]->applyImpulse(bv(capped(impact,360.f)),btVector3(0,0,.18f));
+  const float h=dt*.5f;
+  for(unsigned sub=0;sub<2;++sub){
+    float obs[motorFeatures];motorObservation(obs);
+    const auto rootQ=quat(s.bodies[1]->getWorldTransform().getRotation());
+    const bool falling=rotatePoint(rootQ,{{0,0,1}})[2]<.65f||s.bodies[1]->getCenterOfMassPosition().z()<.65f*scale;
+    for(unsigned i=1;i<13;++i){
+      auto &child=*s.bodies[i+1];const unsigned parent=pes3::nativeParents[i];auto &base=*s.bodies[parent+1];
+      auto &joint=*s.joints[i-1];btVector3 angles;
+      Vec adjustment{{0,0,0}};
+      if(residual)for(unsigned axis=0;axis<3;++axis){float value=0;
+        for(unsigned f=0;f<motorFeatures;++f)value+=residual[((i-1)*3+axis)*motorFeatures+f]*obs[f];
+        adjustment[axis]=bounded(value,-1,1)*.25f;
+        metrics.fullBodyResidual=std::max(metrics.fullBodyResidual,std::fabs(adjustment[axis]));}
+      const Quat goal=normalized(productRotation(target[i],exponential(adjustment)));
+      Quat balancedGoal=goal;
+      if(supportFeedback&&(i==9||i==12)&&!falling){
+        // Ankle strategy from measured extrapolated CoM. This is an internal
+        // joint target; its finite sole and actual ground contacts must carry
+        // the reaction. No root translation or supporting external force.
+        const Vec command=capped(desiredVelocity,1.2f);
+        const Vec capture{{obs[5]*.25f+(obs[7]*2.f-command[0])*.18f,
+                           obs[6]*.25f+(obs[8]*2.f-command[1])*.18f,0}};
+        const Vec correction=rotatePoint(inverseRotation(rootQ),capped({{-1.4f*capture[1],1.4f*capture[0],0}},.13f));
+        balancedGoal=normalized(productRotation(goal,exponential(correction)));
+      }
+      btGeneric6DofSpring2Constraint::matrixToEulerXYZ(btMatrix3x3(bq(balancedGoal)),angles);
+      const float force=i>=7?180.f:i==1?150.f:i==2?18.f:35.f;
+      for(unsigned axis=0;axis<3;++axis){
+        joint.enableMotor(axis+3,!falling);joint.setServo(axis+3,true);
+        joint.setServoTarget(axis+3,angles[axis]);joint.setTargetVelocity(axis+3,3.f);
+        joint.setMaxMotorForce(axis+3,force);
+        joint.setParam(BT_CONSTRAINT_ERP,supportFeedback?.4f:.2f,axis+3);
+      }
+      // The sequential impulse solver solves motors together with contacts
+      // and joint constraints. This avoids the explicit PD's light-foot
+      // instability without moving a body directly or anchoring its root.
+      child.activate();base.activate();
+      const Quat q=quat(base.getWorldTransform().getRotation().inverse()*child.getWorldTransform().getRotation());
+      metrics.motorError=std::max(metrics.motorError,length(logarithm(productRotation(target[i],inverseRotation(q)))));
+      ++metrics.neuralMotorSamples;
+    }
+    // Once support is actually lost, keep protective muscle control instead
+    // of rigidly trying to hold a standing joint configuration on the floor.
+    if(falling){s.motorDriven=false;s.muscleTarget=target;}
+    step(h,pose,pelvis,metrics);s.motorDriven=true;
+  }
+  metrics.dynamicSegments=0;for(unsigned i=0;i<13;++i)metrics.dynamicSegments+=s.bodies[i+1]->getInvMass()>0;
+  metrics.fullBodyUpright=rotatePoint(pose[0],{{0,0,1}})[2];metrics.fullBodyHeight=pelvis[2];
+  metrics.fullBodySpeed=length(vec(s.bodies[1]->getLinearVelocity()));
+}
 void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
   auto &s=*state;
   metrics.physicalWorldBuilds=builds;
-  if(!s.tracking){
+  if(!s.tracking&&!s.motorDriven){
     s.age+=dt;
     // Retain joint muscle tone during a fall. These are internal equal and
     // opposite torques: they cannot lift or suspend the complete body.
@@ -330,7 +417,7 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
       metrics.supportTorque=std::max(metrics.supportTorque,length(torque));
     }
   }
-  s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;
+  s.dynamics.stepSimulation(dt,0);metrics.kineticEnergy=0;metrics.dynamicSegments=0;
   std::array<bool,2> support{};
   for(unsigned i=0;i<13;++i){
     auto &body=*s.bodies[i+1];const auto q=quat(body.getWorldTransform().getRotation());
@@ -342,6 +429,7 @@ void ArticulatedBody::step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics){
     if(i==0)pelvis=vec(body.getCenterOfMassPosition()-body.getWorldTransform().getBasis()*s.centers[0]);
     metrics.angularSpeed=std::max(metrics.angularSpeed,float(body.getAngularVelocity().length()));
     if(body.getInvMass()>0){
+      ++metrics.dynamicSegments;
       metrics.kineticEnergy+=.5f/body.getInvMass()*body.getLinearVelocity().length2();
       const auto omega=body.getAngularVelocity();metrics.kineticEnergy+=.5f*omega.dot(body.getInvInertiaTensorWorld().inverse()*omega);
     }

@@ -1,0 +1,129 @@
+{
+  "sources": [
+    {
+      "name": "deepmimic",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/README.md",
+      "status": 200,
+      "bytes": 8318,
+      "sha256": "a9f216f33fae935e017e03de379f2773452206ca8ff56e8cbb51a95715dec0d7"
+    },
+    {
+      "name": "mimickit",
+      "url": "https://raw.githubusercontent.com/xbpeng/MimicKit/main/README.md",
+      "status": 200,
+      "bytes": 8149,
+      "sha256": "dc6841da6854b3594a4b408e83ee604469e3f4690e12098c37a839040c342dac"
+    },
+    {
+      "name": "phc",
+      "url": "https://raw.githubusercontent.com/ZhengyiLuo/PHC/master/README.md",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "amp",
+      "url": "https://xbpeng.github.io/projects/AMP/index.html",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "soccer-science",
+      "url": "https://www.science.org/doi/10.1126/scirobotics.adi8022",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "soccer-project",
+      "url": "https://sites.google.com/view/op3-soccer",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "skillmimic",
+      "url": "https://raw.githubusercontent.com/wyhuai/SkillMimic/main/README.md",
+      "status": 200,
+      "bytes": 10722,
+      "sha256": "f8cf80220fad43593aef33d25975bff8b9709918c058baabc4e47dce7942610f"
+    },
+    {
+      "name": "motion-matching",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/controller.cpp",
+      "status": 200,
+      "bytes": 90602,
+      "sha256": "e52bb8998210d7fa8cc5807f42a358cfe202d62097ac605b6f6120e6d655a8a8"
+    },
+    {
+      "name": "motion-matching-readme",
+      "url": "https://raw.githubusercontent.com/orangeduck/Motion-Matching/main/README.md",
+      "status": 200,
+      "bytes": 3419,
+      "sha256": "4d27d6d8269e5afd5226829a9e0c1de6df9ec236fd8efd0e0d3ffbe8a5fd9a8c"
+    },
+    {
+      "name": "deepmimic-spd",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/ImpPDController.cpp",
+      "status": 200,
+      "bytes": 6641,
+      "sha256": "222bda44fa418316705fecd7a1af28bd6fff70c37cc8caef0f9dcbbc276ac29f"
+    },
+    {
+      "name": "loco-mujoco",
+      "url": "https://raw.githubusercontent.com/robfiras/loco-mujoco/master/README.md",
+      "status": 200,
+      "bytes": 7500,
+      "sha256": "a734fb789eea9af1401103c0837b9d5555eafdc43b1af34eb138891d0459786b"
+    },
+    {
+      "name": "learning-soccer",
+      "url": "https://arxiv.org/html/2304.13653v2",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "capture-point",
+      "url": "https://www.ihmc.us/wp-content/uploads/2021/08/PrattHumanoids2006.pdf",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "phc",
+      "url": "https://raw.githubusercontent.com/ZhengyiLuo/PHC/main/README.md",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "soccer-playground",
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_playground/main/mujoco_playground/_src/locomotion/op3/joystick.py",
+      "status": 200,
+      "bytes": 16752,
+      "sha256": "a2f793850f113da4c212269be99590903280a94d61386c2e6ab4bba2e1980f74"
+    },
+    {
+      "name": "soccer-readme",
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_playground/main/README.md",
+      "status": 200,
+      "bytes": 7070,
+      "sha256": "cfa6cd341760bcb61da2c846456751ac9e58573153307498deec6835c1d4301a"
+    },
+    {
+      "name": "amp",
+      "url": "https://raw.githubusercontent.com/xbpeng/MimicKit/main/docs/README_AMP.md",
+      "status": 200,
+      "bytes": 2794,
+      "sha256": "1f1a9900795a1741435153611af2b23bc57b141a2ef66f5bed99d536922e5094"
+    },
+    {
+      "name": "phc-license",
+      "url": "https://raw.githubusercontent.com/ZhengyiLuo/PHC/main/LICENSE",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "skillmimic-license",
+      "url": "https://raw.githubusercontent.com/wyhuai/SkillMimic/main/LICENSE",
+      "status": 200,
+      "bytes": 11346,
+      "sha256": "f984609aeffe050102b30d267f5e24b289c935adf7337ea1d19d7af4209e91f7"
+    },
+    {
+      "name": "learning-soccer-source",
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_menagerie/main/robotis_op3/README.md",
+      "status": 200,
+      "bytes": 1865,
+      "sha256": "e257cbfd60cd4234314bef3cf26bad3c2c8ae347787068bc7d3239cb569a1586"
+    }
+  ],
+  "scope": "Research of physical control and imitation; no pretrained football policy or external motion database imported"
+}

@@ -12,6 +12,13 @@ class ArticulatedBody {
   void track(const pes3::NativeBind &bind,float scale,const Pose &target,Vec pelvis,float dt,Vec impulse,Pose &output,Metrics &metrics);
   void impulse(Vec value,Vec lever);
   void step(float dt,Pose &pose,Vec &pelvis,Metrics &metrics);
+  // Separate experimental path: all links, including root and shoes, have
+  // mass. References drive internal torques, never transforms or root forces.
+  void motor(const pes3::NativeBind &bind,float scale,const Pose &target,Vec initialPelvis,
+             Vec desiredVelocity,float dt,Vec impulse,Pose &pose,Vec &pelvis,Metrics &metrics,
+             const float *residual=nullptr,bool supportFeedback=true);
+  void motorObservation(float *features)const;
+  static constexpr unsigned motorFeatures=12,motorActions=36;
  private:
   struct World;
   std::unique_ptr<World> state;

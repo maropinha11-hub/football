@@ -8,6 +8,17 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+Há um novo **laboratório separado de controladores** em
+`laboratorio-procedural.bat`. **F12** compara a base aprovada, uma referência
+de passada procedural e um corpo com os treze segmentos dinâmicos. O equilíbrio
+parado e a reação a impactos pequenos foram verificados; a caminhada livre
+ainda apresenta quedas e não é uma gameplay física pronta. Os candidatos
+treinados não passaram no conjunto separado e não são carregados pelo jogo.
+Veja [os controles e limites](docs/LABORATORIO-PROCEDURAL.md),
+[a pesquisa e o plano de aprendizagem](docs/PESQUISA-CONTROLE-PROCEDURAL.md) e
+[a validação desta etapa](docs/procedural-controller-validation.json).
+Os atalhos anteriores continuam disponíveis com o controlador aprovado.
+
 A revisão atual recupera a movimentação do executável aprovado enviado pelo
 usuário, identificado byte a byte como a versão `fa0dfa6`. Os ciclos de
 locomoção Unity foram retirados. A suavização nativa das transições usa um

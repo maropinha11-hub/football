@@ -2,6 +2,7 @@
 #include "articulated_body.hpp"
 #include "balance_controller.hpp"
 #include "anatomical_arms.hpp"
+#include "procedural_reference.hpp"
 
 namespace football_physics {
 namespace {
@@ -17,7 +18,7 @@ void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){r
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
 void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){deliberateFall=false;arrestTime=0;impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){procedural->reset();deliberateFall=false;arrestTime=0;impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 bool PhysicalRig::adoptContactHand(Vec target){
@@ -63,10 +64,22 @@ void PhysicalRig::solveLeg(unsigned hip,Vec target,float edgeMargin){
   forwardKinematics();
 }
 
-PhysicalRig::PhysicalRig():balance(new BalanceController){}
+PhysicalRig::PhysicalRig():balance(new BalanceController),procedural(new ProceduralReference){}
 PhysicalRig::~PhysicalRig()=default;
-void PhysicalRig::step(const Input &input,float dt){
+void PhysicalRig::step(const Input &rawInput,float dt){
   dt=bounded(dt,.001f,.02f);
+  if(controller!=rawInput.controller){reset();controller=rawInput.controller;}
+  proceduralInput=controller?procedural->compose(rawInput,reference,scale,dt):rawInput;
+  const Input &input=proceduralInput;
+  if(controller==2){
+    if(!articulated)articulated.reset(new ArticulatedBody);
+    debug={};
+    articulated->motor(reference,scale,input.pose,input.pelvis,input.velocity,dt,pendingImpulse,local,root,debug);
+    pendingImpulse=pendingTorque={{0,0,0}};forcedFall=false;
+    ready=true;forwardKinematics();stateAge+=dt;
+    state=root[2]<.65f*scale||debug.fullBodyUpright<.65f?Mode::Falling:Mode::Active;
+    return;
+  }
   // Restarts and explicit laboratory placements can relocate the native
   // root. Neither a support anchor nor accumulated momentum survives that.
   if(ready&&state==Mode::Active&&length(subtractPoint(input.pelvis,root))>.45f+length(input.velocity)*dt)reset();
@@ -330,7 +343,9 @@ void PhysicalRig::applySupportStep(const Input &input){
     if(side!=unsigned(recoveryFoot)&&debug.recoveryStep>.95f)debug.recoverySupportError=length(subtractPoint(positions[ankle],stepSupport));
   }
 }
-void PhysicalRig::evaluate(const Input &input){
+void PhysicalRig::evaluate(const Input &source){
+  if(controller==2)return;
+  const Input &input=controller==1?proceduralInput:source;
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
   local=input.pose;forwardKinematics();const Vec left=positions[9],right=positions[12];

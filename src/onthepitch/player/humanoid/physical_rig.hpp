@@ -34,6 +34,8 @@ inline float smooth(float v){v=bounded(v,0,1);return v*v*(3-2*v);}
 
 enum class Mode { Active=0,Falling=1,Recovering=2 };
 struct Input {
+  // 0 approved hybrid, 1 generated locomotion reference, 2 free-body lab.
+  unsigned controller=0;
   Pose pose{};
   Vec pelvis{{0,0,.96f}},velocity{{0,0,0}},forward{{0,-1,0}};
   Vec reach{{0,0,0}},opponent{{0,0,0}};
@@ -43,6 +45,7 @@ struct Input {
   float reachWeight=0,opponentDistance=100;
   Vec ballImpact{{0,0,0}},ballImpactLever{{0,0,.5f}};float ballImpactAge=-1;
   bool action=false,upperReception=false,protect=false,handTargetActive=false,gripped=false;
+  bool matchedReference=false;
   bool staggering=false,passiveTracking=false,touchPending=false,grounding=false;
   football_situations::Context situation;
 };
@@ -58,6 +61,8 @@ struct Metrics {
   unsigned physicalWorldBuilds=0,protectiveHands=0;
   unsigned supportFeet=0;
   bool arrestedFall=false;
+  unsigned dynamicSegments=0;
+  float fullBodyUpright=0,fullBodyHeight=0,fullBodySpeed=0,fullBodyTorque=0,fullBodyResidual=0;
   float motorError=0,motorAcceleration=0;
   unsigned neuralMotorSamples=0;
   float counterbalance=0;
@@ -75,6 +80,7 @@ struct BalanceMotion {RecoveryMotion frames;Vec push{{0,-1,0}};float speed=0,gai
 
 class ArticulatedBody;
 class BalanceController;
+class ProceduralReference;
 class PhysicalRig {
  public:
   PhysicalRig();
@@ -96,6 +102,7 @@ class PhysicalRig {
   Mode mode()const{return state;}
   const Metrics &metrics()const{return debug;}
   bool initialized()const{return ready;}
+  bool fullyDynamic()const{return controller==2;}
   const Pose &additivePose()const{return additive;}
   Vec balanceVelocity()const;
   bool adoptContactHand(Vec target);
@@ -117,6 +124,9 @@ class PhysicalRig {
   Pose additive{};
   std::unique_ptr<ArticulatedBody> articulated;
   std::unique_ptr<BalanceController> balance;
+  std::unique_ptr<ProceduralReference> procedural;
+  unsigned controller=0;
+  Input proceduralInput;
   std::shared_ptr<const std::vector<BalanceMotion>> balanceMotions=std::make_shared<const std::vector<BalanceMotion>>();
   int balanceChoice=-1,handShoulder=3;
   float balanceMotionTime=0,handEnvelope=0,handDt=.01f;
