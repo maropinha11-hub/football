@@ -1,6 +1,8 @@
 #include "articulated_body.hpp"
 #include "learned_muscle_policy.hpp"
 #include "anatomical_arms.hpp"
+#include "body_reference.hpp"
+#include "body_dynamics.hpp"
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #include <vector>
@@ -58,6 +60,31 @@ struct ArticulatedBody::World {
 };
 ArticulatedBody::ArticulatedBody()=default;
 ArticulatedBody::~ArticulatedBody()=default;
+std::array<float,3> ArticulatedBody::validateDynamics(const pes3::NativeBind &bind,unsigned joint,unsigned axis,float torque){
+  if(joint>=13||axis>=3||!std::isfinite(torque))return {{1e9f,1e9f,1e9f}};
+  ArticulatedBody copy;const Pose pose=BodyReference::standing(bind,{{0,0,0,1}});
+  copy.start(bind,1,pose,{{0,0,3}},{{0,0,0}},{{0,0,0}},{{0,0,0}},false);auto &s=*copy.state;s.motorDriven=true;
+  for(auto &j:s.joints){j->setAngularLowerLimit(btVector3(1,1,1));j->setAngularUpperLimit(btVector3(-1,-1,-1));
+    for(unsigned d=3;d<6;++d){j->enableSpring(d,false);j->enableMotor(d,false);}}
+  std::array<whole_body::Link,13> links;
+  for(unsigned i=0;i<13;++i){auto &body=*s.bodies[i+1];body.setDamping(0,0);auto &b=links[i];
+    for(unsigned j=0;j<13;++j)if(i!=j)body.setIgnoreCollisionCheck(s.bodies[j+1].get(),true);
+    b.position=vec(body.getCenterOfMassPosition());b.origin=vec(body.getWorldTransform()*(-s.centers[i]));b.rotation=quat(body.getWorldTransform().getRotation());b.mass=1.f/body.getInvMass();
+    const auto inertia=body.getInvInertiaTensorWorld().inverse();for(unsigned r=0;r<3;++r)b.inertia[r]=vec(inertia[r]);}
+  const auto model=whole_body::dynamics(links);whole_body::Row force{},predicted{};
+  for(unsigned i=0;i<whole_body::dofs;++i)force[i]=-model.bias[i];
+  if(joint>0){Vec t{};t[axis]=torque;force[6+(joint-1)*3+axis]+=torque;
+    s.bodies[joint+1]->applyTorque(bv(t));s.bodies[pes3::nativeParents[joint]+1]->applyTorque(-bv(t));}
+  if(!whole_body::solve(model.mass,force,whole_body::dofs,predicted))return {{1e9f,1e9f,1e9f}};
+  const float dt=.005f;s.dynamics.getSolverInfo().m_numIterations=200;s.dynamics.stepSimulation(dt,0);
+  whole_body::Row measured{};const auto &base=*s.bodies[1];
+  const Vec v=vec(base.getLinearVelocity()+base.getAngularVelocity().cross(base.getWorldTransform()*(-s.centers[0])-base.getCenterOfMassPosition()));
+  for(unsigned axis=0;axis<3;++axis){measured[axis]=v[axis]/dt;measured[axis+3]=base.getAngularVelocity()[axis]/dt;}
+  for(unsigned i=1;i<13;++i){const auto relative=s.bodies[i+1]->getAngularVelocity()-s.bodies[pes3::nativeParents[i]+1]->getAngularVelocity();
+    for(unsigned axis=0;axis<3;++axis)measured[6+(i-1)*3+axis]=relative[axis]/dt;}
+  float error=0,maximum=0;for(unsigned i=0;i<whole_body::dofs;++i){error=std::max(error,float(std::fabs(measured[i]-predicted[i])));maximum=std::max(maximum,float(std::fabs(predicted[i])));}
+  return {{error,maximum,float(predicted[2])}};
+}
 void ArticulatedBody::start(const pes3::NativeBind &bind,float scale,const Pose &pose,Vec pelvis,Vec velocity,Vec impulse,Vec lever,bool tracking){
   const bool construct=!state;
   if(construct){state.reset(new World);++builds;}
@@ -251,8 +278,31 @@ void ArticulatedBody::motorObservation(float *x)const{
   for(unsigned i=0;i<3;++i)x[7+i]=bounded(speed[i]/2.f,-2,2);
   x[10]=bounded((com[2]-.9f)/.5f,-2,2);x[11]=1;
 }
+void ArticulatedBody::fullObservation(const Pose &reference,Vec command,float phase,const float *previousActions,float *x)const{
+  std::fill(x,x+fullFeatures,0.f);if(!state)return;const auto &s=*state;
+  const Quat inverse=inverseRotation(quat(s.bodies[1]->getWorldTransform().getRotation()));
+  const Vec up=rotatePoint(inverse,{{0,0,1}}),v=rotatePoint(inverse,vec(s.bodies[1]->getLinearVelocity())),w=rotatePoint(inverse,vec(s.bodies[1]->getAngularVelocity()));
+  for(unsigned axis=0;axis<3;++axis){x[axis]=up[axis];x[3+axis]=bounded(v[axis]/3.f,-3,3);x[6+axis]=bounded(w[axis]/6.f,-3,3);}
+  for(unsigned i=1;i<13;++i){const auto &body=*s.bodies[i+1],&parent=*s.bodies[pes3::nativeParents[i]+1];
+    const Quat pq=quat(parent.getWorldTransform().getRotation());
+    const Vec angle=logarithm(productRotation(inverseRotation(pq),quat(body.getWorldTransform().getRotation())));
+    const Vec velocity=rotatePoint(inverseRotation(pq),vec(body.getAngularVelocity()-parent.getAngularVelocity()));
+    const Vec target=logarithm(reference[i]);
+    for(unsigned axis=0;axis<3;++axis){x[9+(i-1)*3+axis]=angle[axis]/3.14159265f;x[45+(i-1)*3+axis]=bounded(velocity[axis]/8.f,-3,3);x[81+(i-1)*3+axis]=target[axis]/3.14159265f;}
+  }
+  const Vec local=rotatePoint(inverse,command);for(unsigned axis=0;axis<3;++axis)x[117+axis]=local[axis]/2.f;
+  x[120]=std::sin(phase*6.28318531f);x[121]=std::cos(phase*6.28318531f);x[122]=s.bodies[1]->getCenterOfMassPosition().z()/s.bodyScale;
+  for(int m=0;m<s.dispatcher.getNumManifolds();++m){const auto *contact=s.dispatcher.getManifoldByIndexInternal(m);
+    const auto *a=contact->getBody0(),*b=contact->getBody1();const int bone=a==s.bodies[0].get()?b->getUserIndex():b==s.bodies[0].get()?a->getUserIndex():-1;
+    if(bone!=9&&bone!=12)continue;
+    for(int c=0;c<contact->getNumContacts();++c)if(contact->getContactPoint(c).getDistance()<.003f)x[123+(bone==12)]=1;
+  }
+  for(unsigned side=0;side<2;++side)x[125+side]=(s.bodies[side?13:10]->getWorldTransform()*(-s.centers[side?12:9])).z()/s.bodyScale;
+  float reduced[motorFeatures];motorObservation(reduced);x[127]=std::hypot(reduced[5],reduced[6]);
+  if(previousActions)std::copy(previousActions,previousActions+20,x+128);
+}
 void ArticulatedBody::motor(const pes3::NativeBind &bind,float scale,const Pose &target,Vec initialPelvis,
-    Vec desiredVelocity,float dt,Vec impact,Pose &pose,Vec &pelvis,Metrics &metrics,const float *residual,bool supportFeedback){
+    Vec desiredVelocity,float dt,Vec impact,Pose &pose,Vec &pelvis,Metrics &metrics,const float *residual,bool supportFeedback,const float *actions){
   if(!state||!state->motorDriven){
     start(bind,scale,target,initialPelvis,{{0,0,0}},{{0,0,0}},{{0,0,0}},false);
     auto &s=*state;s.motorDriven=true;
@@ -284,9 +334,11 @@ void ArticulatedBody::motor(const pes3::NativeBind &bind,float scale,const Pose 
         for(unsigned f=0;f<motorFeatures;++f)value+=residual[((i-1)*3+axis)*motorFeatures+f]*obs[f];
         adjustment[axis]=bounded(value,-1,1)*.25f;
         metrics.fullBodyResidual=std::max(metrics.fullBodyResidual,std::fabs(adjustment[axis]));}
+      if(actions)for(unsigned axis=0;axis<3;++axis){adjustment[axis]=bounded(actions[(i-1)*3+axis],-1,1)*.5f;
+        metrics.fullBodyResidual=std::max(metrics.fullBodyResidual,std::fabs(adjustment[axis]));}
       const Quat goal=normalized(productRotation(target[i],exponential(adjustment)));
       Quat balancedGoal=goal;
-      if(supportFeedback&&(i==9||i==12)&&!falling){
+      if(supportFeedback&&!actions&&(i==9||i==12)&&!falling){
         // Ankle strategy from measured extrapolated CoM. This is an internal
         // joint target; its finite sole and actual ground contacts must carry
         // the reaction. No root translation or supporting external force.

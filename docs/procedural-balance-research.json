@@ -1,0 +1,64 @@
+{
+  "new_sources": [
+    {
+      "name": "simbicon-readme",
+      "url": "https://raw.githubusercontent.com/UBCMOCCA/SimbiconJS/master/README.md",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "simbicon-paper",
+      "url": "https://www.cs.ubc.ca/~van/papers/2007-siggraph-simbicon.pdf",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "simbicon-copy",
+      "url": "https://www.cs.cmu.edu/~kkyin/papers/Yin_SIG07.pdf",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "name": "simbicon-pdf",
+      "url": "https://raw.githubusercontent.com/UBCMOCCA/SimbiconJS/master/doc/simbicon.pdf",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "pymanoid-balance",
+      "url": "https://raw.githubusercontent.com/stephane-caron/pymanoid/master/pymanoid/centroidal.py",
+      "status": 200,
+      "bytes": 14203,
+      "sha256": "695980757eb809bf5307b01af2bf648b6de8a1fd6128387e08c433f06cad48e9"
+    },
+    {
+      "name": "pymanoid-walk",
+      "url": "https://raw.githubusercontent.com/stephane-caron/pymanoid/master/examples/horizontal_walking.py",
+      "status": 200,
+      "bytes": 11599,
+      "sha256": "ddd68195f1a236b663e9c4fbb7182145cd6b2da3ed89e69fb6e6d9f78e70c35c"
+    },
+    {
+      "name": "deepmimic-spd",
+      "url": "https://raw.githubusercontent.com/xbpeng/DeepMimic/master/DeepMimicCore/sim/ImpPDController.cpp",
+      "status": 200,
+      "bytes": 6641,
+      "sha256": "222bda44fa418316705fecd7a1af28bd6fff70c37cc8caef0f9dcbbc276ac29f"
+    },
+    {
+      "name": "mujoco-op3",
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_playground/main/mujoco_playground/_src/locomotion/op3/joystick.py",
+      "status": 200,
+      "bytes": 16752,
+      "sha256": "a2f793850f113da4c212269be99590903280a94d61386c2e6ab4bba2e1980f74"
+    },
+    {
+      "name": "soccer-training",
+      "url": "https://raw.githubusercontent.com/google-deepmind/mujoco_playground/main/mujoco_playground/_src/locomotion/op3/soccer.py",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "findings": [
+    "Native reference and carried root must share the authored foot phase.",
+    "A matcher selecting an interior pose does not establish a feasible physical support.",
+    "A model-valid wrench is not proof of measured contact or physical balance.",
+    "Standing survival is insufficient evidence of walking; signed travel and lifted support are mandatory."
+  ],
+  "unread_sources": "SIMBICON mirrors returned403/404; those papers were not treated as read."
+}

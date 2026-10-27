@@ -9,13 +9,14 @@
 #include <cstdlib>
 using namespace football_physics;
 int main(int argc,char **argv){
-  unsigned seed=7;float push=0,seconds=6,walk=0;bool trace=false,feedback=true;std::string policy;
+  unsigned seed=7;float push=0,seconds=6,walk=0;bool trace=false,feedback=true,diagnostic=false;std::string policy;
   for(int i=1;i<argc;++i){const std::string arg=argv[i];
     if(arg=="--seed"&&i+1<argc)seed=std::strtoul(argv[++i],nullptr,10);
     else if(arg=="--push"&&i+1<argc)push=std::atof(argv[++i]);
     else if(arg=="--seconds"&&i+1<argc)seconds=std::atof(argv[++i]);
     else if(arg=="--walk"&&i+1<argc)walk=std::atof(argv[++i]);
     else if(arg=="--policy"&&i+1<argc)policy=argv[++i];
+    else if(arg=="--check-dynamics")diagnostic=true;
     else if(arg=="--trace")trace=true;else if(arg=="--legacy-v1")feedback=false;else return 2;
   }
   std::vector<float> weights(ArticulatedBody::motorFeatures*ArticulatedBody::motorActions,0);
@@ -23,6 +24,7 @@ int main(int argc,char **argv){
   pes3::NativeBind b;
   b.offsets={{{{0,0,.96f}},{{0,0,.15f}},{{0,-.03f,.5f}},{{.16f,-.01f,.48f}},{{-.01f,0,-.33f}},{{-.16f,-.01f,.48f}},{{.01f,0,-.33f}},{{.087f,0,-.01f}},{{0,0,-.42f}},{{0,-.04f,-.44f}},{{-.087f,0,-.01f}},{{0,0,-.42f}},{{0,-.04f,-.44f}}}};
   for(auto &q:b.rotations)q={{0,0,0,1}};
+  if(diagnostic){for(unsigned i:{0u,1u,4u,7u,8u,9u,10u})for(unsigned axis=0;axis<3;++axis){auto result=ArticulatedBody::validateDynamics(b,i,axis,1.f);std::cout<<i<<","<<axis<<" error="<<result[0]<<" maximum="<<result[1]<<" gravity="<<result[2]<<'\n';}return 0;}
   Pose target=b.rotations,pose=target;Vec pelvis{{0,0,.935f}};
   target[7]=target[10]=exponential({{-.10f,0,0}});
   target[8]=target[11]=exponential({{.20f,0,0}});
@@ -52,7 +54,7 @@ int main(int argc,char **argv){
     float poseError=0;for(unsigned i=1;i<13;++i)poseError+=length(logarithm(productRotation(pose[i],inverseRotation(target[i]))));
     reward+=2.f*std::exp(-8.f*std::pow(pelvis[2]-.935f,2))+metrics.fullBodyUpright-.02f*poseError-.02f*metrics.fullBodySpeed;
     standing+=pelvis[2]>.72f&&metrics.fullBodyUpright>.8f;++count;
-    if(trace&&tick%25==0)std::cerr<<tick<<" height="<<pelvis[2]<<" up="<<metrics.fullBodyUpright<<" speed="<<metrics.fullBodySpeed<<" joints="<<metrics.jointError<<" support="<<metrics.supportFeet<<" balance="<<metrics.supportTorque<<" x="<<pelvis[0]<<" y="<<pelvis[1]<<" hip="<<logarithm(pose[7])[0]<<" hip_y="<<logarithm(pose[7])[1]<<" knee="<<logarithm(pose[8])[0]<<" ankle="<<logarithm(pose[9])[0]<<" ankle_y="<<logarithm(pose[9])[1]<<" error="<<metrics.motorError<<'\n';
+    if(trace&&tick%25==0)std::cerr<<tick<<" torque="<<metrics.fullBodyTorque<<" phase="<<metrics.balancePhase<<" steps="<<metrics.balanceChoice<<" height="<<pelvis[2]<<" up="<<metrics.fullBodyUpright<<" speed="<<metrics.fullBodySpeed<<" joints="<<metrics.jointError<<" support="<<metrics.supportFeet<<" balance="<<metrics.supportTorque<<" x="<<pelvis[0]<<" y="<<pelvis[1]<<" hip="<<logarithm(pose[7])[0]<<" hip_y="<<logarithm(pose[7])[1]<<" knee="<<logarithm(pose[8])[0]<<" ankle="<<logarithm(pose[9])[0]<<" ankle_y="<<logarithm(pose[9])[1]<<" error="<<metrics.motorError<<'\n';
   }
   std::cout<<"{\"reward\":"<<reward/count<<",\"standing_fraction\":"<<float(standing)/count<<",\"minimum_height\":"<<minHeight<<",\"minimum_upright\":"<<uprightMin<<",\"maximum_speed\":"<<maxSpeed<<",\"joint_error\":"<<maxJoint<<",\"penetration\":"<<maxPenetration<<",\"peak_residual\":"<<peakResidual<<",\"peak_support\":"<<peakSupport<<",\"final_height\":"<<pelvis[2]<<",\"dynamic_segments\":13,\"seed\":"<<seed<<",\"push\":"<<push<<",\"walk_speed\":"<<walk<<",\"forward_travel\":"<<start[1]-pelvis[1]<<"}\n";
 }

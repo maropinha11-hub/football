@@ -18,6 +18,7 @@ try:
     capture_at=1100 if name=='jump'else 400
     g.advance(capture_at);subprocess.run(['import','-window',g.window,str(a.output/(('cpu-'if cpu else'human-')+name+'.png'))],env=g.env,check=True);g.advance(1700)
     deliveries=ev(g,'TRAINING_DELIVERY',start);actor=deliveries[0]['actor']if deliveries else'';when=int(deliveries[0]['t'])if deliveries else 0
+    check(('CPU 'if cpu else'human ')+name+' starts a new incoming ball without the previous attempt owner',bool(deliveries)and deliveries[0].get('last_actor')=='-1',deliveries)
     selected=[x for x in ev(g,'NATIVE_APPROVED_SELECT',start)if x.get('actor')==actor and int(x['t'])<when+1000 and (x.get('function')=='3' or 'head'in x.get('source',''))]
     contacts=[x for x in ev(g,'TRAINING_ACTION_TOUCH',start)if x.get('actor')==actor and int(x['t'])<when+1300 and float(x.get('z',0))>.27 and any(part in x.get('part','')for part in parts)]
     title=('CPU 'if cpu else'human ')+name

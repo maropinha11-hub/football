@@ -202,7 +202,7 @@ void HumanoidBase::CycleBodyController(){
     match->GetBall()->SetMomentum(Vector3(0));match->UpdateLatestMentalImageBallPredictions();
   }
   if(player->GetExternalController())player->GetExternalController()->Reset();
-  const char *labels[]={"Base aprovada","Referencia procedural | acoes de futebol nativas","Corpo fisico livre: experimental | R: recolocar em pe"};
+  const char *labels[]={"Base aprovada","Base nativa fluida + resposta procedural","Corpo fisico livre: experimental | R: recolocar em pe"};
   match->SpamMessage(std::string(labels[next])+" | F12: alternar",6000);
   printf("BODY_CONTROLLER_TOGGLE t=%lu mode=%u\n",match->GetActualTime_ms(),next);fflush(stdout);
 }
@@ -575,7 +575,9 @@ void HumanoidBase::UpdatePhysicalRigPose(){
     if(!input.controller)ComposeWalkingReference(input,physicalRigTime!=match->GetActualTime_ms());
     ComposeReceptionReference(input,physicalRigTime!=match->GetActualTime_ms());
     BuildSituationalInput(input);
-    if(input.controller==2&&physicalRigTime!=match->GetActualTime_ms())ComposeMatchedReference(input);
+    // The interior-frame matcher is not a validated physical walking policy.
+    // Keep it available for offline study; it must not replace support targets
+    // while the free body is trying to establish finite sole contact.
     if(input.situation.kind!=football_situations::ActionKind::None)input.passiveTracking=false;
     if(physicalBallImpactTime&&match->GetActualTime_ms()-physicalBallImpactTime<600){
       input.ballImpact=point(physicalBallImpactVelocity);input.ballImpactAge=(match->GetActualTime_ms()-physicalBallImpactTime)*.001f;

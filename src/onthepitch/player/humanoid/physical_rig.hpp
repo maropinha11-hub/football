@@ -126,6 +126,7 @@ class PhysicalRig {
   std::unique_ptr<BalanceController> balance;
   std::unique_ptr<ProceduralReference> procedural;
   unsigned controller=0;
+  float fullBodyWarmup=0;Pose fullBodyStanding{};
   Input proceduralInput;
   std::shared_ptr<const std::vector<BalanceMotion>> balanceMotions=std::make_shared<const std::vector<BalanceMotion>>();
   int balanceChoice=-1,handShoulder=3;

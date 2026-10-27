@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rendered comparison of generated references and a completely dynamic body.
+"""Rendered comparison of native continuity and a completely dynamic body.
 
 This does not certify learned football skills or robust free-body locomotion.
 """
@@ -19,8 +19,10 @@ try:
       config_overrides=dict(context_x=640,context_y=360,training_physical_rig='true',training_physical_lab='true',simulation_seed=7))as g:
   g.reset();key(g,'F4',['Control_L','Shift_L']);start=len(g.read_log());key(g,'F12');g.pad(0,-.5);g.advance(2500);g.pad(0,0);capture(g,'procedural-reference.png')
   proc=events(g,'BODY_CONTROLLER',start)
-  check('F12 selects the generated reference while retaining its physical muscle layer',any(x['mode']=='1'and int(x['segments'])==10 for x in proc),proc[-3:])
-  start=len(g.read_log());key(g,'F12');g.advance(4000);capture(g,'free-body-standing.png');quiet=states(g,start)
+  check('F12 selects native-phase continuity while retaining its physical muscle layer',any(x['mode']=='1'and int(x['segments'])==10 for x in proc),proc[-3:])
+  start=len(g.read_log());key(g,'F12');g.pad(0,-.5);g.advance(450);g.pad(0,0);entry=states(g,start)
+  check('entry from native movement establishes physical support before accepting locomotion',bool(entry)and all(float(x['height'])>.8 and float(x['upright'])>.9 for x in entry),entry)
+  g.reset();start=len(g.read_log());g.advance(4000);capture(g,'free-body-standing.png');quiet=states(g,start)
   check('all thirteen links remain dynamic with one world and no installed failed learned policy',len(quiet)>20 and all(x['segments']=='13'and x['worlds']=='1'and x['learned']=='0'for x in quiet),dict(samples=len(quiet),last=quiet[-3:]))
   check('the rendered free body stands on its own soles',bool(quiet)and min(float(x['height'])for x in quiet)>.70 and min(float(x['upright'])for x in quiet)>.85,quiet[-3:])
   start=len(g.read_log());key(g,'F8');g.advance(2300);capture(g,'small-push-recovery.png');small=states(g,start)
@@ -29,12 +31,13 @@ try:
   check('large loss of support remains dynamic and recruits protective arm targets',bool(fall)and all(x['segments']=='13'for x in fall)and any(float(x['reach'])>.3 for x in guard),dict(samples=len(fall),guard=guard[-3:]))
   renders=events(g,'PHYSICAL_RIG_RENDER',start)
   check('visible free-body bone lengths stay finite through impact',bool(renders)and all(math.isfinite(float(x['root_height']))and float(x['length_error'])<1e-5 for x in renders),dict(samples=len(renders),maximum_error=max([float(x['length_error'])for x in renders]or[1])))
-  g.reset();start=len(g.read_log());g.pad(0,-.5);travel=g.advance(1800);g.pad(0,0);capture(g,'free-body-reference-search.png')
+  g.reset();start=len(g.read_log());g.pad(0,-.5);travel=g.advance(6000);g.pad(0,0);capture(g,'free-body-reference-search.png')
   bank=events(g,'FRAME_REFERENCE_BANK',start);matches=events(g,'FRAME_REFERENCE_MATCH',start)
-  check('free-body locomotion searches interior native reference frames',bool(matches)and any(int(x['frame'])>0 and int(x['tested'])>100 and math.isfinite(float(x['cost']))for x in matches),dict(bank=bank,matches=matches[:5]))
+  check('an unapproved interior-frame matcher no longer overrides the physical support controller',not matches,dict(bank=bank,matches=matches[:5]))
   # Record the remaining stability gap instead of treating a successful
   # nearest-neighbour search as proof of a learned locomotion skill.
-  motion=states(g,start);r['free_body_locomotion_observation']=dict(samples=len(motion),travel_m=math.dist(travel[0]['player'],travel[-1]['player'])if len(travel)>1 else 0,upright_fraction=sum(float(x['height'])>.7 and float(x['upright'])>.8 for x in motion)/max(1,len(motion)),scope='diagnostic; no robust walking or football policy claimed')
+  motion=states(g,start);settled=[x for x in motion if int(x['t'])>=int(motion[0]['t'])+1400]if motion else[]
+  r['free_body_locomotion_observation']=dict(samples=len(motion),duration_ms=6000,startup_excluded_ms=1400,travel_m=math.dist(travel[0]['player'],travel[-1]['player'])if len(travel)>1 else 0,upright_fraction=sum(float(x['height'])>.7 and float(x['upright'])>.8 for x in settled)/max(1,len(settled)),scope='diagnostic after startup exclusion; no robust walking or football policy claimed')
   start=len(g.read_log());key(g,'F12');g.pad(0,-.5);moved=g.advance(2000);g.pad(0,0)
   toggles=events(g,'BODY_CONTROLLER_TOGGLE',start)
   check('switching back restores the approved playable controller',any(x['mode']=='0'for x in toggles)and len(moved)>5 and math.dist(moved[0]['player'],moved[-1]['player'])>.4,toggles)

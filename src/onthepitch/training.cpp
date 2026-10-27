@@ -215,8 +215,8 @@ void Match::LaunchTrainingBall(int delivery) {
   SpamMessage(heightFixture==1?"Recepcao na canela | 7 + F5: repetir":heightFixture==2?"Recepcao na coxa | 8 + F5: repetir":
       heightFixture==3?"Recepcao descendente | 9 + F5: repetir":heightFixture==4?"Bola por tras | 0 + F5: repetir":delivery==0?"Passe rasteiro recebido | F4: repetir":
       delivery==1?"Dominio de peito: parado ou avancando | F5: repetir":"Cruzamento alto | F6: repetir",4500);
-  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d actor=%d\n",
-    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0,player->GetID());
+  printf("TRAINING_DELIVERY type=%d t=%lu arrival_ms=%u error=%.5f target=[%.4f,%.4f,%.4f] offset=%.3f match=%d actor=%d last_actor=%d\n",
+    delivery,actualTime_ms,time,(ball->Predict(time)-target).GetLength(),target.coords[0],target.coords[1],target.coords[2],offset,PlayerMatchEnabled()?1:0,player->GetID(),GetLastTouchPlayer()?GetLastTouchPlayer()->GetID():-1);
   if(cpu&&events.GetKeyboardState(SDLK_b))printf("BOUNDARY_RECEIVE_SETUP t=%lu actor=%d distance_to_line=%.5f\n",actualTime_ms,player->GetID(),pitchHalfW-std::fabs(target.coords[0]));
   fflush(stdout);
 }

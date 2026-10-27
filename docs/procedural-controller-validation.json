@@ -1,89 +1,129 @@
 {
   "status": "experimental_laboratory; complete learned gameplay is not ready",
-  "base_commit": "eee9b3cdcc56e1839172a9117ef88b0b7f203a75",
+  "date": "2026-10-27",
+  "base_commit": "181b4a286db17b5b659f4ecd3d2d3a1dfb5d0308",
   "implemented": {
     "comparison_modes": [
       "approved hybrid",
-      "procedural locomotion reference",
+      "native phase continuity plus procedural response",
       "13-segment dynamic body laboratory"
     ],
+    "native_continuity": "Keep native root/foot/contact phase; inertialize angular discontinuities, preserve action contacts; apply render offsets once relative to unfiltered source.",
+    "free_body_entry": "Canonical supported pose, .85 s preparation, .5 s ramp and .55 m/s lab reference cap; no unapproved interior-frame matcher.",
+    "incoming_touch_ownership": "Unknown last-touch team returns no player, so new deliveries/restarts cannot inherit team 0 previous owner. All eight reception attempts assert last_actor=-1.",
     "free_body_dynamic_segments": 13,
     "kinematic_free_body_segments": 0,
     "body_motors": 12,
     "physics_hz": 200,
     "control_hz": 100,
     "full_body_learned_policy_loaded": false,
-    "motion_matching_scope": "interior native locomotion reference frames only; football action events retain the native selector",
-    "reference_frames_indexed": 29036,
-    "training_algorithm": "augmented random search on native Bullet rollouts",
-    "training_epochs": [
-      120,
-      120,
-      150,
-      200
-    ],
-    "training_status": "all four candidates rejected for runtime; latest archived separately"
+    "motion_matching_scope": "Existing native football selector retained; experimental interior-frame search is not used to drive free-body support.",
+    "learning": {
+      "algorithm": "PPO on native Bullet rollouts",
+      "observations": 148,
+      "actions": 20,
+      "policy_hz": 50,
+      "total_policy_decisions": 5496832,
+      "campaign_decisions": [
+        999424,
+        2998272,
+        1499136
+      ],
+      "result": "all three new candidates rejected and never installed"
+    }
   },
   "validation": {
-    "ctest_suites": 12,
+    "ctest_suites": 13,
     "ctest_result": "passed",
-    "fullbody_numerical_checks": 169,
+    "fullbody_numerical_checks": 199,
     "standing_push_contexts": 80,
-    "python_tests": 206,
-    "python_passed": 200,
+    "isolated_dynamics_cases": 21,
+    "isolated_dynamics_max_acceleration_error": 0.02634,
+    "python_tests": 210,
+    "python_passed": 204,
     "python_skipped": 6,
-    "rendered_scenarios": 6,
-    "rendered_checks": 105,
+    "rendered_scenarios": 9,
+    "rendered_checks": 168,
     "rendered_cases": [
       {
         "scenario": "body_controllers",
-        "checks": 9,
+        "checks": 10,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       },
       {
         "scenario": "approved_restore",
         "checks": 20,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       },
       {
         "scenario": "firstperson_sync",
         "checks": 26,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       },
       {
         "scenario": "physical_actions",
         "checks": 14,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       },
       {
         "scenario": "protective_fall",
         "checks": 16,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       },
       {
         "scenario": "active_reception",
-        "checks": 20,
+        "checks": 28,
         "result": "passed",
-        "executable_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12"
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
+      },
+      {
+        "scenario": "restart_lifecycle",
+        "checks": 17,
+        "result": "passed",
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
+      },
+      {
+        "scenario": "tactical_receptions",
+        "checks": 14,
+        "result": "passed",
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
+      },
+      {
+        "scenario": "keeper_arrivals",
+        "checks": 23,
+        "result": "passed",
+        "executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463"
       }
     ],
-    "rendered_platform": "Linux / SDL-X11 / software rendering",
+    "rendered_platform": "Linux / SDL-X11 / software rendering / virtual Xbox controller",
     "windows_portable_checks": 49,
-    "physical_package_checks": 58,
-    "windows_gui_executed": false
+    "physical_package_checks": 61,
+    "windows_gui_executed": false,
+    "fresh_stripped_executable_matches_package": true,
+    "training_kernel_replay": {
+      "result": "passed",
+      "maximum_absolute_error": 0.0,
+      "steps": 150,
+      "environments": 2,
+      "reference": "flat-soles",
+      "frozen_sha256": "8ad8fc6f0a84b3d21b992f79c95da64bc895704774ba476a6b50f745422ef879",
+      "current_sha256": "becfbd1d5909aacf2de1299014e54576dfdfcc9b5d097f2abe5c2c7b05da6d14"
+    }
   },
   "unresolved": {
     "complete_gameplay": false,
     "free_body_walk": {
-      "samples": 40,
-      "travel_m": 0.7048771949779621,
-      "upright_fraction": 0.225,
-      "scope": "diagnostic; no robust walking or football policy claimed"
+      "samples": 129,
+      "duration_ms": 6000,
+      "startup_excluded_ms": 1400,
+      "travel_m": 1.0176040192530686,
+      "upright_fraction": 0.06930693069306931,
+      "scope": "diagnostic after startup exclusion; no robust walking or football policy claimed"
     },
     "free_body_get_up_policy": false,
     "football_skill_policy": false,
@@ -91,19 +131,28 @@
     "euphoria_reimplementation": false
   },
   "binaries": {
-    "native_sha256": "5e66ad834b717cd1bf4d124f9f3bf3e45a6e2a61d3ae4efff920198ab06a7c12",
-    "windows_unstripped_sha256": "b4db81ae54dd5f318d1a42b7f472954e64758f73801d37b496e4bb0cc624dfe3",
-    "windows_packaged_sha256": "2766604fc6b8e03f4312f66f182c5ad15014340b49a0163632d7ca64f812429f"
+    "native_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463",
+    "windows_unstripped_sha256": "7b09c8dd4a8866d67ffe4c7f343ffb28c78007bbe1f2e1bd56ab1f7bc64e7dfc",
+    "windows_packaged_sha256": "8fda0a47d3debcd25ca32e92860c6b091b0d82917b419daf1d87c6ee198876aa"
   },
   "package": {
     "path": "artifacts/football-training-windows-x86_64.zip",
-    "bytes": 35208279,
-    "sha256": "8863f9c82d70407f4459d33b54b54582bfe5f0e10e7146f4bd4856b6dbb2a3d4"
+    "bytes": 35322708,
+    "sha256": "16259f69fb622935762f5548e229c08b0cca6b045590094ceec18eedfb473175"
+  },
+  "research_archive": {
+    "path": "artifacts/football-physical-learning-research.zip",
+    "bytes": 9507033,
+    "sha256": "c9fc892a38ffa88e87366e26e817023ecc0b27d79a5d4d11622a4a521e7cafc1",
+    "scope": "Training-only rejected checkpoints, source snapshot and frozen Linux environment binaries; not required by the game."
   },
   "evidence": {
     "guide": "docs/LABORATORIO-PROCEDURAL.md",
     "research": "docs/PESQUISA-CONTROLE-PROCEDURAL.md",
-    "sources": "docs/procedural-controller-research.json",
-    "rejected_policy": "config/fullbody-policy-candidate.json"
+    "sources": [
+      "docs/procedural-controller-research.json",
+      "docs/procedural-balance-research.json"
+    ],
+    "rejected_policy": "config/fullbody-ppo-candidates.json"
   }
 }

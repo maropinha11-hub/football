@@ -194,7 +194,10 @@ class Match {
     Team *GetLastTouchTeam(e_TouchType touchType) { if (lastTouchTeamIDs[touchType] != -1) return teams[lastTouchTeamIDs[touchType]]; else return 0; }
     Team *GetLastTouchTeam() { if (lastTouchTeamID != -1) return teams[lastTouchTeamID]; else return teams[0]; }
     Player *GetLastTouchPlayer(e_TouchType touchType) { if (GetLastTouchTeam(touchType)) return GetLastTouchTeam(touchType)->GetLastTouchPlayer(touchType); else return 0; }
-    Player *GetLastTouchPlayer() { if (GetLastTouchTeam()) return GetLastTouchTeam()->GetLastTouchPlayer(); else return 0; }
+    // GetLastTouchTeam() has a legacy team-0 fallback for tactical queries.
+    // An unknown touch must not inherit that team's previous ball owner:
+    // a new training delivery/restart would be mistaken for its own old kick.
+    Player *GetLastTouchPlayer() { return lastTouchTeamID>=0&&lastTouchTeamID<2?teams[lastTouchTeamID]->GetLastTouchPlayer():0; }
     float GetLastTouchBias(int decay_ms, unsigned long time_ms = 0) { if (GetLastTouchTeam()) return GetLastTouchTeam()->GetLastTouchBias(decay_ms, time_ms); else return 0; }
     bool IsBallInGoal() const { return ballIsInGoal; }
 

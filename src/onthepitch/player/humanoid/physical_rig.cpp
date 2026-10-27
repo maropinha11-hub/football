@@ -18,7 +18,7 @@ void PhysicalRig::setRecoveryMotions(RecoveryMotion front,RecoveryMotion back){r
 void PhysicalRig::setBalanceMotions(std::vector<BalanceMotion> motions){setSharedBalanceMotions(std::make_shared<const std::vector<BalanceMotion>>(std::move(motions)));}
 void PhysicalRig::setSharedBalanceMotions(std::shared_ptr<const std::vector<BalanceMotion>> motions){balanceMotions=std::move(motions);balanceChoice=-1;balanceMotionTime=0;}
 Vec PhysicalRig::balanceVelocity()const{return state==Mode::Active && balance?balance->velocity():Vec{{0,0,0}};}
-void PhysicalRig::reset(){procedural->reset();deliberateFall=false;arrestTime=0;impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
+void PhysicalRig::reset(){fullBodyWarmup=0;procedural->reset();deliberateFall=false;arrestTime=0;impactReflex=impactReflexVelocity={{0,0,0}};recoveryFoot=-1;stepTime=stepCooldown=stepRelease=0;stepOffset[0]=stepOffset[1]={{0,0,0}};sourceFeetReady=false;for(unsigned i=0;i<2;++i){plantAge[i]=0;plantOffset[i]={{0,0,0}};}situationLayer.reset();supportTilt=supportTiltVelocity={{0,0,0}};supportSink=supportSinkVelocity=0;counterTilt=counterTiltVelocity={{0,0,0}};ready=false;state=Mode::Active;stateAge=settled=filteredTurn=unstableTime=protection=0;pendingImpulse=pendingTorque=reachOffset=sway=swayVelocity=filteredAcceleration=previousVelocity={{0,0,0}};angularVelocity={};articulated.reset();balance.reset(new BalanceController);balanceChoice=-1;balanceMotionTime=handEnvelope=0;forcedFall=handInitialized=handUpdatePending=false;handVelocity[0]=handVelocity[1]={{0,0,0}};physicalUpperValid=false;recoveryMotion=nullptr;reachOffsets={};for(auto &q:additive)q={{0,0,0,1}};debug={};}
 void PhysicalRig::impulse(Vec value,Vec lever,bool forceFall){value=capped(value,360);pendingImpulse=addPoint(pendingImpulse,value);pendingTorque=addPoint(pendingTorque,crossPoint(lever,value));forcedFall=forcedFall || forceFall;}
 
 bool PhysicalRig::adoptContactHand(Vec target){
@@ -69,12 +69,24 @@ PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &rawInput,float dt){
   dt=bounded(dt,.001f,.02f);
   if(controller!=rawInput.controller){reset();controller=rawInput.controller;}
-  proceduralInput=controller?procedural->compose(rawInput,reference,scale,dt):rawInput;
+  Input referenceInput=rawInput;
+  if(controller==2)referenceInput.velocity=fullBodyWarmup<.85f?Vec{{0,0,0}}:capped(rawInput.velocity,.55f);
+  proceduralInput=controller?procedural->compose(referenceInput,reference,scale,dt):rawInput;
   const Input &input=proceduralInput;
   if(controller==2){
     if(!articulated)articulated.reset(new ArticulatedBody);
     debug={};
-    articulated->motor(reference,scale,input.pose,input.pelvis,input.velocity,dt,pendingImpulse,local,root,debug);
+    if(!ready){
+      Input quiet=rawInput;quiet.velocity={{0,0,0}};quiet.action=quiet.touchPending=quiet.upperReception=quiet.staggering=quiet.matchedReference=false;
+      ProceduralReference placement;const auto standing=placement.compose(quiet,reference,scale,dt);
+      fullBodyStanding=standing.pose;fullBodyWarmup=0;
+    }
+    fullBodyWarmup+=dt;
+    const float enter=smooth((fullBodyWarmup-.85f)/.50f);
+    Pose target=input.pose;
+    for(unsigned i=0;i<13;++i)target[i]=blended(fullBodyStanding[i],target[i],enter);
+    Vec initial=input.pelvis;initial[2]=.935f*scale;
+    articulated->motor(reference,scale,target,initial,scalePoint(capped(input.velocity,.55f),enter),dt,pendingImpulse,local,root,debug);
     pendingImpulse=pendingTorque={{0,0,0}};forcedFall=false;
     ready=true;forwardKinematics();stateAge+=dt;
     state=root[2]<.65f*scale||debug.fullBodyUpright<.65f?Mode::Falling:Mode::Active;
@@ -232,12 +244,12 @@ void PhysicalRig::step(const Input &rawInput,float dt){
         reachOffsets[i]=addPoint(reachOffsets[i],capped(subtractPoint(wanted,reachOffsets[i]),.28f*h));
       }
     }
-    physicalUpperValid=false;evaluate(input);
+    physicalUpperValid=false;evaluate(rawInput);
     // Retain the physical state when a CPU stops. Destroying and rebuilding
     // thirteen bodies repeatedly both loses muscle state and causes hitches.
     if(!articulated)articulated.reset(new ArticulatedBody);
     articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
-    physicalUpperValid=true;evaluate(input);
+    physicalUpperValid=true;evaluate(rawInput);
   }else if(state==Mode::Falling){
     const Vec previous=root;
     for(unsigned sub=0;sub<2;++sub)articulated->step(dt*.5f,local,root,debug);
@@ -345,7 +357,8 @@ void PhysicalRig::applySupportStep(const Input &input){
 }
 void PhysicalRig::evaluate(const Input &source){
   if(controller==2)return;
-  const Input &input=controller==1?proceduralInput:source;
+  const Input evaluated=controller==1?procedural->evaluate(source):source;
+  const Input &input=evaluated;
   if(!ready || state!=Mode::Active)return;
   root=input.pelvis;
   local=input.pose;forwardKinematics();const Vec left=positions[9],right=positions[12];
@@ -488,7 +501,10 @@ void PhysicalRig::evaluate(const Input &source){
   }else if(handEnvelope<.002f){handInitialized=false;}
   handUpdatePending=false;
   separateArms();
-  for(unsigned i=0;i<13;++i)additive[i]=normalized(productRotation(local[i],inverseRotation(input.pose[i])));
+  // Rendering starts from the native source pose. Using the already filtered
+  // reference here cancels its continuity offset on screen while contacts use
+  // the filtered body. Apply that offset exactly once in both paths.
+  for(unsigned i=0;i<13;++i)additive[i]=normalized(productRotation(local[i],inverseRotation(source.pose[i])));
   debug.lean=length(leanAxis);debug.reach=0;
   for(auto v:reachOffsets)debug.reach=std::max(debug.reach,length(v));
 }

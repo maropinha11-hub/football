@@ -16,9 +16,14 @@ class ArticulatedBody {
   // mass. References drive internal torques, never transforms or root forces.
   void motor(const pes3::NativeBind &bind,float scale,const Pose &target,Vec initialPelvis,
              Vec desiredVelocity,float dt,Vec impulse,Pose &pose,Vec &pelvis,Metrics &metrics,
-             const float *residual=nullptr,bool supportFeedback=true);
+             const float *residual=nullptr,bool supportFeedback=true,const float *actions=nullptr);
   void motorObservation(float *features)const;
   static constexpr unsigned motorFeatures=12,motorActions=36;
+  static constexpr unsigned fullFeatures=148;
+  void fullObservation(const Pose &reference,Vec command,float phase,const float *previousActions,float *features)const;
+  // Read-only outcome of an isolated copy, used to verify the tangent-space
+  // dynamics model against Bullet before accepting its torque controller.
+  static std::array<float,3> validateDynamics(const pes3::NativeBind &bind,unsigned joint,unsigned axis,float torque);
  private:
   struct World;
   std::unique_ptr<World> state;

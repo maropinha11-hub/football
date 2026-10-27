@@ -90,6 +90,8 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
     for source,target in [("docs/LABORATORIO-PROCEDURAL.md","LEIA-LABORATORIO.txt"),
                           ("docs/PESQUISA-CONTROLE-PROCEDURAL.md","PESQUISA-CONTROLE-PROCEDURAL.md"),
                           ("docs/procedural-controller-research.json","procedural-controller-research.json"),
+                          ("docs/procedural-balance-research.json","procedural-balance-research.json"),
+                          ("config/fullbody-ppo-candidates.json","fullbody-ppo-candidates.json"),
                           ("config/fullbody-policy-candidate.json","fullbody-policy-candidate.json")]:
         shutil.copy2(project/source,stage/target)
     shutil.copy2(project / "config/approved-base.json",stage / "approved-base.json")
@@ -357,6 +359,7 @@ with tempfile.TemporaryDirectory(prefix="football-windows-", dir=artifacts) as t
         output.write(stage/"run-training.bat","run-training.bat")
         for filename in ("treino-fisico.bat", "partida-fisica.bat", "LEIA-FISICA.txt",
                          "laboratorio-procedural.bat","LEIA-LABORATORIO.txt","PESQUISA-CONTROLE-PROCEDURAL.md","procedural-controller-research.json","fullbody-policy-candidate.json",
+                         "procedural-balance-research.json","fullbody-ppo-candidates.json",
                          "situational-motion-catalog.json","procedural-strikes.json","LEIA-BASE-APROVADA.txt","approved-base.json",
                          "learned-muscle-policy.json","learned-balance-policy.json","muscle-policy-rejected-candidate.json","LEIA-CONTROLE-FISICO.txt","LEIA-EQUILIBRIO.txt","LEIA-QUEDAS.txt","fluid-reception-research.json",
                          "dividir-arquivos.bat","dividir-arquivos.ps1"):

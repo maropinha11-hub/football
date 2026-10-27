@@ -10,14 +10,19 @@ Carreira e partidas online ficam para etapas posteriores.
 
 Há um novo **laboratório separado de controladores** em
 `laboratorio-procedural.bat`. **F12** compara a base aprovada, uma referência
-de passada procedural e um corpo com os treze segmentos dinâmicos. O equilíbrio
+nativa com continuidade de pose e um corpo com os treze segmentos dinâmicos. O equilíbrio
 parado e a reação a impactos pequenos foram verificados; a caminhada livre
 ainda apresenta quedas e não é uma gameplay física pronta. Os candidatos
 treinados não passaram no conjunto separado e não são carregados pelo jogo.
+A entrada no corpo livre prepara os apoios; o modo nativo conserva a fase
+da animação e usa o mesmo resultado para contato e renderização. Os três
+ensaios PPO somaram 5.496.832 decisões, sem aprovar ainda a caminhada.
 Veja [os controles e limites](docs/LABORATORIO-PROCEDURAL.md),
 [a pesquisa e o plano de aprendizagem](docs/PESQUISA-CONTROLE-PROCEDURAL.md) e
 [a validação desta etapa](docs/procedural-controller-validation.json).
 Os atalhos anteriores continuam disponíveis com o controlador aprovado.
+A consulta de último toque agora respeita bola sem proprietário conhecido,
+impedindo que uma nova recepção herde o chute da tentativa anterior.
 
 A revisão atual recupera a movimentação do executável aprovado enviado pelo
 usuário, identificado byte a byte como a versão `fa0dfa6`. Os ciclos de
