@@ -1,0 +1,20 @@
+PES 2017 - coleta seletiva para estudo
+
+1. Extraia este ZIP em uma pasta nova.
+2. Abra ColetarRecursosPES2017.bat e selecione o PES2017.exe de onde voce joga.
+3. Envie o ZIP PES2017-recursos-... que sera criado aqui.
+   Se forem criadas partes .part001/.part002, envie todas e o .partes.json.
+
+O coletor le os indices dos CPKs de Data/download e guarda apenas constantes
+e tabelas de animacao selecionadas, com hashes e procedencia. Tambem inclui
+os pequenos sider.ini, gameplay.ini e DpFileList.bin quando existem, para
+investigar sobreposicoes. Raizes avulsas configuradas dentro da instalacao
+sao examinadas somente nas mesmas categorias de dados.
+
+Nao executa ou altera o PES, nao instala mods e nao inclui os CPKs inteiros,
+executaveis, DLLs, texturas ou animacoes completas. Dados comprimidos sao
+preservados para estudo posterior; sua selecao nao prova uso em execucao.
+
+Aguarde o fim da leitura. Se algum arquivo nao for reconhecido, envie o ZIP
+mesmo assim: o manifesto registra o problema. A janela fica aberta em caso
+de erro. Este pacote e uma ferramenta de coleta, nao uma nova gameplay.

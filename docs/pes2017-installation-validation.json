@@ -1,0 +1,664 @@
+{
+  "schema_version": 1,
+  "status": "installation inventory verified; waiting for selected resource contents",
+  "source_zip_sha256": "0ebdd14a44c562fd51526a43689aeee11b302a3aae6ac74ddba7b8d3074b4b5d",
+  "inventory_created_utc": "2026-10-27T22:16:31.4381172Z",
+  "file_count": 115,
+  "cpk_count": 84,
+  "inventory_errors": 0,
+  "installed_executable_sha256": "6598860f6cce192e7a7017bad451aa62fc01d9c3c76806eeebafc0691fe22a26",
+  "matches_received_executable": true,
+  "pe_section_metadata_match": true,
+  "archives": [
+    {
+      "path": "Data/dt00_win.cpk",
+      "bytes": 20302203,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt10_win.cpk",
+      "bytes": 1134592,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt11_win.cpk",
+      "bytes": 330225852,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt12_win.cpk",
+      "bytes": 636083000,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt13_win.cpk",
+      "bytes": 24039984,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt15_win.cpk",
+      "bytes": 303708288,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt16_win.cpk",
+      "bytes": 4454620,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt17_win.cpk",
+      "bytes": 114708,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt18_win.cpk",
+      "bytes": 151289504,
+      "header_packet_bytes": 864,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt19_win.cpk",
+      "bytes": 1258570,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_ara_win.cpk",
+      "bytes": 411205,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_bra_win.cpk",
+      "bytes": 390728,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_chi_win.cpk",
+      "bytes": 35511880,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_eng_win.cpk",
+      "bytes": 386632,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_fra_win.cpk",
+      "bytes": 396872,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_ger_win.cpk",
+      "bytes": 407112,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_gre_win.cpk",
+      "bytes": 466504,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_ita_win.cpk",
+      "bytes": 388680,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_kor_win.cpk",
+      "bytes": 36605512,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_mex_win.cpk",
+      "bytes": 394824,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_nld_win.cpk",
+      "bytes": 396872,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_por_win.cpk",
+      "bytes": 396872,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_rus_win.cpk",
+      "bytes": 460360,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_spa_win.cpk",
+      "bytes": 390728,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_swe_win.cpk",
+      "bytes": 386632,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_tur_win.cpk",
+      "bytes": 398920,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_use_win.cpk",
+      "bytes": 388680,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt20_zha_win.cpk",
+      "bytes": 37133896,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt30_win.cpk",
+      "bytes": 259269477,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt32_win.cpk",
+      "bytes": 276723120,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt33_win.cpk",
+      "bytes": 49567567,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt34_win.cpk",
+      "bytes": 191541107,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt35_win.cpk",
+      "bytes": 102478845,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt36_win.cpk",
+      "bytes": 1546844576,
+      "header_packet_bytes": 520,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt40_all.cpk",
+      "bytes": 183907441,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt41_ags_all.cpk",
+      "bytes": 1186072904,
+      "header_packet_bytes": 872,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt41_bra_all.cpk",
+      "bytes": 337494856,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt41_eng_all.cpk",
+      "bytes": 2313054536,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt42_win.cpk",
+      "bytes": 63916,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_ags_win.cpk",
+      "bytes": 216287,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_ara_win.cpk",
+      "bytes": 183441,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_bra_win.cpk",
+      "bytes": 160992,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_chi_win.cpk",
+      "bytes": 160526,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_chl_win.cpk",
+      "bytes": 199811,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_eng_win.cpk",
+      "bytes": 227642,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_fra_win.cpk",
+      "bytes": 228931,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_ger_win.cpk",
+      "bytes": 215702,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_gre_win.cpk",
+      "bytes": 157430,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_ita_win.cpk",
+      "bytes": 201944,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_jpn_win.cpk",
+      "bytes": 327944,
+      "header_packet_bytes": 520,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_mex_win.cpk",
+      "bytes": 158563,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_por_win.cpk",
+      "bytes": 206322,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_spa_win.cpk",
+      "bytes": 230195,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt43_zha_win.cpk",
+      "bytes": 160103,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt44_all.cpk",
+      "bytes": 875688120,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt70_win.cpk",
+      "bytes": 459802272,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "Data/dt90_win.cpk",
+      "bytes": 1393096,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/01_Dmpes_Database.cpk",
+      "bytes": 34997880,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/02_Dmpes_Logos.cpk",
+      "bytes": 259001760,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/03_Dmpes_Menu.cpk",
+      "bytes": 482110912,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/04_Dmpes_Minifaces.cpk",
+      "bytes": 711529864,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/05_Dmpes_Gameplay.cpk",
+      "bytes": 3752,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/06_Dmpes_Bodymod.cpk",
+      "bytes": 81841400,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/06_Dmpes_Graphic.cpk",
+      "bytes": 445882824,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/07_Dmpes_Chuteiras.cpk",
+      "bytes": 1755581360,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/08_Dmpes_Kitpack.cpk",
+      "bytes": 1487121520,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/09_Dmpes_Stadiums.cpk",
+      "bytes": 2512187776,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/09_Dmpes_StadiumsEur.cpk",
+      "bytes": 2423970240,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/10_Dmpes_Adboards.cpk",
+      "bytes": 1078185000,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/11_Dmpes_Facepack01.cpk",
+      "bytes": 11128412624,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/12_Dmpes_Facepack02.cpk",
+      "bytes": 1392648248,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/13_Dmpes_SFX.cpk",
+      "bytes": 2207096448,
+      "header_packet_bytes": 712,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/14_Dmpes_Chants.cpk",
+      "bytes": 3036870576,
+      "header_packet_bytes": 856,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/15_Dmpes_Update_01.cpk",
+      "bytes": 3679793784,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/16_Dmpes_Update_02.cpk",
+      "bytes": 791381848,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/17_Dmpes_VIP_01.cpk",
+      "bytes": 8857626984,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/17_Dmpes_VIP_02.cpk",
+      "bytes": 1277064064,
+      "header_packet_bytes": 896,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/18_Dmpes_Pressroom.cpk",
+      "bytes": 3752,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/19_Dmpes_FaceRumo.cpk",
+      "bytes": 3752,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/20_Dmpes_WorldCup.cpk",
+      "bytes": 3752,
+      "header_packet_bytes": 720,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/dt80_100E_win.cpk",
+      "bytes": 172109381,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/dt80_200E_win.cpk",
+      "bytes": 238867856,
+      "header_packet_bytes": 520,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/dt80_300E_win.cpk",
+      "bytes": 242644655,
+      "header_packet_bytes": 672,
+      "table_header": "CRI_table_mask_prefix",
+      "full_archive_sha256": null
+    },
+    {
+      "path": "download/t99_manager.cpk",
+      "bytes": 3757832,
+      "header_packet_bytes": 856,
+      "table_header": "plain_UTF",
+      "full_archive_sha256": null
+    }
+  ],
+  "relevant_settings_present": [
+    "gameplay.ini",
+    "sider.ini",
+    "download/DpFileList.bin"
+  ],
+  "baseline": {
+    "dmpes_named_archives_present": true,
+    "sider_files_present": true,
+    "which_archives_are_active": "not verified",
+    "original_unmodified_parameters": "not verified",
+    "load_priority": "pending DpFileList/configuration/resource evidence"
+  },
+  "next_collection": {
+    "scope": "Exact stored bytes of named constant resources and animation metadata, plus small load-configuration evidence; matching available variants retained separately.",
+    "source": "tools/pes2017/windows/Pes2017ResourceCollector.cs",
+    "gui": "tools/pes2017/windows/ColetarRecursosPES2017.bat",
+    "game_modified": false,
+    "cpk_repacking": false,
+    "original_data_in_public_package": false
+  },
+  "limitations": [
+    "84 archives are identified by name/size/header only; full archive hashes were not in this inventory.",
+    "Presence of Sider/DMPES files does not prove live module activation or archive load order.",
+    "Only paths and small header facts for CPKs are published; unrelated INI prefixes from user inventory are not republished.",
+    "No received CPK payload or active PES gameplay measurement is available yet."
+  ],
+  "normalized_manifest_sha256": "3678523b7c13f1964b778e40ad9335c0b730f7f013c37450fecf55b26746dea0",
+  "source_manifest_sha256": "81d68969bfb33a8d45ebcbdabab7b8c282b632000b2fafa5b3a32024fb5492f2",
+  "package": {
+    "path": "artifacts/pes2017-coletor-recursos.zip",
+    "bytes": 9207,
+    "sha256": "8abbcbcc5f78853e264489655dcc54098ea352c68e0ec3fac27a606fafa39f58",
+    "crc": "passed",
+    "members": 4,
+    "contains_original_game_data": false
+  },
+  "validation": {
+    "python_tests": 236,
+    "python_passed": 230,
+    "python_skipped": 6,
+    "cpk_reader_tests": 9,
+    "cpk_core_compiled": true,
+    "cpk_core_executed": true,
+    "cpk_core_platform": "Mono6.12/Linux",
+    "new_powershell_wrapper_executed": false,
+    "new_windows_gui_executed": false,
+    "previous_inventory_generated_by_user_on_windows": true,
+    "real_cpk_contents_received": false,
+    "gameplay_changed": false,
+    "cases": [
+      "plain and CRI-masked tables",
+      "constant/zero/per-row UTF fields",
+      "legacy flags and empty archives",
+      "TOC before/after content",
+      "whole-index validation before export",
+      "traversal, overlap, duplicate path and bounds rejection",
+      "stored CRILAYLA preservation without fake decompression",
+      "exact-byte deduplication and source records",
+      "loose whitelisted parameters and rejected links"
+    ],
+    "core_source_sha256": "3c918f24951220a64f6636446b37d0c89f75e875f6ece16c956bfbd856379da0"
+  }
+}

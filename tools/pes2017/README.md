@@ -18,7 +18,8 @@ Veja [o relatório](../../docs/pes2017-analysis-validation.json) e
 [o esquema](../../docs/pes2017-ball-schema.json). O executável não foi rodado,
 e nenhum componente proprietário é incluído nas ferramentas.
 
-Para transferir o executável, use 7-Zip, **Adicionar ao arquivo → Dividir em
+O executável já foi recebido integralmente; não é necessário reenviá-lo.
+Para outras transferências grandes, use 7-Zip, **Adicionar ao arquivo → Dividir em
 volumes: 24M**, e envie todas as partes `.7z.001`, `.7z.002` etc. O divisor
 `scripts/dividir-arquivos.bat`, incluído no pacote anterior, também funciona
 com executáveis e arquivos 7z: selecione “Todos os arquivos” na janela e envie
@@ -32,7 +33,67 @@ produz um ZIP pequeno com SHA256 do executável, cabeçalhos PE e inventário
 das pastas raiz, `Data` e `download`. Não copia os arquivos de jogo, não os
 executa nem altera a instalação. Esse caminho permite obter a identidade da
 versão e a estrutura local antes de transferir o binário inteiro.
-O script PowerShell ainda requer validação em Windows; não foi executado aqui.
+O inventário gerado pelo usuário no Windows foi recebido: 115 arquivos,
+84 CPKs, nenhum erro, SHA256 do executável e metadados das 14 seções iguais
+ao arquivo analisado. Veja [a validação da instalação](../../docs/pes2017-installation-validation.json).
+
+## Coleta seletiva de recursos
+
+A instalação contém pacotes com nomes DMPES e arquivos Sider. A presença
+desses arquivos não identifica, por si só, a configuração ativa nem uma
+referência original sem modificações. Não se deve assumir que um pacote
+`Gameplay.cpk` está ativo ou contém os parâmetros desejados apenas pelo nome.
+
+O novo `windows/ColetarRecursosPES2017.bat` lê índices dos CPKs em `Data` e
+`download`. Seleciona `.bin/.json` de `common/match/constant` e `.bin` das
+pastas `common/anime/playerID/bin`, `AnimeTable/bin` e `Mbinfo/bin`. Registra
+origem, intervalos, hashes e variantes dos mesmos caminhos em arquivos
+diferentes. Também guarda os pequenos `sider.ini`, `gameplay.ini` e
+`download/DpFileList.bin`, necessários para investigar carregamento e
+sobreposições. Nas raízes avulsas configuradas dentro da instalação, só
+examina essas mesmas categorias; não executa módulos ou Lua.
+
+O leitor C# foi escrito para este projeto. Usa fatos do formato CPK/UTF
+consultados em CriPakTools e vgmstream, com URLs e hashes em
+[pes2017-cpk-research.json](../../docs/pes2017-cpk-research.json).
+Lê números e offsets com as ordens de bytes corretas; suporta tabelas UTF
+normais e a máscara de tabela do formato CRI. Não modifica proteção do jogo.
+Valida limites, tipos, nomes e intervalos do índice antes de exportar um
+arquivo. Containers só com ITOC/sem TOC nominal ou estruturas não suportadas
+são registrados como erros; não se adivinham nomes ou offsets.
+
+A saída preserva bytes armazenados, incluindo CRILAYLA ou outros wrappers.
+Nenhuma descompressão ou equivalência de parâmetros é alegada nessa etapa.
+Os recursos são identificados pelo hash completo de seu conteúdo; o hash do
+CPK inteiro só é calculado para arquivos selecionados de até 512 MiB. Para
+os maiores, a procedência é explicitamente parcial: tamanho e hashes das
+tabelas, além dos hashes integrais de cada recurso. Não confundir isso com
+hash integral do CPK ou confirmação de uso em execução.
+
+O limite é 24 MiB por recurso e 128 MiB de bytes selecionados no total. Um
+recurso maior é registrado como não coletado. Se o ZIP exceder 30 MiB, a
+ferramenta divide automaticamente em partes de 24 MiB e gera seus hashes.
+O usuário envia o ZIP ou todas as partes e o manifesto correspondente.
+
+O núcleo C# foi compilado e executado em Mono/Linux com containers sintéticos
+independentes: tabelas normais/mascaradas, constantes, campos zero, UTF legado,
+TOC antes/depois dos dados, aliases, compressão preservada, truncamento,
+limites, caminhos inválidos e índices sobrepostos. O novo invólucro PowerShell
+e a seleção de pasta ainda não foram executados em Windows. O inventário
+anterior foi executado pelo usuário; não se trata de uma execução local do
+novo coletor. Nenhum CPK real completo foi recebido ainda.
+
+```bash
+# Com Mono/mcs.exe disponíveis (ou PES2017_TEST_MONO/PES2017_TEST_MCS):
+python3 -m unittest discover -s tests -p test_pes2017_collector.py -v
+```
+
+Depois de receber os recursos, verificar seus hashes, identificar os wrappers
+e os objetos serializados, decodificar parâmetros sem presumir unidades e
+comprovar quais variantes são usadas. A calibração da gameplay continua
+dependendo de entradas e trajetórias medidas no PES.
+
+## Ferramentas de análise
 
 Após a transferência integral, a ferramenta Python faz análise limitada e
 verificada de cabeçalhos, seções e imports estáticos:

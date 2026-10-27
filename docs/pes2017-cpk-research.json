@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "name": "utf-vgmstream",
+      "url": "https://raw.githubusercontent.com/vgmstream/vgmstream/master/src/util/cri_utf.c",
+      "status": 200,
+      "bytes": 21726,
+      "sha256": "7512f62460d39754d011845f9979ae2f5b5ddffc51596b65bdb8fc5da36ef20c"
+    },
+    {
+      "name": "cpk-cri",
+      "url": "https://raw.githubusercontent.com/esperknight/CriPakTools/master/CriPakTools/CPK.cs",
+      "status": 200,
+      "bytes": 39155,
+      "sha256": "62f32bb629338b3dc7135aaf4369d9be3661f175c559e5a6e0823575d0b37ae9"
+    },
+    {
+      "name": "utf-python",
+      "url": "https://raw.githubusercontent.com/Youjose/PyCriCodecs/main/PyCriCodecs/utf.py",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "implementation": "Own bounded read-only C# parser; format facts consulted, no upstream program source bundled.",
+  "findings": [
+    "CPK/TOC packet byte count is little-endian uint64 after its 8-byte tag/flags prefix.",
+    "UTF schema and cells use big-endian widths; version and row-offset share the 0x08..0x0b header word.",
+    "Constant/zero/per-row storage differ; column defaults live in schema, not in each row.",
+    "Named TOC payload offsets use the minimum of content and TOC bases for the inspected format convention.",
+    "CRI table masking uses a documented rolling XOR; it is not a game license or DRM bypass.",
+    "Stored compressed payload is preserved, not guessed or decompressed."
+  ],
+  "unread": "PyCriCodecs URL returned404; no claims based on it."
+}
