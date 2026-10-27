@@ -1,0 +1,1347 @@
+{
+  "schema_version": 1,
+  "status": "static evidence recovered; complete PES gameplay not integrated",
+  "transfer": {
+    "result": "extracted",
+    "parts": [
+      {
+        "file": "PES2017.7z.001",
+        "bytes": 25165824,
+        "sha256": "258dd457990e6f9282e2a25feec97dde56b66061d66452ae48c4a8755424fb0e"
+      },
+      {
+        "file": "PES2017.7z.002",
+        "bytes": 22139136,
+        "sha256": "8833902727f0ce4969dd3d08652805df81ac15a2c71028cfe20bf460beb58f24"
+      }
+    ],
+    "archive_bytes": 47304960,
+    "archive_sha256": "df71d2b3d63779707d1b584bcf25cf4fc011a16411c3e6cb28ebc0c6d680dcaa",
+    "sevenzip_header_crc": "passed",
+    "next_header_crc": "passed",
+    "entries": [
+      {
+        "path": "PES2017.exe",
+        "bytes": 110179840,
+        "filetype": 32768
+      }
+    ],
+    "executable_sha256": "6598860f6cce192e7a7017bad451aa62fc01d9c3c76806eeebafc0691fe22a26",
+    "executable_bytes": 110179840,
+    "executed": false
+  },
+  "pe": {
+    "executable_sha256": "6598860f6cce192e7a7017bad451aa62fc01d9c3c76806eeebafc0691fe22a26",
+    "architecture": "x86",
+    "bits": 32,
+    "sections": 14,
+    "import_modules": 25,
+    "independent_objdump_import_match": true
+  },
+  "fixed_resource_version": [
+    {
+      "language": 0,
+      "file_version": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "product_version": [
+        1,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "source_build_path_note": "Embedded source paths mention Patch10100; this is a string reference, not independently verified patch/version identity.",
+  "resources": [
+    {
+      "path": "cpk_dat/common/match/constant/constant_match.bin",
+      "file_offset": 28312356,
+      "va": 32514852,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/constant_player.bin",
+      "file_offset": 28312408,
+      "va": 32514904,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/constant_stadium.bin",
+      "file_offset": 28312460,
+      "va": 32514956,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/constant_stadiumReserve.bin",
+      "file_offset": 28312512,
+      "va": 32515008,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/constant_team.bin",
+      "file_offset": 28312572,
+      "va": 32515068,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/constant_tutorial.bin",
+      "file_offset": 28312620,
+      "va": 32515116,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/playerID/bin/Derivationdatatable.bin",
+      "file_offset": 28459536,
+      "va": 32662032,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/playerID/bin/Definedatatbale.bin",
+      "file_offset": 28459596,
+      "va": 32662092,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/AnimeTable/bin/Parametricblendtable.bin",
+      "file_offset": 28459936,
+      "va": 32662432,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/AnimeTable/bin/Animetable.bin",
+      "file_offset": 28460288,
+      "va": 32662784,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/AnimeTable/bin/Kickinfo.bin",
+      "file_offset": 28460340,
+      "va": 32662836,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/AnimeTable/bin/Idletable.bin",
+      "file_offset": 28460392,
+      "va": 32662888,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/AnimeTable/bin/Movetable.bin",
+      "file_offset": 28460444,
+      "va": 32662940,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/BallData.bin",
+      "file_offset": 28460868,
+      "va": 32663364,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/PivotFixData.bin",
+      "file_offset": 28460916,
+      "va": 32663412,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/DangerData.bin",
+      "file_offset": 28460968,
+      "va": 32663464,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/FootType.bin",
+      "file_offset": 28461016,
+      "va": 32663512,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/PersonalizedData.bin",
+      "file_offset": 28461064,
+      "va": 32663560,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/DemoConnectData.bin",
+      "file_offset": 28461120,
+      "va": 32663616,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/RotData.bin",
+      "file_offset": 28461172,
+      "va": 32663668,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/CancelData.bin",
+      "file_offset": 28461216,
+      "va": 32663712,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/JumpData.bin",
+      "file_offset": 28461264,
+      "va": 32663760,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/HoldData.bin",
+      "file_offset": 28461312,
+      "va": 32663808,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/SubHitData.bin",
+      "file_offset": 28461360,
+      "va": 32663856,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/HitData.bin",
+      "file_offset": 28461408,
+      "va": 32663904,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/Mbinfo/bin/Animation.bin",
+      "file_offset": 28461452,
+      "va": 32663948,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/ball.json",
+      "file_offset": 31632384,
+      "va": 35834880,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/blockDebug.json",
+      "file_offset": 31632432,
+      "va": 35834928,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/cameraInplay.json",
+      "file_offset": 31632484,
+      "va": 35834980,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/command.json",
+      "file_offset": 31632540,
+      "va": 35835036,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/cpuLevel.json",
+      "file_offset": 31632592,
+      "va": 35835088,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/cursor.json",
+      "file_offset": 31632644,
+      "va": 35835140,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/feint.json",
+      "file_offset": 31632692,
+      "va": 35835188,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/injury.json",
+      "file_offset": 31632740,
+      "va": 35835236,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/inplayDemo.json",
+      "file_offset": 31632788,
+      "va": 35835284,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/mlScreenShot.json",
+      "file_offset": 31632840,
+      "va": 35835336,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/modeMatchup.json",
+      "file_offset": 31632896,
+      "va": 35835392,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/pes15Test.json",
+      "file_offset": 31632952,
+      "va": 35835448,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/pesSmart.json",
+      "file_offset": 31633004,
+      "va": 35835500,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/rating.json",
+      "file_offset": 31633056,
+      "va": 35835552,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideCommon.json",
+      "file_offset": 31633104,
+      "va": 35835600,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideCornerKick.json",
+      "file_offset": 31633168,
+      "va": 35835664,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideFreeKickFar.json",
+      "file_offset": 31633232,
+      "va": 35835728,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideFreeKickMiddle.json",
+      "file_offset": 31633304,
+      "va": 35835800,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideFreeKickNear.json",
+      "file_offset": 31633376,
+      "va": 35835872,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/setplayGuideGoalKick.json",
+      "file_offset": 31633444,
+      "va": 35835940,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/teamEmotion.json",
+      "file_offset": 31633508,
+      "va": 35836004,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/throwin.json",
+      "file_offset": 31633564,
+      "va": 35836060,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/match/userPlayTendencyTest.json",
+      "file_offset": 31633616,
+      "va": 35836112,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/avoid.json",
+      "file_offset": 31633680,
+      "va": 35836176,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayer.json",
+      "file_offset": 31633728,
+      "va": 35836224,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerAnalyze.json",
+      "file_offset": 31633784,
+      "va": 35836280,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerClear.json",
+      "file_offset": 31633844,
+      "va": 35836340,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerDebug.json",
+      "file_offset": 31633904,
+      "va": 35836400,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerDribble.json",
+      "file_offset": 31633964,
+      "va": 35836460,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerFeint.json",
+      "file_offset": 31634024,
+      "va": 35836520,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerGk.json",
+      "file_offset": 31634084,
+      "va": 35836580,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerPass.json",
+      "file_offset": 31634140,
+      "va": 35836636,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerSetplay.json",
+      "file_offset": 31634200,
+      "va": 35836696,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/ballplayerShoot.json",
+      "file_offset": 31634260,
+      "va": 35836756,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/block.json",
+      "file_offset": 31634320,
+      "va": 35836816,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/centering.json",
+      "file_offset": 31634368,
+      "va": 35836864,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/contact.json",
+      "file_offset": 31634420,
+      "va": 35836916,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/dribble.json",
+      "file_offset": 31634472,
+      "va": 35836968,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/flypass.json",
+      "file_offset": 31634524,
+      "va": 35837020,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/freekick.json",
+      "file_offset": 31634576,
+      "va": 35837072,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/freemove.json",
+      "file_offset": 31634628,
+      "va": 35837124,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/gk.json",
+      "file_offset": 31634680,
+      "va": 35837176,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/goalKick.json",
+      "file_offset": 31634728,
+      "va": 35837224,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/grounderpass.json",
+      "file_offset": 31634780,
+      "va": 35837276,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/matchup.json",
+      "file_offset": 31634836,
+      "va": 35837332,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/motivation.json",
+      "file_offset": 31634888,
+      "va": 35837384,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/moveOnPass.json",
+      "file_offset": 31634944,
+      "va": 35837440,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/passget.json",
+      "file_offset": 31635000,
+      "va": 35837496,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/penaltykick.json",
+      "file_offset": 31635052,
+      "va": 35837548,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/playStyle.json",
+      "file_offset": 31635108,
+      "va": 35837604,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/press.json",
+      "file_offset": 31635160,
+      "va": 35837656,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/reaction.json",
+      "file_offset": 31635208,
+      "va": 35837704,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/shoot.json",
+      "file_offset": 31635260,
+      "va": 35837756,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/sliding.json",
+      "file_offset": 31635308,
+      "va": 35837804,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/tackle.json",
+      "file_offset": 31635360,
+      "va": 35837856,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/throughpass.json",
+      "file_offset": 31635412,
+      "va": 35837908,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/player/trap.json",
+      "file_offset": 31635468,
+      "va": 35837964,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st001.json",
+      "file_offset": 31635516,
+      "va": 35838012,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st002.json",
+      "file_offset": 31635576,
+      "va": 35838072,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st003.json",
+      "file_offset": 31635636,
+      "va": 35838132,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st005.json",
+      "file_offset": 31635696,
+      "va": 35838192,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st007.json",
+      "file_offset": 31635756,
+      "va": 35838252,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st008.json",
+      "file_offset": 31635816,
+      "va": 35838312,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st011.json",
+      "file_offset": 31635876,
+      "va": 35838372,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st012.json",
+      "file_offset": 31635936,
+      "va": 35838432,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st013.json",
+      "file_offset": 31635996,
+      "va": 35838492,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st014.json",
+      "file_offset": 31636056,
+      "va": 35838552,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st015.json",
+      "file_offset": 31636116,
+      "va": 35838612,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st016.json",
+      "file_offset": 31636176,
+      "va": 35838672,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st017.json",
+      "file_offset": 31636236,
+      "va": 35838732,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st020.json",
+      "file_offset": 31636296,
+      "va": 35838792,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st021.json",
+      "file_offset": 31636356,
+      "va": 35838852,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st022.json",
+      "file_offset": 31636416,
+      "va": 35838912,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st023.json",
+      "file_offset": 31636476,
+      "va": 35838972,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st024.json",
+      "file_offset": 31636536,
+      "va": 35839032,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st025.json",
+      "file_offset": 31636596,
+      "va": 35839092,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st026.json",
+      "file_offset": 31636656,
+      "va": 35839152,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st027.json",
+      "file_offset": 31636716,
+      "va": 35839212,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st028.json",
+      "file_offset": 31636776,
+      "va": 35839272,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st029.json",
+      "file_offset": 31636836,
+      "va": 35839332,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st030.json",
+      "file_offset": 31636896,
+      "va": 35839392,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/demoarea_st031.json",
+      "file_offset": 31636956,
+      "va": 35839452,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadium/studiumPositionData.json",
+      "file_offset": 31637016,
+      "va": 35839512,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_acl.json",
+      "file_offset": 31637080,
+      "va": 35839576,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_analog_common.json",
+      "file_offset": 31637152,
+      "va": 35839648,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_common.json",
+      "file_offset": 31637232,
+      "va": 35839728,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_lb.json",
+      "file_offset": 31637304,
+      "va": 35839800,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_new_common.json",
+      "file_offset": 31637376,
+      "va": 35839872,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_reco.json",
+      "file_offset": 31637456,
+      "va": 35839952,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_suda.json",
+      "file_offset": 31637528,
+      "va": 35840024,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_team_framengo.json",
+      "file_offset": 31637600,
+      "va": 35840096,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_team_france.json",
+      "file_offset": 31637680,
+      "va": 35840176,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_ucl.json",
+      "file_offset": 31637760,
+      "va": 35840256,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_uel.json",
+      "file_offset": 31637832,
+      "va": 35840328,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_bill_u_shaped.json",
+      "file_offset": 31637904,
+      "va": 35840400,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st000.json",
+      "file_offset": 31637984,
+      "va": 35840480,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st006.json",
+      "file_offset": 31638056,
+      "va": 35840552,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st009.json",
+      "file_offset": 31638128,
+      "va": 35840624,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st010.json",
+      "file_offset": 31638200,
+      "va": 35840696,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st018.json",
+      "file_offset": 31638272,
+      "va": 35840768,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st019.json",
+      "file_offset": 31638344,
+      "va": 35840840,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st032.json",
+      "file_offset": 31638416,
+      "va": 35840912,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st033.json",
+      "file_offset": 31638488,
+      "va": 35840984,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st034.json",
+      "file_offset": 31638560,
+      "va": 35841056,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st035.json",
+      "file_offset": 31638632,
+      "va": 35841128,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st036.json",
+      "file_offset": 31638704,
+      "va": 35841200,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st037.json",
+      "file_offset": 31638776,
+      "va": 35841272,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st038.json",
+      "file_offset": 31638848,
+      "va": 35841344,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st039.json",
+      "file_offset": 31638920,
+      "va": 35841416,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st040.json",
+      "file_offset": 31638992,
+      "va": 35841488,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st041.json",
+      "file_offset": 31639064,
+      "va": 35841560,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st042.json",
+      "file_offset": 31639136,
+      "va": 35841632,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st043.json",
+      "file_offset": 31639208,
+      "va": 35841704,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st044.json",
+      "file_offset": 31639280,
+      "va": 35841776,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st045.json",
+      "file_offset": 31639352,
+      "va": 35841848,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st046.json",
+      "file_offset": 31639424,
+      "va": 35841920,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st047.json",
+      "file_offset": 31639496,
+      "va": 35841992,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st048.json",
+      "file_offset": 31639568,
+      "va": 35842064,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st049.json",
+      "file_offset": 31639640,
+      "va": 35842136,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/stadiumReserve/demoarea_st050.json",
+      "file_offset": 31639712,
+      "va": 35842208,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/basePosition.json",
+      "file_offset": 31639780,
+      "va": 35842276,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/centeringGet.json",
+      "file_offset": 31639836,
+      "va": 35842332,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/combination.json",
+      "file_offset": 31639892,
+      "va": 35842388,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/defence.json",
+      "file_offset": 31639944,
+      "va": 35842440,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/defenceCover.json",
+      "file_offset": 31639992,
+      "va": 35842488,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/defenceMark.json",
+      "file_offset": 31640048,
+      "va": 35842544,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/diagonalRun.json",
+      "file_offset": 31640100,
+      "va": 35842596,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/lineBreak.json",
+      "file_offset": 31640152,
+      "va": 35842648,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/overlap.json",
+      "file_offset": 31640204,
+      "va": 35842700,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/pairAnime.json",
+      "file_offset": 31640252,
+      "va": 35842748,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/pullAway.json",
+      "file_offset": 31640304,
+      "va": 35842800,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/selectorVision.json",
+      "file_offset": 31640356,
+      "va": 35842852,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/spaceRun.json",
+      "file_offset": 31640412,
+      "va": 35842908,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/subConcept.json",
+      "file_offset": 31640464,
+      "va": 35842960,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/support.json",
+      "file_offset": 31640516,
+      "va": 35843012,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/team/teamId.json",
+      "file_offset": 31640564,
+      "va": 35843060,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Chip_shot.json",
+      "file_offset": 31640612,
+      "va": 35843108,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Clearing_the_ball.json",
+      "file_offset": 31640668,
+      "va": 35843164,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Controlled_shot.json",
+      "file_offset": 31640732,
+      "va": 35843228,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Corner_kick.json",
+      "file_offset": 31640792,
+      "va": 35843288,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Crossing.json",
+      "file_offset": 31640848,
+      "va": 35843344,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Dribbling.json",
+      "file_offset": 31640904,
+      "va": 35843400,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/FeintsAndTricks.json",
+      "file_offset": 31640960,
+      "va": 35843456,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Free_kicks.json",
+      "file_offset": 31641020,
+      "va": 35843516,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Jinking_run.json",
+      "file_offset": 31641076,
+      "va": 35843572,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Lobbed_through_ball.json",
+      "file_offset": 31641136,
+      "va": 35843632,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/One_vs_one.json",
+      "file_offset": 31641200,
+      "va": 35843696,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Passing.json",
+      "file_offset": 31641256,
+      "va": 35843752,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Pass_and_move.json",
+      "file_offset": 31641308,
+      "va": 35843804,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Penalty_kick.json",
+      "file_offset": 31641368,
+      "va": 35843864,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Penalty_kick_GK.json",
+      "file_offset": 31641428,
+      "va": 35843924,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Shooting.json",
+      "file_offset": 31641488,
+      "va": 35843984,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Sliding_tackle.json",
+      "file_offset": 31641544,
+      "va": 35844040,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Sprint.json",
+      "file_offset": 31641604,
+      "va": 35844100,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Switch_sides.json",
+      "file_offset": 31641656,
+      "va": 35844152,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Tackling.json",
+      "file_offset": 31641716,
+      "va": 35844212,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Teammate_contain.json",
+      "file_offset": 31641772,
+      "va": 35844268,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Through_ball.json",
+      "file_offset": 31641836,
+      "va": 35844332,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/tutorialNone.json",
+      "file_offset": 31641896,
+      "va": 35844392,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/tutorialSetting.json",
+      "file_offset": 31641956,
+      "va": 35844452,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/match/constant/tutorial/Volley.json",
+      "file_offset": 31642016,
+      "va": 35844512,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Faceadd.bin",
+      "file_offset": 31850504,
+      "va": 36053000,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Facebase.bin",
+      "file_offset": 31850552,
+      "va": 36053048,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Handlbase.bin",
+      "file_offset": 31850604,
+      "va": 36053100,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Handrbase.bin",
+      "file_offset": 31850656,
+      "va": 36053152,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Hitframes.bin",
+      "file_offset": 31850708,
+      "va": 36053204,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    },
+    {
+      "path": "cpk_dat/common/anime/FHSequence/bin/Sequenceinfo.bin",
+      "file_offset": 31850760,
+      "va": 36053256,
+      "evidence": "null-terminated embedded resource path; file content not supplied"
+    }
+  ],
+  "recovered": {
+    "ball_reader_keys": 65,
+    "runtime_structure_bytes": 436,
+    "binary_key_mappings": 65,
+    "keys": "docs/pes2017-ball-schema.json",
+    "numeric_runtime_values": false,
+    "units": false,
+    "gameplay_equations": false,
+    "full_animation_selector": false
+  },
+  "native_trace_self_check": {
+    "schema_version": 1,
+    "result": "self_or_synthetic_test_only",
+    "within_declared_tolerances": true,
+    "pes_comparison": false,
+    "metrics": {
+      "player_position_rmse_m": 0.0,
+      "ball_position_rmse_m": 0.0,
+      "player_speed_rmse_mps": 0.0,
+      "maximum_input_error": 0.0
+    },
+    "tolerances": {
+      "player_position_rmse_m": 0.15,
+      "ball_position_rmse_m": 0.2,
+      "player_speed_rmse_mps": 0.25,
+      "maximum_input_error": 0.03
+    },
+    "compared_samples": 21,
+    "temporal_resolution_s": 0.09999999999999999,
+    "reference_summary": {
+      "duration_s": 2.0,
+      "player_path_m": 6.775827871740551,
+      "maximum_sampled_player_speed_mps": 4.3620001146263165,
+      "mean_player_ball_gap_m": 0.49587993149607773,
+      "maximum_player_ball_gap_m": 0.6090106403011363,
+      "maximum_sampled_ball_height_m": 0.1434
+    },
+    "candidate_summary": {
+      "duration_s": 2.0,
+      "player_path_m": 6.775827871740551,
+      "maximum_sampled_player_speed_mps": 4.3620001146263165,
+      "mean_player_ball_gap_m": 0.49587993149607773,
+      "maximum_player_ball_gap_m": 0.6090106403011363,
+      "maximum_sampled_ball_height_m": 0.1434
+    },
+    "reference_evidence": {
+      "kind": "instrumented",
+      "method": "Existing TRAINING_FRAME log; positions at simulation cadence. No rendering-derived motion.",
+      "source_sha256": "8a40f54317d9a367d7d6407a4fea82e8dc58a6fd2fd1e7d097ed51ae0a2d26ed",
+      "start_ms": 1200,
+      "end_ms": 3200,
+      "transform": {
+        "horizontal_origin_m": [
+          0.2477,
+          -0.0
+        ],
+        "heading_rad": 0,
+        "scale": 1
+      },
+      "limitation": "Current gamepad log records movement and shot only. Other gamepad buttons must not be inferred.",
+      "simulation_real_time_ratio": 1.0
+    },
+    "candidate_evidence": {
+      "kind": "instrumented",
+      "method": "Existing TRAINING_FRAME log; positions at simulation cadence. No rendering-derived motion.",
+      "source_sha256": "8a40f54317d9a367d7d6407a4fea82e8dc58a6fd2fd1e7d097ed51ae0a2d26ed",
+      "start_ms": 1200,
+      "end_ms": 3200,
+      "transform": {
+        "horizontal_origin_m": [
+          0.2477,
+          -0.0
+        ],
+        "heading_rad": 0,
+        "scale": 1
+      },
+      "limitation": "Current gamepad log records movement and shot only. Other gamepad buttons must not be inferred.",
+      "simulation_real_time_ratio": 1.0
+    },
+    "reference_executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463",
+    "candidate_executable_sha256": "b012613b7d12bd95c3512da04a629656472207b44eb163f4ec458ea82ccaf463",
+    "scope": "Measured trajectory and recorded command comparison only. Declared provenance is not independently authenticated. No code equivalence, animation equivalence or complete gameplay certification.",
+    "tolerance_origin": "Explicit engineering acceptance targets, not parameters extracted from PES."
+  },
+  "runtime": {
+    "pes_executed": false,
+    "local_installation_access": false,
+    "original_data_archives_received": false,
+    "gameplay_parameters_changed": false,
+    "pes_football_comparison_performed": false,
+    "goal_complete": false
+  },
+  "next_required_evidence": "Read-only inventory of root/Data/download to identify exact CPK versions, then the parameter resources referenced here and synchronized controlled gameplay traces.",
+  "limitations": [
+    "No claim that embedded JSON paths are present as plain JSON in the installed archives.",
+    "Schema names and packed field layout do not establish their units, loaded values, equations or original gameplay behaviour.",
+    "No original executable, disassembly listing, library or animation is redistributed."
+  ],
+  "validation": {
+    "python_tests": 227,
+    "python_passed": 221,
+    "python_skipped": 6,
+    "pes2017_tool_tests": 17,
+    "pe_inventory_checked_against_gnu_objdump": true,
+    "ball_field_mappings": 65,
+    "ball_binary_source_mappings": 65,
+    "object_bytes": 436,
+    "mapped_data_bytes": 430,
+    "other_bytes": "4-byte vtable and 2 padding bytes",
+    "native_game_rebuilt": false,
+    "reason": "Only standalone analysis tools/docs added; no C++ gameplay, binary, assets or configuration changed.",
+    "collector": {
+      "result": "archive_crc_and_content_checks_passed",
+      "bytes": 3544,
+      "sha256": "260129cb20fcbaa57e456af27b4517ac7f3626c1b462531b511f84fbf20a4aa7",
+      "members": 3,
+      "powershell_runtime_executed": false,
+      "windows_gui_executed": false
+    }
+  },
+  "tools": {
+    "pe_inventory": "tools/pes2017/inspect_executable.py",
+    "schema_recovery": "tools/pes2017/recover_ball_schema.py",
+    "binary_decoder": "tools/pes2017/decode_ball_blob.py",
+    "trace_export_and_comparison": "tools/pes2017/calibration.py",
+    "local_installation_inventory": "tools/pes2017/windows/coletar-pes2017.ps1"
+  },
+  "source_fidelity_status": "Only static schemas recovered. No measured PES gameplay baseline, calibrated runtime parameters, action selector rewrite or gameplay integration."
+}

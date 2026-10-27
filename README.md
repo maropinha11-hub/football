@@ -8,6 +8,12 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+O [estudo separado do PES 2017](tools/pes2017/README.md) recebeu e identificou
+o executável fornecido, mapeou 65 campos da estrutura da bola e acrescentou
+ferramentas de inspeção e comparação de registros. Os valores ativos e a
+gameplay original ainda não foram recuperados ou integrados. Esse estudo
+preserva o executável jogável e a gameplay anteriores.
+
 Há um novo **laboratório separado de controladores** em
 `laboratorio-procedural.bat`. **F12** compara a base aprovada, uma referência
 nativa com continuidade de pose e um corpo com os treze segmentos dinâmicos. O equilíbrio

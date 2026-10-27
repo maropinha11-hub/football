@@ -1,0 +1,2403 @@
+{
+  "schema_version": 1,
+  "kind": "static_pe_inventory",
+  "bytes": 110179840,
+  "sha256": "6598860f6cce192e7a7017bad451aa62fc01d9c3c76806eeebafc0691fe22a26",
+  "architecture": "x86",
+  "bits": 32,
+  "machine": 332,
+  "image_base": 4194304,
+  "entry_rva": 71131136,
+  "image_size": 110215168,
+  "coff_timestamp_raw": 1472796963,
+  "sections": [
+    {
+      "name": ".srdata",
+      "rva": 4096,
+      "virtual_size": 27788288,
+      "raw_offset": 1536,
+      "raw_size": 27788288,
+      "characteristics": 1073741856,
+      "sha256": "2a460b9cdc6010858b8b651ff2af4700e20d4da8ef05b68f64557f6b372c8244"
+    },
+    {
+      "name": ".sdata",
+      "rva": 27795456,
+      "virtual_size": 140800,
+      "raw_offset": 27789824,
+      "raw_size": 140800,
+      "characteristics": 1073741856,
+      "sha256": "6fd470dcb79ec9dee35865599d1f0de183294999214692ca39e05f13715f7513"
+    },
+    {
+      "name": ".xtls",
+      "rva": 27938816,
+      "virtual_size": 6039040,
+      "raw_offset": 27930624,
+      "raw_size": 6039040,
+      "characteristics": 1073741888,
+      "sha256": "0c6f541f9ee8e3ef419039e382fb4161ee930c9115ddc4f819cecfb9921b6d92"
+    },
+    {
+      "name": ".code",
+      "rva": 33980416,
+      "virtual_size": 5389116,
+      "raw_offset": 33969664,
+      "raw_size": 5389312,
+      "characteristics": 3221225504,
+      "sha256": "3ba58b8131a1a21772eb499c1d97c2dea709a47e9e735cdeddaaa560a98b6a65"
+    },
+    {
+      "name": ".text",
+      "rva": 39370752,
+      "virtual_size": 512,
+      "raw_offset": 39358976,
+      "raw_size": 512,
+      "characteristics": 3221225504,
+      "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    {
+      "name": ".idata",
+      "rva": 39374848,
+      "virtual_size": 469504,
+      "raw_offset": 39359488,
+      "raw_size": 469504,
+      "characteristics": 3221225504,
+      "sha256": "73d574999ab916579751b71363a9cdeffb45b8e39016c5f5c26668578ecf3a5b"
+    },
+    {
+      "name": ".trace",
+      "rva": 39845888,
+      "virtual_size": 31129891,
+      "raw_offset": 39828992,
+      "raw_size": 31130112,
+      "characteristics": 3758096416,
+      "sha256": "fcc6380da17125cd4aae20598f69f0bd44e2dac5b9592109b7a55f98e60926f8"
+    },
+    {
+      "name": ".xcode",
+      "rva": 70979584,
+      "virtual_size": 142371,
+      "raw_offset": 70959104,
+      "raw_size": 142848,
+      "characteristics": 3758096416,
+      "sha256": "fecf5c2fb283344fa05a5c8097bde9fa6d719487e59064ed9d4745400356c241"
+    },
+    {
+      "name": ".data1",
+      "rva": 71122944,
+      "virtual_size": 368,
+      "raw_offset": 71101952,
+      "raw_size": 512,
+      "characteristics": 3758096416,
+      "sha256": "ec9283043623ae5d3259274e2a9c9c9e0801516ec5f0d6637c5438ac216b9c56"
+    },
+    {
+      "name": ".reloc",
+      "rva": 71127040,
+      "virtual_size": 59,
+      "raw_offset": 71102464,
+      "raw_size": 512,
+      "characteristics": 1610612768,
+      "sha256": "c2a63f08aa04f2f316cc64bc4372873a350609295c4837e2c0140947b29c9d89"
+    },
+    {
+      "name": ".link",
+      "rva": 71131136,
+      "virtual_size": 34,
+      "raw_offset": 71102976,
+      "raw_size": 512,
+      "characteristics": 1610612768,
+      "sha256": "b4ef921e7ad560b6fd2980a45c5f56f83ec13d8ca1423895fb468521f65e7dda"
+    },
+    {
+      "name": ".xtext",
+      "rva": 71135232,
+      "virtual_size": 22762,
+      "raw_offset": 71103488,
+      "raw_size": 23040,
+      "characteristics": 1073741888,
+      "sha256": "5719a177116468a500b6c8d90156af4582f79ea9927cb435b4cf40dba52e2c8e"
+    },
+    {
+      "name": ".data",
+      "rva": 71159808,
+      "virtual_size": 38672850,
+      "raw_offset": 71126528,
+      "raw_size": 38672896,
+      "characteristics": 3758096480,
+      "sha256": "f43d27c6eec9441356943121a4514c25b37b12d8f7383ee0830b193e1e340489"
+    },
+    {
+      "name": ".edata",
+      "rva": 109834240,
+      "virtual_size": 380266,
+      "raw_offset": 109799424,
+      "raw_size": 380416,
+      "characteristics": 1073741888,
+      "sha256": "95b927e967a6638720364477950a364d79ca1893330dbc44441a8897d7a4e858"
+    }
+  ],
+  "imports": [
+    {
+      "module": "advapi32.dll",
+      "symbols": [
+        {
+          "name": "ConvertSidToStringSidW"
+        },
+        {
+          "name": "CryptAcquireContextA"
+        },
+        {
+          "name": "CryptAcquireContextW"
+        },
+        {
+          "name": "CryptGenRandom"
+        },
+        {
+          "name": "RegOpenKeyExA"
+        },
+        {
+          "name": "CryptReleaseContext"
+        },
+        {
+          "name": "RegOpenKeyExW"
+        },
+        {
+          "name": "LookupAccountNameW"
+        },
+        {
+          "name": "RegCloseKey"
+        },
+        {
+          "name": "RegQueryValueExW"
+        }
+      ]
+    },
+    {
+      "module": "d3d9.dll",
+      "symbols": [
+        {
+          "name": "D3DPERF_SetOptions"
+        },
+        {
+          "name": "D3DPERF_BeginEvent"
+        },
+        {
+          "name": "D3DPERF_EndEvent"
+        },
+        {
+          "name": "D3DPERF_SetMarker"
+        },
+        {
+          "name": "Direct3DCreate9"
+        }
+      ]
+    },
+    {
+      "module": "d3dx9_43.dll",
+      "symbols": [
+        {
+          "name": "D3DXSaveTextureToFileA"
+        }
+      ]
+    },
+    {
+      "module": "dinput8.dll",
+      "symbols": [
+        {
+          "name": "DirectInput8Create"
+        }
+      ]
+    },
+    {
+      "module": "dsound.dll",
+      "symbols": [
+        {
+          "ordinal": 12
+        },
+        {
+          "ordinal": 11
+        },
+        {
+          "ordinal": 3
+        }
+      ]
+    },
+    {
+      "module": "gdi32.dll",
+      "symbols": [
+        {
+          "name": "GetObjectA"
+        },
+        {
+          "name": "CreateFontIndirectA"
+        },
+        {
+          "name": "DeleteObject"
+        },
+        {
+          "name": "GetDeviceCaps"
+        },
+        {
+          "name": "GetTextExtentPoint32W"
+        },
+        {
+          "name": "GetStockObject"
+        },
+        {
+          "name": "SelectObject"
+        },
+        {
+          "name": "SetTextColor"
+        }
+      ]
+    },
+    {
+      "module": "imm32.dll",
+      "symbols": [
+        {
+          "name": "ImmAssociateContext"
+        }
+      ]
+    },
+    {
+      "module": "iphlpapi.dll",
+      "symbols": [
+        {
+          "name": "AddIPAddress"
+        },
+        {
+          "name": "GetIpAddrTable"
+        },
+        {
+          "name": "GetBestInterface"
+        },
+        {
+          "name": "GetAdaptersAddresses"
+        },
+        {
+          "name": "GetIfEntry"
+        },
+        {
+          "name": "ConvertInterfaceLuidToGuid"
+        },
+        {
+          "name": "DeleteIPAddress"
+        },
+        {
+          "name": "GetAdaptersInfo"
+        },
+        {
+          "name": "GetIpForwardTable"
+        },
+        {
+          "name": "GetNetworkParams"
+        }
+      ]
+    },
+    {
+      "module": "kernel32.dll",
+      "symbols": [
+        {
+          "name": "CreateEventW"
+        },
+        {
+          "name": "SetThreadIdealProcessor"
+        },
+        {
+          "name": "ReadFile"
+        },
+        {
+          "name": "SetProcessPriorityBoost"
+        },
+        {
+          "name": "SizeofResource"
+        },
+        {
+          "name": "CreateMutexA"
+        },
+        {
+          "name": "DeleteFileA"
+        },
+        {
+          "name": "GetThreadPriority"
+        },
+        {
+          "name": "CreateSemaphoreW"
+        },
+        {
+          "name": "GetDriveTypeW"
+        },
+        {
+          "name": "GetProcessHeap"
+        },
+        {
+          "name": "CreateSemaphoreA"
+        },
+        {
+          "name": "TlsAlloc"
+        },
+        {
+          "name": "FindClose"
+        },
+        {
+          "name": "TerminateProcess"
+        },
+        {
+          "name": "DeleteFileW"
+        },
+        {
+          "name": "GetProcessAffinityMask"
+        },
+        {
+          "name": "DuplicateHandle"
+        },
+        {
+          "name": "DeleteCriticalSection"
+        },
+        {
+          "name": "MoveFileA"
+        },
+        {
+          "name": "CreateDirectoryW"
+        },
+        {
+          "name": "AcquireSRWLockExclusive"
+        },
+        {
+          "name": "CreateProcessA"
+        },
+        {
+          "name": "QueryPerformanceCounter"
+        },
+        {
+          "name": "CreatePipe"
+        },
+        {
+          "name": "AcquireSRWLockShared"
+        },
+        {
+          "name": "GetCurrentProcess"
+        },
+        {
+          "name": "CloseHandle"
+        },
+        {
+          "name": "GetExitCodeProcess"
+        },
+        {
+          "name": "CreateDirectoryA"
+        },
+        {
+          "name": "ExitProcess"
+        },
+        {
+          "name": "CreateEventA"
+        },
+        {
+          "name": "ResumeThread"
+        },
+        {
+          "name": "CreateFileA"
+        },
+        {
+          "name": "CreateFileMappingW"
+        },
+        {
+          "name": "CreateFileW"
+        },
+        {
+          "name": "CreateMutexW"
+        },
+        {
+          "name": "DeviceIoControl"
+        },
+        {
+          "name": "DecodePointer"
+        },
+        {
+          "name": "EncodePointer"
+        },
+        {
+          "name": "EnterCriticalSection"
+        },
+        {
+          "name": "FindResourceW"
+        },
+        {
+          "name": "FindFirstFileA"
+        },
+        {
+          "name": "FindFirstFileW"
+        },
+        {
+          "name": "FindNextFileA"
+        },
+        {
+          "name": "GetCurrentProcessId"
+        },
+        {
+          "name": "FindNextFileW"
+        },
+        {
+          "name": "FlushFileBuffers"
+        },
+        {
+          "name": "SwitchToThread"
+        },
+        {
+          "name": "FormatMessageA"
+        },
+        {
+          "name": "FreeLibrary"
+        },
+        {
+          "name": "GetCurrentDirectoryW"
+        },
+        {
+          "name": "GetCurrentThread"
+        },
+        {
+          "name": "lstrcpyW"
+        },
+        {
+          "name": "GetCurrentThreadId"
+        },
+        {
+          "name": "GetDiskFreeSpaceExW"
+        },
+        {
+          "name": "GetDiskFreeSpaceW"
+        },
+        {
+          "name": "GetExitCodeThread"
+        },
+        {
+          "name": "GetFileAttributesA"
+        },
+        {
+          "name": "SuspendThread"
+        },
+        {
+          "name": "GetFileAttributesW"
+        },
+        {
+          "name": "GetFileInformationByHandle"
+        },
+        {
+          "name": "GetFileSize"
+        },
+        {
+          "name": "GetFileSizeEx"
+        },
+        {
+          "name": "IsDebuggerPresent"
+        },
+        {
+          "name": "GetFullPathNameA"
+        },
+        {
+          "name": "GetLastError"
+        },
+        {
+          "name": "GetLocalTime"
+        },
+        {
+          "name": "GetLocaleInfoA"
+        },
+        {
+          "name": "GetModuleFileNameW"
+        },
+        {
+          "name": "GetLogicalDrives"
+        },
+        {
+          "name": "GetLogicalProcessorInformation"
+        },
+        {
+          "name": "GetLongPathNameA"
+        },
+        {
+          "name": "GetModuleFileNameA"
+        },
+        {
+          "name": "GetModuleHandleA"
+        },
+        {
+          "name": "GetModuleHandleW"
+        },
+        {
+          "name": "GetProcAddress"
+        },
+        {
+          "name": "GetStartupInfoW"
+        },
+        {
+          "name": "GetStdHandle"
+        },
+        {
+          "name": "HeapAlloc"
+        },
+        {
+          "name": "GetSystemDirectoryA"
+        },
+        {
+          "name": "GetSystemInfo"
+        },
+        {
+          "name": "GetSystemTimeAsFileTime"
+        },
+        {
+          "name": "GetTempPathW"
+        },
+        {
+          "name": "GetTickCount"
+        },
+        {
+          "name": "ReleaseMutex"
+        },
+        {
+          "name": "GetTimeZoneInformation"
+        },
+        {
+          "name": "GetVersionExW"
+        },
+        {
+          "name": "GlobalAlloc"
+        },
+        {
+          "name": "GlobalFree"
+        },
+        {
+          "name": "GlobalLock"
+        },
+        {
+          "name": "GlobalMemoryStatus"
+        },
+        {
+          "name": "GlobalUnlock"
+        },
+        {
+          "name": "HeapFree"
+        },
+        {
+          "name": "HeapSetInformation"
+        },
+        {
+          "name": "InitializeCriticalSection"
+        },
+        {
+          "name": "InitializeCriticalSectionAndSpinCount"
+        },
+        {
+          "name": "InitializeSRWLock"
+        },
+        {
+          "name": "InterlockedCompareExchange"
+        },
+        {
+          "name": "MoveFileW"
+        },
+        {
+          "name": "InterlockedDecrement"
+        },
+        {
+          "name": "InterlockedExchange"
+        },
+        {
+          "name": "InterlockedExchangeAdd"
+        },
+        {
+          "name": "RemoveDirectoryW"
+        },
+        {
+          "name": "InterlockedIncrement"
+        },
+        {
+          "name": "IsProcessorFeaturePresent"
+        },
+        {
+          "name": "LeaveCriticalSection"
+        },
+        {
+          "name": "LoadLibraryA"
+        },
+        {
+          "name": "LoadLibraryExW"
+        },
+        {
+          "name": "LoadLibraryW"
+        },
+        {
+          "name": "LoadResource"
+        },
+        {
+          "name": "VerifyVersionInfoW"
+        },
+        {
+          "name": "LocalFileTimeToFileTime"
+        },
+        {
+          "name": "LocalFree"
+        },
+        {
+          "name": "MapViewOfFile"
+        },
+        {
+          "name": "MoveFileExW"
+        },
+        {
+          "name": "MultiByteToWideChar"
+        },
+        {
+          "name": "OutputDebugStringA"
+        },
+        {
+          "name": "OutputDebugStringW"
+        },
+        {
+          "name": "PeekNamedPipe"
+        },
+        {
+          "name": "QueryPerformanceFrequency"
+        },
+        {
+          "name": "RaiseException"
+        },
+        {
+          "name": "ReleaseSRWLockExclusive"
+        },
+        {
+          "name": "ReleaseSRWLockShared"
+        },
+        {
+          "name": "ReleaseSemaphore"
+        },
+        {
+          "name": "RemoveDirectoryA"
+        },
+        {
+          "name": "ResetEvent"
+        },
+        {
+          "name": "SetEndOfFile"
+        },
+        {
+          "name": "SetEvent"
+        },
+        {
+          "name": "SetFileAttributesW"
+        },
+        {
+          "name": "SetFilePointer"
+        },
+        {
+          "name": "SetThreadAffinityMask"
+        },
+        {
+          "name": "SetThreadPriority"
+        },
+        {
+          "name": "SetThreadPriorityBoost"
+        },
+        {
+          "name": "SetUnhandledExceptionFilter"
+        },
+        {
+          "name": "SignalObjectAndWait"
+        },
+        {
+          "name": "Sleep"
+        },
+        {
+          "name": "SystemTimeToFileTime"
+        },
+        {
+          "name": "SystemTimeToTzSpecificLocalTime"
+        },
+        {
+          "name": "TlsFree"
+        },
+        {
+          "name": "TlsGetValue"
+        },
+        {
+          "name": "TlsSetValue"
+        },
+        {
+          "name": "TryEnterCriticalSection"
+        },
+        {
+          "name": "UnhandledExceptionFilter"
+        },
+        {
+          "name": "UnmapViewOfFile"
+        },
+        {
+          "name": "VerSetConditionMask"
+        },
+        {
+          "name": "VirtualAlloc"
+        },
+        {
+          "name": "VirtualFree"
+        },
+        {
+          "name": "VirtualQuery"
+        },
+        {
+          "name": "WaitForMultipleObjects"
+        },
+        {
+          "name": "WaitForSingleObject"
+        },
+        {
+          "name": "WideCharToMultiByte"
+        },
+        {
+          "name": "WriteFile"
+        },
+        {
+          "name": "lstrcmpiA"
+        },
+        {
+          "name": "lstrlenA"
+        }
+      ]
+    },
+    {
+      "module": "msvcp100.dll",
+      "symbols": [
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@I@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@_K@Z"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AA_K@Z"
+        },
+        {
+          "name": "??1_Lockit@std@@QAE@XZ"
+        },
+        {
+          "name": "?min@?$numeric_limits@G@std@@SAGXZ"
+        },
+        {
+          "name": "?_Fiopen@std@@YAPAU_iobuf@@PBDHH@Z"
+        },
+        {
+          "name": "?_Getcat@?$codecvt@DDH@std@@SAIPAPBVfacet@locale@2@PBV42@@Z"
+        },
+        {
+          "name": "?uncaught_exception@std@@YA_NXZ"
+        },
+        {
+          "name": "??1_Container_base12@std@@QAE@XZ"
+        },
+        {
+          "name": "??1?$basic_streambuf@DU?$char_traits@D@std@@@std@@UAE@XZ"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@P6AAAV01@AAV01@@Z@Z"
+        },
+        {
+          "name": "?_Unlock@?$basic_streambuf@DU?$char_traits@D@std@@@std@@UAEXXZ"
+        },
+        {
+          "name": "?_Getcat@?$ctype@D@std@@SAIPAPBVfacet@locale@2@PBV42@@Z"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AAI@Z"
+        },
+        {
+          "name": "??0_Lockit@std@@QAE@H@Z"
+        },
+        {
+          "name": "?_Xlength_error@std@@YAXPBD@Z"
+        },
+        {
+          "name": "?showmanyc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAE_JXZ"
+        },
+        {
+          "name": "?setw@std@@YA?AU?$_Smanip@_J@1@_J@Z"
+        },
+        {
+          "name": "?setprecision@std@@YA?AU?$_Smanip@_J@1@_J@Z"
+        },
+        {
+          "name": "?_Getgloballocale@locale@std@@CAPAV_Locimp@12@XZ"
+        },
+        {
+          "name": "?setstate@?$basic_ios@DU?$char_traits@D@std@@@std@@QAEXH_N@Z"
+        },
+        {
+          "name": "?min@?$numeric_limits@I@std@@SAIXZ"
+        },
+        {
+          "name": "?min@?$numeric_limits@H@std@@SAHXZ"
+        },
+        {
+          "name": "?widen@?$basic_ios@DU?$char_traits@D@std@@@std@@QBEDD@Z"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AAG@Z"
+        },
+        {
+          "name": "?read@?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV12@PAD_J@Z"
+        },
+        {
+          "name": "??0?$basic_ios@DU?$char_traits@D@std@@@std@@IAE@XZ"
+        },
+        {
+          "name": "??0?$basic_iostream@DU?$char_traits@D@std@@@std@@QAE@PAV?$basic_streambuf@DU?$char_traits@D@std@@@1@@Z"
+        },
+        {
+          "name": "??0?$basic_istream@DU?$char_traits@D@std@@@std@@QAE@PAV?$basic_streambuf@DU?$char_traits@D@std@@@1@_N@Z"
+        },
+        {
+          "name": "??0?$basic_ostream@DU?$char_traits@D@std@@@std@@QAE@PAV?$basic_streambuf@DU?$char_traits@D@std@@@1@_N@Z"
+        },
+        {
+          "name": "??0?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAE@XZ"
+        },
+        {
+          "name": "??1?$basic_ios@DU?$char_traits@D@std@@@std@@UAE@XZ"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AAH@Z"
+        },
+        {
+          "name": "??1?$basic_iostream@DU?$char_traits@D@std@@@std@@UAE@XZ"
+        },
+        {
+          "name": "??1?$basic_istream@DU?$char_traits@D@std@@@std@@UAE@XZ"
+        },
+        {
+          "name": "??1?$basic_ostream@DU?$char_traits@D@std@@@std@@UAE@XZ"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AAN@Z"
+        },
+        {
+          "name": "??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@P6AAAVios_base@1@AAV21@@Z@Z"
+        },
+        {
+          "name": "?sync@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEHXZ"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@G@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@H@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@M@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@N@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@P6AAAVios_base@1@AAV21@@Z@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@PBX@Z"
+        },
+        {
+          "name": "??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@_N@Z"
+        },
+        {
+          "name": "??Bios_base@std@@QBEPAXXZ"
+        },
+        {
+          "name": "??_7?$basic_ios@DU?$char_traits@D@std@@@std@@6B@"
+        },
+        {
+          "name": "??_7?$basic_istream@DU?$char_traits@D@std@@@std@@6B@"
+        },
+        {
+          "name": "??_7?$basic_ostream@DU?$char_traits@D@std@@@std@@6B@"
+        },
+        {
+          "name": "?max@?$numeric_limits@I@std@@SAIXZ"
+        },
+        {
+          "name": "?max@?$numeric_limits@_K@std@@SA_KXZ"
+        },
+        {
+          "name": "?_Osfx@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEXXZ"
+        },
+        {
+          "name": "??_7ios_base@std@@6B@"
+        },
+        {
+          "name": "??_D?$basic_istream@DU?$char_traits@D@std@@@std@@QAEXXZ"
+        },
+        {
+          "name": "?_BADOFF@std@@3_JB"
+        },
+        {
+          "name": "?_Decref@facet@locale@std@@QAEPAV123@XZ"
+        },
+        {
+          "name": "?_Id_cnt@id@locale@std@@0HA"
+        },
+        {
+          "name": "?_Incref@facet@locale@std@@QAEXXZ"
+        },
+        {
+          "name": "?_Init@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAEXXZ"
+        },
+        {
+          "name": "?_Ios_base_dtor@ios_base@std@@CAXPAV12@@Z"
+        },
+        {
+          "name": "?sbumpc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEHXZ"
+        },
+        {
+          "name": "?_Ipfx@?$basic_istream@DU?$char_traits@D@std@@@std@@QAE_N_N@Z"
+        },
+        {
+          "name": "?_Lock@?$basic_streambuf@DU?$char_traits@D@std@@@std@@UAEXXZ"
+        },
+        {
+          "name": "?_Orphan_all@_Container_base0@std@@QAEXXZ"
+        },
+        {
+          "name": "?_Orphan_all@_Container_base12@std@@QAEXXZ"
+        },
+        {
+          "name": "?_Pninc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAEPADXZ"
+        },
+        {
+          "name": "?_Xout_of_range@std@@YAXPBD@Z"
+        },
+        {
+          "name": "?always_noconv@codecvt_base@std@@QBE_NXZ"
+        },
+        {
+          "name": "?clear@?$basic_ios@DU?$char_traits@D@std@@@std@@QAEXH_N@Z"
+        },
+        {
+          "name": "?endl@std@@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@1@AAV21@@Z"
+        },
+        {
+          "name": "?eback@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IBEPADXZ"
+        },
+        {
+          "name": "?egptr@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IBEPADXZ"
+        },
+        {
+          "name": "?setg@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAEXPAD00@Z"
+        },
+        {
+          "name": "?epptr@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IBEPADXZ"
+        },
+        {
+          "name": "?flush@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV12@XZ"
+        },
+        {
+          "name": "?getloc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QBE?AVlocale@2@XZ"
+        },
+        {
+          "name": "?getloc@ios_base@std@@QBE?AVlocale@2@XZ"
+        },
+        {
+          "name": "?id@?$codecvt@DDH@std@@2V0locale@2@A"
+        },
+        {
+          "name": "?id@?$ctype@D@std@@2V0locale@2@A"
+        },
+        {
+          "name": "?imbue@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEXABVlocale@2@@Z"
+        },
+        {
+          "name": "?setbuf@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEPAV12@PAD_J@Z"
+        },
+        {
+          "name": "?in@?$codecvt@DDH@std@@QBEHAAHPBD1AAPBDPAD3AAPAD@Z"
+        },
+        {
+          "name": "?max@?$numeric_limits@G@std@@SAGXZ"
+        },
+        {
+          "name": "?max@?$numeric_limits@H@std@@SAHXZ"
+        },
+        {
+          "name": "?out@?$codecvt@DDH@std@@QBEHAAHPBD1AAPBDPAD3AAPAD@Z"
+        },
+        {
+          "name": "?pbackfail@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEHH@Z"
+        },
+        {
+          "name": "?pptr@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IBEPADXZ"
+        },
+        {
+          "name": "?seekg@?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV12@_JH@Z"
+        },
+        {
+          "name": "?setp@?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAEXPAD0@Z"
+        },
+        {
+          "name": "?sgetc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEHXZ"
+        },
+        {
+          "name": "?snextc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEHXZ"
+        },
+        {
+          "name": "?sputc@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEHD@Z"
+        },
+        {
+          "name": "?sputn@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAE_JPBD_J@Z"
+        },
+        {
+          "name": "?uflow@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEHXZ"
+        },
+        {
+          "name": "?underflow@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAEHXZ"
+        },
+        {
+          "name": "?unshift@?$codecvt@DDH@std@@QBEHAAHPAD1AAPAD@Z"
+        },
+        {
+          "name": "?xsgetn@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAE_JPAD_J@Z"
+        },
+        {
+          "name": "?xsputn@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAE_JPBD_J@Z"
+        }
+      ]
+    },
+    {
+      "module": "msvcr100.dll",
+      "symbols": [
+        {
+          "name": "feof"
+        },
+        {
+          "name": "iscntrl"
+        },
+        {
+          "name": "printf"
+        },
+        {
+          "name": "strlen"
+        },
+        {
+          "name": "_byteswap_ushort"
+        },
+        {
+          "name": "strncmp"
+        },
+        {
+          "name": "longjmp"
+        },
+        {
+          "name": "_snprintf"
+        },
+        {
+          "name": "_pclose"
+        },
+        {
+          "name": "_finite"
+        },
+        {
+          "name": "clearerr"
+        },
+        {
+          "name": "_lock"
+        },
+        {
+          "name": "_XcptFilter"
+        },
+        {
+          "name": "strncpy"
+        },
+        {
+          "name": "__CxxFrameHandler3"
+        },
+        {
+          "name": "tanh"
+        },
+        {
+          "name": "__iob_func"
+        },
+        {
+          "name": "wcsstr"
+        },
+        {
+          "name": "srand"
+        },
+        {
+          "name": "_CIlog10"
+        },
+        {
+          "name": "_fseeki64"
+        },
+        {
+          "name": "localeconv"
+        },
+        {
+          "name": "isalnum"
+        },
+        {
+          "name": "cos"
+        },
+        {
+          "name": "__CxxLongjmpUnwind"
+        },
+        {
+          "name": "sqrt"
+        },
+        {
+          "name": "_popen"
+        },
+        {
+          "name": "?terminate@@YAXXZ"
+        },
+        {
+          "name": "_CIfmod"
+        },
+        {
+          "name": "_beginthreadex"
+        },
+        {
+          "name": "strcpy_s"
+        },
+        {
+          "name": "ldexp"
+        },
+        {
+          "name": "_except_handler4_common"
+        },
+        {
+          "name": "ispunct"
+        },
+        {
+          "name": "_isnan"
+        },
+        {
+          "name": "atan2"
+        },
+        {
+          "name": "strtod"
+        },
+        {
+          "name": "atoi"
+        },
+        {
+          "name": "_localtime64_s"
+        },
+        {
+          "name": "_CIsinh"
+        },
+        {
+          "name": "_CItan"
+        },
+        {
+          "name": "_vsnprintf_s"
+        },
+        {
+          "name": "ferror"
+        },
+        {
+          "name": "wcsncat_s"
+        },
+        {
+          "name": "memcmp"
+        },
+        {
+          "name": "??1bad_cast@std@@UAE@XZ"
+        },
+        {
+          "name": "isspace"
+        },
+        {
+          "name": "strpbrk"
+        },
+        {
+          "name": "_onexit"
+        },
+        {
+          "name": "getc"
+        },
+        {
+          "name": "memset"
+        },
+        {
+          "name": "_CIasin"
+        },
+        {
+          "name": "_byteswap_ulong"
+        },
+        {
+          "name": "??0bad_cast@std@@QAE@ABV01@@Z"
+        },
+        {
+          "name": "_gmtime64_s"
+        },
+        {
+          "name": "toupper"
+        },
+        {
+          "name": "fgetpos"
+        },
+        {
+          "name": "_vsnprintf_s_l"
+        },
+        {
+          "name": "exit"
+        },
+        {
+          "name": "strncat"
+        },
+        {
+          "name": "log10"
+        },
+        {
+          "name": "strtoul"
+        },
+        {
+          "name": "clock"
+        },
+        {
+          "name": "asin"
+        },
+        {
+          "name": "_aligned_realloc"
+        },
+        {
+          "name": "strchr"
+        },
+        {
+          "name": "_CIlog"
+        },
+        {
+          "name": "fclose"
+        },
+        {
+          "name": "sprintf_s"
+        },
+        {
+          "name": "??0exception@std@@QAE@XZ"
+        },
+        {
+          "name": "_purecall"
+        },
+        {
+          "name": "atof"
+        },
+        {
+          "name": "_stricmp"
+        },
+        {
+          "name": "_CIacos"
+        },
+        {
+          "name": "_invoke_watson"
+        },
+        {
+          "name": "wcslen"
+        },
+        {
+          "name": "rename"
+        },
+        {
+          "name": "islower"
+        },
+        {
+          "name": "frexp"
+        },
+        {
+          "name": "_CItanh"
+        },
+        {
+          "name": "_endthreadex"
+        },
+        {
+          "name": "floor"
+        },
+        {
+          "name": "remove"
+        },
+        {
+          "name": "fseek"
+        },
+        {
+          "name": "memchr"
+        },
+        {
+          "name": "strcmp"
+        },
+        {
+          "name": "_ismbblead"
+        },
+        {
+          "name": "_CxxThrowException"
+        },
+        {
+          "name": "_configthreadlocale"
+        },
+        {
+          "name": "fscanf"
+        },
+        {
+          "name": "memmove"
+        },
+        {
+          "name": "strftime"
+        },
+        {
+          "name": "_amsg_exit"
+        },
+        {
+          "name": "tan"
+        },
+        {
+          "name": "_CIsin"
+        },
+        {
+          "name": "tmpfile"
+        },
+        {
+          "name": "fgets"
+        },
+        {
+          "name": "atan"
+        },
+        {
+          "name": "??0exception@std@@QAE@ABQBD@Z"
+        },
+        {
+          "name": "??0bad_cast@std@@QAE@PBD@Z"
+        },
+        {
+          "name": "??0exception@std@@QAE@ABV01@@Z"
+        },
+        {
+          "name": "??1exception@std@@UAE@XZ"
+        },
+        {
+          "name": "?_type_info_dtor_internal_method@type_info@@QAEXXZ"
+        },
+        {
+          "name": "?what@exception@std@@UBEPBDXZ"
+        },
+        {
+          "name": "_CIatan"
+        },
+        {
+          "name": "_vsnprintf"
+        },
+        {
+          "name": "_CIatan2"
+        },
+        {
+          "name": "_CIcos"
+        },
+        {
+          "name": "_CIcosh"
+        },
+        {
+          "name": "_mktime64"
+        },
+        {
+          "name": "_time64"
+        },
+        {
+          "name": "_CIexp"
+        },
+        {
+          "name": "_CIpow"
+        },
+        {
+          "name": "_strnicmp"
+        },
+        {
+          "name": "_CIsqrt"
+        },
+        {
+          "name": "fflush"
+        },
+        {
+          "name": "_HUGE"
+        },
+        {
+          "name": "_get_errno"
+        },
+        {
+          "name": "_difftime64"
+        },
+        {
+          "name": "__argc"
+        },
+        {
+          "name": "__argv"
+        },
+        {
+          "name": "__dllonexit"
+        },
+        {
+          "name": "__getmainargs"
+        },
+        {
+          "name": "__set_app_type"
+        },
+        {
+          "name": "__setusermatherr"
+        },
+        {
+          "name": "_acmdln"
+        },
+        {
+          "name": "_aligned_free"
+        },
+        {
+          "name": "_aligned_malloc"
+        },
+        {
+          "name": "_fmode"
+        },
+        {
+          "name": "_byteswap_uint64"
+        },
+        {
+          "name": "_cexit"
+        },
+        {
+          "name": "_commode"
+        },
+        {
+          "name": "_controlfp_s"
+        },
+        {
+          "name": "_create_locale"
+        },
+        {
+          "name": "sprintf"
+        },
+        {
+          "name": "_crt_debugger_hook"
+        },
+        {
+          "name": "_errno"
+        },
+        {
+          "name": "_except_handler3"
+        },
+        {
+          "name": "isdigit"
+        },
+        {
+          "name": "_exit"
+        },
+        {
+          "name": "_free_locale"
+        },
+        {
+          "name": "_gmtime64"
+        },
+        {
+          "name": "fread"
+        },
+        {
+          "name": "_initterm"
+        },
+        {
+          "name": "_initterm_e"
+        },
+        {
+          "name": "strcoll"
+        },
+        {
+          "name": "_localtime64"
+        },
+        {
+          "name": "_lock_file"
+        },
+        {
+          "name": "freopen_s"
+        },
+        {
+          "name": "_setjmp3"
+        },
+        {
+          "name": "_strtoi64"
+        },
+        {
+          "name": "_strtoui64"
+        },
+        {
+          "name": "getenv"
+        },
+        {
+          "name": "_unlock"
+        },
+        {
+          "name": "_unlock_file"
+        },
+        {
+          "name": "_vscprintf_l"
+        },
+        {
+          "name": "_vsnwprintf"
+        },
+        {
+          "name": "_wfopen_s"
+        },
+        {
+          "name": "acos"
+        },
+        {
+          "name": "atol"
+        },
+        {
+          "name": "calloc"
+        },
+        {
+          "name": "ceil"
+        },
+        {
+          "name": "cosh"
+        },
+        {
+          "name": "exp"
+        },
+        {
+          "name": "fabs"
+        },
+        {
+          "name": "fgetc"
+        },
+        {
+          "name": "fmod"
+        },
+        {
+          "name": "fopen_s"
+        },
+        {
+          "name": "fprintf"
+        },
+        {
+          "name": "fputc"
+        },
+        {
+          "name": "free"
+        },
+        {
+          "name": "fsetpos"
+        },
+        {
+          "name": "ftell"
+        },
+        {
+          "name": "fwrite"
+        },
+        {
+          "name": "setvbuf"
+        },
+        {
+          "name": "isalpha"
+        },
+        {
+          "name": "strstr"
+        },
+        {
+          "name": "isupper"
+        },
+        {
+          "name": "isxdigit"
+        },
+        {
+          "name": "log"
+        },
+        {
+          "name": "malloc"
+        },
+        {
+          "name": "realloc"
+        },
+        {
+          "name": "mbstowcs_s"
+        },
+        {
+          "name": "memcpy"
+        },
+        {
+          "name": "rand"
+        },
+        {
+          "name": "memcpy_s"
+        },
+        {
+          "name": "strspn"
+        },
+        {
+          "name": "modf"
+        },
+        {
+          "name": "pow"
+        },
+        {
+          "name": "qsort"
+        },
+        {
+          "name": "setlocale"
+        },
+        {
+          "name": "wprintf"
+        },
+        {
+          "name": "sin"
+        },
+        {
+          "name": "sinh"
+        },
+        {
+          "name": "sscanf"
+        },
+        {
+          "name": "sscanf_s"
+        },
+        {
+          "name": "strcat_s"
+        },
+        {
+          "name": "strcspn"
+        },
+        {
+          "name": "strerror"
+        },
+        {
+          "name": "strncat_s"
+        },
+        {
+          "name": "strncpy_s"
+        },
+        {
+          "name": "strrchr"
+        },
+        {
+          "name": "strtok_s"
+        },
+        {
+          "name": "strtol"
+        },
+        {
+          "name": "swprintf_s"
+        },
+        {
+          "name": "system"
+        },
+        {
+          "name": "tmpnam"
+        },
+        {
+          "name": "tolower"
+        },
+        {
+          "name": "ungetc"
+        },
+        {
+          "name": "vsprintf_s"
+        },
+        {
+          "name": "wcsncmp"
+        },
+        {
+          "name": "wcstombs_s"
+        }
+      ]
+    },
+    {
+      "module": "ole32.dll",
+      "symbols": [
+        {
+          "name": "CoCreateInstance"
+        },
+        {
+          "name": "CoInitialize"
+        },
+        {
+          "name": "CoUninitialize"
+        },
+        {
+          "name": "CoInitializeEx"
+        }
+      ]
+    },
+    {
+      "module": "oleaut32.dll",
+      "symbols": [
+        {
+          "ordinal": 2
+        },
+        {
+          "ordinal": 6
+        },
+        {
+          "ordinal": 9
+        }
+      ]
+    },
+    {
+      "module": "psapi.dll",
+      "symbols": [
+        {
+          "name": "GetProcessMemoryInfo"
+        }
+      ]
+    },
+    {
+      "module": "secur32.dll",
+      "symbols": [
+        {
+          "name": "GetUserNameExW"
+        }
+      ]
+    },
+    {
+      "module": "shell32.dll",
+      "symbols": [
+        {
+          "name": "ShellExecuteA"
+        },
+        {
+          "name": "SHGetSpecialFolderPathW"
+        },
+        {
+          "name": "SHGetFolderPathW"
+        },
+        {
+          "name": "SHCreateDirectoryExW"
+        },
+        {
+          "name": "ShellExecuteW"
+        }
+      ]
+    },
+    {
+      "module": "shlwapi.dll",
+      "symbols": [
+        {
+          "name": "PathFileExistsW"
+        }
+      ]
+    },
+    {
+      "module": "steam_api.dll",
+      "symbols": [
+        {
+          "name": "SteamAPI_RegisterCallback"
+        },
+        {
+          "name": "SteamAPI_Init"
+        },
+        {
+          "name": "SteamAPI_GetHSteamUser"
+        },
+        {
+          "name": "SteamInternal_CreateInterface"
+        },
+        {
+          "name": "SteamAPI_UnregisterCallResult"
+        },
+        {
+          "name": "SteamAPI_RestartAppIfNecessary"
+        },
+        {
+          "name": "SteamAPI_GetHSteamPipe"
+        },
+        {
+          "name": "SteamAPI_RunCallbacks"
+        },
+        {
+          "name": "SteamAPI_SetMiniDumpComment"
+        },
+        {
+          "name": "SteamAPI_Shutdown"
+        },
+        {
+          "name": "SteamAPI_UnregisterCallback"
+        },
+        {
+          "name": "SteamAPI_WriteMiniDump"
+        }
+      ]
+    },
+    {
+      "module": "user32.dll",
+      "symbols": [
+        {
+          "name": "CreateWindowExW"
+        },
+        {
+          "name": "SetWindowTextA"
+        },
+        {
+          "name": "DispatchMessageW"
+        },
+        {
+          "name": "EnumDisplaySettingsW"
+        },
+        {
+          "name": "SetWindowTextW"
+        },
+        {
+          "name": "DispatchMessageA"
+        },
+        {
+          "name": "MessageBoxW"
+        },
+        {
+          "name": "SetWindowsHookExW"
+        },
+        {
+          "name": "EmptyClipboard"
+        },
+        {
+          "name": "SendDlgItemMessageA"
+        },
+        {
+          "name": "SetCapture"
+        },
+        {
+          "name": "MessageBoxA"
+        },
+        {
+          "name": "GetWindowTextA"
+        },
+        {
+          "name": "PtInRect"
+        },
+        {
+          "name": "ClientToScreen"
+        },
+        {
+          "name": "SetCursor"
+        },
+        {
+          "name": "GetDesktopWindow"
+        },
+        {
+          "name": "LoadIconA"
+        },
+        {
+          "name": "SetFocus"
+        },
+        {
+          "name": "OpenClipboard"
+        },
+        {
+          "name": "EnumDisplayDevicesA"
+        },
+        {
+          "name": "RegisterClassExW"
+        },
+        {
+          "name": "InvalidateRect"
+        },
+        {
+          "name": "LoadIconW"
+        },
+        {
+          "name": "EndPaint"
+        },
+        {
+          "name": "ScreenToClient"
+        },
+        {
+          "name": "GetClipboardData"
+        },
+        {
+          "name": "ReleaseCapture"
+        },
+        {
+          "name": "AdjustWindowRectEx"
+        },
+        {
+          "name": "BeginPaint"
+        },
+        {
+          "name": "CallNextHookEx"
+        },
+        {
+          "name": "CallWindowProcA"
+        },
+        {
+          "name": "CloseClipboard"
+        },
+        {
+          "name": "CloseWindow"
+        },
+        {
+          "name": "CreateWindowExA"
+        },
+        {
+          "name": "DefWindowProcW"
+        },
+        {
+          "name": "DestroyWindow"
+        },
+        {
+          "name": "EnableWindow"
+        },
+        {
+          "name": "GetCapture"
+        },
+        {
+          "name": "GetClientRect"
+        },
+        {
+          "name": "GetCursorPos"
+        },
+        {
+          "name": "GetDC"
+        },
+        {
+          "name": "GetDlgCtrlID"
+        },
+        {
+          "name": "GetDlgItem"
+        },
+        {
+          "name": "GetForegroundWindow"
+        },
+        {
+          "name": "RegisterRawInputDevices"
+        },
+        {
+          "name": "GetMessageA"
+        },
+        {
+          "name": "GetMonitorInfoW"
+        },
+        {
+          "name": "GetSystemMetrics"
+        },
+        {
+          "name": "GetWindowLongA"
+        },
+        {
+          "name": "GetWindowLongW"
+        },
+        {
+          "name": "GetWindowRect"
+        },
+        {
+          "name": "GetWindowTextLengthA"
+        },
+        {
+          "name": "GetWindowTextLengthW"
+        },
+        {
+          "name": "GetWindowTextW"
+        },
+        {
+          "name": "GetWindowThreadProcessId"
+        },
+        {
+          "name": "LoadCursorA"
+        },
+        {
+          "name": "LoadCursorW"
+        },
+        {
+          "name": "PeekMessageW"
+        },
+        {
+          "name": "PostQuitMessage"
+        },
+        {
+          "name": "RegisterDeviceNotificationW"
+        },
+        {
+          "name": "ReleaseDC"
+        },
+        {
+          "name": "SendMessageA"
+        },
+        {
+          "name": "SetActiveWindow"
+        },
+        {
+          "name": "SetClipboardData"
+        },
+        {
+          "name": "SetWindowLongA"
+        },
+        {
+          "name": "SetWindowLongW"
+        },
+        {
+          "name": "SetWindowPos"
+        },
+        {
+          "name": "ShowCursor"
+        },
+        {
+          "name": "ShowWindow"
+        },
+        {
+          "name": "TranslateMessage"
+        },
+        {
+          "name": "UpdateWindow"
+        },
+        {
+          "name": "wsprintfW"
+        }
+      ]
+    },
+    {
+      "module": "winhttp.dll",
+      "symbols": [
+        {
+          "name": "WinHttpCloseHandle"
+        },
+        {
+          "name": "WinHttpConnect"
+        },
+        {
+          "name": "WinHttpQueryHeaders"
+        },
+        {
+          "name": "WinHttpGetIEProxyConfigForCurrentUser"
+        },
+        {
+          "name": "WinHttpSetStatusCallback"
+        },
+        {
+          "name": "WinHttpSetOption"
+        },
+        {
+          "name": "WinHttpOpen"
+        },
+        {
+          "name": "WinHttpAddRequestHeaders"
+        },
+        {
+          "name": "WinHttpCheckPlatform"
+        },
+        {
+          "name": "WinHttpCrackUrl"
+        },
+        {
+          "name": "WinHttpOpenRequest"
+        },
+        {
+          "name": "WinHttpQueryDataAvailable"
+        },
+        {
+          "name": "WinHttpReadData"
+        },
+        {
+          "name": "WinHttpReceiveResponse"
+        },
+        {
+          "name": "WinHttpSendRequest"
+        }
+      ]
+    },
+    {
+      "module": "wininet.dll",
+      "symbols": [
+        {
+          "name": "HttpOpenRequestA"
+        },
+        {
+          "name": "InternetCloseHandle"
+        },
+        {
+          "name": "InternetSetOptionA"
+        },
+        {
+          "name": "HttpSendRequestA"
+        },
+        {
+          "name": "InternetConnectA"
+        },
+        {
+          "name": "InternetOpenA"
+        },
+        {
+          "name": "InternetQueryOptionA"
+        },
+        {
+          "name": "InternetReadFile"
+        }
+      ]
+    },
+    {
+      "module": "winmm.dll",
+      "symbols": [
+        {
+          "name": "timeEndPeriod"
+        },
+        {
+          "name": "timeGetSystemTime"
+        },
+        {
+          "name": "timeGetTime"
+        },
+        {
+          "name": "timeBeginPeriod"
+        }
+      ]
+    },
+    {
+      "module": "wlanapi.dll",
+      "symbols": [
+        {
+          "name": "WlanOpenHandle"
+        },
+        {
+          "name": "WlanCloseHandle"
+        },
+        {
+          "name": "WlanQueryInterface"
+        },
+        {
+          "name": "WlanFreeMemory"
+        }
+      ]
+    },
+    {
+      "module": "ws2_32.dll",
+      "symbols": [
+        {
+          "ordinal": 9
+        },
+        {
+          "ordinal": 1
+        },
+        {
+          "ordinal": 8
+        },
+        {
+          "ordinal": 15
+        },
+        {
+          "name": "getnameinfo"
+        },
+        {
+          "ordinal": 3
+        },
+        {
+          "name": "WSACreateEvent"
+        },
+        {
+          "ordinal": 18
+        },
+        {
+          "ordinal": 13
+        },
+        {
+          "ordinal": 11
+        },
+        {
+          "ordinal": 10
+        },
+        {
+          "ordinal": 12
+        },
+        {
+          "name": "WSAIoctl"
+        },
+        {
+          "ordinal": 20
+        },
+        {
+          "name": "WSAResetEvent"
+        },
+        {
+          "ordinal": 151
+        },
+        {
+          "ordinal": 2
+        },
+        {
+          "ordinal": 19
+        },
+        {
+          "name": "getaddrinfo"
+        },
+        {
+          "ordinal": 56
+        },
+        {
+          "ordinal": 51
+        },
+        {
+          "ordinal": 14
+        },
+        {
+          "ordinal": 111
+        },
+        {
+          "ordinal": 112
+        },
+        {
+          "ordinal": 115
+        },
+        {
+          "ordinal": 116
+        },
+        {
+          "ordinal": 16
+        },
+        {
+          "ordinal": 17
+        },
+        {
+          "ordinal": 21
+        },
+        {
+          "ordinal": 22
+        },
+        {
+          "ordinal": 23
+        },
+        {
+          "ordinal": 4
+        },
+        {
+          "ordinal": 5
+        },
+        {
+          "ordinal": 52
+        },
+        {
+          "ordinal": 55
+        },
+        {
+          "ordinal": 6
+        },
+        {
+          "ordinal": 7
+        },
+        {
+          "name": "WSACloseEvent"
+        },
+        {
+          "name": "WSAEventSelect"
+        },
+        {
+          "name": "WSARecvFrom"
+        },
+        {
+          "name": "WSASendTo"
+        },
+        {
+          "name": "WSAWaitForMultipleEvents"
+        },
+        {
+          "name": "freeaddrinfo"
+        }
+      ]
+    },
+    {
+      "module": "xinput1_3.dll",
+      "symbols": [
+        {
+          "ordinal": 3
+        },
+        {
+          "ordinal": 4
+        },
+        {
+          "ordinal": 2
+        }
+      ]
+    }
+  ],
+  "directories": [
+    {
+      "index": 0,
+      "rva_or_file_offset": 71138144,
+      "bytes": 1337
+    },
+    {
+      "index": 1,
+      "rva_or_file_offset": 71139584,
+      "bytes": 540
+    },
+    {
+      "index": 2,
+      "rva_or_file_offset": 109834240,
+      "bytes": 380266
+    },
+    {
+      "index": 3,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 4,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 5,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 6,
+      "rva_or_file_offset": 71138080,
+      "bytes": 56
+    },
+    {
+      "index": 7,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 8,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 9,
+      "rva_or_file_offset": 71122952,
+      "bytes": 24
+    },
+    {
+      "index": 10,
+      "rva_or_file_offset": 32264488,
+      "bytes": 64
+    },
+    {
+      "index": 11,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 12,
+      "rva_or_file_offset": 71135232,
+      "bytes": 2840
+    },
+    {
+      "index": 13,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 14,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    },
+    {
+      "index": 15,
+      "rva_or_file_offset": 0,
+      "bytes": 0
+    }
+  ],
+  "scope": "Headers, section hashes and declared static imports only. No recovered gameplay functions, constants, licensing determination or runtime equivalence.",
+  "limitations": [
+    "Delayed and dynamically resolved imports are not decoded.",
+    "PE timestamp is not a verified build date.",
+    "No executable code, DLL or game asset is exported."
+  ],
+  "file": "PES2017.exe"
+}

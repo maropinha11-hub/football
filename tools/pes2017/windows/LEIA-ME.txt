@@ -1,0 +1,13 @@
+PES 2017 - inventario da instalacao
+
+1. Extraia este ZIP em uma pasta nova.
+2. Abra ColetarPES2017.bat e selecione o PES2017.exe instalado no seu PC.
+3. Ao terminar, envie o pequeno ZIP PES2017-inventario-... que sera criado aqui.
+
+O coletor registra versao estrutural, SHA256 do executavel, nomes relativos,
+tamanhos e primeiros 32 bytes dos arquivos da raiz, Data e download.
+Nao inclui os arquivos inteiros, nao executa o PES e nao altera a instalacao.
+
+Esse inventario identifica quais arquivos de dados precisam ser estudados.
+Nao e uma nova versao do jogo e nao extrai a gameplay completa.
+Se aparecer erro, a janela permanece aberta: copie a mensagem.

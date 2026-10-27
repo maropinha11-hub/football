@@ -1,0 +1,1341 @@
+{
+  "schema_version": 1,
+  "kind": "pinned_static_ball_reader_schema",
+  "executable_sha256": "6598860f6cce192e7a7017bad451aa62fc01d9c3c76806eeebafc0691fe22a26",
+  "resource": "cpk_dat/common/match/constant/match/ball.json",
+  "resource_file_offset": 31632384,
+  "resource_va": 35834880,
+  "reader_va": 67652964,
+  "factory_va": 67656050,
+  "constructor_va": 67652388,
+  "binary_reader_va": 67654914,
+  "binary_reader_end_va": 67656035,
+  "reader_bytes_sha256": "95883fba57fda98823f51aee941e49171cc10e42a0170612b5ee3bf1e9ff11f4",
+  "observed_allocation_bytes": 436,
+  "fields": [
+    {
+      "name": "airRegistNormal",
+      "name_va": 35912304,
+      "name_file_offset": 31709808,
+      "key_push_va": 67652975,
+      "stores": [
+        {
+          "instruction_va": 67652994,
+          "offset": 4,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 0,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "backSpinBuoyancyRate",
+      "name_va": 35912320,
+      "name_file_offset": 31709824,
+      "key_push_va": 67652997,
+      "stores": [
+        {
+          "instruction_va": 67653016,
+          "offset": 8,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 4,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "backSpinLogRate",
+      "name_va": 35912344,
+      "name_file_offset": 31709848,
+      "key_push_va": 67653019,
+      "stores": [
+        {
+          "instruction_va": 67653038,
+          "offset": 12,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 8,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundBoundSpeedMax",
+      "name_va": 35912360,
+      "name_file_offset": 31709864,
+      "key_push_va": 67653041,
+      "stores": [
+        {
+          "instruction_va": 67653060,
+          "offset": 16,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 12,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundBoundSpeedMin",
+      "name_va": 35912380,
+      "name_file_offset": 31709884,
+      "key_push_va": 67653063,
+      "stores": [
+        {
+          "instruction_va": 67653082,
+          "offset": 20,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 16,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundCheckBoundAddRate",
+      "name_va": 35912400,
+      "name_file_offset": 31709904,
+      "key_push_va": 67653094,
+      "stores": [
+        {
+          "instruction_va": 67653085,
+          "offset": 24,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 20,
+        "elements": 5
+      }
+    },
+    {
+      "name": "boundCheckFrictionAddRate",
+      "name_va": 35912424,
+      "name_file_offset": 31709928,
+      "key_push_va": 67653146,
+      "stores": [
+        {
+          "instruction_va": 67653137,
+          "offset": 44,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 24,
+        "elements": 5
+      }
+    },
+    {
+      "name": "boundCheckRotationDecRate",
+      "name_va": 35912452,
+      "name_file_offset": 31709956,
+      "key_push_va": 67653189,
+      "stores": [
+        {
+          "instruction_va": 67653215,
+          "offset": 64,
+          "bytes": 4,
+          "storage": "raw_integer_store"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "raw_integer",
+        "offset": 28,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundFrictionSpeedMax",
+      "name_va": 35912480,
+      "name_file_offset": 31709984,
+      "key_push_va": 67653208,
+      "stores": [
+        {
+          "instruction_va": 67653230,
+          "offset": 68,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 32,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundFrictionSpeedMin",
+      "name_va": 35912504,
+      "name_file_offset": 31710008,
+      "key_push_va": 67653233,
+      "stores": [
+        {
+          "instruction_va": 67653252,
+          "offset": 72,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 36,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundRate",
+      "name_va": 35912528,
+      "name_file_offset": 31710032,
+      "key_push_va": 67653268,
+      "stores": [
+        {
+          "instruction_va": 67653255,
+          "offset": 76,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 40,
+        "elements": 5
+      }
+    },
+    {
+      "name": "boundRollMax",
+      "name_va": 35912540,
+      "name_file_offset": 31710044,
+      "key_push_va": 67653311,
+      "stores": [
+        {
+          "instruction_va": 67653330,
+          "offset": 96,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 44,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundRotationSpeedMax",
+      "name_va": 35912556,
+      "name_file_offset": 31710060,
+      "key_push_va": 67653333,
+      "stores": [
+        {
+          "instruction_va": 67653352,
+          "offset": 100,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 48,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundRotationSpeedMin",
+      "name_va": 35912580,
+      "name_file_offset": 31710084,
+      "key_push_va": 67653355,
+      "stores": [
+        {
+          "instruction_va": 67653374,
+          "offset": 104,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 52,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationAddRateXZ",
+      "name_va": 35912604,
+      "name_file_offset": 31710108,
+      "key_push_va": 67653386,
+      "stores": [
+        {
+          "instruction_va": 67653377,
+          "offset": 108,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 56,
+        "elements": 5
+      }
+    },
+    {
+      "name": "boundToRotationAddRateY",
+      "name_va": 35912632,
+      "name_file_offset": 31710136,
+      "key_push_va": 67653429,
+      "stores": [
+        {
+          "instruction_va": 67653448,
+          "offset": 128,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 60,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationBaseXZ",
+      "name_va": 35912656,
+      "name_file_offset": 31710160,
+      "key_push_va": 67653466,
+      "stores": [
+        {
+          "instruction_va": 67653454,
+          "offset": 132,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 64,
+        "elements": 5
+      }
+    },
+    {
+      "name": "boundToRotationBaseY",
+      "name_va": 35912680,
+      "name_file_offset": 31710184,
+      "key_push_va": 67653509,
+      "stores": [
+        {
+          "instruction_va": 67653528,
+          "offset": 152,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 68,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationSpeedMaxXZ",
+      "name_va": 35912704,
+      "name_file_offset": 31710208,
+      "key_push_va": 67653534,
+      "stores": [
+        {
+          "instruction_va": 67653553,
+          "offset": 156,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 72,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationSpeedMaxY",
+      "name_va": 35912732,
+      "name_file_offset": 31710236,
+      "key_push_va": 67653559,
+      "stores": [
+        {
+          "instruction_va": 67653578,
+          "offset": 160,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 76,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationSpeedMinXZ",
+      "name_va": 35912760,
+      "name_file_offset": 31710264,
+      "key_push_va": 67653584,
+      "stores": [
+        {
+          "instruction_va": 67653603,
+          "offset": 164,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 80,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "boundToRotationSpeedMinY",
+      "name_va": 35912788,
+      "name_file_offset": 31710292,
+      "key_push_va": 67653609,
+      "stores": [
+        {
+          "instruction_va": 67653628,
+          "offset": 168,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 84,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curve",
+      "name_va": 35912816,
+      "name_file_offset": 31710320,
+      "key_push_va": 67653634,
+      "stores": [
+        {
+          "instruction_va": 67653653,
+          "offset": 172,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 88,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curveToSpeedMaxCurve",
+      "name_va": 35912824,
+      "name_file_offset": 31710328,
+      "key_push_va": 67653659,
+      "stores": [
+        {
+          "instruction_va": 67653678,
+          "offset": 176,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 92,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curveToSpeedMaxKPH",
+      "name_va": 35912848,
+      "name_file_offset": 31710352,
+      "key_push_va": 67653684,
+      "stores": [
+        {
+          "instruction_va": 67653703,
+          "offset": 180,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 96,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curveToSpeedSpeedYMax",
+      "name_va": 35912868,
+      "name_file_offset": 31710372,
+      "key_push_va": 67653709,
+      "stores": [
+        {
+          "instruction_va": 67653728,
+          "offset": 184,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 100,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curveToSpeedSpeedYMin",
+      "name_va": 35912892,
+      "name_file_offset": 31710396,
+      "key_push_va": 67653734,
+      "stores": [
+        {
+          "instruction_va": 67653753,
+          "offset": 188,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 104,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "curveToSpeedSpeedYRateBase",
+      "name_va": 35912916,
+      "name_file_offset": 31710420,
+      "key_push_va": 67653759,
+      "stores": [
+        {
+          "instruction_va": 67653778,
+          "offset": 192,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 108,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "debugKickAngle",
+      "name_va": 35912944,
+      "name_file_offset": 31710448,
+      "key_push_va": 67653784,
+      "stores": [
+        {
+          "instruction_va": 67653803,
+          "offset": 196,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 112,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "debugKickSpeed",
+      "name_va": 35912960,
+      "name_file_offset": 31710464,
+      "key_push_va": 67653809,
+      "stores": [
+        {
+          "instruction_va": 67653828,
+          "offset": 200,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 116,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "dragSpeedMax",
+      "name_va": 35912976,
+      "name_file_offset": 31710480,
+      "key_push_va": 67653834,
+      "stores": [
+        {
+          "instruction_va": 67653853,
+          "offset": 204,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 120,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "dragSpeedMin",
+      "name_va": 35912992,
+      "name_file_offset": 31710496,
+      "key_push_va": 67653859,
+      "stores": [
+        {
+          "instruction_va": 67653878,
+          "offset": 208,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 124,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "frictionRollRateMax",
+      "name_va": 35913008,
+      "name_file_offset": 31710512,
+      "key_push_va": 67653896,
+      "stores": [
+        {
+          "instruction_va": 67653884,
+          "offset": 212,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 128,
+        "elements": 5
+      }
+    },
+    {
+      "name": "frictionRollRateMin",
+      "name_va": 35913028,
+      "name_file_offset": 31710532,
+      "key_push_va": 67653955,
+      "stores": [
+        {
+          "instruction_va": 67653939,
+          "offset": 232,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 132,
+        "elements": 5
+      }
+    },
+    {
+      "name": "frictionRollSpeedMax",
+      "name_va": 35913048,
+      "name_file_offset": 31710552,
+      "key_push_va": 67654010,
+      "stores": [
+        {
+          "instruction_va": 67653998,
+          "offset": 252,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 136,
+        "elements": 5
+      }
+    },
+    {
+      "name": "frictionRollSpeedMin",
+      "name_va": 35913072,
+      "name_file_offset": 31710576,
+      "key_push_va": 67654067,
+      "stores": [
+        {
+          "instruction_va": 67654053,
+          "offset": 272,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 140,
+        "elements": 5
+      }
+    },
+    {
+      "name": "grounderBoundYAdd",
+      "name_va": 35913096,
+      "name_file_offset": 31710600,
+      "key_push_va": 67654110,
+      "stores": [
+        {
+          "instruction_va": 67654129,
+          "offset": 292,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 144,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "grounderCTan",
+      "name_va": 35913116,
+      "name_file_offset": 31710620,
+      "key_push_va": 67654135,
+      "stores": [
+        {
+          "instruction_va": 67654154,
+          "offset": 296,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 148,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "grounderFrictionRate",
+      "name_va": 35913132,
+      "name_file_offset": 31710636,
+      "key_push_va": 67654160,
+      "stores": [
+        {
+          "instruction_va": 67654179,
+          "offset": 300,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 152,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "grounderSpeed",
+      "name_va": 35913156,
+      "name_file_offset": 31710660,
+      "key_push_va": 67654185,
+      "stores": [
+        {
+          "instruction_va": 67654204,
+          "offset": 304,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 156,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "magnusRate",
+      "name_va": 35913172,
+      "name_file_offset": 31710676,
+      "key_push_va": 67654210,
+      "stores": [
+        {
+          "instruction_va": 67654229,
+          "offset": 308,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 160,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "natualBoundA",
+      "name_va": 35913184,
+      "name_file_offset": 31710688,
+      "key_push_va": 67654247,
+      "stores": [
+        {
+          "instruction_va": 67654235,
+          "offset": 312,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 164,
+        "elements": 5
+      }
+    },
+    {
+      "name": "natualBoundB",
+      "name_va": 35913200,
+      "name_file_offset": 31710704,
+      "key_push_va": 67654290,
+      "stores": [
+        {
+          "instruction_va": 67654309,
+          "offset": 332,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 168,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "naturalRoll",
+      "name_va": 35913216,
+      "name_file_offset": 31710720,
+      "key_push_va": 67654315,
+      "stores": [
+        {
+          "instruction_va": 67654334,
+          "offset": 336,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 172,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "nonSpinMax",
+      "name_va": 35913228,
+      "name_file_offset": 31710732,
+      "key_push_va": 67654340,
+      "stores": [
+        {
+          "instruction_va": 67654359,
+          "offset": 340,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 176,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "nonSpinMin",
+      "name_va": 35913240,
+      "name_file_offset": 31710744,
+      "key_push_va": 67654365,
+      "stores": [
+        {
+          "instruction_va": 67654384,
+          "offset": 344,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 180,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "nonSpinRate",
+      "name_va": 35913252,
+      "name_file_offset": 31710756,
+      "key_push_va": 67654390,
+      "stores": [
+        {
+          "instruction_va": 67654409,
+          "offset": 348,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 184,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "nonSpinTopDownDecRate",
+      "name_va": 35913264,
+      "name_file_offset": 31710768,
+      "key_push_va": 67654415,
+      "stores": [
+        {
+          "instruction_va": 67654434,
+          "offset": 352,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 188,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "nonSpinTopRiseDecRate",
+      "name_va": 35913288,
+      "name_file_offset": 31710792,
+      "key_push_va": 67654440,
+      "stores": [
+        {
+          "instruction_va": 67654459,
+          "offset": 356,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 192,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "pitchCondition",
+      "name_va": 35913312,
+      "name_file_offset": 31710816,
+      "key_push_va": 67654465,
+      "stores": [
+        {
+          "instruction_va": 67654491,
+          "offset": 360,
+          "bytes": 4,
+          "storage": "raw_integer_store"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "raw_integer",
+        "offset": 196,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "roll",
+      "name_va": 35913328,
+      "name_file_offset": 31710832,
+      "key_push_va": 67654484,
+      "stores": [
+        {
+          "instruction_va": 67654509,
+          "offset": 364,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 200,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToBoundAdd",
+      "name_va": 35913336,
+      "name_file_offset": 31710840,
+      "key_push_va": 67654515,
+      "stores": [
+        {
+          "instruction_va": 67654534,
+          "offset": 368,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 204,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToBoundRollMax",
+      "name_va": 35913352,
+      "name_file_offset": 31710856,
+      "key_push_va": 67654540,
+      "stores": [
+        {
+          "instruction_va": 67654559,
+          "offset": 372,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 208,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToBoundRollMin",
+      "name_va": 35913372,
+      "name_file_offset": 31710876,
+      "key_push_va": 67654565,
+      "stores": [
+        {
+          "instruction_va": 67654584,
+          "offset": 376,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 212,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToSpeedMaxKPH",
+      "name_va": 35913392,
+      "name_file_offset": 31710896,
+      "key_push_va": 67654602,
+      "stores": [
+        {
+          "instruction_va": 67654590,
+          "offset": 380,
+          "bytes": 20,
+          "storage": "float32_array",
+          "elements": 5
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "relative_float32_array",
+        "offset_field": 216,
+        "elements": 5
+      }
+    },
+    {
+      "name": "rollToSpeedMaxRoll",
+      "name_va": 35913412,
+      "name_file_offset": 31710916,
+      "key_push_va": 67654645,
+      "stores": [
+        {
+          "instruction_va": 67654664,
+          "offset": 400,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 220,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToSpeedSpeedYMax",
+      "name_va": 35913432,
+      "name_file_offset": 31710936,
+      "key_push_va": 67654670,
+      "stores": [
+        {
+          "instruction_va": 67654689,
+          "offset": 404,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 224,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToSpeedSpeedYMin",
+      "name_va": 35913456,
+      "name_file_offset": 31710960,
+      "key_push_va": 67654695,
+      "stores": [
+        {
+          "instruction_va": 67654714,
+          "offset": 408,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 228,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rollToSpeedSpeedYRateBase",
+      "name_va": 35913480,
+      "name_file_offset": 31710984,
+      "key_push_va": 67654720,
+      "stores": [
+        {
+          "instruction_va": 67654739,
+          "offset": 412,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 232,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "rotationCustom",
+      "name_va": 35913508,
+      "name_file_offset": 31711012,
+      "key_push_va": 67654745,
+      "stores": [
+        {
+          "instruction_va": 67654771,
+          "offset": 416,
+          "bytes": 1,
+          "storage": "raw_integer_store"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "raw_integer",
+        "offset": 236,
+        "bytes": 1
+      }
+    },
+    {
+      "name": "speedCustom",
+      "name_va": 35913524,
+      "name_file_offset": 31711028,
+      "key_push_va": 67654764,
+      "stores": [
+        {
+          "instruction_va": 67654796,
+          "offset": 417,
+          "bytes": 1,
+          "storage": "raw_integer_store"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "raw_integer",
+        "offset": 237,
+        "bytes": 1
+      }
+    },
+    {
+      "name": "stopSpeed",
+      "name_va": 35913536,
+      "name_file_offset": 31711040,
+      "key_push_va": 67654789,
+      "stores": [
+        {
+          "instruction_va": 67654814,
+          "offset": 420,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 240,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "topSpinChangeSpeed",
+      "name_va": 35913548,
+      "name_file_offset": 31711052,
+      "key_push_va": 67654820,
+      "stores": [
+        {
+          "instruction_va": 67654839,
+          "offset": 424,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 244,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "topSpinDownDecRate",
+      "name_va": 35913568,
+      "name_file_offset": 31711072,
+      "key_push_va": 67654845,
+      "stores": [
+        {
+          "instruction_va": 67654864,
+          "offset": 428,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 248,
+        "bytes": 4
+      }
+    },
+    {
+      "name": "topSpinRiseDecRate",
+      "name_va": 35913588,
+      "name_file_offset": 31711092,
+      "key_push_va": 67654870,
+      "stores": [
+        {
+          "instruction_va": 67654889,
+          "offset": 432,
+          "bytes": 4,
+          "storage": "float32"
+        }
+      ],
+      "complete_for_this_key": true,
+      "binary_source": {
+        "kind": "float32",
+        "offset": 252,
+        "bytes": 4
+      }
+    }
+  ],
+  "decoded_keys": 65,
+  "keys_with_one_store": 65,
+  "keys_with_binary_source": 65,
+  "numeric_parameter_values_recovered": false,
+  "parameter_units_verified": false,
+  "runtime_load_verified": false,
+  "scope": "Observed key names and destination stores in one static reader only. Factory/allocation and zero-initializing constructor were separately inspected. Runtime data, units, ball equations and gameplay are not recovered.",
+  "limitations": [
+    "Address profile is specific to the pinned executable.",
+    "Names do not establish physical units or numerical values.",
+    "Array counts are read-loop bounds, not a claim about their semantic axes.",
+    "Unrecognized destination expressions remain explicitly incomplete."
+  ]
+}
