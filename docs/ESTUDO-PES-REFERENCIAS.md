@@ -97,6 +97,12 @@ reais: validar o rig e seus eixos, adaptar um único movimento ao modelo nativo
 e conferir o contato na imagem antes de instalar outros. Esse processo não
 substitui a recuperação e comparação da física e do seletor original.
 
+**Atualização:** o usuário enviou o `dt13_win.cpk` do PES 2017. O acervo foi
+extraído e uma primeira adaptação foi renderizada no Football. Veja
+[a análise dos dados recebidos e os limites da prévia](ANIMACOES-PES2017.md).
+As afirmações sobre arquivos ainda ausentes abaixo descrevem a auditoria
+anterior ao recebimento desse CPK.
+
 ## Conferência dos links e alternativa PES 2017
 
 A nova consulta ao remoto confirmou o mesmo commit `4f6dbf0`. Foram lidos

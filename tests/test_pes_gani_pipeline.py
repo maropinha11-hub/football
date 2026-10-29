@@ -63,5 +63,32 @@ class PesGaniPipeline(unittest.TestCase):
         self.assertAlmostEqual(sum(x*x for x in q),1)
         self.assertAlmostEqual(2*math.acos(q[3]),math.pi/2)
 
+    def test_extended_leg_targets_are_not_misassigned_as_thigh_rotations(self):
+        data=bytearray(116);struct.pack_into('<8I',data,0,0,0,0,1,4,116,0,116)
+        struct.pack_into('<I',data,32,36)
+        words=[0]*40;words[:6]=[3,0,4,2,65535,65535]
+        words[24:31]=[0,1,0,1,2,2,3]
+        struct.pack_into('<40H',data,36,*words)
+        units=reader.rig(data,3)
+        channels=[dict(index=i,bits=16 if i==0 else 12) for i in range(4)]
+        self.assertEqual(reader.channel_mapping(units,channels),
+                         {0:('pos',None),1:('rot',None),2:('rot',0),3:('rot',1)})
+        struct.pack_into('<H',data,36+29*2,1)
+        with self.assertRaises(ValueError):reader.rig(data,3)
+
+    def test_auxiliary_targets_survive_export_and_require_a_solver_when_used(self):
+        raw=struct.pack('<3e',float('nan'),float('nan'),float('nan'))
+        header=dict(frames=0,channels=[dict(index=0,bits=16,off=0,size=6)])
+        tracks,required=reader.auxiliary_tracks(raw,header,{0:('pos',None)})
+        self.assertFalse(required);self.assertEqual(tracks['0']['pos'],[[0,None,None,None]])
+        tracks,required=reader.auxiliary_tracks(struct.pack('<3e',100,0,0),header,{0:('pos',None)})
+        self.assertTrue(required);self.assertEqual(tracks['0']['pos'],[[0,1,0,0]])
+        with self.assertRaises(ValueError):reader.auxiliary_tracks(struct.pack('<3e',float('nan'),0,0),header,{0:('pos',None)})
+
+    def test_translation_step_is_unsigned_and_preserves_the_last_key(self):
+        raw=struct.pack('<3eB3e',0,0,0,194,10,20,30)
+        self.assertEqual(reader.position_keys(raw,194),[(0,[0,0,0]),(194,[10,20,30])])
+        with self.assertRaises(ValueError):reader.position_keys(raw,193)
+
 
 if __name__=='__main__':unittest.main()

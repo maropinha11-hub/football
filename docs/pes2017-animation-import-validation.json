@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-29",
+  "result": "passed_for_decode_and_single_clip_visual_review",
+  "source": {
+    "cpk": "dt13_win.cpk",
+    "bytes": 24039984,
+    "sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+    "inventory_prefix_and_size_match": true,
+    "original_game_executed": false
+  },
+  "index": {
+    "entries": 295,
+    "independent_readers": 2,
+    "metadata_entries_compared_byte_for_byte": 28,
+    "all_named_ranges_validated": true
+  },
+  "body": {
+    "containers": 10,
+    "source_bones": 20,
+    "native_bones": 13,
+    "decoded_clips": 2956,
+    "named": 2365,
+    "unknown_names": 591,
+    "requires_auxiliary_solver": 2,
+    "auxiliary_targets_preserved": true,
+    "name_match_validation": {
+      "named": 2365,
+      "same_id": 2365,
+      "same_frames": 1697
+    },
+    "all_mapped_sparse_pose_keys_finite_and_monotonic": true,
+    "clips_with_unresolved_key_endpoint_warnings": 0,
+    "translation_delta_signedness_fixed": true
+  },
+  "retarget": {
+    "name": "run_2_0",
+    "source_sha256": "7916f45d16762f21f948656221f9d88688a90e4fd96ef494213006d97605feab",
+    "output_sha256": "4840118f145952fd8f9b97b4283ede4c110cb2f093cf14e82f3a62077595fbaf",
+    "samples": 91,
+    "source_fps_assumed": 30.0,
+    "source_game_pose_comparison_pending": true,
+    "root_xy_imported": false,
+    "ball_events_added": false,
+    "maximum_direction_error": 4.280032699210963e-07,
+    "maximum_bone_length_error": 1.6450238060627953e-07,
+    "maximum_10ms_joint_angle_change": 0.06856124404407488,
+    "root_height_range": [
+      0.908890588760376,
+      1.0170301632881165
+    ]
+  },
+  "validation": {
+    "ctest_suites": 14,
+    "python_tests": 244,
+    "python_passed": 238,
+    "python_skipped": 6,
+    "gani_pipeline_tests": 8,
+    "rendered_preview_checks": 18,
+    "default_camera_checks": 27,
+    "native_sha256": "a4575507c56d6956516c8f161b6580cde2ad360e787e2468e7a9de649e1c4203",
+    "windows_unstripped_sha256": "8d3d53ad76b173d82e1946411dbf5dd1eebee0d9b88e45c5d54ac79b85c63147",
+    "windows_gui_executed": false,
+    "rendered_native_frames": [
+      0,
+      45,
+      90
+    ]
+  },
+  "limitations": {
+    "all_poses_compared_to_original_game": false,
+    "source_angle_and_cadence_verified_against_game": false,
+    "original_gameplay_integrated": false,
+    "new_clips_registered_as_gameplay_candidates": 0,
+    "ball_contact_events_recovered": false,
+    "original_assets_in_public_package": false,
+    "full_clip_temporal_playback_graphically_verified": false
+  },
+  "catalog": "pes2017-motion-catalog.json"
+}

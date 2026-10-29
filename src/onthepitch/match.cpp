@@ -393,6 +393,12 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
     }
     pes3Preview.reset(new PES3Preview(dynamicNode));
     if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);
+    const auto previewFile=GetConfiguration()->Get("training_pose_preview_file","");
+    if(!PlayerMatchEnabled()&&!previewFile.empty()){
+      trainingPosePreview.reset(new TrainingPosePreview(previewFile));
+      SpamMessage("Teste visual de animacao | jogada ainda nao integrada",12000);
+      printf("TRAINING_POSE_PREVIEW loaded=1 visual_only=1 contacts_native=1\n");
+    }
   }
 
   Log(e_Notice, "Match", "Match", "Done creating match!");
@@ -437,6 +443,7 @@ void Match::Exit() {
 
 
   pes3Preview.reset();
+  trainingPosePreview.reset();
   delete possessionSideHistory;
 
   anims.reset();
@@ -1192,6 +1199,8 @@ void Match::Process() {
 
 bool Match::PES3StudyBodyPose(const PlayerBase* actor,const pes3::NativeBind& reference,
                             pes3::NativePose& out) const {
+  if(trainingPosePreview&&actor==trainingPlayer)
+    return trainingPosePreview->sample(GetActualTime_ms(),GetConfiguration()->GetInt("training_pose_preview_frame",-1),reference,out);
   return pes3Preview && actor==trainingPlayer && pes3Preview->bodyPose(reference,out);
 }
 

@@ -116,10 +116,15 @@
     "first_candidate_cpk": "Data/dt13_win.cpk",
     "inventory_bytes": 24039984,
     "inventory_source": "previously supplied local-inventory.json",
-    "full_cpk_received": false,
-    "animation_container_layout_verified": false,
-    "decode_compatibility_verified": false,
+    "full_cpk_received": true,
+    "animation_container_layout_verified": true,
+    "decode_compatibility_verified": true,
     "angular_scale_verified": false,
-    "next_action": "Receive the candidate CPK directly, inspect its index, locate source clips/rig, then validate a single retarget before bulk integration"
+    "next_action": "Compare source cadence/poses, validate priority action clips and ball-contact timing before registering gameplay candidates",
+    "cpk_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+    "decoded_clips": 2956,
+    "named_clips": 2365,
+    "native_preview_clips": 1,
+    "validation": "pes2017-animation-import-validation.json"
   }
 }

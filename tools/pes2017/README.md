@@ -9,6 +9,13 @@ objdump. O recurso de versão declara 1.0.0.0; caminhos de compilação contendo
 A instalação do PC Windows não está montada no ambiente na nuvem.
 O prompt recebido termina na frase incompleta “comportamentos complex”.
 
+**Animações recebidas:** o usuário enviou separadamente `Data/dt13_win.cpk`.
+O índice de 295 entradas foi validado, os dez MTARs corporais e o rig foram
+extraídos, e 2.956 clipes foram decodificados. Uma prévia de `run_2_0` foi
+renderizada no modelo nativo. Veja [o relatório e os limites atuais](../../docs/ANIMACOES-PES2017.md).
+As descrições de coleta abaixo ficam como histórico; o CPK já recebido não
+precisa ser reenviado. A biblioteca ainda não foi ligada às ações da partida.
+
 Foram identificadas 193 referências a caminhos de constantes/animações e
 recuperados 65 nomes de campos da bola, seus destinos numa estrutura de
 436 bytes e suas origens no leitor de dados serializados. Isso **não recupera

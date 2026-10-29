@@ -13,6 +13,7 @@
 #include "officials.hpp"
 #include "trainingcontrol.hpp"
 #include "pes3preview.hpp"
+#include "training_pose_preview.hpp"
 #include <atomic>
 #include <memory>
 
@@ -321,6 +322,7 @@ class Match {
     unsigned long trainingPaceWall_ms = 0, trainingPaceSim_ms = 0;
     std::atomic<int> trainingCameraMode{2};
     std::unique_ptr<PES3Preview> pes3Preview;
+    std::unique_ptr<TrainingPosePreview> trainingPosePreview;
     training::View trainingView;
     bool trainingReceiving = false;
     Vector3 trainingReceptionFacing;
