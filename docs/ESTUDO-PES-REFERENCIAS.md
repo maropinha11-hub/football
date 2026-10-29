@@ -97,4 +97,52 @@ reais: validar o rig e seus eixos, adaptar um único movimento ao modelo nativo
 e conferir o contato na imagem antes de instalar outros. Esse processo não
 substitui a recuperação e comparação da física e do seletor original.
 
+## Conferência dos links e alternativa PES 2017
+
+A nova consulta ao remoto confirmou o mesmo commit `4f6dbf0`. Foram lidos
+o README completo, os módulos do leitor, a CLI, a licença e o `.gitignore`.
+A página de releases não contém publicações. O README declara:
+“This repository ships no game assets”, e o `.gitignore` exclui explicitamente
+`.cpk`, `.mtar`, `.gani`, `.ask` e `.frig`. O mapa JSON contém nomes, hashes e
+metadados; não contém poses ou trajetórias de ossos.
+
+O link de obtenção dos arquivos aponta para
+[`the4chancup/pes-file-tools`](https://github.com/the4chancup/pes-file-tools),
+inspecionado no commit `9cdfcc5ce902a8908a851787298cf8f79862a3c6`.
+É outro conjunto de leitores/extratores, sem os arquivos das animações.
+O caminho correto do comando no checkout é `tools/cpk/pes-cpk-unpack.py`;
+a pasta de saída precisa existir antes de usar `-d`:
+
+```bash
+mkdir /tmp/pes-cpk-extraido
+python3 /caminho/pes-file-tools/tools/cpk/pes-cpk-unpack.py --list /caminho/dt13_all.cpk
+python3 /caminho/pes-file-tools/tools/cpk/pes-cpk-unpack.py -d /tmp/pes-cpk-extraido /caminho/dt13_all.cpk
+```
+
+O comando `--help` foi executado. A extração de um CPK real ainda não foi
+executada: nenhum CPK do jogo foi recebido. O código do extrator não foi
+incorporado a este repositório. Ele lê tabelas UTF e CRILAYLA, mas usa base de
+conteúdo fixa `0x800` e não faz todas as verificações de caminho/limites do
+nosso coletor. Antes de extrair o arquivo recebido, será preciso validar seu
+índice e intervalos; o comando acima documenta o procedimento do upstream.
+
+O outro link do README leva à discussão técnica no ResHax. O acesso retornou
+`403 Forbidden` no proxy deste ambiente, inclusive após concessão de rede.
+O conteúdo e possíveis anexos dessa página **não foram verificados**; não
+se deve afirmar que todos os links foram lidos ou que o fórum não tem anexos.
+
+O inventário já recebido identifica `Data/dt13_win.cpk`, do PES 2017, com
+**24.039.984 bytes**. Ele é o primeiro candidato a enviar diretamente para
+examinar o índice e localizar movimentos, esqueleto e rig. O inventário só
+registrou tamanho e cabeçalho: os bytes desse CPK não estão na nuvem. O
+executável e o inventário não substituem esse arquivo de recursos.
+
+PES 2017 fica aceito como alternativa de fonte. A compatibilidade do seu CPK
+e dos clipes será verificada com os bytes reais. Há uma diferença explícita
+no próprio leitor: seu comentário atribui escala angular `1.0` a um leitor
+anterior de 2017, enquanto usa `pi/2` para 2021. Isso não valida a escala de
+2017 e impede assumir que basta trocar o nome do arquivo. Primeiro será
+adaptado e conferido um único clipe, preservando os controles e a gameplay
+atual. Não é necessário reenviar o executável nem executar um coletor novo.
+
 Proveniência e limites: [pes-reference-research.json](pes-reference-research.json).

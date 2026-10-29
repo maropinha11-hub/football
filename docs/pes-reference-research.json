@@ -67,6 +67,59 @@
       "body_skel.frig"
     ],
     "cpk_archive": "PES2021 Data/dt13_all.cpk",
-    "confirmed_user_scope": "PES2021 animation clips and names only; retain Football physics, controls and action selector"
+    "confirmed_user_scope": "PES2021 animation clips and names only; retain Football physics, controls and action selector",
+    "followup_link_audit": {
+      "remote_head_confirmed": "4f6dbf00f66df761ce2f6ac9b2d80af48e172788",
+      "repository_contains_original_assets": false,
+      "readme_statement": "This repository ships no game assets",
+      "ignored_original_asset_extensions": [
+        ".cpk",
+        ".mtar",
+        ".gani",
+        ".ask",
+        ".frig",
+        ".fmdl",
+        ".bin"
+      ],
+      "github_releases": {
+        "url": "https://github.com/jhnzbdev/pes-gani/releases",
+        "published_releases_found": 0,
+        "page_read": true
+      },
+      "unpacker": {
+        "repository": "https://github.com/the4chancup/pes-file-tools",
+        "commit": "9cdfcc5ce902a8908a851787298cf8f79862a3c6",
+        "read_files": {
+          "README.md": "c82f507c77c9255821da4114c850424a0c85580149071c85f7bada4928dd1818",
+          "tools/cpk/pes-cpk-unpack.py": "a40843258db4c042abd3161e655efb9f7661978f8294017f8c96c85686e627e9",
+          "lib/pes_file_tools/cpk.py": "e0ec7a4fabfb0374171bfe3eb65b2db573e4785b6224d768658c63030b3556c9",
+          "lib/pes_file_tools/crilayla.py": "1d3fe13f0f0239eaf4fc8298f110fb3e3e60f7dbf38cf4f90f1defc029f72f65",
+          "lib/pes_file_tools/fpk.py": "17a0e45538c90917e28ae3060b97874d8ec1e3bbbbba4ad7b280ed757d3ed445",
+          "lib/pes_file_tools/zlib.py": "dd0bc67524cee290b89c341c5f64a6ab4dd2215f92b2dd38a50446a048c41e14"
+        },
+        "help_executed": true,
+        "real_cpk_extracted": false,
+        "source_redistributed": false,
+        "content_offset_assumption": "0x800; verify against the real container before extracting"
+      },
+      "forum": {
+        "url": "https://reshax.com/topic/19234-pes-2021-ganimtar-animation-format-channel-mapping-ik-chains-and-ue5-reconstruction/",
+        "read": false,
+        "attachments_verified": false,
+        "failure": "Proxy tunnel 403 Forbidden, still blocked after turn network permission granted"
+      },
+      "upstream_hash_selftest_passed": true
+    }
+  },
+  "pes2017_animation_fallback": {
+    "accepted_by_user": true,
+    "first_candidate_cpk": "Data/dt13_win.cpk",
+    "inventory_bytes": 24039984,
+    "inventory_source": "previously supplied local-inventory.json",
+    "full_cpk_received": false,
+    "animation_container_layout_verified": false,
+    "decode_compatibility_verified": false,
+    "angular_scale_verified": false,
+    "next_action": "Receive the candidate CPK directly, inspect its index, locate source clips/rig, then validate a single retarget before bulk integration"
   }
 }
