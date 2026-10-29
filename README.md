@@ -8,6 +8,26 @@ Usa o jogador, o campo, o esqueleto, os 293 arquivos de animação e a física
 da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
+O pacote atual é o [treino clássico Windows x64](artifacts/football-classico-windows-x86_64.zip).
+Extraia em **uma pasta nova** e abra **treino-classico.bat**; para a partida,
+abra **jogar-partida.bat**. Esta revisão mantém a câmera e as animações nativas,
+com adaptações corporais e alcance de pernas por IK, **sem ragdoll nem dinâmica
+da roupa**. A recepção rasteira usa planejamento antecipado de contato, e uma
+canela que alcance primeiro a bola pode concluir o domínio no contato real.
+Veja [os comandos](docs/TREINO-CLASSICO.md),
+[a validação da gameplay](docs/animation-gameplay-validation.json) e
+[a verificação do pacote](docs/classic-windows-package-validation.json).
+
+O [estudo dos repositórios PES](docs/ESTUDO-PES-REFERENCIAS.md) prepara o leitor
+`pes-gani` para aproveitar somente animações PES 2021 identificadas por nome.
+Os testes de formato e metadados passaram; ainda faltam clipes reais e o rig
+para validar a adaptação. A física e a lógica de jogadas continuam do Football.
+
+## Registros de versões anteriores
+
+Os experimentos abaixo ficam como histórico. Os atalhos e resultados de corpo
+livre pertencem aos pacotes antigos; o pacote atual desativa o ragdoll.
+
 O [estudo separado do PES 2017](tools/pes2017/README.md) recebeu e identificou
 o executável fornecido, mapeou 65 campos da estrutura da bola e acrescentou
 ferramentas de inspeção e comparação de registros. Os valores ativos e a
@@ -278,9 +298,9 @@ recompilar não sobrescreve essa configuração nem os bancos locais.
 ## Executar no Windows 11
 
 O pacote portátil x64 está em
-`artifacts/football-training-windows-x86_64.zip`. Extraia-o para uma pasta,
+`artifacts/football-classico-windows-x86_64.zip`. Extraia-o para uma pasta nova,
 conecte o controle Xbox Series S por USB ou Bluetooth e execute
-`run-training.bat`. `run-controller-test.bat` executa verificações automáticas
+`treino-classico.bat` (ou o alias `run-training.bat`). `run-controller-test.bat` executa verificações automáticas
 com um controle virtual e da matemática de câmera/contatos; o controle físico
 é verificado durante o treino. Desconecte controles físicos antes de executar
 o teste virtual, para que eles não ocupem seus slots. O pacote já leva o

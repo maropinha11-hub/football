@@ -34,6 +34,9 @@ inline float smooth(float v){v=bounded(v,0,1);return v*v*(3-2*v);}
 
 enum class Mode { Active=0,Falling=1,Recovering=2 };
 struct Input {
+  // Animation/IK gameplay keeps native locomotion and contact timing. No
+  // articulated world, free-body fall or muscular dynamics runs in this mode.
+  bool animationOnly=false;
   // 0 approved hybrid, 1 generated locomotion reference, 2 free-body lab.
   unsigned controller=0;
   Pose pose{};

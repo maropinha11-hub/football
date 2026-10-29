@@ -313,8 +313,8 @@ int main(int argc, const char** argv) {
              "  --config FILE     Configuration file (run from the staged build directory)\n"
              "  --training        Solo training, original player/field/animations\n"
              "  --player-match    11 vs 11, fixed player and first-person controls\n"
-             "  --physical-rig    Experimental physical training and procedural poses\n"
-             "  --procedural-lab  Solo controller comparison; F12 cycles references/free body\n"
+             "  --physical-rig    Training contact/IK assistance and body reactions\n"
+             "  --procedural-lab  Solo body laboratory (animation mode by default)\n"
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
              "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
@@ -348,7 +348,8 @@ int main(int argc, const char** argv) {
   if (telemetry) config->SetBool("training_telemetry", true);
   if (playerMatch) config->SetBool("player_match",true);
   if(physicalRig){config->SetBool("training_physical_rig",true);config->SetBool("training_physical_lab",true);}
-  if(proceduralLab){config->SetBool("player_match",false);config->SetInt("training_body_controller",1);}
+  if(proceduralLab){config->SetBool("player_match",false);config->SetInt("training_body_controller",config->GetBool("training_animation_body",true)?0:1);}
+  if(config->GetBool("training_animation_body",true))config->SetInt("training_body_controller",0);
   if (pes3Preview) { config->SetBool("pes3_preview",true); config->SetBool("training_mode",true); }
 
   Initialize(*config);

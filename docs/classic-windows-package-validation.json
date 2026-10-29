@@ -1,0 +1,274 @@
+{
+  "result": "passed",
+  "checks": [
+    {
+      "check": "archive CRC, unique paths and a single portable root",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "legacy dynamic-code launchers and scripts are absent",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "every released payload matches its content hash",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "the release explicitly uses animation/IK without ragdoll or original PES integration",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "new and direct-executable launch use the same approved settings",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "animation mode, skin contacts and no cloth are the defaults",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "ball rebound uses the reviewed shared setting",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "portable native launcher: treino-classico.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "portable native launcher: run-training.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "portable native launcher: jogar-partida.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "portable native launcher: run-controller-test.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "native executable is Windows x64",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "archive executable equals the freshly linked and stripped build",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "no-ragdoll mode and real contact gates are present",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "native media and database are preserved",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "the new game guide is bundled",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "DLL dependencies: gameplayfootball.exe",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: OpenAL32.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: SDL2.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: SDL2_image.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: SDL2_ttf.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libSDL2_gfx.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_atomic-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_chrono-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_container-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_date_time-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_filesystem-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_random-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_serialization-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_thread-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libboost_wserialization-gcc14-mt-x64-1_92.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libbrotlicommon.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libbrotlidec.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libbrotlienc.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libbz2.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libfmt.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libfreetype.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libgcc_s_seh-1.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libjpeg-62.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: liblzma.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libpng16.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libsharpyuv.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libspng.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libsqlite3.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libstdc++-6.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libtiff-6.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libturbojpeg.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libwebp.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libwebpdecoder.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libwebpdemux.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libwebpmux.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libwinpthread-1.dll",
+      "result": "passed",
+      "evidence": []
+    },
+    {
+      "check": "DLL dependencies: libz.dll",
+      "result": "passed",
+      "evidence": []
+    }
+  ],
+  "archive_sha256": "9d1f499a1659a9b364a86932a741a85cf04fa356d61e7296c4f96b4597d65612",
+  "executable_sha256": "fda5164ebefc5fd1e3ba4ff0b2804abaeb20dcaf6cac49e66913e354913a933d",
+  "bytes": 35196090,
+  "windows_gui_executed": false
+}

@@ -18,9 +18,15 @@ try:
     mods=['z']+(['h']if cpu else[])+(['b']if boundary else[])+([lateral]if lateral else[])
     key(g,'F4',mods);g.advance(1550)
     delivery=events(g,'TRAINING_DELIVERY',start);actor=delivery[0]['actor']if delivery else'';when=int(delivery[0]['t'])if delivery else 0
-    touches=[x for x in events(g,'TRAINING_ACTION_TOUCH',start)if x.get('actor')==actor and x.get('function')in ['2','3']and 'foot'in x.get('part','')and int(x['t'])<when+1600]
+    # At the opponent's endline the native CPU may deliberately finish a
+    # cross first-time instead of trapping it. Require an actual football
+    # action and the same timed skin contact; a passive collision still fails.
+    functions=['2','3','4','5','6','8']if boundary else['2','3']
+    touches=[x for x in events(g,'TRAINING_ACTION_TOUCH',start)if x.get('actor')==actor and x.get('function')in functions and 'foot'in x.get('part','')and int(x['t'])<when+1600]
     skin=[x for x in events(g,'TRAINING_SKIN_CONTACT',start)if x.get('actor',actor)==actor and x.get('accepted')=='1']
-    check(('CPU'if cpu else'human')+(' endline'if boundary else' central')+' '+str(lateral)+' intentionally controls with a real foot',bool(touches)and any(x['t']==y['t']and x['part']==y['part']and float(y['gap'])<=.00251 for x in touches for y in skin),dict(delivery=delivery,touches=touches,skin=skin[-8:],reach=events(g,'NATIVE_REACH_PLAN',start)[:8]))
+    prepared=[x for x in events(g,'PREPARED_BODY_RECEPTION',start)if x.get('actor')==actor and int(x['t'])<when+1600 and float(x['skin_gap'])<=.00051 and float(x['outgoing'])<float(x['incoming']) and any(part in x['part']for part in ['knee','ankle','thigh'])]
+    foot=bool(touches)and any(x['t']==y['t']and x['part']==y['part']and float(y['gap'])<=.00251 for x in touches for y in skin)
+    check(('CPU'if cpu else'human')+(' endline reception/first-time action'if boundary else' central control')+' '+str(lateral)+' uses a real receiving foot or prepared shin',foot or bool(prepared),dict(delivery=delivery,touches=touches,prepared_shin=prepared,skin=skin[-8:],reach=events(g,'NATIVE_REACH_PLAN',start)[:8]))
     if boundary:
      setup=events(g,'BOUNDARY_RECEIVE_SETUP',start)
      check('fixture remains inside the final 20 cm of the goal line',bool(setup)and 0<float(setup[0]['distance_to_line'])<.2,setup)

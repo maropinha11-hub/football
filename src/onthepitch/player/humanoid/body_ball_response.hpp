@@ -17,4 +17,12 @@ inline pes3::Point bodyResponse(pes3::Point relative,pes3::Point normal,bool cus
   const float keep=std::max(0.f,1-friction/std::max(.00001f,speed));
   return pes3::addPoint(pes3::scalePoint(tangent,keep),pes3::scalePoint(normal,-restitution*inward));
 }
+// One deliberate receiving gesture may absorb tangential momentum too. The
+// caller must prove a swept skin contact, a pending control animation and a
+// legal receiving leg, then finish that contact. Never apply this every tick
+// to a passive body collision: doing so would glue a ball to a limb/back.
+inline pes3::Point preparedControlResponse(pes3::Point relative,pes3::Point normal){
+  if(pes3::dotPoint(relative,normal)>=0)return relative;
+  return pes3::scalePoint(bodyResponse(relative,normal,true),.28f);
+}
 }

@@ -659,12 +659,21 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   const bool cushioning=legalPart&&!PhysicalRigBusy()&&!busyStrike&&-inward<18.f&&
     toBall.GetDotProduct(spatialState.bodyDirectionVec)>-.25f&&
     (!match->GetLastTouchPlayer()||match->GetLastTouchPlayer()!=actor||actor->GetLastTouchType()==e_TouchType_Accidental);
+  const bool preparedLegReceive=cushioning&&plannedFootContact&&current.coords[2]<.55f&&
+    (currentAnim->functionType==e_FunctionType_Trap||currentAnim->functionType==e_FunctionType_BallControl)&&
+    currentAnim->touchFrame-currentAnim->frameNum<=20&&
+    -inward>.12f*relative.GetLength()&&
+    (incoming-spatialState.movement-(surfaceVelocity-spatialState.movement)*.25f).GetDotProduct(normal)<-.05f&&
+    (part.find("thigh")!=std::string::npos||part.find("knee")!=std::string::npos||part.find("ankle")!=std::string::npos);
   // Only a swept, real skin contact can absorb the pass. A soft receiver
   // withdraws the contacted surface; this is not a proximity possession or
   // an invisible barrier in front of the chest.
-  const auto response=football_contacts::bodyResponse({{relative.coords[0],relative.coords[1],relative.coords[2]}},
-    {{normal.coords[0],normal.coords[1],normal.coords[2]}},cushioning);
-  const Vector3 outgoing=surfaceVelocity+Vector3(response[0],response[1],response[2]);
+  const Vector3 carrier=preparedLegReceive?spatialState.movement+(surfaceVelocity-spatialState.movement)*.25f:surfaceVelocity;
+  const Vector3 responseInput=incoming-carrier;
+  const pes3::Point relativePoint{{responseInput.coords[0],responseInput.coords[1],responseInput.coords[2]}},normalPoint{{normal.coords[0],normal.coords[1],normal.coords[2]}};
+  const auto response=preparedLegReceive?football_contacts::preparedControlResponse(relativePoint,normalPoint):
+    football_contacts::bodyResponse(relativePoint,normalPoint,cushioning);
+  const Vector3 outgoing=carrier+Vector3(response[0],response[1],response[2]);
   const Vector3 resolved=surface+normal*.1105f+outgoing*(1-high)*.01f;
   // A fast ball can cross more than 12 cm in a simulation step. Rejecting
   // that correction allowed it through the torso. Bound it by this sweep.
@@ -673,6 +682,11 @@ void HumanoidBase::ProcessTrainingBodyContact() {
   contactPreviousBall=resolved;
   auto *contactActor=static_cast<Player*>(player);contactActor->GetTeam()->SetLastTouchPlayer(contactActor,cushioning?e_TouchType_Intentional_Nonkicked:e_TouchType_Accidental);
   contactActor->UpdatePossessionStats(false);ball->TriggerBallTouchSound(.15f);
+  if(preparedLegReceive){
+    currentAnim->touchMade=true;
+    if(player==match->GetTrainingPlayer())match->NotifyTrainingTouch(currentAnim->functionType,false);
+    if(GetConfiguration()->GetBool("training_telemetry",false))printf("PREPARED_BODY_RECEPTION t=%lu actor=%d function=%d part=%s skin_gap=%.7f skin_speed=%.5f incoming=%.5f outgoing=%.5f\n",match->GetActualTime_ms(),player->GetID(),int(currentAnim->functionType),part.c_str(),(point-surface).GetLength()-.11f,surfaceVelocity.GetLength(),incoming.GetLength(),outgoing.GetLength());
+  }
   if(PhysicalRigEnabled()){
     if(!physicalBallImpactTime||match->GetActualTime_ms()-physicalBallImpactTime>700||
         relative.GetLength()>physicalBallImpactVelocity.GetLength()+2.f||(point-physicalBallImpactPosition).GetLength()>.35f){

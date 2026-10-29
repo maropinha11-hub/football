@@ -72,6 +72,13 @@ int main(int argc,char **argv){
   check(length(absorbed)<length(incoming)&&absorbed[0]>0,"a real normal impulse can dissipate a driven ball");
   check(football_contacts::bodyResponse({{1,0,-2}},normal,cushion)==Vec{{1,0,-2}},"a separating ball is not pulled back onto the body");
  }
+ {
+  const Vec normal{{1,0,0}},incoming{{-2,7,0}};
+  const auto deliberate=football_contacts::preparedControlResponse(incoming,normal);
+  const auto passive=football_contacts::bodyResponse(incoming,normal,true);
+  check(length(deliberate)<length(passive)*.3f&&deliberate[0]>=0,"a single prepared leg reception absorbs its measured incoming momentum without reversing into the surface");
+  check(football_contacts::preparedControlResponse({{1,4,0}},normal)==Vec{{1,4,0}},"a prepared gesture cannot capture an already separating ball");
+ }
  const std::string root=argc>1?argv[1]:"data/media/animations";
  const auto front=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_front.anim");
  const auto back=loadMotion(root+"/movement_special/idle/special/000_stand_up_from_back.anim");

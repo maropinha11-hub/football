@@ -68,7 +68,8 @@ PhysicalRig::PhysicalRig():balance(new BalanceController),procedural(new Procedu
 PhysicalRig::~PhysicalRig()=default;
 void PhysicalRig::step(const Input &rawInput,float dt){
   dt=bounded(dt,.001f,.02f);
-  if(controller!=rawInput.controller){reset();controller=rawInput.controller;}
+  const unsigned requestedController=rawInput.animationOnly?0:rawInput.controller;
+  if(controller!=requestedController||(rawInput.animationOnly&&state!=Mode::Active)){reset();controller=requestedController;}
   Input referenceInput=rawInput;
   if(controller==2)referenceInput.velocity=fullBodyWarmup<.85f?Vec{{0,0,0}}:capped(rawInput.velocity,.55f);
   proceduralInput=controller?procedural->compose(referenceInput,reference,scale,dt):rawInput;
@@ -218,7 +219,7 @@ void PhysicalRig::step(const Input &rawInput,float dt){
     supportSinkVelocity=bounded(supportSinkVelocity+sinkAcceleration*dt,-.055f,.055f);
     supportSink=bounded(supportSink+supportSinkVelocity*dt,0,.038f);
   }
-  if(state==Mode::Active && (forcedFall || lostBalance)){
+  if(!input.animationOnly&&state==Mode::Active && (forcedFall || lostBalance)){
     state=Mode::Falling;stateAge=settled=0;
     deliberateFall=forcedFall;fallStandingHeight=root[2];arrestTime=0;
     if(!articulated)articulated.reset(new ArticulatedBody);
@@ -240,16 +241,19 @@ void PhysicalRig::step(const Input &rawInput,float dt){
       swayVelocity=addPoint(swayVelocity,scalePoint(subtractPoint(scalePoint(sway,-80),scalePoint(swayVelocity,18)),h));
       sway=capped(addPoint(sway,scalePoint(swayVelocity,h)),.38f);
       for(unsigned i=0;i<13;++i){
-        const Vec wanted=int(i)==input.reachBone?capped(scalePoint(input.reach,input.reachWeight),.08f):Vec{{0,0,0}};
-        reachOffsets[i]=addPoint(reachOffsets[i],capped(subtractPoint(wanted,reachOffsets[i]),.28f*h));
+        const bool reachingFoot=input.animationOnly&&(i==9||i==12);
+        const Vec wanted=int(i)==input.reachBone?capped(scalePoint(input.reach,input.reachWeight),reachingFoot?.12f:.08f):Vec{{0,0,0}};
+        reachOffsets[i]=addPoint(reachOffsets[i],capped(subtractPoint(wanted,reachOffsets[i]),(reachingFoot?.60f:.28f)*h));
       }
     }
     physicalUpperValid=false;evaluate(rawInput);
     // Retain the physical state when a CPU stops. Destroying and rebuilding
     // thirteen bodies repeatedly both loses muscle state and causes hitches.
-    if(!articulated)articulated.reset(new ArticulatedBody);
-    articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
-    physicalUpperValid=true;evaluate(rawInput);
+    if(!input.animationOnly){
+      if(!articulated)articulated.reset(new ArticulatedBody);
+      articulated->track(reference,scale,local,root,dt,activeImpulse,physicalUpper,debug);
+      physicalUpperValid=true;evaluate(rawInput);
+    }else articulated.reset();
   }else if(state==Mode::Falling){
     const Vec previous=root;
     for(unsigned sub=0;sub<2;++sub)articulated->step(dt*.5f,local,root,debug);

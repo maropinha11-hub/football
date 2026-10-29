@@ -118,7 +118,7 @@ void Match::ResetTraining(int exercise, bool ballAtPlayer) {
   trainingView.reset(std::atan2(direction.coords[1], direction.coords[0]));
   trainingEyeInitialized = false;
   const char *names[] = {"Livre", "Conducao", "Finalizacao", "Bola aerea", "Falta", "Passe recebido"};
-  SpamMessage(std::string("Treino: ") + names[exercise] + (GetConfiguration()->GetBool("training_physical_lab",false)?" | F7: comparar | F8: impacto | F9: queda | R: reiniciar":" | View/R: reiniciar | F2: trazer bola"), 5000);
+  SpamMessage(std::string("Treino: ") + names[exercise] + (GetConfiguration()->GetBool("training_physical_lab",false)?" | F7: comparar | F8: impacto | F9: reacao | R: reiniciar":" | View/R: reiniciar | F2: trazer bola"), 5000);
   printf("TRAINING_RESET exercise=%d\n", exercise);
   fflush(stdout);
 }

@@ -48,6 +48,10 @@ try:
         check('the first-person lens stays outside the rendered torso, including recovery',
               bool(eyes) and all(float(x['clearance'])>=float(x['required'])-.0005 for x in eyes),
               dict(samples=len(eyes), minimum_clearance=min((float(x['clearance']) for x in eyes),default=0)))
+        states=records(g.read_log(),'PHYSICAL_ACTIVE_STATE')
+        check('animation gameplay never allocates a ragdoll world, even during the F9 reaction',
+              bool(states)and all(x['mode']=='0'and x['world_builds']=='0'and x['muscles']=='0'for x in states),
+              dict(samples=len(states),last=states[-3:]))
         g.keys(['Escape'],True);g.game.wait(timeout=15)
         check('clean exit',g.game.returncode==0,g.game.returncode)
     r['result']='passed' if all(x['result']=='passed' for x in r['checks']) else 'failed'

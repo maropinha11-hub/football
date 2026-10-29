@@ -212,7 +212,6 @@ void Humanoid::Process() {
     }
     if(PhysicalRigEnabled() && !match->GetBallRetainer() &&
        (match->GetLastTouchPlayer()!=player||CastPlayer()->GetLastTouchType()!=e_TouchType_Intentional_Kicked) &&
-       match->GetBall()->Predict(0).coords[2]>.27f &&
        ((match->GetBall()->Predict(500).Get2D()-spatialState.position).GetLength()<3.f||
         (match->GetBall()->Predict(1000).Get2D()-spatialState.position).GetLength()<1.8f)){
       // Automatic controls need the same contact-time resolution as an
@@ -1636,7 +1635,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     (match->GetLastTouchPlayer()!=player||CastPlayer()->GetLastTouchType()!=e_TouchType_Intentional_Kicked);
   const auto receptionPlan=football_reception::predict([&](unsigned ms){return point(match->GetBall()->Predict(ms));},
     point(spatialState.position),point(spatialState.movement),point(match->GetBall()->GetMovement()),freeArrival);
-  const bool activeReach=command.desiredFunctionType==e_FunctionType_Trap&&receptionPlan.valid&&receptionPlan.height>.27f;
+  const bool activeReach=command.desiredFunctionType==e_FunctionType_Trap&&receptionPlan.valid;
   const bool airborneAction=receptionPlan.valid&&receptionPlan.height>.27f&&receptionPlan.height<1.2f&&
     (command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||
      command.desiredFunctionType==e_FunctionType_HighPass||command.desiredFunctionType==e_FunctionType_Shot);
@@ -2850,8 +2849,9 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
         // ball near the ankles can lie behind that marker and deadlock the
         // magnet. Let the bounded real-skin planner below test the candidate;
         // this bypass never accepts a kick or changes the contact gate.
-        const bool centralFootArrival=PhysicalRigEnabled()&&functionType==e_FunctionType_Trap&&
-          spatialState.floatVelocity<2.5f&&animTouchFrame>=8&&animTouchFrame<=60&&
+        const bool centralFootArrival=PhysicalRigEnabled()&&
+          (functionType==e_FunctionType_Trap||functionType==e_FunctionType_BallControl)&&
+          spatialState.floatVelocity<2.5f&&animTouchFrame>=6&&animTouchFrame<=60&&
           anim->GetVariable("touch_bodypart").find("foot")!=std::string::npos&&
           ballPos.coords[2]<1.15f&&(ballPos.Get2D()-bodyPos.Get2D()).GetLength()<.70f;
         if (bodyBallDistanceAdvantage >= 1.0f || closeGroundSkin || centralFootArrival || match->GetBallRetainer() == player) {

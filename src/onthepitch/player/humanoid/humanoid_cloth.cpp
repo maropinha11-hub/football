@@ -5,7 +5,7 @@
 #include "../player.hpp"
 
 void HumanoidBase::PutShirtCloth(unsigned subgeom,std::vector<MaterializedTriangleMesh> &meshes){
-  if(!fetchedPhysicalRig || !GetConfiguration()->GetBool("training_shirt_cloth",true))return;
+  if(!fetchedPhysicalRig || GetConfiguration()->GetBool("training_animation_body",true) || !GetConfiguration()->GetBool("training_shirt_cloth",true))return;
   if(shirtCloth.size()!=fullbodySubgeomCount){shirtCloth.resize(fullbodySubgeomCount);shirtClothTime.resize(fullbodySubgeomCount,0);}
   auto &mesh=meshes[subgeom];const auto &weighted=weightedVerticesVec[subgeom];
   const int offset=uniqueFullbodyMesh[subgeom].size/GetTriangleMeshElementCount();

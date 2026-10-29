@@ -34,6 +34,7 @@ bool HumanoidBase::PhysicalRigEnabled()const {
 void HumanoidBase::ConfigurePhysicalRig(){
   if(physicalRig)return;
   physicalRig.reset(new football_physics::PhysicalRig);physicalRig->configure(pes3NativeReference,zMultiplier);
+  if(GetConfiguration()->GetBool("training_animation_body",true))printf("ANIMATION_BODY actor=%d ragdoll=0 cloth=0 contacts=skin\n",player->GetID());
   const char *receptions[]={"000_knee.anim","000_crotch.anim","000_chest.anim"};
   for(auto *clip:anims->GetAnimations())for(unsigned kind=0;kind<3;++kind)for(unsigned side=0;side<2;++side)
     if(clip->GetName()==std::string("media/animations/trap/idle/highballs/")+receptions[kind]+(side?"_mirror":""))physicalReceptionClips[kind][side]=clip;
@@ -187,10 +188,13 @@ void HumanoidBase::TogglePhysicalRig(){
     auto *partner=match->GetTrainingPartner();
     partner->GetHumanoid()->ResetPosition(partner->GetPosition(),partner->GetPosition()+partner->GetBodyDirectionVec());
   }
-  match->SpamMessage(enabled?"Fisica corporal: ligada | F8: impacto | F9: queda":"Fisica corporal: desligada",3500);
+  match->SpamMessage(enabled?"Ajustes corporais: ligados | F8: impacto | F9: reacao":"Ajustes corporais: desligados",3500);
   printf("PHYSICAL_RIG_TOGGLE enabled=%d\n",enabled?1:0);fflush(stdout);
 }
 void HumanoidBase::CycleBodyController(){
+  if(GetConfiguration()->GetBool("training_animation_body",true)){
+    match->SpamMessage("Gameplay por animacoes e IK | ragdoll desativado",3500);return;
+  }
   if(PlayerMatchEnabled()){match->SpamMessage("Comparacao de controladores: use o treino solo",3000);return;}
   const unsigned next=(GetConfiguration()->GetInt("training_body_controller",0)+1)%3;
   GetConfiguration()->SetInt("training_body_controller",next);
@@ -240,11 +244,12 @@ Vector3 HumanoidBase::SafeFirstPersonEye(const Vector3 &requested,float clearanc
 void HumanoidBase::AddPhysicalImpulse(const Vector3 &value,const Vector3 &lever,bool forceFall){
   if(!PhysicalRigEnabled())return;
   ConfigurePhysicalRig();
-  physicalRig->impulse(point(value),point(lever),forceFall);
+  const bool animationOnly=GetConfiguration()->GetBool("training_animation_body",true);
+  physicalRig->impulse(point(value),point(lever),forceFall&&!animationOnly);
   // Moderate blows use a generated support step. Strong blows still select
   // the original full-body protective clip before yielding to a dynamic fall.
   const unsigned long now=match->GetActualTime_ms();
-  if(!physicalRig->fullyDynamic()&&!forceFall && (value.GetLength()>=160.f||(value.GetLength()>=70.f&&spatialState.floatVelocity>=4.8f)) && physicalRig->mode()==football_physics::Mode::Active &&
+  if(!physicalRig->fullyDynamic()&&(!forceFall||animationOnly) && (value.GetLength()>=160.f||(value.GetLength()>=70.f&&spatialState.floatVelocity>=4.8f)) && physicalRig->mode()==football_physics::Mode::Active &&
      now>=physicalStaggerUntil && interruptAnim==e_InterruptAnim_None &&
      (currentAnim->functionType==e_FunctionType_Movement || currentAnim->functionType==e_FunctionType_BallControl) &&
      !UpperReceptionActive() && match->GetBallRetainer()!=player){
@@ -545,7 +550,8 @@ void HumanoidBase::UpdatePhysicalRigPose(){
   if(!PhysicalRigEnabled())return;
   ConfigurePhysicalRig();
   football_physics::Input input;
-    input.controller=PlayerMatchEnabled()||player!=match->GetTrainingPlayer()?0:unsigned(clamp(GetConfiguration()->GetInt("training_body_controller",0),0,2));
+    input.animationOnly=GetConfiguration()->GetBool("training_animation_body",true);
+    input.controller=input.animationOnly||PlayerMatchEnabled()||player!=match->GetTrainingPlayer()?0:unsigned(clamp(GetConfiguration()->GetInt("training_body_controller",0),0,2));
     for(unsigned i=0;i<13;++i)input.pose[i]=rotation(contactLocal[i]);
     input.pelvis=point(contactPositions[0]);input.velocity=point(spatialState.movement);
     input.forward=point(spatialState.bodyDirectionVec);input.upperReception=UpperReceptionActive();

@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-29",
+  "repositories": [
+    {
+      "repository": "https://github.com/dzakyraf/pes2017-recomp",
+      "commit": "8dd109b38f875774275e259550d066cefd618da0",
+      "read_files": {
+        "README.md": "488be4ba964cc0afd7bdd2fbbed9bcfbb60993dc9c18e13ec91522a6c92791c6",
+        "docs/PORTING.md": "3ed00b821332ba41a3a1062c723007a3b9f6c3615ec1b48f4ba91a4bfeb56575",
+        "docs/RECOMP_RESEARCH.md": "d8b3f329405a7f3be2c4b5589ee262166b10ff40d2f50c4caede7e374850eb2b",
+        "build.sh": "5217ee61bcff162133e3dd02ef945f09e6e51aa3d9720ae33341b0960502cab5",
+        "config/PES.toml": "19a015bb594aa0abbb395902ef2c3c72ca8cd89e738b9c37a70463e7d0142415",
+        "runtime/title.h": "72541567a7b868340d100cbc521b32370c742316e6ba81f33d849f9f4f5d9637",
+        "runtime/pes_hooks.cpp": "d194b9950667d38f8c8ca2047fd4c9037675e56151d636c8461a5bcfdeb7afe9",
+        "tools/title.py": "c3af5938c0c7b58133db51f6f7132d00a366cb3a6a41ed0eeea0c08b813e606b",
+        "tools/find_in_title.py": "da137cf91794d53f19ccbe716cc66b0f4e0e15a5db449bd75b0bd5e463cfa056",
+        "CMakeLists.txt": "9010a75d2cd9036c4055f7c1ebfc28a907bbd5ce88c2842430354d218ab90315"
+      }
+    },
+    {
+      "repository": "https://github.com/jhnzbdev/pes-gani",
+      "commit": "4f6dbf00f66df761ce2f6ac9b2d80af48e172788",
+      "read_files": {
+        "README.md": "0c01dd0c015f1286fccd23ec9917446ebc5e1874c460c22d45e37f0800b1ab7d",
+        "pes_gani/pesmtar.py": "18265d962275cac80bc33b1ab76bcc5924a2ffbb0ea8a66878e045e1d58a7013",
+        "pes_gani/foxhash.py": "afadb50675a383cfa7e5c23ede7dc8ca501c30425b4f241e2e4631be21752627",
+        "pes_gani/__main__.py": "5f710eb04a5842eee69bdc822789f541652a60b8c9854cc772a7bcb21bf12adf",
+        "clip_name_map.json": "236c86232cc0a521abf901c57d0e9a41ef6859035d842cbf946e80446b94456c",
+        "LICENSE": "999d264edb7c0e586e385e261072461a399b25be6d2198433c3ce71a0c5f176d"
+      }
+    }
+  ],
+  "game_files_executed": false,
+  "real_pes2021_clips_decoded_here": 0,
+  "original_pes_gameplay_integrated": false,
+  "user_available_edition": "PES2017 Windows x86",
+  "new_gameplay_scope": "native animation and IK; no ragdoll; PES assets not installed",
+  "xbox_recomp": {
+    "guest_isa": "PowerPC big endian / Xbox360",
+    "documented_target": "ARM64 Android, host runtime branches also present",
+    "input": "European Xbox360 default.xex and CPK data",
+    "supplied_windows_executable_compatible": false,
+    "generated_ppc_source_tracked": false,
+    "standalone_named_gameplay_api_found": false,
+    "symbol_sidecar_present": false,
+    "function_matching_tool_issue": "find_in_title.py references mp and title.VERSION, absent from the current title.py mapping; not run as a gameplay decoder",
+    "port_runtime_executed_here": false
+  },
+  "gani": {
+    "upstream_verified_edition": "PES2021, according to upstream README",
+    "2017_compatibility_verified": false,
+    "metadata_names_hash_verified_here": 4105,
+    "known_hash_vectors_passed": 2,
+    "source_rig_bones_upstream": 20,
+    "native_rig_bones": 13,
+    "position_channel_scale_meters": 0.01,
+    "rotation_half_angle_scale": "pi/2",
+    "output_timing_fps_assumption": 30,
+    "dense_interpolation_upstream": "normalized linear interpolation",
+    "our_export": "sparse original decoded keys; root kept separate",
+    "tests_here": "synthetic format fixtures, bounds, timing, rotations and name hashes; not a real-game animation decode",
+    "automatic_retarget_enabled": false,
+    "physics_or_selector_recovery": false,
+    "required_assets": [
+      "body_anime_file0.mtar .. body_anime_file9.mtar",
+      "body_anim_skel.ask",
+      "body_skel.frig"
+    ],
+    "cpk_archive": "PES2021 Data/dt13_all.cpk",
+    "confirmed_user_scope": "PES2021 animation clips and names only; retain Football physics, controls and action selector"
+  }
+}
