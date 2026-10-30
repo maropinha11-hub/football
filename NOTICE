@@ -20,9 +20,9 @@ FBX files supplied by the repository owner. Source names, hashes, take
 ranges, native joint mapping and conversion details are recorded in
 docs/mocap-retarget.json and docs/uploaded-motion-catalog.json.
 The Unity C# source package is not redistributed with this project.
-The training packages contain no proprietary PES executable or animation
-bank. Optional local research tools are separate from the native training
-gameplay; Gameplay Football fidelity is not a claim of PES equivalence.
+The training packages contain no proprietary PES executable or complete
+original animation bank. The selected retargeted PES motions are identified
+separately below. Gameplay Football fidelity is not a claim of PES equivalence.
 
 Bullet Physics 3.25 (CPU LinearMath, BulletCollision, BulletDynamics)
 Copyright (c) 2003-2023 Erwin Coumans and contributors.
@@ -42,10 +42,11 @@ https://github.com/jhnzbdev/pes-gani, commit 4f6dbf00f66df761ce2f6ac9b2d80af48e1
 Reader code, name metadata and the complete license are preserved under
 third_party/pes-gani. No PES gameplay equivalence is claimed.
 
-media/training/pes17/short_pass.anim is a single retargeted test motion derived
-from kick_short_0_0_inside_y0_000 in the PES 2017 dt13_win.cpk supplied by the
-repository owner. PES assets remain the property of their respective owners;
+media/training/pes17/*.anim are retargeted test motions derived from the
+PES 2017 dt13_win.cpk supplied by the repository owner. catalog.json and each
+adjacent JSON record the source movement and transformation. PES assets remain
+the property of their respective owners;
 they are not covered by this project's Apache-2.0 or the reader's MIT license.
-Its adjacent JSON records provenance and the Football contact annotation.
+The contact annotations are for Football integration, not recovered PES events.
 Original CPK, MTAR, ASK and FRIG files and the decoded bulk library are not
 included in the repository or portable release.

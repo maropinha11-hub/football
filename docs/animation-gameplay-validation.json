@@ -1,27 +1,28 @@
 {
   "date": "2026-10-30",
   "result": "passed",
-  "base_commit": "af30d265d2e235ccf5ef53a01c82379571935aa3",
-  "scope": "Approved native animation/IK gameplay plus one explicitly enabled retargeted PES 2017 short pass; no runtime ragdoll.",
+  "base_commit": "0fe1797e01a0723047b387196d70606d2f0a6016",
+  "scope": "Approved native animation/IK gameplay plus 21 explicitly enabled retargeted PES 2017 action sources / 37 runtime candidates; no runtime ragdoll.",
   "implemented": {
     "animation_body_default": true,
     "ragdoll_worlds": 0,
     "cloth_dynamics": false,
     "unchanged_native_animation_bank": true,
-    "retargeted_pes_actions": 1,
+    "retargeted_pes_actions": 21,
     "pes_enabled_by_default": false,
     "ground_bounce": 0.74,
-    "contact": "Same bounded native planning and real weighted-skin gate; no expanded tolerance or forced ball attachment."
+    "contact": "Same bounded native planning and real weighted-skin gate; no expanded tolerance or forced ball attachment.",
+    "pes_runtime_candidates": 37
   },
   "binaries": {
-    "native_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
-    "windows_unstripped_sha256": "57974542e92bec8c8ceaaa852d0499b71e6cd77fd0f8653f6aa12a1103583684"
+    "native_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
+    "windows_unstripped_sha256": "77a65dbad0d706f43ce2b2b1de3033e7a3def6a1c31124a2ada5cce861dd51be"
   },
   "unit_validation": {
     "ctest_suites": 14,
     "ctest_result": "passed",
-    "python_tests": 244,
-    "python_passed": 238,
+    "python_tests": 250,
+    "python_passed": 244,
     "python_skipped": 6
   },
   "rendered": [
@@ -29,40 +30,42 @@
       "scenario": "camera",
       "result": "passed",
       "checks": 27,
-      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
     },
     {
       "scenario": "central",
       "result": "passed",
       "checks": 10,
-      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
     },
     {
       "scenario": "airborne",
       "result": "passed",
       "checks": 28,
-      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
     },
     {
       "scenario": "actions",
       "result": "passed",
       "checks": 37,
-      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
     }
   ],
   "rendered_checks": 102,
-  "pes_shortpass": {
-    "result": "passed",
-    "checks": 38,
-    "views": 2,
-    "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
-    "report": "docs/pes2017-shortpass-validation.json"
-  },
   "limitations": {
     "windows_gui_executed": false,
     "original_pes_gameplay_integrated": false,
     "real_pes2021_clips_imported": 0,
     "all_possible_ball_arrivals_proven": false
   },
-  "research": "docs/ANIMACOES-PES2017.md"
+  "research": "docs/BANCO-ANIMACOES-PES2017.md",
+  "pes_action_bank": {
+    "result": "passed",
+    "checks": 179,
+    "views": 2,
+    "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
+    "bank_catalog_sha256": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db",
+    "actual_contact_sources": 11,
+    "report": "docs/pes2017-action-bank-validation.json"
+  }
 }

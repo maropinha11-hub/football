@@ -59,6 +59,7 @@ bool UpdateNonImportableDB();
 Database *GetDB();
 Properties *GetConfiguration();
 bool TrainingEnabled();
+bool TrainingPESActionsEnabled();
 bool PlayerMatchEnabled();
 int RunControllerTests();
 std::string GetActiveSaveDirectory();

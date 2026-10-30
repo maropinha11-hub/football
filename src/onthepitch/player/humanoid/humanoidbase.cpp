@@ -1344,6 +1344,7 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos,
   ResetPhysicalRig(!recovering);
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
   contactPoseBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
+  pesEntryValid=false;
   buf_trainingLook.Clear();
   if(!recovering){buf_contactBlend.Clear();buf_contactRoot.Clear();buf_contactHeight.Clear();buf_chestPhase.Clear();}
   for(unsigned i=0;i<13;++i){contactLocal[i]=QUATERNION_IDENTITY;if(!recovering)buf_contactLocal[i].Clear();}

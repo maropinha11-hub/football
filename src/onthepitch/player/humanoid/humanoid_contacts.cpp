@@ -205,7 +205,8 @@ void HumanoidBase::CaptureContactMesh() {
       Vector3 point=surface+normal*.1105f;
       const std::string type=animation->GetAnimType();
       if(part.find("foot")!=std::string::npos &&
-          (type=="shot" || type=="pass" || type=="shortpass" || type=="longpass" || type=="highpass")) {
+          (type=="shot" || type=="pass" || type=="shortpass" || type=="longpass" || type=="highpass" ||
+           animation->GetVariable("pes_role")=="reception")) {
         // Keep the authored ball height. A radial projection from a sloped
         // shoe can raise a ground-ball marker, making a valid side kick miss.
         Vector3 origin=surface;origin.coords[2]=probe.coords[2];
@@ -222,6 +223,9 @@ void HumanoidBase::CaptureContactMesh() {
       }
       point.coords[2]/=zMultiplier;
       entry.second.position=point;
+      if(animation->GetVariable("pes_action")=="true"&&GetConfiguration()->GetBool("training_pes_diagnostics",false))
+        printf("PES_ACTION_BIND actor=%d source=%s part=%s frame=%d point=[%.5f,%.5f,%.5f]\n",
+          player->GetID(),animation->GetName().c_str(),part.c_str(),entry.first,point.coords[0],point.coords[1],point.coords[2]);
     }
   }
 
@@ -266,11 +270,18 @@ void HumanoidBase::BlendUpperReception(Animation *clip,float phase,float weight,
 
 void HumanoidBase::TickUpperReception() {
   if(!upperReceptionClip)return;
+  if(upperReceptionClip->GetVariable("pes_action")=="true"&&
+      currentAnim->functionType>=e_FunctionType_ShortPass&&currentAnim->functionType<=e_FunctionType_Shot){
+    upperReceptionClip=nullptr;upperReceptionWeight=upperReceptionArmWeight=0;return;
+  }
   if(PhysicalRigEnabled() && !upperReceptionTouchMade && player->GetExternalController() &&
       static_cast<HumanController*>(player->GetExternalController())->GetActionMode()!=0){
     // An explicit one-touch pass/shot owns the incoming ball. Do not let an
     // anticipatory chest layer consume it before the native action can fit.
     upperReceptionClip=nullptr;upperReceptionWeight=upperReceptionArmWeight=0;return;
+  }
+  if(match->GetActualTime_ms()<upperReceptionStarted_ms){
+    upperReceptionPhase=0;upperReceptionWeight=upperReceptionArmWeight=0;return;
   }
   upperReceptionPhase=float(match->GetActualTime_ms()-upperReceptionStarted_ms)*.1f;
   if(!upperReceptionTouchMade && upperReceptionPhase>upperReceptionContactFrame+7)
@@ -296,16 +307,22 @@ bool HumanoidBase::StartUpperReception(Animation *clip,int contactFrame) {
   Quaternion local[13],global[13];Vector3 positions[13];
   // Judge the composed contact pose rather than the full-body FBX path.
   // Start anticipation only when its authored marker meets the trajectory.
-  const Vector3 root=spatialState.position+spatialState.movement*(contactFrame*.01f);
-  SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,spatialState.angle,false,local,global,positions);
-  BlendUpperReception(clip,float(contactFrame),1,spatialState.angle,local);
-  ContactForwardKinematics(local,global,positions);
-  const float gap=ContactSurface(match->GetBall()->Predict(contactFrame*10),"chest",global,positions);
+  const bool pes=clip->GetVariable("pes_action")=="true";
+  float gap=100;unsigned lead=0;
+  for(unsigned delay=0;delay<=(pes?200u:0u);delay+=10){
+    const Vector3 root=spatialState.position+spatialState.movement*((contactFrame*10+delay)*.001f);
+    SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,spatialState.angle,false,local,global,positions);
+    BlendUpperReception(clip,float(contactFrame),1,spatialState.angle,local);
+    ContactForwardKinematics(local,global,positions);
+    const float candidate=ContactSurface(match->GetBall()->Predict(contactFrame*10+delay),"chest",global,positions);
+    if(candidate<gap){gap=candidate;lead=delay;}
+    if(candidate<=.025f)break;
+  }
   if(GetConfiguration()->GetBool("training_telemetry",false))
-    printf("TRAINING_UPPER_PLAN t=%lu gap=%.5f accepted=%d mode=%s\n",match->GetActualTime_ms(),gap,gap<=.025f?1:0,clip->GetVariable("reception_mode").c_str());
+    printf("TRAINING_UPPER_PLAN t=%lu gap=%.5f accepted=%d mode=%s source=%s lead_ms=%u\n",match->GetActualTime_ms(),gap,gap<=.025f?1:0,clip->GetVariable("reception_mode").c_str(),clip->GetName().c_str(),lead);
   if(gap>.025f)return false;
   upperReceptionClip=clip;upperReceptionContactFrame=contactFrame;upperReceptionEndFrame=clip->GetFrameCount()-1;
-  upperReceptionStarted_ms=match->GetActualTime_ms();upperReceptionPhase=0;upperReceptionWeight=0;upperReceptionArmWeight=0;upperReceptionArmRelease=-1;upperReceptionTouchMade=false;
+  upperReceptionStarted_ms=match->GetActualTime_ms()+lead;upperReceptionPhase=0;upperReceptionWeight=0;upperReceptionArmWeight=0;upperReceptionArmRelease=-1;upperReceptionTouchMade=false;
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_UPPER_START t=%lu mode=%s contact_frame=%d frames=%d legs_free=1\n",match->GetActualTime_ms(),
       clip->GetVariable("reception_mode").c_str(),contactFrame,clip->GetFrameCount());
@@ -363,7 +380,9 @@ void HumanoidBase::SampleContactAnimation(const Animation *animation,float phase
     }
     if(i==0){Quaternion turn;turn.SetAngleAxis(facing,Vector3(0,0,1));local[i]=turn*local[i];}
   }
-  if(!source && animation->GetVariable("added_chest")!="true")
+  const bool pesFollowup=upperReceptionClip&&upperReceptionTouchMade&&
+    upperReceptionClip->GetVariable("pes_action")=="true"&&animation!=currentAnim->anim;
+  if(!source && animation->GetVariable("added_chest")!="true"&&!pesFollowup)
     BlendUpperReception(upperReceptionClip,upperReceptionPhase,upperReceptionWeight,facing,local,upperReceptionArmWeight);
   ContactForwardKinematics(local,global,positions);
   if(fitPlannedLeg && !source && animation==currentAnim->anim && currentAnim->touchFrame>0 &&
@@ -529,6 +548,7 @@ Vector3 HumanoidBase::GetStandingChestTarget() const {
   }
   for(Animation *candidate:anims->GetAnimations())
     if(candidate->GetVariable("added_chest")=="true" &&
+        (TrainingPESActionsEnabled()||candidate->GetVariable("pes_action")!="true") &&
         (candidate->GetVariable("reception_mode")=="forward")==forward) {
       animation=candidate;phase=std::atof(candidate->GetVariable("touchframe").c_str());source=false;break;
     }
@@ -785,6 +805,31 @@ void HumanoidBase::UpdateTrainingContactPose() {
   SampleContactAnimation(currentAnim->anim,float(currentAnim->frameNum),root,angle,
     false,contactLocal,contactGlobal,contactPositions);
   UpdatePhysicalRigPose();
+  const bool pes=currentAnim->anim->GetVariable("pes_action")=="true";
+  const float frames=currentAnim->touchFrame>0?std::min(16,std::max(6,currentAnim->touchFrame-2)):16;
+  const bool handoff=pesEntryValid&&currentAnim->frameNum<=frames;
+  if(pesEntryValid&&(pes||handoff)){
+    const float amount=football_physics::smooth(currentAnim->frameNum/frames);
+    for(unsigned i=0;i<13;++i)contactLocal[i]=pesEntryLocal[i].GetSlerped(amount,contactLocal[i]).GetNormalized();
+    contactPositions[0].coords[2]=pesEntryHeight*(1-amount)+contactPositions[0].coords[2]*amount;
+    ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
+    float lowest=100.f;
+    for(unsigned side=0;side<2;++side)for(unsigned bits=0;bits<8;++bits){
+      const auto &lo=pes3NativeReference.footMin[side],&hi=pes3NativeReference.footMax[side];
+      const Vector3 corner((bits&1)?hi[0]:lo[0],(bits&2)?hi[1]:lo[1],(bits&4)?hi[2]:lo[2]);
+      const unsigned ankle=side?12:9;
+      lowest=std::min(lowest,(contactPositions[ankle]+contactGlobal[ankle]*(corner*zMultiplier)).coords[2]);
+    }
+    const float lift=std::max(0.f,spatialState.position.coords[2]+.008f*zMultiplier-lowest);
+    contactPositions[0].coords[2]+=lift;ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
+    football_physics::Pose constrained;football_physics::Metrics metrics;
+    for(unsigned i=0;i<13;++i)for(unsigned j=0;j<4;++j)constrained[i][j]=contactLocal[i].elements[j];
+    football_physics::constrainArmPose(pes3NativeReference,zMultiplier,constrained,
+      {{contactPositions[0].coords[0],contactPositions[0].coords[1],contactPositions[0].coords[2]}},metrics);
+    for(unsigned i=0;i<13;++i)contactLocal[i]=Quaternion(constrained[i][0],constrained[i][1],constrained[i][2],constrained[i][3]);
+    ContactForwardKinematics(contactLocal,contactGlobal,contactPositions);
+    if(player->GetExternalController())AimTrainingHead(contactLocal,contactGlobal,contactPositions,match->GetTrainingLookDirection());
+  }
   if(match->GetReferee()->KeepThrowerOutside(player)){
     const float side=match->GetRefereeBuffer().restartPos.coords[1]>=0?1.f:-1.f;
     float margin=100;
@@ -800,6 +845,10 @@ void HumanoidBase::UpdateTrainingContactPose() {
       printf("RESTART_FOOTING t=%lu actor=%d margin=%.6f correction=%.6f\n",match->GetActualTime_ms(),player->GetID(),std::max(.025f,margin),std::max(0.f,.025f-margin));
   }
   if(!UsesTrainingContacts())return;
+  // One buffered pose owns physics and rendering throughout a PES action.
+  // Its entry was blended above; a second renderer-only blend would show a
+  // different shoe from the one tested by the collision system.
+  if(pes||handoff){contactPoseBlend=1;return;}
   const int remaining=currentAnim->touchFrame-currentAnim->frameNum;
   const float nativeBlend=currentAnim->touchFrame>=0 ?
       ease((20-remaining)/10.0f)*ease((remaining+14)/9.0f) : 0;

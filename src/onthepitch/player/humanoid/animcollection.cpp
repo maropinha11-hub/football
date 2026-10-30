@@ -571,23 +571,54 @@ void AnimCollection::Load(boost::filesystem::path directory) {
   // The training player uses native dribbling in every camera/direction.
   // DefenseJog imports remain archived, but are not gameplay candidates.
 
-  // The retargeted action is an additional candidate. Approach planning and
-  // the final weighted-skin gate still own the touch, as for native passes.
-  if(TrainingEnabled()&&boost::filesystem::exists("media/training/pes17/short_pass.anim")){
-    Animation *animation=new Animation();
-    boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
-    animation->AddExtension("football",extension);
-    animation->Load("media/training/pes17/short_pass.anim");
-    if(animation->GetVariable("pes_action")!="true"||animation->GetAnimType()!="shortpass"||
-       animation->GetVariable("pes_contact_bodypart")!="right_foot"){
-      delete animation;throw std::runtime_error("Invalid retargeted short-pass candidate");
+  // Additional retargeted actions never replace the native collection.
+  // Each candidate keeps the same approach solver and final real-skin gate.
+  if(TrainingEnabled()&&boost::filesystem::exists("media/training/pes17")){
+    std::vector<std::string> candidates;parser.Parse("media/training/pes17","anim",candidates);
+    std::sort(candidates.begin(),candidates.end());
+    for(const auto &file:candidates){
+      Animation source;source.AddExtension("football",boost::shared_ptr<FootballAnimationExtension>(new FootballAnimationExtension(&source)));
+      source.Load(file);
+      const std::string type=source.GetAnimType(),part=source.GetVariable("pes_contact_bodypart");
+      Vector3 marker;int frame=-1;
+      if(source.GetVariable("pes_action")!="true"||source.GetVariable("pes_source_name").empty()||
+         (type!="shortpass"&&type!="highpass"&&type!="shot"&&type!="trap"&&type!="ballcontrol")||
+         (part!="right_foot"&&part!="left_foot"&&part!="right_upperleg"&&part!="left_upperleg"&&
+          part!="right_lowerleg"&&part!="left_lowerleg"&&part!="trunk"&&part!="head")||
+         !boost::static_pointer_cast<FootballAnimationExtension>(source.GetExtension("football"))->GetFirstTouch(marker,frame)||frame<1)
+        throw std::runtime_error("Invalid retargeted action candidate: "+file);
+      const bool receiving=source.GetVariable("pes_role")=="reception";
+      for(int control=0;control<(receiving?2:1);++control)
+      for(int mirror=0;mirror<(source.GetVariable("pes_make_mirror")=="true"?2:1);++mirror){
+        // Animation's copy constructor deliberately shares extensions. Load
+        // each instance with its own owner/event map: retiming or mirroring
+        // one must never mutate the other candidate's contact marker.
+        Animation *animation=new Animation();
+        animation->AddExtension("football",boost::shared_ptr<FootballAnimationExtension>(new FootballAnimationExtension(animation)));
+        animation->Load(file);
+        if(control)animation->SetVariable("type","ballcontrol");
+        if(source.GetVariable("pes_upper_reception")=="true"){
+          animation->SetVariable("added_chest","true");animation->SetVariable("reception_mode","stand");
+          // The approved chest layer composes the torso/arms over the live
+          // locomotion hips. Its root is supplied by that locomotion.
+          for(auto *node:animation->GetNodeAnimations())if(node->nodeName=="player")
+            for(auto &key:node->animation)key.second.position=Vector3(0);
+          animation->DirtyCache();
+        }
+        if(mirror){
+          animation->Mirror();std::string mirrored=part;
+          if(part.compare(0,6,"right_")==0)mirrored="left_"+part.substr(6);
+          else if(part.compare(0,5,"left_")==0)mirrored="right_"+part.substr(5);
+          animation->SetVariable("pes_contact_bodypart",mirrored);animation->SetVariable("pes_mirrored","true");
+        }
+        animation->SetName("pes17/"+source.GetVariable("pes_source_name")+(mirror?"_mirror":"")+(control?"_control":""));
+        animation->SetVariable("baseanim","false");
+        _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+        printf("PES_ACTION_CANDIDATE name=%s type=%s role=%s frames=%d contact=%s part=%s native_bank_preserved=1\n",
+          animation->GetName().c_str(),animation->GetAnimType().c_str(),animation->GetVariable("pes_role").c_str(),animation->GetFrameCount(),
+          animation->GetVariable("touchframe").c_str(),animation->GetVariable("touch_bodypart").c_str());
+      }
     }
-    animation->SetName("pes17/"+animation->GetVariable("pes_source_name"));
-    animation->SetVariable("baseanim","false");
-    _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
-    printf("PES_ACTION_CANDIDATE name=%s frames=%d contact=%s part=%s native_bank_preserved=1\n",
-      animation->GetName().c_str(),animation->GetFrameCount(),animation->GetVariable("touchframe").c_str(),
-      animation->GetVariable("touch_bodypart").c_str());
   }
 
   // Additional reception candidate: the existing native chest clips remain

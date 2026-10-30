@@ -444,6 +444,9 @@ class HumanoidBase {
     Vector3 fetchedTrainingLook;
     Quaternion contactLocal[13], contactGlobal[13];
     Vector3 contactPositions[13];
+    Quaternion pesEntryLocal[13];
+    float pesEntryHeight=.96f;
+    bool pesEntryValid=false;
     float contactPoseBlend = 0, fetchedContactBlend = 0;
     TemporalSmoother<Quaternion> buf_contactLocal[13];
     TemporalSmoother<Vector3> buf_contactRoot;

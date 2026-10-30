@@ -503,6 +503,10 @@ void Humanoid::Process() {
     team->SetLastTouchPlayer(CastPlayer(),e_TouchType_Intentional_Nonkicked);CastPlayer()->UpdatePossessionStats(false);
     if(GetConfiguration()->GetBool("training_telemetry",false))
       printf("TRAINING_ACTION_TOUCH t=%lu part=trunk function=3 z=%.4f upper_layer=1 actor=%d\n",match->GetActualTime_ms(),match->GetBall()->Predict(0).coords[2],player->GetID());
+    if(upperReceptionClip->GetVariable("pes_action")=="true"&&GetConfiguration()->GetBool("training_telemetry",false))
+      printf("PES_ACTION_CONTACT t=%lu actor=%d frame=%d planned=%d part=trunk power=0 name=%s function=3 mirrored=0 upper_layer=1\n",
+        match->GetActualTime_ms(),player->GetID(),int(upperReceptionPhase),upperReceptionContactFrame,
+        upperReceptionClip->GetVariable("pes_source_name").c_str());
   }
   if (controlledBallCollision) CastPlayer()->ResetControlledBallCollisionTrigger();
   // A physical actor needs an authored reception or a real impact response.
@@ -585,12 +589,15 @@ void Humanoid::Process() {
 
       radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
       if(currentAnim->anim->GetVariable("pes_action")=="true"&&GetConfiguration()->GetBool("training_telemetry",false))
-        printf("PES_ACTION_CONTACT t=%lu actor=%d frame=%d planned=%d part=%s power=%.5f name=%s\n",
+        printf("PES_ACTION_CONTACT t=%lu actor=%d frame=%d planned=%d part=%s power=%.5f name=%s function=%d mirrored=%d\n",
           match->GetActualTime_ms(),player->GetID(),currentAnim->frameNum,currentAnim->touchFrame,
           currentAnim->anim->GetVariable("touch_bodypart").c_str(),currentAnim->originatingCommand.touchInfo.desiredPower,
-          currentAnim->anim->GetVariable("pes_source_name").c_str());
+          currentAnim->anim->GetVariable("pes_source_name").c_str(),int(currentAnim->functionType),
+          currentAnim->anim->GetVariable("pes_mirrored")=="true"?1:0);
 
-      if (currentAnim->functionType == e_FunctionType_Trap || (currentAnim->functionType == e_FunctionType_BallControl && CastPlayer()->HasPossession() == false)) {
+      if (currentAnim->functionType == e_FunctionType_Trap ||
+          currentAnim->anim->GetVariable("pes_role")=="reception" ||
+          (currentAnim->functionType == e_FunctionType_BallControl && CastPlayer()->HasPossession() == false)) {
         //printf("trap!\n");
         radian xRot = 0;
         radian yRot = 0;
@@ -1432,6 +1439,11 @@ float Humanoid::GetHasteFactor(bool considerOpponentProximity) const {
 
 bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInterruptAnim, bool preferPassAndShot) { // returns false on no applicable anim found
   assert(command.desiredDirection.coords[2] == 0.0f);
+  // A scheduled PES torso reception owns the incoming high ball. Continue
+  // normal leg locomotion while waiting; do not queue a conflicting full-
+  // body trap before the chest action has had its real contact window.
+  if((command.desiredFunctionType==e_FunctionType_Trap||command.desiredFunctionType==e_FunctionType_BallControl)&&UpperReceptionActive()&&
+     upperReceptionClip->GetVariable("pes_action")=="true"&&!upperReceptionTouchMade)return false;
   if(command.useDesiredMovement&&(command.desiredFunctionType==e_FunctionType_Movement||command.desiredFunctionType==e_FunctionType_BallControl))
     PhysicalDirectionChange(command.desiredDirection*command.desiredVelocityFloat);
 
@@ -1652,6 +1664,21 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     query.bySide=false;query.byIncomingBallDirection=false;query.allowLastDitchAnims=true;
   }
   anims->CrudeSelection(dataSet, query);
+  if(!TrainingPESActionsEnabled())
+    dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("pes_action")=="true";}),dataSet.end());
+  else if(spatialState.floatVelocity>1.4f&&
+    (command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||
+     command.desiredFunctionType==e_FunctionType_HighPass||command.desiredFunctionType==e_FunctionType_Shot)){
+    // A kicking wind-up can turn the pelvis relative to the running gait.
+    // Admit that bounded entry turn without relaxing velocity, trajectory,
+    // approach or final contact tests. Native candidates remain available.
+    for(unsigned id=0;id<anims->GetAnimations().size();++id){auto *clip=anims->GetAnim(id);
+      if(clip->GetVariable("pes_action")=="true"&&StringToFunctionType(clip->GetAnimType())==query.functionType&&
+         FloatToEnumVelocity(clip->GetIncomingVelocity())==spatialState.enumVelocity&&
+         std::fabs(ModulateIntoRange(-pi,pi,clip->GetIncomingBodyAngle()-spatialState.relBodyAngleNonquantized))<.7f&&
+         std::find(dataSet.begin(),dataSet.end(),int(id))==dataSet.end())dataSet.push_back(int(id));
+    }
+  }
   if(airborneAction){
     // Reuse the native raised-foot preparation with the requested
     // pass/cross/shot outcome. Do not demand a foot-on-ground velocity bin
@@ -1744,7 +1771,7 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       Animation *anim=anims->GetAnim(id);
       return anim->GetVariable("training_dribble")=="true" ||
         (command.desiredFunctionType==e_FunctionType_Trap && anim->GetVariable("added_chest")!="true" && anim->GetVariable("generated_receipt")!="true" &&
-          anim->GetVariable("touch_bodypart")=="trunk") ||
+          anim->GetVariable("pes_action")!="true" && anim->GetVariable("touch_bodypart")=="trunk") ||
         (anim->GetVariable("training_slow_dribble")=="true" && (!preferSlowGait ||
           std::atoi(anim->GetVariable("training_walk_stretch").c_str())!=preferredWalkStretch)) ||
         (anim->GetVariable("added_chest")=="true" &&
@@ -2072,8 +2099,16 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
   if(UsesTrainingContacts() && command.desiredFunctionType==e_FunctionType_Trap)
     std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("added_chest")=="true";});
   if(UsesTrainingContacts() && command.desiredFunctionType==e_FunctionType_Trap) {
+    if(TrainingPESActionsEnabled())std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){
+      auto *clip=anims->GetAnim(id);const std::string filter=GetConfiguration()->Get("training_pes_action_filter","");
+      return clip->GetVariable("pes_action")=="true"&&clip->GetVariable("added_chest")=="true"&&
+        (filter.empty()||clip->GetVariable("pes_source_name")==filter);
+    });
     for(int id:dataSet) {
       Animation *candidate=anims->GetAnim(id);
+      const std::string filter=GetConfiguration()->Get("training_pes_action_filter","");
+      if(candidate->GetVariable("pes_action")=="true"&&(!TrainingPESActionsEnabled()||
+         (!filter.empty()&&candidate->GetVariable("pes_source_name")!=filter)))continue;
       if(candidate->GetVariable("added_chest")=="true" &&
           StartUpperReception(candidate,std::atoi(candidate->GetVariable("touchframe").c_str())))return false;
     }
@@ -2098,15 +2133,37 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     preferUserHeel=userHeel;
   }
   RankMotionMatches(dataSet,command);
-  const bool preferPesPass=UsesTrainingContacts()&&GetConfiguration()->GetBool("training_pes_shortpass",false)&&
-    command.desiredFunctionType==e_FunctionType_ShortPass&&spatialState.floatVelocity<1.4f&&
-    match->GetBall()->Predict(0).coords[2]<.27f&&match->GetBall()->GetMovement().GetLength()<2.5f&&
-    command.touchInfo.desiredDirection.Get2D().GetNormalized(spatialState.bodyDirectionVec).GetDotProduct(spatialState.bodyDirectionVec)>.96f&&
-    command.touchInfo.desiredPower<=.6f&&!match->IsInSetPiece();
+  auto pesEligible=[&](int id){
+    const auto *clip=anims->GetAnim(id);
+    if(clip->GetVariable("pes_action")!="true"||!UsesTrainingContacts()||!TrainingPESActionsEnabled()||match->IsInSetPiece())return false;
+    const std::string filter=GetConfiguration()->Get("training_pes_action_filter","");
+    if(!filter.empty()&&clip->GetVariable("pes_source_name")!=filter)return false;
+    auto number=[&](const char *key,float fallback){const auto value=clip->GetVariable(key);return value.empty()?fallback:float(std::atof(value.c_str()));};
+    if(spatialState.floatVelocity<number("pes_min_speed",0)||spatialState.floatVelocity>number("pes_max_speed",1.4f))return false;
+    const bool receiving=clip->GetVariable("pes_role")=="reception"&&
+      (command.desiredFunctionType==e_FunctionType_Trap||
+       (command.desiredFunctionType==e_FunctionType_BallControl&&freeArrival&&match->GetLastTouchPlayer()!=player&&
+        match->GetBall()->GetMovement().GetLength()>1.f));
+    if(clip->GetVariable("pes_role")=="reception"&&!receiving)return false;
+    const bool head=clip->GetVariable("touch_bodypart")=="head";
+    const bool high=receiving||head;
+    const int at=std::atoi(clip->GetVariable("touchframe").c_str());
+    const float height=(high?match->GetBall()->Predict(std::max(0,at)*10):match->GetBall()->Predict(0)).coords[2]-spatialState.position.coords[2];
+    const float heightScale=clip->GetVariable("pes_role").empty()?1.f:zMultiplier;
+    if(height<number("pes_min_height",0)*heightScale||height>number("pes_max_height",.27f)*heightScale)return false;
+    if(receiving){
+      const Vector3 incoming=(match->GetBall()->Predict(0)-spatialState.position).Get2D().GetNormalized(spatialState.bodyDirectionVec);
+      return receptionPlan.valid&&incoming.GetDotProduct(spatialState.bodyDirectionVec)>.5f;
+    }
+    if(!high&&match->GetBall()->GetMovement().GetLength()>number("pes_max_ball_speed",2.5f))return false;
+    if(command.touchInfo.desiredPower<number("pes_min_power",0)||command.touchInfo.desiredPower>number("pes_max_power",.6f))return false;
+    Vector3 target=GetVectorFromString(clip->GetVariable("balldirection")).Get2D().GetNormalized(Vector3(0,-1,0));
+    target=target.GetRotated2D(spatialState.angle);
+    return target.GetDotProduct(command.touchInfo.desiredDirection.Get2D().GetNormalized(spatialState.bodyDirectionVec))>.94f;
+  };
   dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){
-    return anims->GetAnim(id)->GetVariable("pes_action")=="true"&&!preferPesPass;
+    return anims->GetAnim(id)->GetVariable("pes_action")=="true"&&!pesEligible(id);
   }),dataSet.end());
-  if(preferPesPass)std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("pes_action")=="true";});
   if(activeReach){
     // Prefer an intentional airborne reception before waiting for a ground
     // ball. Final acceptance still uses each candidate's real contact skin.
@@ -2123,6 +2180,8 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
       };return cost(a)<cost(b);
     });
   }
+  if(TrainingPESActionsEnabled())
+    std::stable_partition(dataSet.begin(),dataSet.end(),pesEligible);
   // The feature ranker otherwise prefers the exactly matching idle pose at
   // walking speeds. Apply the continuous-walk preference after ranking,
   // within the direction/body candidates the native selector already kept.
@@ -2319,6 +2378,27 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
 
     *previousAnim = *currentAnim;
 
+    const bool oldPes=currentAnim->anim->GetVariable("pes_action")=="true";
+    const bool newPes=anims->GetAnim(selectedAnimID)->GetVariable("pes_action")=="true";
+    const int oldEntryFrames=currentAnim->touchFrame>0?std::min(16,std::max(6,currentAnim->touchFrame-2)):16;
+    const bool carry=pesEntryValid&&currentAnim->frameNum<oldEntryFrames;
+    const bool pesUpper=upperReceptionClip&&upperReceptionClip->GetVariable("pes_action")=="true";
+    const bool turning=command.useDesiredMovement&&command.desiredVelocityFloat>.2f&&
+      command.desiredDirection.GetDotProduct(spatialState.bodyDirectionVec)<.85f;
+    const bool releaseUpper=pesUpper&&((upperReceptionTouchMade&&
+      (command.desiredFunctionType!=e_FunctionType_Movement||turning))||
+      (command.desiredFunctionType>=e_FunctionType_ShortPass&&command.desiredFunctionType<=e_FunctionType_Shot)||
+      command.desiredFunctionType==e_FunctionType_Trip||command.desiredFunctionType==e_FunctionType_Sliding);
+    pesEntryValid=newPes||oldPes||carry||releaseUpper;
+    if(pesEntryValid){
+      std::copy(contactLocal,contactLocal+13,pesEntryLocal);
+      pesEntryHeight=contactPositions[0].coords[2];
+    }
+    if(releaseUpper){upperReceptionClip=nullptr;upperReceptionWeight=upperReceptionArmWeight=0;}
+    if(pesEntryValid&&GetConfiguration()->GetBool("training_telemetry",false))
+      printf("PES_POSE_TRANSITION t=%lu actor=%d frames=%d from_pes=%d upper_release=%d name=%s\n",
+        match->GetActualTime_ms(),player->GetID(),touchFrame_tmp>0?std::min(16,std::max(6,touchFrame_tmp-2)):16,
+        oldPes?1:0,releaseUpper?1:0,anims->GetAnim(selectedAnimID)->GetName().c_str());
     currentAnim->anim = anims->GetAnim(selectedAnimID);
     currentAnim->id = selectedAnimID;
     currentAnim->functionType = command.desiredFunctionType;//StringToFunctionType(currentAnim->anim->GetVariable("type"));
@@ -2753,6 +2833,10 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
       // ball height
 
       float ballDistanceZ = fabs(actionSmuggleVec3D.coords[2]);
+      if(anim->GetVariable("pes_action")=="true"&&player->GetExternalController()&&
+         GetConfiguration()->GetBool("training_pes_diagnostics",false)&&match->GetActualTime_ms()%100==0)
+        printf("PES_ACTION_PLAN t=%lu source=%s function=%d stage=height frame=%d ball=%.5f marker=%.5f error=%.5f\n",
+          match->GetActualTime_ms(),anim->GetName().c_str(),int(functionType),animTouchFrame,ballPos.coords[2],animBallPos.coords[2],ballDistanceZ);
       if(match->GetBallRetainer()==player)ballDistanceZ=0;
       if(UsesTrainingContacts() && anim->GetVariable("added_chest")=="true" && GetConfiguration()->GetBool("training_telemetry",false))
         printf("TRAINING_CHEST_PLAN t=%lu mode=%s height_error=%.5f ball_z=%.5f marker_z=%.5f\n",match->GetActualTime_ms(),
@@ -2879,7 +2963,8 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
           const bool originalStrike=(part.find("foot")!=std::string::npos || part=="head") &&
               (functionType==e_FunctionType_BallControl || functionType==e_FunctionType_ShortPass || functionType==e_FunctionType_LongPass ||
                functionType==e_FunctionType_HighPass || functionType==e_FunctionType_Shot);
-          const bool bodyReception=!part.empty()&&(functionType==e_FunctionType_Trap||functionType==e_FunctionType_Deflect);
+          const bool bodyReception=!part.empty()&&(functionType==e_FunctionType_Trap||functionType==e_FunctionType_Deflect||
+            anim->GetVariable("pes_role")=="reception");
           if(UsesTrainingContacts() && match->GetBallRetainer()!=player && (originalStrike||bodyReception)) {
             Quaternion local[13],global[13];Vector3 joints[13],surface;
             Vector3 root=spatialState.position+positions_ret.at(animTouchFrame)+

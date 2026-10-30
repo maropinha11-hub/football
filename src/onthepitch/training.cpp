@@ -8,10 +8,20 @@
 
 namespace {
 void turfInput(Match *match){
+  auto &input=UserEventManager::GetInstance();
+  const bool up=input.ConsumeKeyPress(SDLK_HOME),down=input.ConsumeKeyPress(SDLK_END),automatic=input.ConsumeKeyPress(SDLK_DELETE);
+  if(up||down||automatic){
+    float height=GetConfiguration()->GetReal("training_delivery_height",0);
+    height=automatic?0.f:clamp((height>.01f?height:1.3f)+(up?.1f:-.1f),.15f,2.6f);
+    GetConfiguration()->Set("training_delivery_height",height);
+    match->SpamMessage(automatic?"Altura automatica do passe | F5/F6: enviar":
+      "Altura do passe: "+real_to_str(height)+" m | F5/F6: enviar | Delete: automatico",5000);
+  }
   if(UserEventManager::GetInstance().ConsumeKeyPress(SDLK_INSERT)){
-    const bool enabled=!GetConfiguration()->GetBool("training_pes_shortpass",false);
-    GetConfiguration()->SetBool("training_pes_shortpass",enabled);
-    match->SpamMessage(enabled?"Passe curto PES: teste ligado | Insert: comparar":"Passe curto original | Insert: comparar",5000);
+    const bool enabled=!TrainingPESActionsEnabled();
+    GetConfiguration()->SetBool("training_pes_actions",enabled);
+    GetConfiguration()->SetBool("training_pes_shortpass",false);
+    match->SpamMessage(enabled?"Banco de animacoes PES ligado | Insert: comparar":"Banco de animacoes original | Insert: comparar",5000);
     printf("PES_ACTION_TOGGLE t=%lu enabled=%d\n",match->GetActualTime_ms(),enabled?1:0);
   }
   if(!UserEventManager::GetInstance().ConsumeKeyPress(SDLK_g))return;
@@ -201,6 +211,9 @@ void Match::LaunchTrainingBall(int delivery) {
   }
   if(heightFixture)target=root+forward*(heightFixture==4?-.18f:.23f)+
     forward.GetRotated2D(.5f*pi)*(heightFixture<3?-.12f:0.f)+Vector3(0,0,heightFixture==1?.43f:heightFixture==2?.74f:1.43f);
+  const float deliveryHeight=GetConfiguration()->GetReal("training_delivery_height",0);
+  if(delivery>0&&!heightFixture&&deliveryHeight>=.15f&&deliveryHeight<=2.6f)
+    target.coords[2]=root.coords[2]+deliveryHeight;
   const float roughness=GetConfiguration()->GetBool("training_turf_enabled",true)?GetConfiguration()->GetReal("training_turf_roughness",.65f):0;
   if(delivery==0)target.coords[2]+=football_turf::sample(target.coords[0],target.coords[1],roughness).height;
   const Vector3 origin=heightFixture==4?root-forward*.18f+Vector3(0,0,2.45f):heightFixture?root+forward*4.f+Vector3(0,0,heightFixture==1?.25f:heightFixture==2?.68f:3.2f):

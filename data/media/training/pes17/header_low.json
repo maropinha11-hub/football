@@ -1,0 +1,55 @@
+{
+  "name": "head_y06_0_0_000",
+  "source_sha256": "efff6c8605365a10a6ba89e12167001650375e3a958fae5f6fc462c3768417a6",
+  "output_sha256": "a7ffa5f5e532c229523a64bc13377d0cd581c21476292909398e9c42e1c27ffc",
+  "samples": 181,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "root_velocity_entry_exit_fitted": true,
+  "action": "shortpass",
+  "role": "header",
+  "contact_bodypart": "head",
+  "contact_frame_100hz": 34,
+  "contact_annotation_origin": "Football integration; original PES ball timing not recovered",
+  "maximum_direction_error": 4.897021271334583e-07,
+  "maximum_bone_length_error": 1.6776460309841923e-07,
+  "maximum_10ms_joint_angle_change": 0.20824509588441265,
+  "root_height_range": [
+    0.8421114521026611,
+    1.0004851953983307
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file0.mtar",
+  "source_name_hash": "bcff1669",
+  "source_id": 46881,
+  "rights": "Retargeted user-supplied PES motion; rights remain with original owners. See NOTICE.",
+  "recipe": {
+    "file": "header_low",
+    "source": "head_y06_0_0_000",
+    "action": "shortpass",
+    "role": "header",
+    "contact": 34,
+    "point": [
+      -0.15,
+      -0.65,
+      1.45
+    ],
+    "height": [
+      1.2,
+      1.7
+    ],
+    "speed": [
+      0,
+      2
+    ],
+    "power": [
+      0,
+      1
+    ],
+    "root_motion": true
+  }
+}

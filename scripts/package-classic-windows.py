@@ -26,9 +26,16 @@ def package():
             {row['scenario']for row in validation['rendered']}!={'camera','central','airborne','actions'} or
             any(row['result']!='passed'for row in validation['rendered'])):
         raise RuntimeError('Final executable has no matching successful gameplay validation')
-    pes=validation.get('pes_shortpass',{})
-    if(pes.get('result')!='passed' or pes.get('executable_sha256')!=validation['binaries']['native_sha256']):
-        raise RuntimeError('Retargeted pass has no matching successful contact/fallback validation')
+    bank_path=ROOT/'data/media/training/pes17/catalog.json'
+    bank=json.loads(bank_path.read_text())
+    bank_hash=hashlib.sha256(bank_path.read_bytes()).hexdigest()
+    pes=validation.get('pes_action_bank',{})
+    if(pes.get('result')!='passed' or pes.get('executable_sha256')!=validation['binaries']['native_sha256'] or
+       pes.get('bank_catalog_sha256')!=bank_hash or pes.get('views')!=2):
+        raise RuntimeError('Action bank has no matching successful two-view contact/fallback validation')
+    for row in bank['actions']:
+        if hashlib.sha256((bank_path.parent/row['file']).read_bytes()).hexdigest()!=row['sha256']:
+            raise RuntimeError('Action bank changed after validation: '+row['file'])
     ARTIFACT.parent.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='football-classic-',dir=ARTIFACT.parent)as temporary:
         stage=Path(temporary)/'football-classico-windows-x86_64';stage.mkdir()
@@ -57,11 +64,14 @@ def package():
         for source,name in [('LICENSE','LICENSE'),('NOTICE','NOTICE'),('third_party/bullet/LICENSE.txt','BULLET-LICENSE.txt'),
                             ('third_party/motion-matching/LICENSE.txt','MOTION-MATCHING-LICENSE.txt'),
                             ('docs/TREINO-CLASSICO.md','LEIA-PRIMEIRO.txt'),
+                            ('docs/BANCO-ANIMACOES-PES2017.md','ANIMACOES-PES2017.txt'),
+                            ('docs/pes2017-action-bank-validation.json','pes2017-action-bank-validation.json'),
                             ('docs/animation-gameplay-validation.json','animation-gameplay-validation.json')]:
             shutil.copy2(ROOT/source,stage/name)
         files=sorted(p for p in stage.rglob('*')if p.is_file())
         manifest=dict(mode='native_animation_and_ik',ragdoll=False,cloth_dynamics=False,
-                      original_pes_gameplay_integrated=False,retargeted_pes2017_actions=1,
+                      original_pes_gameplay_integrated=False,retargeted_pes2017_actions=bank['source_clips'],
+                      pes2017_runtime_candidates=bank['runtime_candidates'],pes2017_bank_sha256=bank_hash,
                       pes_action_enabled_by_default=False,
                       files={p.relative_to(stage).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()for p in files})
         (stage/'RELEASE.json').write_text(json.dumps(manifest,indent=2)+'\n')

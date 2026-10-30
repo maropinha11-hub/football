@@ -1,0 +1,5242 @@
+{
+  "date": "2026-10-30",
+  "result": "passed",
+  "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
+  "bank_catalog_sha256": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db",
+  "source_clips": 21,
+  "runtime_candidates": 37,
+  "checks": 179,
+  "views": [
+    {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "the complete curated bank loads with native fallbacks retained",
+          "result": "passed",
+          "evidence": {
+            "expected": 37,
+            "loaded": 37
+          }
+        },
+        {
+          "check": "mirrored candidates own independent event maps with identical timing",
+          "result": "passed",
+          "evidence": {
+            "pairs": 10
+          }
+        },
+        {
+          "check": "owned forward dribbling retains the approved native gait",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1310",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel_close.anim",
+              "frames": "31",
+              "previous_frame": "25",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "1740",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "13",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "2200",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "2660",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "3120",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        {
+          "check": "forward_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 4200,
+            "end_ms": 5900,
+            "contacts": [
+              {
+                "t": "4690",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1230",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "4690",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "4400",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "8",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "forward_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "forward_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 50,
+            "pes_intervals": 308,
+            "peak_pes_joint_speed_rad_s": 11.525380735187872,
+            "peak_all_joint_speed_rad_s": 11.525380735187872,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "forward_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.7298606704372297
+          }
+        },
+        {
+          "check": "left_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 7600,
+            "end_ms": 9400,
+            "contacts": [
+              {
+                "t": "8100",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1124",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "8100",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.29797",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "7720",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "20",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "7810",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045",
+                "frames": "143",
+                "previous_frame": "9",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "left_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "left_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 51,
+            "pes_intervals": 315,
+            "peak_pes_joint_speed_rad_s": 12.448127651627251,
+            "peak_all_joint_speed_rad_s": 12.448127651627251,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "left_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.5265686632268674
+          }
+        },
+        {
+          "check": "right_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 11100,
+            "end_ms": 12900,
+            "contacts": [
+              {
+                "t": "11610",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1144",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "11610",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "left_foot",
+                "power": "0.31743",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "1"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "11200",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim_mirror",
+                "frames": "37",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "11320",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045_mirror",
+                "frames": "143",
+                "previous_frame": "12",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "right_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "right_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 52,
+            "pes_intervals": 357,
+            "peak_pes_joint_speed_rad_s": 11.722095518825585,
+            "peak_all_joint_speed_rad_s": 11.722095518825585,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "right_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.4732031133734247
+          }
+        },
+        {
+          "check": "lateral_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 14600,
+            "end_ms": 16600,
+            "contacts": [
+              {
+                "t": "15350",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1127",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "15350",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "14710",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/090.anim",
+                "frames": "45",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "15060",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045",
+                "frames": "143",
+                "previous_frame": "16",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "lateral_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "lateral_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 58,
+            "pes_intervals": 315,
+            "peak_pes_joint_speed_rad_s": 12.056071337712009,
+            "peak_all_joint_speed_rad_s": 12.056071337712009,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "lateral_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.52760365761723
+          }
+        },
+        {
+          "check": "strong_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 18300,
+            "end_ms": 20800,
+            "contacts": [
+              {
+                "t": "19610",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "19220",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/pass/idle/000.anim",
+                "frames": "82",
+                "previous_frame": "1",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "strong_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "strong_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 74,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 9.255476744603746,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "strong_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.745912717112472
+          }
+        },
+        {
+          "check": "weak_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 22500,
+            "end_ms": 24300,
+            "contacts": [
+              {
+                "t": "23090",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "23090",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "0.49763",
+                "name": "kick_long_0_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "22700",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_0_0_instep_y0_000",
+                "frames": "184",
+                "previous_frame": "23",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "weak_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "weak_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 51,
+            "pes_intervals": 315,
+            "peak_pes_joint_speed_rad_s": 21.92395999587038,
+            "peak_all_joint_speed_rad_s": 21.92395999587038,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "weak_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.164622225701288
+          }
+        },
+        {
+          "check": "instep_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 26000,
+            "end_ms": 28400,
+            "contacts": [
+              {
+                "t": "26910",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "26910",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "1.00000",
+                "name": "kick_long_0_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "26520",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_0_0_instep_y0_000",
+                "frames": "184",
+                "previous_frame": "1",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "instep_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "instep_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 64,
+            "pes_intervals": 350,
+            "peak_pes_joint_speed_rad_s": 20.574985209863165,
+            "peak_all_joint_speed_rad_s": 20.574985209863165,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "instep_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.091143328421081
+          }
+        },
+        {
+          "check": "diagonal_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 30100,
+            "end_ms": 32200,
+            "contacts": [
+              {
+                "t": "30900",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1182",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "30500",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "13",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "30620",
+                "function": "8",
+                "contact_frame": "28",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/shot_idle_020_inside.anim_mirror",
+                "frames": "65",
+                "previous_frame": "12",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "diagonal_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "diagonal_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 60,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 16.062196262643965,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "diagonal_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.3680794285665336
+          }
+        },
+        {
+          "check": "cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 33900,
+            "end_ms": 36200,
+            "contacts": [
+              {
+                "t": "34700",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1147",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "34700",
+                "actor": "10",
+                "frame": "38",
+                "planned": "38",
+                "part": "right_foot",
+                "power": "0.33294",
+                "name": "kick_mid_0_0_infront_y0_000",
+                "function": "6",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "34320",
+                "function": "6",
+                "contact_frame": "38",
+                "added_chest": "0",
+                "name": "pes17/kick_mid_0_0_infront_y0_000",
+                "frames": "233",
+                "previous_frame": "24",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 64,
+            "pes_intervals": 364,
+            "peak_pes_joint_speed_rad_s": 21.513665336521502,
+            "peak_all_joint_speed_rad_s": 21.513665336521502,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 1.1423240958677183
+          }
+        },
+        {
+          "check": "diagonal_cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 37900,
+            "end_ms": 39900,
+            "contacts": [
+              {
+                "t": "38690",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1192",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "38690",
+                "actor": "10",
+                "frame": "38",
+                "planned": "38",
+                "part": "right_foot",
+                "power": "0.34261",
+                "name": "kick_mid_0_0_infront_y0_045",
+                "function": "6",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "38220",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "38310",
+                "function": "6",
+                "contact_frame": "38",
+                "added_chest": "0",
+                "name": "pes17/kick_mid_0_0_infront_y0_045",
+                "frames": "247",
+                "previous_frame": "9",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "diagonal_cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "diagonal_cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 57,
+            "pes_intervals": 315,
+            "peak_pes_joint_speed_rad_s": 18.96598575007805,
+            "peak_all_joint_speed_rad_s": 18.96598575007805,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "diagonal_cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 0.6535608617412766
+          }
+        },
+        {
+          "check": "central_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 41600,
+            "end_ms": 43600,
+            "contacts": [
+              {
+                "t": "42330",
+                "part": "left_foot",
+                "function": "3",
+                "z": "0.1311",
+                "actor": "10"
+              },
+              {
+                "t": "42780",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.1080",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "41790",
+                "function": "3",
+                "contact_frame": "49",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D045_IB135.anim_mirror",
+                "frames": "75",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "42170",
+                "function": "3",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/trap/idle/135_IB000_accel_right.anim_mirror",
+                "frames": "48",
+                "previous_frame": "38",
+                "previous_frames": "75",
+                "heel": "0"
+              },
+              {
+                "t": "42660",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+                "frames": "41",
+                "previous_frame": "2",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "central_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "central_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 57,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 25.258447130584837,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "central_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 1.9131139459007662
+          }
+        },
+        {
+          "check": "instep_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 45300,
+            "end_ms": 47000,
+            "contacts": [
+              {
+                "t": "45710",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.5032",
+                "actor": "10"
+              },
+              {
+                "t": "46930",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1694",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "45710",
+                "actor": "10",
+                "frame": "25",
+                "planned": "25",
+                "part": "right_foot",
+                "power": "0.00000",
+                "name": "trap_0_0_000_y2_instep_ver12",
+                "function": "2",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "45350",
+                "function": "3",
+                "contact_frame": "42",
+                "added_chest": "0",
+                "name": "physical/receive/foot/81",
+                "frames": "71",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "45460",
+                "function": "2",
+                "contact_frame": "25",
+                "added_chest": "0",
+                "name": "pes17/trap_0_0_000_y2_instep_ver12_control",
+                "frames": "110",
+                "previous_frame": "11",
+                "previous_frames": "71",
+                "heel": "0"
+              },
+              {
+                "t": "46680",
+                "function": "3",
+                "contact_frame": "49",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D045_IB135.anim",
+                "frames": "75",
+                "previous_frame": "13",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "46750",
+                "function": "2",
+                "contact_frame": "18",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/045_decel_decel.anim",
+                "frames": "40",
+                "previous_frame": "7",
+                "previous_frames": "75",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "instep_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "instep_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 44,
+            "pes_intervals": 266,
+            "peak_pes_joint_speed_rad_s": 12.074847326725095,
+            "peak_all_joint_speed_rad_s": 12.074847326725095,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "instep_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 1.7550356178721844
+          }
+        },
+        {
+          "check": "thigh_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 48700,
+            "end_ms": 50600,
+            "contacts": [
+              {
+                "t": "49110",
+                "part": "right_upperleg",
+                "function": "3",
+                "z": "0.8563",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "49110",
+                "actor": "10",
+                "frame": "34",
+                "planned": "34",
+                "part": "right_upperleg",
+                "power": "0.00000",
+                "name": "trap_0_0_000_y4_thigh_ver01",
+                "function": "3",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "48770",
+                "function": "3",
+                "contact_frame": "34",
+                "added_chest": "0",
+                "name": "pes17/trap_0_0_000_y4_thigh_ver01",
+                "frames": "110",
+                "previous_frame": "2",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "49950",
+                "function": "3",
+                "contact_frame": "21",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/lastditch/000_D000_IB090_decel_decel_lastditch.anim",
+                "frames": "65",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "50060",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+                "frames": "41",
+                "previous_frame": "11",
+                "previous_frames": "65",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "thigh_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "thigh_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 52,
+            "pes_intervals": 273,
+            "peak_pes_joint_speed_rad_s": 14.394911202305499,
+            "peak_all_joint_speed_rad_s": 14.394911202305499,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "thigh_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.5498700046621425
+          }
+        },
+        {
+          "check": "chest_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 52300,
+            "end_ms": 54200,
+            "contacts": [
+              {
+                "t": "52790",
+                "part": "trunk",
+                "function": "3",
+                "z": "1.2815",
+                "upper_layer": "1",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "52790",
+                "actor": "10",
+                "frame": "27",
+                "planned": "27",
+                "part": "trunk",
+                "power": "0",
+                "name": "trap_0_0_000_y6_breast_ver03",
+                "function": "3",
+                "mirrored": "0",
+                "upper_layer": "1"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "52900",
+                "function": "3",
+                "contact_frame": "40",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D135_IB135_decel_decel.anim_mirror",
+                "frames": "60",
+                "previous_frame": "27",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "54000",
+                "function": "3",
+                "contact_frame": "37",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D000_IB090.anim",
+                "frames": "55",
+                "previous_frame": "8",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "chest_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "chest_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 50,
+            "pes_intervals": 78,
+            "peak_pes_joint_speed_rad_s": 15.212580560601227,
+            "peak_all_joint_speed_rad_s": 18.06966164750365,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "chest_receive leaves the approved leg and root motion independent of the torso layer",
+          "result": "passed",
+          "evidence": {
+            "samples": 9,
+            "maximum_leg_error": 0.0
+          }
+        },
+        {
+          "check": "chest_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.421279795893072
+          }
+        },
+        {
+          "check": "jumping_header completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 55900,
+            "end_ms": 58500,
+            "contacts": [
+              {
+                "t": "57140",
+                "part": "head",
+                "function": "8",
+                "z": "2.2490",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "57140",
+                "actor": "10",
+                "frame": "53",
+                "planned": "53",
+                "part": "head",
+                "power": "0.01000",
+                "name": "head_y09_0_0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "56610",
+                "function": "8",
+                "contact_frame": "53",
+                "added_chest": "0",
+                "name": "pes17/head_y09_0_0_000",
+                "frames": "184",
+                "previous_frame": "26",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "jumping_header never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "jumping_header keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 68,
+            "pes_intervals": 357,
+            "peak_pes_joint_speed_rad_s": 15.951125396475717,
+            "peak_all_joint_speed_rad_s": 15.951125396475717,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "jumping_header returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.7590949693694853
+          }
+        },
+        {
+          "check": "running_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 60200,
+            "end_ms": 62900,
+            "contacts": [
+              {
+                "t": "61670",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1181",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "61670",
+                "actor": "10",
+                "frame": "27",
+                "planned": "30",
+                "part": "right_foot",
+                "power": "0.43369",
+                "name": "kick_short_3_0_inside_y0_000",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "60210",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "18",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "60560",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "61400",
+                "function": "4",
+                "contact_frame": "30",
+                "added_chest": "0",
+                "name": "pes17/kick_short_3_0_inside_y0_000",
+                "frames": "166",
+                "previous_frame": "2",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "running_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 80,
+            "pes_intervals": 308,
+            "peak_pes_joint_speed_rad_s": 20.74854099127079,
+            "peak_all_joint_speed_rad_s": 25.70934387538522,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.101971652030368
+          }
+        },
+        {
+          "check": "running_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 64600,
+            "end_ms": 67800,
+            "contacts": [
+              {
+                "t": "66310",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1556",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "66310",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "0.82736",
+                "name": "kick_long_3_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "64610",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "64960",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "65820",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/sprint/000.anim",
+                "frames": "28",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "65920",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_3_0_instep_y0_000",
+                "frames": "158",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "running_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 94,
+            "pes_intervals": 371,
+            "peak_pes_joint_speed_rad_s": 24.134355794499808,
+            "peak_all_joint_speed_rad_s": 33.316404607303895,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.0556845088680302
+          }
+        },
+        {
+          "check": "running_cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 69500,
+            "end_ms": 72200,
+            "contacts": [
+              {
+                "t": "70950",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1148",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "69520",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "13",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "69880",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "6",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "70740",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/sprint/000.anim",
+                "frames": "28",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "70820",
+                "function": "6",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/highpass_walk_000_inside.anim",
+                "frames": "44",
+                "previous_frame": "8",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "running_cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 80,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 32.98556879077315,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.4055173663891924
+          }
+        },
+        {
+          "check": "actual contacts exercise multiple distinct source movements",
+          "result": "passed",
+          "evidence": [
+            "head_y09_0_0_000",
+            "kick_long_0_0_instep_y0_000",
+            "kick_long_3_0_instep_y0_000",
+            "kick_mid_0_0_infront_y0_000",
+            "kick_mid_0_0_infront_y0_045",
+            "kick_short_0_0_inside_y0_000",
+            "kick_short_0_0_inside_y0_045",
+            "kick_short_3_0_inside_y0_000",
+            "trap_0_0_000_y2_instep_ver12",
+            "trap_0_0_000_y4_thigh_ver01",
+            "trap_0_0_000_y6_breast_ver03"
+          ]
+        },
+        {
+          "check": "Insert restores the original action bank",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "74400",
+              "function": "8",
+              "contact_frame": "28",
+              "added_chest": "0",
+              "name": "media/animations/shot/idle/020.anim_mirror",
+              "frames": "65",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        },
+        {
+          "check": "the animation bank did not change during validation",
+          "result": "passed",
+          "evidence": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db"
+        }
+      ],
+      "scenarios": {
+        "forward_pass": {
+          "start_ms": 4200,
+          "end_ms": 5900,
+          "contacts": [
+            {
+              "t": "4690",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1230",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "4690",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_000",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "4400",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "8",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "left_pass": {
+          "start_ms": 7600,
+          "end_ms": 9400,
+          "contacts": [
+            {
+              "t": "8100",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1124",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "8100",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.29797",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "7720",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "20",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "7810",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045",
+              "frames": "143",
+              "previous_frame": "9",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "right_pass": {
+          "start_ms": 11100,
+          "end_ms": 12900,
+          "contacts": [
+            {
+              "t": "11610",
+              "part": "left_foot",
+              "function": "4",
+              "z": "0.1144",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "11610",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "left_foot",
+              "power": "0.31743",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "1"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "11200",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim_mirror",
+              "frames": "37",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "11320",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045_mirror",
+              "frames": "143",
+              "previous_frame": "12",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "lateral_pass": {
+          "start_ms": 14600,
+          "end_ms": 16600,
+          "contacts": [
+            {
+              "t": "15350",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1127",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "15350",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "14710",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/090.anim",
+              "frames": "45",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "15060",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045",
+              "frames": "143",
+              "previous_frame": "16",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "strong_pass": {
+          "start_ms": 18300,
+          "end_ms": 20800,
+          "contacts": [
+            {
+              "t": "19610",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "19220",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/pass/idle/000.anim",
+              "frames": "82",
+              "previous_frame": "1",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "weak_shot": {
+          "start_ms": 22500,
+          "end_ms": 24300,
+          "contacts": [
+            {
+              "t": "23090",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "23090",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "0.49763",
+              "name": "kick_long_0_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "22700",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_0_0_instep_y0_000",
+              "frames": "184",
+              "previous_frame": "23",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "instep_shot": {
+          "start_ms": 26000,
+          "end_ms": 28400,
+          "contacts": [
+            {
+              "t": "26910",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "26910",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "1.00000",
+              "name": "kick_long_0_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "26520",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_0_0_instep_y0_000",
+              "frames": "184",
+              "previous_frame": "1",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "diagonal_shot": {
+          "start_ms": 30100,
+          "end_ms": 32200,
+          "contacts": [
+            {
+              "t": "30900",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1182",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "30500",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "13",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "30620",
+              "function": "8",
+              "contact_frame": "28",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/shot_idle_020_inside.anim_mirror",
+              "frames": "65",
+              "previous_frame": "12",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "cross": {
+          "start_ms": 33900,
+          "end_ms": 36200,
+          "contacts": [
+            {
+              "t": "34700",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1147",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "34700",
+              "actor": "10",
+              "frame": "38",
+              "planned": "38",
+              "part": "right_foot",
+              "power": "0.33294",
+              "name": "kick_mid_0_0_infront_y0_000",
+              "function": "6",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "34320",
+              "function": "6",
+              "contact_frame": "38",
+              "added_chest": "0",
+              "name": "pes17/kick_mid_0_0_infront_y0_000",
+              "frames": "233",
+              "previous_frame": "24",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "diagonal_cross": {
+          "start_ms": 37900,
+          "end_ms": 39900,
+          "contacts": [
+            {
+              "t": "38690",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1192",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "38690",
+              "actor": "10",
+              "frame": "38",
+              "planned": "38",
+              "part": "right_foot",
+              "power": "0.34261",
+              "name": "kick_mid_0_0_infront_y0_045",
+              "function": "6",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "38220",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "38310",
+              "function": "6",
+              "contact_frame": "38",
+              "added_chest": "0",
+              "name": "pes17/kick_mid_0_0_infront_y0_045",
+              "frames": "247",
+              "previous_frame": "9",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "central_receive": {
+          "start_ms": 41600,
+          "end_ms": 43600,
+          "contacts": [
+            {
+              "t": "42330",
+              "part": "left_foot",
+              "function": "3",
+              "z": "0.1311",
+              "actor": "10"
+            },
+            {
+              "t": "42780",
+              "part": "right_foot",
+              "function": "2",
+              "z": "0.1080",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "41790",
+              "function": "3",
+              "contact_frame": "49",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D045_IB135.anim_mirror",
+              "frames": "75",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "42170",
+              "function": "3",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/trap/idle/135_IB000_accel_right.anim_mirror",
+              "frames": "48",
+              "previous_frame": "38",
+              "previous_frames": "75",
+              "heel": "0"
+            },
+            {
+              "t": "42660",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "2",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "instep_receive": {
+          "start_ms": 45300,
+          "end_ms": 47000,
+          "contacts": [
+            {
+              "t": "45710",
+              "part": "right_foot",
+              "function": "2",
+              "z": "0.5032",
+              "actor": "10"
+            },
+            {
+              "t": "46930",
+              "part": "left_foot",
+              "function": "2",
+              "z": "0.1694",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "45710",
+              "actor": "10",
+              "frame": "25",
+              "planned": "25",
+              "part": "right_foot",
+              "power": "0.00000",
+              "name": "trap_0_0_000_y2_instep_ver12",
+              "function": "2",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "45350",
+              "function": "3",
+              "contact_frame": "42",
+              "added_chest": "0",
+              "name": "physical/receive/foot/81",
+              "frames": "71",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "45460",
+              "function": "2",
+              "contact_frame": "25",
+              "added_chest": "0",
+              "name": "pes17/trap_0_0_000_y2_instep_ver12_control",
+              "frames": "110",
+              "previous_frame": "11",
+              "previous_frames": "71",
+              "heel": "0"
+            },
+            {
+              "t": "46680",
+              "function": "3",
+              "contact_frame": "49",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D045_IB135.anim",
+              "frames": "75",
+              "previous_frame": "13",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "46750",
+              "function": "2",
+              "contact_frame": "18",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/045_decel_decel.anim",
+              "frames": "40",
+              "previous_frame": "7",
+              "previous_frames": "75",
+              "heel": "0"
+            }
+          ]
+        },
+        "thigh_receive": {
+          "start_ms": 48700,
+          "end_ms": 50600,
+          "contacts": [
+            {
+              "t": "49110",
+              "part": "right_upperleg",
+              "function": "3",
+              "z": "0.8563",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "49110",
+              "actor": "10",
+              "frame": "34",
+              "planned": "34",
+              "part": "right_upperleg",
+              "power": "0.00000",
+              "name": "trap_0_0_000_y4_thigh_ver01",
+              "function": "3",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "48770",
+              "function": "3",
+              "contact_frame": "34",
+              "added_chest": "0",
+              "name": "pes17/trap_0_0_000_y4_thigh_ver01",
+              "frames": "110",
+              "previous_frame": "2",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "49950",
+              "function": "3",
+              "contact_frame": "21",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/lastditch/000_D000_IB090_decel_decel_lastditch.anim",
+              "frames": "65",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "50060",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "11",
+              "previous_frames": "65",
+              "heel": "0"
+            }
+          ]
+        },
+        "chest_receive": {
+          "start_ms": 52300,
+          "end_ms": 54200,
+          "contacts": [
+            {
+              "t": "52790",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2815",
+              "upper_layer": "1",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "52790",
+              "actor": "10",
+              "frame": "27",
+              "planned": "27",
+              "part": "trunk",
+              "power": "0",
+              "name": "trap_0_0_000_y6_breast_ver03",
+              "function": "3",
+              "mirrored": "0",
+              "upper_layer": "1"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "52900",
+              "function": "3",
+              "contact_frame": "40",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D135_IB135_decel_decel.anim_mirror",
+              "frames": "60",
+              "previous_frame": "27",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "54000",
+              "function": "3",
+              "contact_frame": "37",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D000_IB090.anim",
+              "frames": "55",
+              "previous_frame": "8",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "jumping_header": {
+          "start_ms": 55900,
+          "end_ms": 58500,
+          "contacts": [
+            {
+              "t": "57140",
+              "part": "head",
+              "function": "8",
+              "z": "2.2490",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "57140",
+              "actor": "10",
+              "frame": "53",
+              "planned": "53",
+              "part": "head",
+              "power": "0.01000",
+              "name": "head_y09_0_0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "56610",
+              "function": "8",
+              "contact_frame": "53",
+              "added_chest": "0",
+              "name": "pes17/head_y09_0_0_000",
+              "frames": "184",
+              "previous_frame": "26",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_pass": {
+          "start_ms": 60200,
+          "end_ms": 62900,
+          "contacts": [
+            {
+              "t": "61670",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1181",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "61670",
+              "actor": "10",
+              "frame": "27",
+              "planned": "30",
+              "part": "right_foot",
+              "power": "0.43369",
+              "name": "kick_short_3_0_inside_y0_000",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "60210",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "60560",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "61400",
+              "function": "4",
+              "contact_frame": "30",
+              "added_chest": "0",
+              "name": "pes17/kick_short_3_0_inside_y0_000",
+              "frames": "166",
+              "previous_frame": "2",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_shot": {
+          "start_ms": 64600,
+          "end_ms": 67800,
+          "contacts": [
+            {
+              "t": "66310",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1556",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "66310",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "0.82736",
+              "name": "kick_long_3_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "64610",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "64960",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "65820",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/sprint/000.anim",
+              "frames": "28",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "65920",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_3_0_instep_y0_000",
+              "frames": "158",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_cross": {
+          "start_ms": 69500,
+          "end_ms": 72200,
+          "contacts": [
+            {
+              "t": "70950",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1148",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "69520",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "13",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "69880",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "6",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "70740",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/sprint/000.anim",
+              "frames": "28",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "70820",
+              "function": "6",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/highpass_walk_000_inside.anim",
+              "frames": "44",
+              "previous_frame": "8",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        }
+      },
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
+      "bank_catalog_sha256": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db",
+      "source_clips": 21,
+      "runtime_candidates": 37,
+      "scope": "Rendered Linux/SDL Xbox input. Automatic hybrid selection; original PES selector, timing and physics not recovered.",
+      "observed_source_clips": [
+        "head_y09_0_0_000",
+        "kick_long_0_0_instep_y0_000",
+        "kick_long_3_0_instep_y0_000",
+        "kick_mid_0_0_infront_y0_000",
+        "kick_mid_0_0_infront_y0_045",
+        "kick_short_0_0_inside_y0_000",
+        "kick_short_0_0_inside_y0_045",
+        "kick_short_3_0_inside_y0_000",
+        "trap_0_0_000_y2_instep_ver12",
+        "trap_0_0_000_y4_thigh_ver01",
+        "trap_0_0_000_y6_breast_ver03"
+      ],
+      "camera": "external"
+    },
+    {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "the complete curated bank loads with native fallbacks retained",
+          "result": "passed",
+          "evidence": {
+            "expected": 37,
+            "loaded": 37
+          }
+        },
+        {
+          "check": "mirrored candidates own independent event maps with identical timing",
+          "result": "passed",
+          "evidence": {
+            "pairs": 10
+          }
+        },
+        {
+          "check": "owned forward dribbling retains the approved native gait",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "1320",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel_close.anim",
+              "frames": "31",
+              "previous_frame": "15",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "1740",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "12",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "2200",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "2660",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000.anim",
+              "frames": "29",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "3120",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        {
+          "check": "forward_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 4200,
+            "end_ms": 5900,
+            "contacts": [
+              {
+                "t": "4690",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1230",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "4690",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "4400",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "14",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "forward_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "forward_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 33,
+            "pes_intervals": 203,
+            "peak_pes_joint_speed_rad_s": 11.086002248700803,
+            "peak_all_joint_speed_rad_s": 11.086002248700803,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "forward_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 33,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "forward_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.7281999999999997
+          }
+        },
+        {
+          "check": "left_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 7600,
+            "end_ms": 9400,
+            "contacts": [
+              {
+                "t": "8110",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1123",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "8110",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.29797",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "7700",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "7820",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045",
+                "frames": "143",
+                "previous_frame": "12",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "left_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "left_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 35,
+            "pes_intervals": 217,
+            "peak_pes_joint_speed_rad_s": 9.256939924032,
+            "peak_all_joint_speed_rad_s": 9.256939924032,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "left_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 35,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "left_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.4806961220592902
+          }
+        },
+        {
+          "check": "right_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 11100,
+            "end_ms": 12800,
+            "contacts": [
+              {
+                "t": "11590",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1124",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "11590",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "left_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "1"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "11210",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim_mirror",
+                "frames": "37",
+                "previous_frame": "22",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "11300",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045_mirror",
+                "frames": "143",
+                "previous_frame": "9",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "right_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "right_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 34,
+            "pes_intervals": 210,
+            "peak_pes_joint_speed_rad_s": 10.556891839226822,
+            "peak_all_joint_speed_rad_s": 10.556891839226822,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "right_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 34,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "right_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.197914052004764
+          }
+        },
+        {
+          "check": "lateral_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 14500,
+            "end_ms": 16400,
+            "contacts": [
+              {
+                "t": "15190",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1126",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "15190",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_045",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "14620",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/090.anim",
+                "frames": "45",
+                "previous_frame": "18",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "14900",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_045",
+                "frames": "143",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "lateral_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "lateral_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 35,
+            "pes_intervals": 196,
+            "peak_pes_joint_speed_rad_s": 9.681085405030476,
+            "peak_all_joint_speed_rad_s": 9.681085405030476,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "lateral_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 34,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "lateral_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.2248694388660204
+          }
+        },
+        {
+          "check": "strong_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 18100,
+            "end_ms": 20700,
+            "contacts": [
+              {
+                "t": "19400",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "19010",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/pass/idle/000.anim",
+                "frames": "82",
+                "previous_frame": "8",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "strong_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "strong_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 51,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 7.767884107635699,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "strong_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 51,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "strong_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.1625
+          }
+        },
+        {
+          "check": "weak_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 22400,
+            "end_ms": 24200,
+            "contacts": [
+              {
+                "t": "23010",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "23010",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "0.55516",
+                "name": "kick_long_0_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "22620",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_0_0_instep_y0_000",
+                "frames": "184",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "weak_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "weak_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 35,
+            "pes_intervals": 217,
+            "peak_pes_joint_speed_rad_s": 24.91147227478372,
+            "peak_all_joint_speed_rad_s": 24.91147227478372,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "weak_shot keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 35,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "weak_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.104726457286077
+          }
+        },
+        {
+          "check": "instep_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 25900,
+            "end_ms": 28200,
+            "contacts": [
+              {
+                "t": "26820",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "26820",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "1.00000",
+                "name": "kick_long_0_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "26430",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_0_0_instep_y0_000",
+                "frames": "184",
+                "previous_frame": "11",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "instep_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "instep_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 45,
+            "pes_intervals": 245,
+            "peak_pes_joint_speed_rad_s": 18.95296802395943,
+            "peak_all_joint_speed_rad_s": 18.95296802395943,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "instep_shot keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 45,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "instep_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.6712329812279574
+          }
+        },
+        {
+          "check": "diagonal_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 29900,
+            "end_ms": 31900,
+            "contacts": [
+              {
+                "t": "30690",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1181",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "30300",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "14",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "30410",
+                "function": "8",
+                "contact_frame": "28",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/shot_idle_020_inside.anim_mirror",
+                "frames": "65",
+                "previous_frame": "11",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "diagonal_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "diagonal_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 40,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 13.968758871665248,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "diagonal_shot keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 40,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "diagonal_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.0563753183696796
+          }
+        },
+        {
+          "check": "cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 33600,
+            "end_ms": 35800,
+            "contacts": [
+              {
+                "t": "34380",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1147",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "34380",
+                "actor": "10",
+                "frame": "38",
+                "planned": "38",
+                "part": "right_foot",
+                "power": "0.34261",
+                "name": "kick_mid_0_0_infront_y0_000",
+                "function": "6",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "34000",
+                "function": "6",
+                "contact_frame": "38",
+                "added_chest": "0",
+                "name": "pes17/kick_mid_0_0_infront_y0_000",
+                "frames": "233",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 43,
+            "pes_intervals": 245,
+            "peak_pes_joint_speed_rad_s": 16.80571471398195,
+            "peak_all_joint_speed_rad_s": 16.80571471398195,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "cross keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 43,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 0.9022586602521474
+          }
+        },
+        {
+          "check": "diagonal_cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 37500,
+            "end_ms": 39500,
+            "contacts": [
+              {
+                "t": "38280",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1192",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "38280",
+                "actor": "10",
+                "frame": "38",
+                "planned": "38",
+                "part": "right_foot",
+                "power": "0.33294",
+                "name": "kick_mid_0_0_infront_y0_045",
+                "function": "6",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "37810",
+                "function": "2",
+                "contact_frame": "16",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/045.anim",
+                "frames": "37",
+                "previous_frame": "18",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "37900",
+                "function": "6",
+                "contact_frame": "38",
+                "added_chest": "0",
+                "name": "pes17/kick_mid_0_0_infront_y0_045",
+                "frames": "247",
+                "previous_frame": "9",
+                "previous_frames": "37",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "diagonal_cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "diagonal_cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 40,
+            "pes_intervals": 224,
+            "peak_pes_joint_speed_rad_s": 13.237287875067382,
+            "peak_all_joint_speed_rad_s": 13.237287875067382,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "diagonal_cross keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 39,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "diagonal_cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 0.6304783977266787
+          }
+        },
+        {
+          "check": "central_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 41200,
+            "end_ms": 43200,
+            "contacts": [
+              {
+                "t": "41930",
+                "part": "left_foot",
+                "function": "3",
+                "z": "0.1151",
+                "actor": "10"
+              },
+              {
+                "t": "42380",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.1140",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "41410",
+                "function": "3",
+                "contact_frame": "49",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D045_IB135.anim_mirror",
+                "frames": "75",
+                "previous_frame": "11",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "41800",
+                "function": "3",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/trap/idle/090_IB000_accel_optional.anim_mirror",
+                "frames": "37",
+                "previous_frame": "39",
+                "previous_frames": "75",
+                "heel": "0"
+              },
+              {
+                "t": "42260",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+                "frames": "41",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "central_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "central_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 37,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 18.11443813908575,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "central_receive keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 37,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "central_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.718760042740073
+          }
+        },
+        {
+          "check": "instep_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 44900,
+            "end_ms": 46500,
+            "contacts": [
+              {
+                "t": "45300",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.5032",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "45300",
+                "actor": "10",
+                "frame": "25",
+                "planned": "25",
+                "part": "right_foot",
+                "power": "0.00000",
+                "name": "trap_0_0_000_y2_instep_ver12",
+                "function": "2",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "44940",
+                "function": "3",
+                "contact_frame": "42",
+                "added_chest": "0",
+                "name": "physical/receive/foot/81",
+                "frames": "71",
+                "previous_frame": "15",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "45050",
+                "function": "2",
+                "contact_frame": "25",
+                "added_chest": "0",
+                "name": "pes17/trap_0_0_000_y2_instep_ver12_control",
+                "frames": "110",
+                "previous_frame": "11",
+                "previous_frames": "71",
+                "heel": "0"
+              },
+              {
+                "t": "46250",
+                "function": "3",
+                "contact_frame": "31",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/000_D000_IB000_decel_decel.anim_mirror",
+                "frames": "53",
+                "previous_frame": "11",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "instep_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "instep_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 31,
+            "pes_intervals": 189,
+            "peak_pes_joint_speed_rad_s": 10.307453977684586,
+            "peak_all_joint_speed_rad_s": 11.937020657656658,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "instep_receive keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 31,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "instep_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.2371526315575547
+          }
+        },
+        {
+          "check": "thigh_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 48200,
+            "end_ms": 49900,
+            "contacts": [
+              {
+                "t": "48590",
+                "part": "right_upperleg",
+                "function": "3",
+                "z": "0.8563",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "48590",
+                "actor": "10",
+                "frame": "34",
+                "planned": "34",
+                "part": "right_upperleg",
+                "power": "0.00000",
+                "name": "trap_0_0_000_y4_thigh_ver01",
+                "function": "3",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "48250",
+                "function": "3",
+                "contact_frame": "34",
+                "added_chest": "0",
+                "name": "pes17/trap_0_0_000_y4_thigh_ver01",
+                "frames": "110",
+                "previous_frame": "13",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "49430",
+                "function": "3",
+                "contact_frame": "21",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/lastditch/000_D000_IB090_decel_decel_lastditch.anim",
+                "frames": "65",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "49540",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+                "frames": "41",
+                "previous_frame": "11",
+                "previous_frames": "65",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "thigh_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "thigh_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 34,
+            "pes_intervals": 203,
+            "peak_pes_joint_speed_rad_s": 10.449986011146954,
+            "peak_all_joint_speed_rad_s": 12.022954264406001,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "thigh_receive keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 34,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "thigh_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.053391990884891
+          }
+        },
+        {
+          "check": "chest_receive completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 51600,
+            "end_ms": 53500,
+            "contacts": [
+              {
+                "t": "52070",
+                "part": "trunk",
+                "function": "3",
+                "z": "1.2815",
+                "upper_layer": "1",
+                "actor": "10"
+              },
+              {
+                "t": "52420",
+                "part": "left_upperleg",
+                "function": "3",
+                "z": "0.7290",
+                "actor": "10"
+              },
+              {
+                "t": "53220",
+                "part": "left_foot",
+                "function": "3",
+                "z": "0.4666",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "52070",
+                "actor": "10",
+                "frame": "27",
+                "planned": "27",
+                "part": "trunk",
+                "power": "0",
+                "name": "trap_0_0_000_y6_breast_ver03",
+                "function": "3",
+                "mirrored": "0",
+                "upper_layer": "1"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "52170",
+                "function": "3",
+                "contact_frame": "28",
+                "added_chest": "0",
+                "name": "physical/receive/thigh/182",
+                "frames": "57",
+                "previous_frame": "11",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "52890",
+                "function": "3",
+                "contact_frame": "34",
+                "added_chest": "0",
+                "name": "media/animations/trap/walk/highballs/000_control_highball_decel.anim",
+                "frames": "58",
+                "previous_frame": "16",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "chest_receive never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "chest_receive keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 37,
+            "pes_intervals": 60,
+            "peak_pes_joint_speed_rad_s": 6.70322079127724,
+            "peak_all_joint_speed_rad_s": 16.161639312250305,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "chest_receive leaves the approved leg and root motion independent of the torso layer",
+          "result": "passed",
+          "evidence": {
+            "samples": 7,
+            "maximum_leg_error": 0.0
+          }
+        },
+        {
+          "check": "chest_receive keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 37,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "chest_receive returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.7978714355738363
+          }
+        },
+        {
+          "check": "jumping_header completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 55200,
+            "end_ms": 57700,
+            "contacts": [
+              {
+                "t": "56390",
+                "part": "head",
+                "function": "8",
+                "z": "2.2490",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "56390",
+                "actor": "10",
+                "frame": "53",
+                "planned": "53",
+                "part": "head",
+                "power": "0.01000",
+                "name": "head_y09_0_0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "55860",
+                "function": "8",
+                "contact_frame": "53",
+                "added_chest": "0",
+                "name": "pes17/head_y09_0_0_000",
+                "frames": "184",
+                "previous_frame": "12",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "jumping_header never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "jumping_header keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 46,
+            "pes_intervals": 231,
+            "peak_pes_joint_speed_rad_s": 13.237676479644472,
+            "peak_all_joint_speed_rad_s": 13.237676479644472,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "jumping_header keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 46,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "jumping_header returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.687267059672336
+          }
+        },
+        {
+          "check": "running_pass completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 59400,
+            "end_ms": 62100,
+            "contacts": [
+              {
+                "t": "60870",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1210",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "60870",
+                "actor": "10",
+                "frame": "27",
+                "planned": "30",
+                "part": "right_foot",
+                "power": "0.47230",
+                "name": "kick_short_3_0_inside_y0_000",
+                "function": "4",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "59420",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "21",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "59780",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "6",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "60600",
+                "function": "4",
+                "contact_frame": "30",
+                "added_chest": "0",
+                "name": "pes17/kick_short_3_0_inside_y0_000",
+                "frames": "166",
+                "previous_frame": "27",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_pass never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "running_pass keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 53,
+            "pes_intervals": 203,
+            "peak_pes_joint_speed_rad_s": 19.754076138783873,
+            "peak_all_joint_speed_rad_s": 19.754076138783873,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_pass keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 53,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "running_pass returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.1016616514378237
+          }
+        },
+        {
+          "check": "running_shot completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 63800,
+            "end_ms": 66900,
+            "contacts": [
+              {
+                "t": "65490",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1549",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "65490",
+                "actor": "10",
+                "frame": "39",
+                "planned": "39",
+                "part": "right_foot",
+                "power": "0.82736",
+                "name": "kick_long_3_0_instep_y0_000",
+                "function": "8",
+                "mirrored": "0"
+              }
+            ],
+            "native_sources": [
+              {
+                "t": "63810",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "17",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "64160",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "65020",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/sprint/000.anim",
+                "frames": "28",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "65100",
+                "function": "8",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "pes17/kick_long_3_0_instep_y0_000",
+                "frames": "158",
+                "previous_frame": "8",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_shot never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 1,
+            "matched_skin_contacts": 1
+          }
+        },
+        {
+          "check": "running_shot keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 62,
+            "pes_intervals": 252,
+            "peak_pes_joint_speed_rad_s": 15.99921770864385,
+            "peak_all_joint_speed_rad_s": 22.761745625909462,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_shot keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 62,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999998
+          }
+        },
+        {
+          "check": "running_shot returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.7278808331743547
+          }
+        },
+        {
+          "check": "running_cross completes the requested real-ball action",
+          "result": "passed",
+          "evidence": {
+            "start_ms": 68600,
+            "end_ms": 71300,
+            "contacts": [
+              {
+                "t": "70050",
+                "part": "right_foot",
+                "function": "6",
+                "z": "0.1227",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "native_sources": [
+              {
+                "t": "68610",
+                "function": "2",
+                "contact_frame": "9",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/idle/000_accel.anim",
+                "frames": "31",
+                "previous_frame": "11",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "68960",
+                "function": "2",
+                "contact_frame": "17",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/walk/000_accel.anim",
+                "frames": "29",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "69820",
+                "function": "2",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/ballcontrol/sprint/000.anim",
+                "frames": "28",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              },
+              {
+                "t": "69920",
+                "function": "6",
+                "contact_frame": "13",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/highpass_walk_000_inside.anim",
+                "frames": "44",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "running_cross never substitutes an annotation for actual skin contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": 0,
+            "matched_skin_contacts": 0
+          }
+        },
+        {
+          "check": "running_cross keeps the rendered skeleton finite through transitions",
+          "result": "passed",
+          "evidence": {
+            "finite": true,
+            "samples": 54,
+            "pes_intervals": 0,
+            "peak_pes_joint_speed_rad_s": 0,
+            "peak_all_joint_speed_rad_s": 24.76861743613224,
+            "scope": "Full PES clips plus 160 ms exit; torso only for upper reception; native fallback rates recorded separately."
+          }
+        },
+        {
+          "check": "running_cross keeps the first-person lens on the rendered head",
+          "result": "passed",
+          "evidence": {
+            "samples": 54,
+            "maximum_anchor_error": 0.0,
+            "minimum_alignment": 0.9999999
+          }
+        },
+        {
+          "check": "running_cross returns control to the approved locomotion",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.41
+          }
+        },
+        {
+          "check": "actual contacts exercise multiple distinct source movements",
+          "result": "passed",
+          "evidence": [
+            "head_y09_0_0_000",
+            "kick_long_0_0_instep_y0_000",
+            "kick_long_3_0_instep_y0_000",
+            "kick_mid_0_0_infront_y0_000",
+            "kick_mid_0_0_infront_y0_045",
+            "kick_short_0_0_inside_y0_000",
+            "kick_short_0_0_inside_y0_045",
+            "kick_short_3_0_inside_y0_000",
+            "trap_0_0_000_y2_instep_ver12",
+            "trap_0_0_000_y4_thigh_ver01",
+            "trap_0_0_000_y6_breast_ver03"
+          ]
+        },
+        {
+          "check": "the lens stays outside the rendered torso during the new actions",
+          "result": "passed",
+          "evidence": {
+            "samples": 1404
+          }
+        },
+        {
+          "check": "Insert restores the original action bank",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "73500",
+              "function": "8",
+              "contact_frame": "28",
+              "added_chest": "0",
+              "name": "media/animations/shot/idle/020.anim_mirror",
+              "frames": "65",
+              "previous_frame": "27",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        },
+        {
+          "check": "the animation bank did not change during validation",
+          "result": "passed",
+          "evidence": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db"
+        }
+      ],
+      "scenarios": {
+        "forward_pass": {
+          "start_ms": 4200,
+          "end_ms": 5900,
+          "contacts": [
+            {
+              "t": "4690",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1230",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "4690",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_000",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "4400",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "14",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "left_pass": {
+          "start_ms": 7600,
+          "end_ms": 9400,
+          "contacts": [
+            {
+              "t": "8110",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1123",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "8110",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.29797",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "7700",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "7820",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045",
+              "frames": "143",
+              "previous_frame": "12",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "right_pass": {
+          "start_ms": 11100,
+          "end_ms": 12800,
+          "contacts": [
+            {
+              "t": "11590",
+              "part": "left_foot",
+              "function": "4",
+              "z": "0.1124",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "11590",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "left_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "1"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "11210",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim_mirror",
+              "frames": "37",
+              "previous_frame": "22",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "11300",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045_mirror",
+              "frames": "143",
+              "previous_frame": "9",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "lateral_pass": {
+          "start_ms": 14500,
+          "end_ms": 16400,
+          "contacts": [
+            {
+              "t": "15190",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1126",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "15190",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_045",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "14620",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/090.anim",
+              "frames": "45",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "14900",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_045",
+              "frames": "143",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "strong_pass": {
+          "start_ms": 18100,
+          "end_ms": 20700,
+          "contacts": [
+            {
+              "t": "19400",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "19010",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/pass/idle/000.anim",
+              "frames": "82",
+              "previous_frame": "8",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "weak_shot": {
+          "start_ms": 22400,
+          "end_ms": 24200,
+          "contacts": [
+            {
+              "t": "23010",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "23010",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "0.55516",
+              "name": "kick_long_0_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "22620",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_0_0_instep_y0_000",
+              "frames": "184",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "instep_shot": {
+          "start_ms": 25900,
+          "end_ms": 28200,
+          "contacts": [
+            {
+              "t": "26820",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "26820",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "1.00000",
+              "name": "kick_long_0_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "26430",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_0_0_instep_y0_000",
+              "frames": "184",
+              "previous_frame": "11",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "diagonal_shot": {
+          "start_ms": 29900,
+          "end_ms": 31900,
+          "contacts": [
+            {
+              "t": "30690",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1181",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "30300",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "14",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "30410",
+              "function": "8",
+              "contact_frame": "28",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/shot_idle_020_inside.anim_mirror",
+              "frames": "65",
+              "previous_frame": "11",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "cross": {
+          "start_ms": 33600,
+          "end_ms": 35800,
+          "contacts": [
+            {
+              "t": "34380",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1147",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "34380",
+              "actor": "10",
+              "frame": "38",
+              "planned": "38",
+              "part": "right_foot",
+              "power": "0.34261",
+              "name": "kick_mid_0_0_infront_y0_000",
+              "function": "6",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "34000",
+              "function": "6",
+              "contact_frame": "38",
+              "added_chest": "0",
+              "name": "pes17/kick_mid_0_0_infront_y0_000",
+              "frames": "233",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "diagonal_cross": {
+          "start_ms": 37500,
+          "end_ms": 39500,
+          "contacts": [
+            {
+              "t": "38280",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1192",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "38280",
+              "actor": "10",
+              "frame": "38",
+              "planned": "38",
+              "part": "right_foot",
+              "power": "0.33294",
+              "name": "kick_mid_0_0_infront_y0_045",
+              "function": "6",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "37810",
+              "function": "2",
+              "contact_frame": "16",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/045.anim",
+              "frames": "37",
+              "previous_frame": "18",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "37900",
+              "function": "6",
+              "contact_frame": "38",
+              "added_chest": "0",
+              "name": "pes17/kick_mid_0_0_infront_y0_045",
+              "frames": "247",
+              "previous_frame": "9",
+              "previous_frames": "37",
+              "heel": "0"
+            }
+          ]
+        },
+        "central_receive": {
+          "start_ms": 41200,
+          "end_ms": 43200,
+          "contacts": [
+            {
+              "t": "41930",
+              "part": "left_foot",
+              "function": "3",
+              "z": "0.1151",
+              "actor": "10"
+            },
+            {
+              "t": "42380",
+              "part": "right_foot",
+              "function": "2",
+              "z": "0.1140",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "41410",
+              "function": "3",
+              "contact_frame": "49",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D045_IB135.anim_mirror",
+              "frames": "75",
+              "previous_frame": "11",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "41800",
+              "function": "3",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/trap/idle/090_IB000_accel_optional.anim_mirror",
+              "frames": "37",
+              "previous_frame": "39",
+              "previous_frames": "75",
+              "heel": "0"
+            },
+            {
+              "t": "42260",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "instep_receive": {
+          "start_ms": 44900,
+          "end_ms": 46500,
+          "contacts": [
+            {
+              "t": "45300",
+              "part": "right_foot",
+              "function": "2",
+              "z": "0.5032",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "45300",
+              "actor": "10",
+              "frame": "25",
+              "planned": "25",
+              "part": "right_foot",
+              "power": "0.00000",
+              "name": "trap_0_0_000_y2_instep_ver12",
+              "function": "2",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "44940",
+              "function": "3",
+              "contact_frame": "42",
+              "added_chest": "0",
+              "name": "physical/receive/foot/81",
+              "frames": "71",
+              "previous_frame": "15",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "45050",
+              "function": "2",
+              "contact_frame": "25",
+              "added_chest": "0",
+              "name": "pes17/trap_0_0_000_y2_instep_ver12_control",
+              "frames": "110",
+              "previous_frame": "11",
+              "previous_frames": "71",
+              "heel": "0"
+            },
+            {
+              "t": "46250",
+              "function": "3",
+              "contact_frame": "31",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/000_D000_IB000_decel_decel.anim_mirror",
+              "frames": "53",
+              "previous_frame": "11",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "thigh_receive": {
+          "start_ms": 48200,
+          "end_ms": 49900,
+          "contacts": [
+            {
+              "t": "48590",
+              "part": "right_upperleg",
+              "function": "3",
+              "z": "0.8563",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "48590",
+              "actor": "10",
+              "frame": "34",
+              "planned": "34",
+              "part": "right_upperleg",
+              "power": "0.00000",
+              "name": "trap_0_0_000_y4_thigh_ver01",
+              "function": "3",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "48250",
+              "function": "3",
+              "contact_frame": "34",
+              "added_chest": "0",
+              "name": "pes17/trap_0_0_000_y4_thigh_ver01",
+              "frames": "110",
+              "previous_frame": "13",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "49430",
+              "function": "3",
+              "contact_frame": "21",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/lastditch/000_D000_IB090_decel_decel_lastditch.anim",
+              "frames": "65",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "49540",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_decel_decel.anim_mirror",
+              "frames": "41",
+              "previous_frame": "11",
+              "previous_frames": "65",
+              "heel": "0"
+            }
+          ]
+        },
+        "chest_receive": {
+          "start_ms": 51600,
+          "end_ms": 53500,
+          "contacts": [
+            {
+              "t": "52070",
+              "part": "trunk",
+              "function": "3",
+              "z": "1.2815",
+              "upper_layer": "1",
+              "actor": "10"
+            },
+            {
+              "t": "52420",
+              "part": "left_upperleg",
+              "function": "3",
+              "z": "0.7290",
+              "actor": "10"
+            },
+            {
+              "t": "53220",
+              "part": "left_foot",
+              "function": "3",
+              "z": "0.4666",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "52070",
+              "actor": "10",
+              "frame": "27",
+              "planned": "27",
+              "part": "trunk",
+              "power": "0",
+              "name": "trap_0_0_000_y6_breast_ver03",
+              "function": "3",
+              "mirrored": "0",
+              "upper_layer": "1"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "52170",
+              "function": "3",
+              "contact_frame": "28",
+              "added_chest": "0",
+              "name": "physical/receive/thigh/182",
+              "frames": "57",
+              "previous_frame": "11",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "52890",
+              "function": "3",
+              "contact_frame": "34",
+              "added_chest": "0",
+              "name": "media/animations/trap/walk/highballs/000_control_highball_decel.anim",
+              "frames": "58",
+              "previous_frame": "16",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "jumping_header": {
+          "start_ms": 55200,
+          "end_ms": 57700,
+          "contacts": [
+            {
+              "t": "56390",
+              "part": "head",
+              "function": "8",
+              "z": "2.2490",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "56390",
+              "actor": "10",
+              "frame": "53",
+              "planned": "53",
+              "part": "head",
+              "power": "0.01000",
+              "name": "head_y09_0_0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "55860",
+              "function": "8",
+              "contact_frame": "53",
+              "added_chest": "0",
+              "name": "pes17/head_y09_0_0_000",
+              "frames": "184",
+              "previous_frame": "12",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_pass": {
+          "start_ms": 59400,
+          "end_ms": 62100,
+          "contacts": [
+            {
+              "t": "60870",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1210",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "60870",
+              "actor": "10",
+              "frame": "27",
+              "planned": "30",
+              "part": "right_foot",
+              "power": "0.47230",
+              "name": "kick_short_3_0_inside_y0_000",
+              "function": "4",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "59420",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "21",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "59780",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "6",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "60600",
+              "function": "4",
+              "contact_frame": "30",
+              "added_chest": "0",
+              "name": "pes17/kick_short_3_0_inside_y0_000",
+              "frames": "166",
+              "previous_frame": "27",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_shot": {
+          "start_ms": 63800,
+          "end_ms": 66900,
+          "contacts": [
+            {
+              "t": "65490",
+              "part": "right_foot",
+              "function": "8",
+              "z": "0.1549",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "65490",
+              "actor": "10",
+              "frame": "39",
+              "planned": "39",
+              "part": "right_foot",
+              "power": "0.82736",
+              "name": "kick_long_3_0_instep_y0_000",
+              "function": "8",
+              "mirrored": "0"
+            }
+          ],
+          "native_sources": [
+            {
+              "t": "63810",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "17",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "64160",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "65020",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/sprint/000.anim",
+              "frames": "28",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "65100",
+              "function": "8",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "pes17/kick_long_3_0_instep_y0_000",
+              "frames": "158",
+              "previous_frame": "8",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_cross": {
+          "start_ms": 68600,
+          "end_ms": 71300,
+          "contacts": [
+            {
+              "t": "70050",
+              "part": "right_foot",
+              "function": "6",
+              "z": "0.1227",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "native_sources": [
+            {
+              "t": "68610",
+              "function": "2",
+              "contact_frame": "9",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/idle/000_accel.anim",
+              "frames": "31",
+              "previous_frame": "11",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "68960",
+              "function": "2",
+              "contact_frame": "17",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/walk/000_accel.anim",
+              "frames": "29",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "69820",
+              "function": "2",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/ballcontrol/sprint/000.anim",
+              "frames": "28",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            },
+            {
+              "t": "69920",
+              "function": "6",
+              "contact_frame": "13",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/highpass_walk_000_inside.anim",
+              "frames": "44",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        }
+      },
+      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
+      "bank_catalog_sha256": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db",
+      "source_clips": 21,
+      "runtime_candidates": 37,
+      "scope": "Rendered Linux/SDL Xbox input. Automatic hybrid selection; original PES selector, timing and physics not recovered.",
+      "observed_source_clips": [
+        "head_y09_0_0_000",
+        "kick_long_0_0_instep_y0_000",
+        "kick_long_3_0_instep_y0_000",
+        "kick_mid_0_0_infront_y0_000",
+        "kick_mid_0_0_infront_y0_045",
+        "kick_short_0_0_inside_y0_000",
+        "kick_short_0_0_inside_y0_045",
+        "kick_short_3_0_inside_y0_000",
+        "trap_0_0_000_y2_instep_ver12",
+        "trap_0_0_000_y4_thigh_ver01",
+        "trap_0_0_000_y6_breast_ver03"
+      ],
+      "camera": "firstperson"
+    }
+  ],
+  "actual_contact_sources": [
+    "head_y09_0_0_000",
+    "kick_long_0_0_instep_y0_000",
+    "kick_long_3_0_instep_y0_000",
+    "kick_mid_0_0_infront_y0_000",
+    "kick_mid_0_0_infront_y0_045",
+    "kick_short_0_0_inside_y0_000",
+    "kick_short_0_0_inside_y0_045",
+    "kick_short_3_0_inside_y0_000",
+    "trap_0_0_000_y2_instep_ver12",
+    "trap_0_0_000_y4_thigh_ver01",
+    "trap_0_0_000_y6_breast_ver03"
+  ],
+  "observed_roles": [
+    "cross",
+    "header",
+    "pass",
+    "reception",
+    "shot"
+  ],
+  "pose_validation": {
+    "result": "passed",
+    "source_clips": 21,
+    "all_keys_finite": true,
+    "fixed_native_bone_lengths": true,
+    "foot_support_checked": true,
+    "approved_pass_pose_digest_unchanged": true,
+    "fox_motion_root_rotation_90_degree_test": "passed",
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'"
+  },
+  "limitations": {
+    "windows_gui_executed": false,
+    "original_pes_selector_recovered": false,
+    "original_pes_ball_physics_integrated": false,
+    "source_fps_assumed": 30,
+    "source_angular_scale_assumed": "pi/2",
+    "comparison_with_original_game_pending": true,
+    "all_21_sources_contact_exercised": false,
+    "all_possible_ball_arrivals_proven": false,
+    "native_fallback_retained": true,
+    "scope": "Linux/X11 rendered training with virtual Xbox controller; selected transformed clips only."
+  }
+}

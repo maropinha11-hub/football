@@ -1,0 +1,445 @@
+{
+  "version": 1,
+  "source_game": "PES 2017 Windows, user-supplied dt13_win.cpk",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "contact_provenance": "Football integration annotations, not recovered original PES ball events",
+  "actions": [
+    {
+      "file": "short_pass",
+      "source": "kick_short_0_0_inside_y0_000",
+      "action": "shortpass",
+      "role": "pass",
+      "contact": 26,
+      "point": [
+        -0.01,
+        -0.39,
+        0.11
+      ],
+      "legacy": true
+    },
+    {
+      "file": "pass_diagonal",
+      "source": "kick_short_0_0_inside_y0_045",
+      "action": "shortpass",
+      "role": "pass",
+      "contact": 26,
+      "point": [
+        -0.15,
+        -0.45,
+        0.11
+      ],
+      "direction": 45,
+      "mirror": true,
+      "technique": "inside",
+      "root_motion": true,
+      "max_ball_speed": 18
+    },
+    {
+      "file": "pass_side",
+      "source": "kick_short_0_0_inside_y0_090",
+      "action": "shortpass",
+      "role": "pass",
+      "contact": 25,
+      "point": [
+        -0.28,
+        -0.4,
+        0.11
+      ],
+      "direction": 90,
+      "mirror": true,
+      "technique": "inside",
+      "root_motion": true,
+      "max_ball_speed": 18
+    },
+    {
+      "file": "shot_instep",
+      "source": "kick_long_0_0_instep_y0_000",
+      "action": "shot",
+      "role": "shot",
+      "contact": 35,
+      "point": [
+        -0.5,
+        -0.55,
+        0.11
+      ],
+      "power": [
+        0.45,
+        1
+      ],
+      "technique": "instep",
+      "root_motion": true
+    },
+    {
+      "file": "shot_placed",
+      "source": "kick_long_0_0_inside_y0_000",
+      "action": "shot",
+      "role": "shot",
+      "contact": 33,
+      "point": [
+        -0.05,
+        -0.58,
+        0.11
+      ],
+      "power": [
+        0,
+        0.45
+      ],
+      "technique": "inside",
+      "root_motion": true
+    },
+    {
+      "file": "shot_diagonal",
+      "source": "kick_long_0_0_instep_y0_045",
+      "action": "shot",
+      "role": "shot",
+      "contact": 34,
+      "point": [
+        -0.5,
+        -0.56,
+        0.11
+      ],
+      "direction": 45,
+      "power": [
+        0,
+        1
+      ],
+      "mirror": true,
+      "technique": "instep",
+      "root_motion": true
+    },
+    {
+      "file": "cross_front",
+      "source": "kick_mid_0_0_infront_y0_000",
+      "action": "highpass",
+      "role": "cross",
+      "contact": 34,
+      "point": [
+        -0.43,
+        -0.48,
+        0.11
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "technique": "instep",
+      "root_motion": true
+    },
+    {
+      "file": "cross_diagonal",
+      "source": "kick_mid_0_0_infront_y0_045",
+      "action": "highpass",
+      "role": "cross",
+      "contact": 34,
+      "point": [
+        -0.58,
+        -0.43,
+        0.11
+      ],
+      "direction": 45,
+      "power": [
+        0,
+        1
+      ],
+      "mirror": true,
+      "technique": "instep",
+      "root_motion": true
+    },
+    {
+      "file": "header_jump",
+      "source": "head_y07_shoot_0_0_000",
+      "action": "shortpass",
+      "role": "header",
+      "contact": 27,
+      "point": [
+        0,
+        -0.35,
+        2.12
+      ],
+      "height": [
+        1.7,
+        2.3
+      ],
+      "speed": [
+        0,
+        2
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "header_low",
+      "source": "head_y06_0_0_000",
+      "action": "shortpass",
+      "role": "header",
+      "contact": 34,
+      "point": [
+        -0.15,
+        -0.65,
+        1.45
+      ],
+      "height": [
+        1.2,
+        1.7
+      ],
+      "speed": [
+        0,
+        2
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "header_high",
+      "source": "head_y09_0_0_000",
+      "action": "shortpass",
+      "role": "header",
+      "contact": 47,
+      "point": [
+        0.08,
+        -0.18,
+        2.5
+      ],
+      "height": [
+        2.15,
+        2.7
+      ],
+      "speed": [
+        0,
+        2
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "receive_foot",
+      "source": "trap_0_0_000_y0_in",
+      "action": "trap",
+      "role": "reception",
+      "part": "right_foot",
+      "contact": 17,
+      "point": [
+        -0.14,
+        -0.2,
+        0.11
+      ],
+      "height": [
+        0.08,
+        0.38
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "mirror": true,
+      "root_motion": true
+    },
+    {
+      "file": "receive_instep",
+      "source": "trap_0_0_000_y2_instep_ver12",
+      "action": "trap",
+      "role": "reception",
+      "part": "right_foot",
+      "contact": 22,
+      "point": [
+        -0.14,
+        -0.62,
+        0.6
+      ],
+      "height": [
+        0.38,
+        0.73
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "mirror": true,
+      "root_motion": true
+    },
+    {
+      "file": "receive_thigh",
+      "source": "trap_0_0_000_y4_thigh_ver01",
+      "action": "trap",
+      "role": "reception",
+      "part": "right_upperleg",
+      "contact": 30,
+      "point": [
+        -0.16,
+        -0.4,
+        0.96
+      ],
+      "height": [
+        0.72,
+        1.08
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "mirror": true,
+      "root_motion": true
+    },
+    {
+      "file": "receive_belly",
+      "source": "trap_0_0_000_y4_belly_ver2",
+      "action": "trap",
+      "role": "reception",
+      "part": "trunk",
+      "contact": 23,
+      "point": [
+        0,
+        -0.3,
+        1.05
+      ],
+      "height": [
+        0.9,
+        1.2
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "receive_chest",
+      "source": "trap_0_0_000_y6_breast_ver03",
+      "action": "trap",
+      "role": "reception",
+      "part": "trunk",
+      "contact": 24,
+      "point": [
+        0,
+        -0.3,
+        1.35
+      ],
+      "height": [
+        1.15,
+        1.6
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "root_motion": true,
+      "upper_reception": true
+    },
+    {
+      "file": "receive_head",
+      "source": "trap_0_0_000_y8_head_fast",
+      "action": "trap",
+      "role": "reception",
+      "part": "head",
+      "contact": 20,
+      "point": [
+        0.05,
+        -0.15,
+        2.1
+      ],
+      "height": [
+        1.65,
+        2.3
+      ],
+      "speed": [
+        0,
+        4
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "running_pass",
+      "source": "kick_short_3_0_inside_y0_000",
+      "action": "shortpass",
+      "role": "pass",
+      "contact": 27,
+      "point": [
+        0,
+        -0.4,
+        0.11
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "speed": [
+        2,
+        8
+      ],
+      "root_motion": true
+    },
+    {
+      "file": "running_shot",
+      "source": "kick_long_3_0_instep_y0_000",
+      "action": "shot",
+      "role": "shot",
+      "contact": 35,
+      "point": [
+        0,
+        -0.4,
+        0.11
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "speed": [
+        2,
+        8
+      ],
+      "root_motion": true,
+      "technique": "instep"
+    },
+    {
+      "file": "running_cross",
+      "source": "kick_mid_3_0_infront_y0_000",
+      "action": "highpass",
+      "role": "cross",
+      "contact": 35,
+      "point": [
+        0,
+        -0.4,
+        0.11
+      ],
+      "power": [
+        0,
+        1
+      ],
+      "speed": [
+        2,
+        8
+      ],
+      "root_motion": true,
+      "technique": "instep"
+    },
+    {
+      "file": "pass_driven",
+      "source": "kick_mid_0_0_inside_y0_000",
+      "action": "shortpass",
+      "role": "pass",
+      "contact": 32,
+      "point": [
+        -0.15,
+        -0.5,
+        0.11
+      ],
+      "power": [
+        0.6,
+        1
+      ],
+      "root_motion": true,
+      "technique": "inside",
+      "max_ball_speed": 18
+    }
+  ],
+  "approved_shortpass_pose_sha256": "012a7a102064c06680b2b88d4b2d7949a73c5f36cb20ba44017439420cd7ddca"
+}

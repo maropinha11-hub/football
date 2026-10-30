@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "original_pes_gameplay_integrated": false,
+  "actions": [
+    {
+      "file": "short_pass.anim",
+      "source": "kick_short_0_0_inside_y0_000",
+      "role": "pass",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "b6cb44397cc95afc9f749b3816383fa1e380973e88f3cf2f4cec4a4c790af5ed"
+    },
+    {
+      "file": "pass_diagonal.anim",
+      "source": "kick_short_0_0_inside_y0_045",
+      "role": "pass",
+      "mirrored": true,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "56a305d7bc23a7b154df8911ed6576db8285996232f69745822fe227abc4afaf"
+    },
+    {
+      "file": "pass_side.anim",
+      "source": "kick_short_0_0_inside_y0_090",
+      "role": "pass",
+      "mirrored": true,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "ee5a9f953b74da79ea6aa4b10b84fa227b7015efd2ef12d4f4f68320dc74f7d5"
+    },
+    {
+      "file": "shot_instep.anim",
+      "source": "kick_long_0_0_instep_y0_000",
+      "role": "shot",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "81ec50d580afce287c112b517825ca60bf7914d1bed0d9294b18107a79238822"
+    },
+    {
+      "file": "shot_placed.anim",
+      "source": "kick_long_0_0_inside_y0_000",
+      "role": "shot",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "58f09ecbc166cb4d49cf638086bda40e68caade7f6abe561c31759f4a08a3e37"
+    },
+    {
+      "file": "shot_diagonal.anim",
+      "source": "kick_long_0_0_instep_y0_045",
+      "role": "shot",
+      "mirrored": true,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "dff64f5a555d8ae3c65864a5ee02456c9b930a8b23f872dd80d76c12f84f4e4e"
+    },
+    {
+      "file": "cross_front.anim",
+      "source": "kick_mid_0_0_infront_y0_000",
+      "role": "cross",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "23f37da955b68e8997e15e110bb9ac561f4c6b0a2250f386da35d26d5c7b6012"
+    },
+    {
+      "file": "cross_diagonal.anim",
+      "source": "kick_mid_0_0_infront_y0_045",
+      "role": "cross",
+      "mirrored": true,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "2127961d7361871067d2a8fa5edfbbcda59d68146c6ac5b36b6c4b4566e2f28a"
+    },
+    {
+      "file": "header_jump.anim",
+      "source": "head_y07_shoot_0_0_000",
+      "role": "header",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "1eab454c31f0db99be0d5303861d79c31ec02f0de1b13015903fc7b78af52a66"
+    },
+    {
+      "file": "header_low.anim",
+      "source": "head_y06_0_0_000",
+      "role": "header",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "a7ffa5f5e532c229523a64bc13377d0cd581c21476292909398e9c42e1c27ffc"
+    },
+    {
+      "file": "header_high.anim",
+      "source": "head_y09_0_0_000",
+      "role": "header",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "0173117e5b2add48041bbf7c7707aed775bbe57c26c5159b3b0006039448aa32"
+    },
+    {
+      "file": "receive_foot.anim",
+      "source": "trap_0_0_000_y0_in",
+      "role": "reception",
+      "mirrored": true,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "a97e13d568ddb55fe16b981116d29b199f41f7245248d584a53b472734d52823"
+    },
+    {
+      "file": "receive_instep.anim",
+      "source": "trap_0_0_000_y2_instep_ver12",
+      "role": "reception",
+      "mirrored": true,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "73e0fac3627a8d613ea3aac100621f5c1beb63dbfb0e7c27e4f063440aadc6a6"
+    },
+    {
+      "file": "receive_thigh.anim",
+      "source": "trap_0_0_000_y4_thigh_ver01",
+      "role": "reception",
+      "mirrored": true,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "5d8f169b5f6a62da415a348dff173997b50e30e3d24d8b3d5a32c58af4b269be"
+    },
+    {
+      "file": "receive_belly.anim",
+      "source": "trap_0_0_000_y4_belly_ver2",
+      "role": "reception",
+      "mirrored": false,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "5dc166dccaed3ffa76a2dc5af3e3337491e25762b510fc862b9fdc42e2e6064c"
+    },
+    {
+      "file": "receive_chest.anim",
+      "source": "trap_0_0_000_y6_breast_ver03",
+      "role": "reception",
+      "mirrored": false,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "369f9b8639841710f7a268389488791af02787025ea41b10763b09db1d8a59a4"
+    },
+    {
+      "file": "receive_head.anim",
+      "source": "trap_0_0_000_y8_head_fast",
+      "role": "reception",
+      "mirrored": false,
+      "receiving_control_variant": true,
+      "anticipation_variants": 1,
+      "sha256": "51fe33aa921dc1c0ffcd24d48a182324853a51539279aaeb0660dedfe8dcbed9"
+    },
+    {
+      "file": "running_pass.anim",
+      "source": "kick_short_3_0_inside_y0_000",
+      "role": "pass",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "ddf6422d05fc586fd7cc7d7fc0328c3d36b8c2ba855ad4a33bc9c335ab9433f9"
+    },
+    {
+      "file": "running_shot.anim",
+      "source": "kick_long_3_0_instep_y0_000",
+      "role": "shot",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "0ba6eacd4bd6de8b680ed9c6e757d16f8b0098acbc8f61731863cfd8dc6c248b"
+    },
+    {
+      "file": "running_cross.anim",
+      "source": "kick_mid_3_0_infront_y0_000",
+      "role": "cross",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "a8b143c7dcbe5e33591d94adb49e8e67b608eee8ae0643d0fead8189777c09d3"
+    },
+    {
+      "file": "pass_driven.anim",
+      "source": "kick_mid_0_0_inside_y0_000",
+      "role": "pass",
+      "mirrored": false,
+      "receiving_control_variant": false,
+      "anticipation_variants": 1,
+      "sha256": "14fbf179f3ea46b3997a7007dd7bb389beca2603b16b48728ca626d01c8f0f1a"
+    }
+  ],
+  "source_clips": 21,
+  "runtime_candidates": 37
+}

@@ -1,12 +1,17 @@
 {
   "name": "kick_short_0_0_inside_y0_000",
   "source_sha256": "c2984daeb86efd9350131a685d70f807eda48b5d1a18b118ba18e42423b5f396",
-  "output_sha256": "95a0de2d233dccd4a370c4dac22e93c032b252809884dda0b03ea6fecabdf15b",
+  "output_sha256": "b6cb44397cc95afc9f749b3816383fa1e380973e88f3cf2f4cec4a4c790af5ed",
   "samples": 124,
   "source_fps_assumed": 30.0,
   "source_game_pose_comparison_pending": true,
   "root_xy_imported": false,
   "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "root_velocity_entry_exit_fitted": false,
+  "action": "shortpass",
+  "role": "pass",
+  "contact_bodypart": "right_foot",
   "contact_frame_100hz": 26,
   "contact_annotation_origin": "Football integration; original PES ball timing not recovered",
   "maximum_direction_error": 4.626564591008432e-07,
@@ -21,5 +26,18 @@
   "source_mtar": "body_anime_file6.mtar",
   "source_name_hash": "85b2713b",
   "source_id": 49074,
-  "rights": "Retargeted user-supplied PES motion; rights remain with original owners. See NOTICE."
+  "rights": "Retargeted user-supplied PES motion; rights remain with original owners. See NOTICE.",
+  "recipe": {
+    "file": "short_pass",
+    "source": "kick_short_0_0_inside_y0_000",
+    "action": "shortpass",
+    "role": "pass",
+    "contact": 26,
+    "point": [
+      -0.01,
+      -0.39,
+      0.11
+    ],
+    "legacy": true
+  }
 }

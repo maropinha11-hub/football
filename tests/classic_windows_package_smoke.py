@@ -25,13 +25,22 @@ with zipfile.ZipFile(a.archive)as z,tempfile.TemporaryDirectory()as temporary:
     check('ball rebound uses the reviewed shared setting','"training_ground_bounce" "0.74"'in cfg)
     for filename,args in [('treino-classico.bat','--training --physical-rig'),('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),('run-training.bat','--training --physical-rig'),('jogar-partida.bat','--player-match --physical-rig'),('run-controller-test.bat','--test-controller')]:
         bat=(root/filename).read_bytes();check('portable native launcher: '+filename,b'cd /d "%~dp0"'in bat and args.encode()in bat and b'powershell'not in bat.lower())
-    check('one PES pass is available for explicit comparison without replacing native movement',
-          manifest.get('retargeted_pes2017_actions')==1 and manifest.get('pes_action_enabled_by_default')is False
-          and '"training_pes_shortpass" "false"'in cfg
+    bank_path=root/'media/training/pes17/catalog.json';bank=json.loads(bank_path.read_text())
+    check('the curated PES action bank is available without replacing native movement',
+          manifest.get('retargeted_pes2017_actions')==bank['source_clips']==21
+          and manifest.get('pes2017_runtime_candidates')==bank['runtime_candidates']==37
+          and manifest.get('pes_action_enabled_by_default')is False
+          and '"training_pes_actions" "false"'in cfg
           and b'<pes_contact_bodypart>right_foot</pes_contact_bodypart>'in(root/'media/training/pes17/short_pass.anim').read_bytes())
-    check('the retargeted pass matches its source-provenance hash',
-          json.loads((root/'media/training/pes17/short_pass.json').read_text())['output_sha256']==
-          hashlib.sha256((root/'media/training/pes17/short_pass.anim').read_bytes()).hexdigest())
+    check('every retargeted action matches its catalog and source-provenance hash',all(
+          row['sha256']==hashlib.sha256((bank_path.parent/row['file']).read_bytes()).hexdigest()==
+          json.loads((bank_path.parent/row['file']).with_suffix('.json').read_text())['output_sha256']
+          for row in bank['actions'])and len(bank['actions'])==bank['source_clips'])
+    validated=json.loads((root/'pes2017-action-bank-validation.json').read_text())
+    check('the packaged bank matches the successfully validated catalog',
+          manifest.get('pes2017_bank_sha256')==validated.get('bank_catalog_sha256')==hashlib.sha256(bank_path.read_bytes()).hexdigest()
+          and validated.get('result')=='passed'and len(validated.get('views',[]))==2
+          and all(view['result']=='passed'for view in validated['views']))
     exe=(root/'gameplayfootball.exe').read_bytes();pe=int.from_bytes(exe[60:64],'little')
     check('native executable is Windows x64',exe[:2]==b'MZ'and exe[pe:pe+4]==b'PE\0\0'and int.from_bytes(exe[pe+4:pe+6],'little')==0x8664)
     fresh=Path(temporary)/'fresh.exe';subprocess.run([os.environ.get('STRIP','x86_64-w64-mingw32-strip'),'--preserve-dates','--strip-debug','-o',str(fresh),str(a.build/'gameplayfootball.exe')],check=True)

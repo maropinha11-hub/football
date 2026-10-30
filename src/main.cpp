@@ -166,6 +166,10 @@ bool TrainingEnabled() {
   return config && config->GetBool("training_mode", false);
 }
 
+bool TrainingPESActionsEnabled() {
+  return config->GetBool("training_pes_actions",false)||config->GetBool("training_pes_shortpass",false);
+}
+
 std::string GetActiveSaveDirectory() {
   return activeSaveDirectory;
 }
@@ -319,7 +323,7 @@ int main(int argc, const char** argv) {
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
              "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
-             "  --pes-actions     Test the additional retargeted PES short pass\n"
+             "  --pes-actions     Test the additional retargeted PES action bank\n"
              "  --test-controller Test virtual SDL Xbox input and reconnection\n");
       delete config;
       return 0;
@@ -349,7 +353,7 @@ int main(int argc, const char** argv) {
   config->LoadFile(configFile.c_str());
   if (trainingOverride >= 0) config->SetBool("training_mode", trainingOverride == 1);
   if (telemetry) config->SetBool("training_telemetry", true);
-  if(pesActions)config->SetBool("training_pes_shortpass",true);
+  if(pesActions)config->SetBool("training_pes_actions",true);
   if (playerMatch) config->SetBool("player_match",true);
   if(physicalRig){config->SetBool("training_physical_rig",true);config->SetBool("training_physical_lab",true);}
   if(proceduralLab){config->SetBool("player_match",false);config->SetInt("training_body_controller",config->GetBool("training_animation_body",true)?0:1);}

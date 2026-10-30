@@ -57,9 +57,9 @@ não registra candidatos de gameplay, não decide recepções/chutes e não cria
 contatos com a bola. Sem a opção de prévia, o treino usa a gameplay aprovada;
 o teste de câmera e movimentos nativos passou novamente.
 
-## Primeiro passe funcional
+## Primeiro passe funcional — etapa anterior
 
-O pacote atual acrescenta **um** movimento: `kick_short_0_0_inside_y0_000`
+A primeira versão acrescentou **um** movimento: `kick_short_0_0_inside_y0_000`
 (hash `85b2713b`, ID 49074), um passe curto de chapa com o pé direito.
 O atalho `treinar-animacoes-pes.bat` habilita o candidato; **Insert** compara
 com o original. A condição de uso é jogador parado ou muito lento, bola baixa
@@ -76,7 +76,7 @@ A classificação genérica pela origem geométrica inicialmente escolhia a
 chuteira apoiada; a anotação explícita corrige a seleção para o pé direito que
 realiza a batida.
 
-O ZIP contém somente essa adaptação e sua proveniência. Os arquivos originais
+O ZIP daquela etapa contém somente essa adaptação e sua proveniência. Os arquivos originais
 do jogo e a biblioteca decodificada completa continuam privados. A física,
 força do passe e seleção de ações continuam sendo do Football. A hipótese de
 30 FPS e a escala angular ainda precisam de comparação com o jogo original;
@@ -93,6 +93,17 @@ não mostrar o instante exato do impacto a 100 Hz. Resultados completos:
 [pes2017-shortpass-validation.json](pes2017-shortpass-validation.json).
 A compilação Windows foi conferida como pacote; sua execução gráfica não foi
 realizada neste ambiente.
+
+## Ampliação do banco
+
+A etapa atual reúne 21 clipes de origem e conserva o passe aprovado. A
+adaptação agora aplica também a rotação geral da animação, armazenada fora da
+hierarquia dos ossos, e preserva o deslocamento de apoio das novas ações.
+Há seleção por função, direção, velocidade e altura escalada para o jogador,
+com candidatos nativos de reserva. A recepção de peito foi integrada à camada
+superior existente, com previsão do instante de chegada e transição para a
+ação seguinte. Detalhes e limites em
+[BANCO-ANIMACOES-PES2017.md](BANCO-ANIMACOES-PES2017.md).
 
 ## Reproduzir com os arquivos locais
 

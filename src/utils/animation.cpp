@@ -1118,7 +1118,10 @@ namespace blunted {
     cache_AnimType = variableCache.find("type")->second;
     if(GetVariable("starting_foot")=="left")currentFoot=e_Foot_Left;
 
-    ConvertToStartFacingForwardIfIdle();
+    // Curated Fox actions are annotated in their canonical field-facing
+    // frame. Their first pelvis twist is a wind-up, not a new aim direction.
+    // The already approved legacy pass keeps the original normalization.
+    if(GetVariable("pes_preserve_facing")!="true")ConvertToStartFacingForwardIfIdle();
 
   }
 

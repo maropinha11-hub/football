@@ -62,12 +62,17 @@
       "evidence": null
     },
     {
-      "check": "one PES pass is available for explicit comparison without replacing native movement",
+      "check": "the curated PES action bank is available without replacing native movement",
       "result": "passed",
       "evidence": null
     },
     {
-      "check": "the retargeted pass matches its source-provenance hash",
+      "check": "every retargeted action matches its catalog and source-provenance hash",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "the packaged bank matches the successfully validated catalog",
       "result": "passed",
       "evidence": null
     },
@@ -282,8 +287,8 @@
       "evidence": []
     }
   ],
-  "archive_sha256": "7308d31d911b0c0e15f175c00b042e16c6d3ba4edf917412ea2b8931fe93ffd2",
-  "executable_sha256": "21dbebe178157ffaecddd70c082347962181cefda462254ceb5e6091f07c7681",
-  "bytes": 35240184,
+  "archive_sha256": "3c92e7a0ef76d4cf8dfb68051ea502fb5d0ec7fb3cad44b076d82a38e8883368",
+  "executable_sha256": "70a3b04fdc0ba02a53882c1ab939c666748df6b257180cee893ce5deefdb9586",
+  "bytes": 36230863,
   "windows_gui_executed": false
 }

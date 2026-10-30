@@ -39,6 +39,7 @@ def main():
     try:
         with NativeTraining(a.build, a.output/'game', display=a.display, analog_pad=True, camera=a.camera,
                             config_overrides=dict(context_x=640, context_y=360, training_physical_lab='true',
+                                                  training_pes_action_filter='kick_short_0_0_inside_y0_000',
                                                   training_pes_shortpass='false' if a.launch_via_cli else 'true'),
                             extra_arguments=['--pes-actions'] if a.launch_via_cli else []) as g:
             def pad(x, y, **kw):
