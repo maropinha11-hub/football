@@ -42,6 +42,11 @@
       "evidence": null
     },
     {
+      "check": "portable native launcher: treinar-animacoes-pes.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
       "check": "portable native launcher: run-training.bat",
       "result": "passed",
       "evidence": null
@@ -53,6 +58,16 @@
     },
     {
       "check": "portable native launcher: run-controller-test.bat",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "one PES pass is available for explicit comparison without replacing native movement",
+      "result": "passed",
+      "evidence": null
+    },
+    {
+      "check": "the retargeted pass matches its source-provenance hash",
       "result": "passed",
       "evidence": null
     },
@@ -267,8 +282,8 @@
       "evidence": []
     }
   ],
-  "archive_sha256": "9d1f499a1659a9b364a86932a741a85cf04fa356d61e7296c4f96b4597d65612",
-  "executable_sha256": "fda5164ebefc5fd1e3ba4ff0b2804abaeb20dcaf6cac49e66913e354913a933d",
-  "bytes": 35196090,
+  "archive_sha256": "7308d31d911b0c0e15f175c00b042e16c6d3ba4edf917412ea2b8931fe93ffd2",
+  "executable_sha256": "21dbebe178157ffaecddd70c082347962181cefda462254ceb5e6091f07c7681",
+  "bytes": 35240184,
   "windows_gui_executed": false
 }

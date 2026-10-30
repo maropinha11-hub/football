@@ -23,8 +23,15 @@ with zipfile.ZipFile(a.archive)as z,tempfile.TemporaryDirectory()as temporary:
     cfg=(root/'training.config').read_text();check('new and direct-executable launch use the same approved settings',(root/'football.config').read_text()==cfg==Path('config/training.config').read_text())
     check('animation mode, skin contacts and no cloth are the defaults',all(x in cfg for x in ['"training_animation_body" "true"','"training_physical_rig" "true"','"training_shirt_cloth" "false"','"training_body_controller" "0"']))
     check('ball rebound uses the reviewed shared setting','"training_ground_bounce" "0.74"'in cfg)
-    for filename,args in [('treino-classico.bat','--training --physical-rig'),('run-training.bat','--training --physical-rig'),('jogar-partida.bat','--player-match --physical-rig'),('run-controller-test.bat','--test-controller')]:
+    for filename,args in [('treino-classico.bat','--training --physical-rig'),('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),('run-training.bat','--training --physical-rig'),('jogar-partida.bat','--player-match --physical-rig'),('run-controller-test.bat','--test-controller')]:
         bat=(root/filename).read_bytes();check('portable native launcher: '+filename,b'cd /d "%~dp0"'in bat and args.encode()in bat and b'powershell'not in bat.lower())
+    check('one PES pass is available for explicit comparison without replacing native movement',
+          manifest.get('retargeted_pes2017_actions')==1 and manifest.get('pes_action_enabled_by_default')is False
+          and '"training_pes_shortpass" "false"'in cfg
+          and b'<pes_contact_bodypart>right_foot</pes_contact_bodypart>'in(root/'media/training/pes17/short_pass.anim').read_bytes())
+    check('the retargeted pass matches its source-provenance hash',
+          json.loads((root/'media/training/pes17/short_pass.json').read_text())['output_sha256']==
+          hashlib.sha256((root/'media/training/pes17/short_pass.anim').read_bytes()).hexdigest())
     exe=(root/'gameplayfootball.exe').read_bytes();pe=int.from_bytes(exe[60:64],'little')
     check('native executable is Windows x64',exe[:2]==b'MZ'and exe[pe:pe+4]==b'PE\0\0'and int.from_bytes(exe[pe+4:pe+6],'little')==0x8664)
     fresh=Path(temporary)/'fresh.exe';subprocess.run([os.environ.get('STRIP','x86_64-w64-mingw32-strip'),'--preserve-dates','--strip-debug','-o',str(fresh),str(a.build/'gameplayfootball.exe')],check=True)

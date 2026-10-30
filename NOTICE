@@ -40,5 +40,12 @@ data and pretrained networks are not included or used for metric training.
 pes-gani animation research tools by jhnzbdev and contributors (MIT).
 https://github.com/jhnzbdev/pes-gani, commit 4f6dbf00f66df761ce2f6ac9b2d80af48e172788.
 Reader code, name metadata and the complete license are preserved under
-third_party/pes-gani. These tools are separate from gameplay; original PES
-animation data is not included, and no PES gameplay equivalence is claimed.
+third_party/pes-gani. No PES gameplay equivalence is claimed.
+
+media/training/pes17/short_pass.anim is a single retargeted test motion derived
+from kick_short_0_0_inside_y0_000 in the PES 2017 dt13_win.cpk supplied by the
+repository owner. PES assets remain the property of their respective owners;
+they are not covered by this project's Apache-2.0 or the reader's MIT license.
+Its adjacent JSON records provenance and the Football contact annotation.
+Original CPK, MTAR, ASK and FRIG files and the decoded bulk library are not
+included in the repository or portable release.

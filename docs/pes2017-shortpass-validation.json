@@ -1,0 +1,1931 @@
+{
+  "date": "2026-10-30",
+  "result": "passed",
+  "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
+  "checks": 38,
+  "action": {
+    "name": "kick_short_0_0_inside_y0_000",
+    "source_sha256": "c2984daeb86efd9350131a685d70f807eda48b5d1a18b118ba18e42423b5f396",
+    "output_sha256": "95a0de2d233dccd4a370c4dac22e93c032b252809884dda0b03ea6fecabdf15b",
+    "samples": 124,
+    "source_fps_assumed": 30.0,
+    "source_game_pose_comparison_pending": true,
+    "root_xy_imported": false,
+    "ball_events_added": true,
+    "contact_frame_100hz": 26,
+    "contact_annotation_origin": "Football integration; original PES ball timing not recovered",
+    "maximum_direction_error": 4.626564591008432e-07,
+    "maximum_bone_length_error": 1.5052075102994777e-07,
+    "maximum_10ms_joint_angle_change": 0.09366696256586658,
+    "root_height_range": [
+      0.8552612500190735,
+      1.0098592774868012
+    ],
+    "source_game": "PES 2017 Windows",
+    "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+    "source_mtar": "body_anime_file6.mtar",
+    "source_name_hash": "85b2713b",
+    "source_id": 49074,
+    "rights": "Retargeted user-supplied PES motion; rights remain with original owners. See NOTICE."
+  },
+  "views": [
+    {
+      "camera": "external",
+      "launch_via_cli": false,
+      "result": "passed",
+      "checks": [
+        {
+          "check": "short_pass completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "1790",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1230",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "1790",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "selected": [
+              {
+                "t": "1500",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "10",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass strikes with the annotated right foot on the actual skin",
+          "result": "passed",
+          "evidence": {
+            "contact": [
+              {
+                "t": "1790",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "skins": [
+              {
+                "t": "1790",
+                "part": "right_foot",
+                "gap": "-0.00011",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass sends the real ball forward",
+          "result": "passed",
+          "evidence": {
+            "frames": [
+              {
+                "t": 1800,
+                "exercise": 0,
+                "player": [
+                  0.3614,
+                  -0.0187,
+                  0.0
+                ],
+                "speed": 0.1381,
+                "ball": [
+                  0.6696,
+                  -0.0094,
+                  0.123
+                ],
+                "ball_speed": 8.8331,
+                "function": 4,
+                "frame": 29,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2567,
+                "wall_ms": 5330
+              },
+              {
+                "t": 1900,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  1.4989,
+                  -0.2234,
+                  0.1644
+                ],
+                "ball_speed": 8.5089,
+                "function": 4,
+                "frame": 39,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.3475,
+                "wall_ms": 5429
+              },
+              {
+                "t": 2000,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  2.3109,
+                  -0.4271,
+                  0.1293
+                ],
+                "ball_speed": 7.9313,
+                "function": 4,
+                "frame": 49,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.247,
+                "wall_ms": 5536
+              },
+              {
+                "t": 2100,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.0635,
+                  -0.6085,
+                  0.1851
+                ],
+                "ball_speed": 7.7028,
+                "function": 4,
+                "frame": 59,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.0943,
+                "wall_ms": 5630
+              },
+              {
+                "t": 2200,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.8082,
+                  -0.785,
+                  0.1384
+                ],
+                "ball_speed": 7.6673,
+                "function": 4,
+                "frame": 69,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.0162,
+                "wall_ms": 5734
+              },
+              {
+                "t": 2300,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  4.5156,
+                  -0.9517,
+                  0.1463
+                ],
+                "ball_speed": 7.0997,
+                "function": 4,
+                "frame": 79,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.0401,
+                "wall_ms": 5829
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass keeps rendered joint rotations finite and normalized",
+          "result": "passed",
+          "evidence": {
+            "samples": 49,
+            "rotations": 343
+          }
+        },
+        {
+          "check": "short_pass has no abrupt joint teleport through entry and exit",
+          "result": "passed",
+          "evidence": {
+            "intervals": 336,
+            "maximum_angular_speed_rad_s": 8.43099305000365,
+            "scope": "Rendered local torso/leg joints, from 600 ms before contact through 1500 ms after contact"
+          }
+        },
+        {
+          "check": "short_pass releases movement after the follow-through",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.371218735165527
+          }
+        },
+        {
+          "check": "medium_pass completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "5890",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1230",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "5890",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.25898",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "selected": [
+              {
+                "t": "5600",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "12",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass strikes with the annotated right foot on the actual skin",
+          "result": "passed",
+          "evidence": {
+            "contact": [
+              {
+                "t": "5890",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.25898",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "skins": [
+              {
+                "t": "5890",
+                "part": "right_foot",
+                "gap": "-0.00011",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass sends the real ball forward",
+          "result": "passed",
+          "evidence": {
+            "frames": [
+              {
+                "t": 5900,
+                "exercise": 0,
+                "player": [
+                  0.3613,
+                  0.0171,
+                  0.0
+                ],
+                "speed": 0.1381,
+                "ball": [
+                  0.6683,
+                  -0.0117,
+                  0.123
+                ],
+                "ball_speed": 9.0837,
+                "function": 4,
+                "frame": 29,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.3806,
+                "wall_ms": 9430
+              },
+              {
+                "t": 6000,
+                "exercise": 0,
+                "player": [
+                  0.3651,
+                  0.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  1.4878,
+                  -0.3355,
+                  0.167
+                ],
+                "ball_speed": 8.7541,
+                "function": 4,
+                "frame": 39,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.4714,
+                "wall_ms": 9529
+              },
+              {
+                "t": 6100,
+                "exercise": 0,
+                "player": [
+                  0.3651,
+                  0.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  2.2956,
+                  -0.6481,
+                  0.1157
+                ],
+                "ball_speed": 8.4958,
+                "function": 4,
+                "frame": 49,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.3709,
+                "wall_ms": 9630
+              },
+              {
+                "t": 6200,
+                "exercise": 0,
+                "player": [
+                  0.3651,
+                  0.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.0313,
+                  -0.9269,
+                  0.1194
+                ],
+                "ball_speed": 7.5354,
+                "function": 4,
+                "frame": 59,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2182,
+                "wall_ms": 9729
+              },
+              {
+                "t": 6300,
+                "exercise": 0,
+                "player": [
+                  0.3651,
+                  0.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.7192,
+                  -1.186,
+                  0.1303
+                ],
+                "ball_speed": 7.2662,
+                "function": 4,
+                "frame": 69,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.1077,
+                "wall_ms": 9829
+              },
+              {
+                "t": 6400,
+                "exercise": 0,
+                "player": [
+                  0.3651,
+                  0.016,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  4.3784,
+                  -1.4351,
+                  0.159
+                ],
+                "ball_speed": 6.9643,
+                "function": 4,
+                "frame": 79,
+                "controller": 1,
+                "goals": 0,
+                "camera": 1,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.0838,
+                "wall_ms": 9933
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass keeps rendered joint rotations finite and normalized",
+          "result": "passed",
+          "evidence": {
+            "samples": 52,
+            "rotations": 364
+          }
+        },
+        {
+          "check": "medium_pass has no abrupt joint teleport through entry and exit",
+          "result": "passed",
+          "evidence": {
+            "intervals": 357,
+            "maximum_angular_speed_rad_s": 7.260111880630188,
+            "scope": "Rendered local torso/leg joints, from 600 ms before contact through 1500 ms after contact"
+          }
+        },
+        {
+          "check": "medium_pass releases movement after the follow-through",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.475296673128294
+          }
+        },
+        {
+          "check": "Insert changes comparison mode to False",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "8560",
+              "enabled": "0"
+            }
+          ]
+        },
+        {
+          "check": "native_comparison completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "10110",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1112",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "9720",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/pass_idle_000_inside.anim",
+                "frames": "82",
+                "previous_frame": "3",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "Insert changes comparison mode to True",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "12030",
+              "enabled": "1"
+            }
+          ]
+        },
+        {
+          "check": "running_fallback completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "14350",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1400",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "14240",
+                "function": "4",
+                "contact_frame": "11",
+                "added_chest": "0",
+                "name": "media/animations/pass/walk/000_short.anim",
+                "frames": "32",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "sideways_fallback completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "17690",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1152",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "17300",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/pass_idle_000_inside.anim_mirror",
+                "frames": "82",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "an unreachable ball receives no invented pass contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": [],
+            "minimum_distance_m": 15.58881967180325
+          }
+        },
+        {
+          "check": "the session exits cleanly",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "scenarios": {
+        "short_pass": {
+          "touches": [
+            {
+              "t": "1790",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1230",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "1790",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_000"
+            }
+          ],
+          "selected": [
+            {
+              "t": "1500",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "10",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "medium_pass": {
+          "touches": [
+            {
+              "t": "5890",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1230",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "5890",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.25898",
+              "name": "kick_short_0_0_inside_y0_000"
+            }
+          ],
+          "selected": [
+            {
+              "t": "5600",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "12",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "native_comparison": {
+          "touches": [
+            {
+              "t": "10110",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1112",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "9720",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/pass_idle_000_inside.anim",
+              "frames": "82",
+              "previous_frame": "3",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_fallback": {
+          "touches": [
+            {
+              "t": "14350",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1400",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "14240",
+              "function": "4",
+              "contact_frame": "11",
+              "added_chest": "0",
+              "name": "media/animations/pass/walk/000_short.anim",
+              "frames": "32",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "sideways_fallback": {
+          "touches": [
+            {
+              "t": "17690",
+              "part": "left_foot",
+              "function": "4",
+              "z": "0.1152",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "17300",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/pass_idle_000_inside.anim_mirror",
+              "frames": "82",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        }
+      },
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
+      "scope": "Rendered Linux/SDL Xbox input. One retargeted pass with an annotated Football contact; not original PES gameplay."
+    },
+    {
+      "camera": "first_person",
+      "launch_via_cli": true,
+      "result": "passed",
+      "checks": [
+        {
+          "check": "short_pass completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "1800",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1230",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "1800",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.25898",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "selected": [
+              {
+                "t": "1510",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "27",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass strikes with the annotated right foot on the actual skin",
+          "result": "passed",
+          "evidence": {
+            "contact": [
+              {
+                "t": "1800",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.25898",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "skins": [
+              {
+                "t": "1800",
+                "part": "right_foot",
+                "gap": "-0.00011",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass sends the real ball forward",
+          "result": "passed",
+          "evidence": {
+            "frames": [
+              {
+                "t": 1800,
+                "exercise": 0,
+                "player": [
+                  0.3565,
+                  -0.0181,
+                  0.0
+                ],
+                "speed": 0.223,
+                "ball": [
+                  0.6643,
+                  -0.0073,
+                  0.1218
+                ],
+                "ball_speed": 0.5944,
+                "function": 4,
+                "frame": 28,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2391,
+                "wall_ms": 5446
+              },
+              {
+                "t": 1900,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  1.4378,
+                  -0.2077,
+                  0.1671
+                ],
+                "ball_speed": 8.7631,
+                "function": 4,
+                "frame": 38,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.3448,
+                "wall_ms": 5540
+              },
+              {
+                "t": 2000,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  2.2806,
+                  -0.4194,
+                  0.1212
+                ],
+                "ball_speed": 8.6135,
+                "function": 4,
+                "frame": 48,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2633,
+                "wall_ms": 5638
+              },
+              {
+                "t": 2100,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.0539,
+                  -0.6071,
+                  0.1335
+                ],
+                "ball_speed": 7.5533,
+                "function": 4,
+                "frame": 58,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.1099,
+                "wall_ms": 5737
+              },
+              {
+                "t": 2200,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.7774,
+                  -0.783,
+                  0.1551
+                ],
+                "ball_speed": 7.4136,
+                "function": 4,
+                "frame": 68,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.0084,
+                "wall_ms": 5843
+              },
+              {
+                "t": 2300,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  4.4877,
+                  -0.9538,
+                  0.1339
+                ],
+                "ball_speed": 7.1711,
+                "function": 4,
+                "frame": 78,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.045,
+                "wall_ms": 5942
+              },
+              {
+                "t": 2400,
+                "exercise": 0,
+                "player": [
+                  0.3653,
+                  -0.0193,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  5.1709,
+                  -1.117,
+                  0.1326
+                ],
+                "ball_speed": 6.881,
+                "function": 4,
+                "frame": 88,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 190,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.0865,
+                "wall_ms": 6037
+              }
+            ]
+          }
+        },
+        {
+          "check": "short_pass keeps rendered joint rotations finite and normalized",
+          "result": "passed",
+          "evidence": {
+            "samples": 34,
+            "rotations": 238
+          }
+        },
+        {
+          "check": "short_pass has no abrupt joint teleport through entry and exit",
+          "result": "passed",
+          "evidence": {
+            "intervals": 231,
+            "maximum_angular_speed_rad_s": 6.804877156879999,
+            "scope": "Rendered local torso/leg joints, from 600 ms before contact through 1500 ms after contact"
+          }
+        },
+        {
+          "check": "short_pass releases movement after the follow-through",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.4807
+          }
+        },
+        {
+          "check": "medium_pass completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "5890",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1112",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [
+              {
+                "t": "5890",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "selected": [
+              {
+                "t": "5600",
+                "function": "4",
+                "contact_frame": "29",
+                "added_chest": "0",
+                "name": "pes17/kick_short_0_0_inside_y0_000",
+                "frames": "139",
+                "previous_frame": "22",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass strikes with the annotated right foot on the actual skin",
+          "result": "passed",
+          "evidence": {
+            "contact": [
+              {
+                "t": "5890",
+                "actor": "10",
+                "frame": "29",
+                "planned": "29",
+                "part": "right_foot",
+                "power": "0.23944",
+                "name": "kick_short_0_0_inside_y0_000"
+              }
+            ],
+            "skins": [
+              {
+                "t": "5890",
+                "part": "right_foot",
+                "gap": "0.00062",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass sends the real ball forward",
+          "result": "passed",
+          "evidence": {
+            "frames": [
+              {
+                "t": 5900,
+                "exercise": 0,
+                "player": [
+                  0.2061,
+                  -0.0094,
+                  0.0
+                ],
+                "speed": 0.2762,
+                "ball": [
+                  0.4932,
+                  0.0089,
+                  0.1112
+                ],
+                "ball_speed": 8.8331,
+                "function": 4,
+                "frame": 29,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2578,
+                "wall_ms": 9539
+              },
+              {
+                "t": 6000,
+                "exercise": 0,
+                "player": [
+                  0.2086,
+                  -0.01,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  1.308,
+                  -0.2022,
+                  0.152
+                ],
+                "ball_speed": 8.3336,
+                "function": 4,
+                "frame": 39,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.3486,
+                "wall_ms": 9637
+              },
+              {
+                "t": 6100,
+                "exercise": 0,
+                "player": [
+                  0.2086,
+                  -0.01,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  2.0964,
+                  -0.402,
+                  0.1404
+                ],
+                "ball_speed": 7.7102,
+                "function": 4,
+                "frame": 49,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 1,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.2482,
+                "wall_ms": 9737
+              },
+              {
+                "t": 6200,
+                "exercise": 0,
+                "player": [
+                  0.2086,
+                  -0.01,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  2.8313,
+                  -0.5878,
+                  0.1949
+                ],
+                "ball_speed": 7.5428,
+                "function": 4,
+                "frame": 59,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": -0.0955,
+                "wall_ms": 9842
+              },
+              {
+                "t": 6300,
+                "exercise": 0,
+                "player": [
+                  0.2086,
+                  -0.01,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  3.5585,
+                  -0.7691,
+                  0.1461
+                ],
+                "ball_speed": 7.5146,
+                "function": 4,
+                "frame": 69,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.015,
+                "wall_ms": 9938
+              },
+              {
+                "t": 6400,
+                "exercise": 0,
+                "player": [
+                  0.2086,
+                  -0.01,
+                  0.0
+                ],
+                "speed": 0.0,
+                "ball": [
+                  4.2566,
+                  -0.9364,
+                  0.1663
+                ],
+                "ball_speed": 7.0593,
+                "function": 4,
+                "frame": 79,
+                "controller": 1,
+                "goals": 0,
+                "camera": 2,
+                "with_ball": 0,
+                "yaw": 0.0,
+                "head_yaw": 0.0,
+                "pitch": -0.12,
+                "contacts": 0,
+                "look_active": 0,
+                "move_active": 0,
+                "shot_active": 0,
+                "charge_ms": 180,
+                "action_mode": 2,
+                "move": [
+                  0.0,
+                  0.0
+                ],
+                "keys": 0,
+                "player_yaw": 0.039,
+                "wall_ms": 10037
+              }
+            ]
+          }
+        },
+        {
+          "check": "medium_pass keeps rendered joint rotations finite and normalized",
+          "result": "passed",
+          "evidence": {
+            "samples": 33,
+            "rotations": 231
+          }
+        },
+        {
+          "check": "medium_pass has no abrupt joint teleport through entry and exit",
+          "result": "passed",
+          "evidence": {
+            "intervals": 217,
+            "maximum_angular_speed_rad_s": 6.384265603967003,
+            "scope": "Rendered local torso/leg joints, from 600 ms before contact through 1500 ms after contact"
+          }
+        },
+        {
+          "check": "medium_pass releases movement after the follow-through",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.4811005824028975
+          }
+        },
+        {
+          "check": "Insert changes comparison mode to False",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "8540",
+              "enabled": "0"
+            }
+          ]
+        },
+        {
+          "check": "native_comparison completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "10100",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "9710",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/pass_idle_000_inside.anim",
+                "frames": "82",
+                "previous_frame": "5",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "Insert changes comparison mode to True",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "12130",
+              "enabled": "1"
+            }
+          ]
+        },
+        {
+          "check": "running_fallback completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "14330",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1399",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "14220",
+                "function": "4",
+                "contact_frame": "11",
+                "added_chest": "0",
+                "name": "media/animations/pass/walk/000_short.anim",
+                "frames": "32",
+                "previous_frame": "4",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "sideways_fallback completes one pass using the expected source",
+          "result": "passed",
+          "evidence": {
+            "touches": [
+              {
+                "t": "17690",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1160",
+                "actor": "10"
+              }
+            ],
+            "pes_contacts": [],
+            "selected": [
+              {
+                "t": "17300",
+                "function": "4",
+                "contact_frame": "39",
+                "added_chest": "0",
+                "name": "media/animations/procedural_actions/pass_idle_000_inside.anim_mirror",
+                "frames": "82",
+                "previous_frame": "9",
+                "previous_frames": "28",
+                "heel": "0"
+              }
+            ]
+          }
+        },
+        {
+          "check": "an unreachable ball receives no invented pass contact",
+          "result": "passed",
+          "evidence": {
+            "pes_contacts": [],
+            "minimum_distance_m": 15.228762637194132
+          }
+        },
+        {
+          "check": "the session exits cleanly",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "scenarios": {
+        "short_pass": {
+          "touches": [
+            {
+              "t": "1800",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1230",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "1800",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.25898",
+              "name": "kick_short_0_0_inside_y0_000"
+            }
+          ],
+          "selected": [
+            {
+              "t": "1510",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "27",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "medium_pass": {
+          "touches": [
+            {
+              "t": "5890",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1112",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [
+            {
+              "t": "5890",
+              "actor": "10",
+              "frame": "29",
+              "planned": "29",
+              "part": "right_foot",
+              "power": "0.23944",
+              "name": "kick_short_0_0_inside_y0_000"
+            }
+          ],
+          "selected": [
+            {
+              "t": "5600",
+              "function": "4",
+              "contact_frame": "29",
+              "added_chest": "0",
+              "name": "pes17/kick_short_0_0_inside_y0_000",
+              "frames": "139",
+              "previous_frame": "22",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "native_comparison": {
+          "touches": [
+            {
+              "t": "10100",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1128",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "9710",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/pass_idle_000_inside.anim",
+              "frames": "82",
+              "previous_frame": "5",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "running_fallback": {
+          "touches": [
+            {
+              "t": "14330",
+              "part": "right_foot",
+              "function": "4",
+              "z": "0.1399",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "14220",
+              "function": "4",
+              "contact_frame": "11",
+              "added_chest": "0",
+              "name": "media/animations/pass/walk/000_short.anim",
+              "frames": "32",
+              "previous_frame": "4",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        },
+        "sideways_fallback": {
+          "touches": [
+            {
+              "t": "17690",
+              "part": "left_foot",
+              "function": "4",
+              "z": "0.1160",
+              "actor": "10"
+            }
+          ],
+          "pes_contacts": [],
+          "selected": [
+            {
+              "t": "17300",
+              "function": "4",
+              "contact_frame": "39",
+              "added_chest": "0",
+              "name": "media/animations/procedural_actions/pass_idle_000_inside.anim_mirror",
+              "frames": "82",
+              "previous_frame": "9",
+              "previous_frames": "28",
+              "heel": "0"
+            }
+          ]
+        }
+      },
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
+      "scope": "Rendered Linux/SDL Xbox input. One retargeted pass with an annotated Football contact; not original PES gameplay."
+    }
+  ],
+  "limitations": {
+    "original_pes_ball_timing_recovered": false,
+    "source_game_pose_comparison_pending": true,
+    "source_fps_assumed": 30,
+    "windows_gui_executed": false,
+    "rendered_contact_scope": "Real weighted skin accepted at the 100 Hz simulation step; a 30 FPS image can skip the exact instant. Render continuity and finite poses checked separately.",
+    "full_library_installed": false
+  }
+}

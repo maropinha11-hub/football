@@ -306,6 +306,7 @@ int main(int argc, const char** argv) {
   bool controllerTest = false;
   bool telemetry = false;
   bool pes3Preview = false;
+  bool pesActions=false;
   for (int i = 1; i < argc; ++i) {
     std::string arg(argv[i]);
     if (arg == "--help" || arg == "-h") {
@@ -318,6 +319,7 @@ int main(int argc, const char** argv) {
              "  --match           Original match mode\n"
              "  --telemetry       Emit practice state for functional validation\n"
              "  --pes3-preview    Inspect source PES3 motions beside the native player\n"
+             "  --pes-actions     Test the additional retargeted PES short pass\n"
              "  --test-controller Test virtual SDL Xbox input and reconnection\n");
       delete config;
       return 0;
@@ -329,6 +331,7 @@ int main(int argc, const char** argv) {
     else if (arg == "--match") trainingOverride = 0;
     else if (arg == "--telemetry") telemetry = true;
     else if (arg == "--pes3-preview") pes3Preview = true;
+    else if(arg=="--pes-actions"){trainingOverride=1;physicalRig=true;pesActions=true;}
     else if (arg == "--test-controller") controllerTest = true;
     else if (arg.size() > 0 && arg[0] != '-') configFile = arg;
     else {
@@ -346,6 +349,7 @@ int main(int argc, const char** argv) {
   config->LoadFile(configFile.c_str());
   if (trainingOverride >= 0) config->SetBool("training_mode", trainingOverride == 1);
   if (telemetry) config->SetBool("training_telemetry", true);
+  if(pesActions)config->SetBool("training_pes_shortpass",true);
   if (playerMatch) config->SetBool("player_match",true);
   if(physicalRig){config->SetBool("training_physical_rig",true);config->SetBool("training_physical_lab",true);}
   if(proceduralLab){config->SetBool("player_match",false);config->SetInt("training_body_controller",config->GetBool("training_animation_body",true)?0:1);}

@@ -26,6 +26,9 @@ def package():
             {row['scenario']for row in validation['rendered']}!={'camera','central','airborne','actions'} or
             any(row['result']!='passed'for row in validation['rendered'])):
         raise RuntimeError('Final executable has no matching successful gameplay validation')
+    pes=validation.get('pes_shortpass',{})
+    if(pes.get('result')!='passed' or pes.get('executable_sha256')!=validation['binaries']['native_sha256']):
+        raise RuntimeError('Retargeted pass has no matching successful contact/fallback validation')
     ARTIFACT.parent.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='football-classic-',dir=ARTIFACT.parent)as temporary:
         stage=Path(temporary)/'football-classico-windows-x86_64';stage.mkdir()
@@ -45,6 +48,7 @@ def package():
                      NATIVE/'usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll'):
             shutil.copy2(path,stage/path.name)
         for filename,args in [('treino-classico.bat','--training --physical-rig'),
+                              ('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),
                               ('run-training.bat','--training --physical-rig'),
                               ('jogar-partida.bat','--player-match --physical-rig'),
                               ('run-controller-test.bat','--test-controller')]:
@@ -57,7 +61,9 @@ def package():
             shutil.copy2(ROOT/source,stage/name)
         files=sorted(p for p in stage.rglob('*')if p.is_file())
         manifest=dict(mode='native_animation_and_ik',ragdoll=False,cloth_dynamics=False,
-                      original_pes_gameplay_integrated=False,files={p.relative_to(stage).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()for p in files})
+                      original_pes_gameplay_integrated=False,retargeted_pes2017_actions=1,
+                      pes_action_enabled_by_default=False,
+                      files={p.relative_to(stage).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()for p in files})
         (stage/'RELEASE.json').write_text(json.dumps(manifest,indent=2)+'\n')
         candidate=Path(temporary)/'candidate.zip'
         with zipfile.ZipFile(candidate,'w',zipfile.ZIP_DEFLATED,compresslevel=9)as archive:

@@ -8,6 +8,12 @@
 
 namespace {
 void turfInput(Match *match){
+  if(UserEventManager::GetInstance().ConsumeKeyPress(SDLK_INSERT)){
+    const bool enabled=!GetConfiguration()->GetBool("training_pes_shortpass",false);
+    GetConfiguration()->SetBool("training_pes_shortpass",enabled);
+    match->SpamMessage(enabled?"Passe curto PES: teste ligado | Insert: comparar":"Passe curto original | Insert: comparar",5000);
+    printf("PES_ACTION_TOGGLE t=%lu enabled=%d\n",match->GetActualTime_ms(),enabled?1:0);
+  }
   if(!UserEventManager::GetInstance().ConsumeKeyPress(SDLK_g))return;
   const bool enabled=!GetConfiguration()->GetBool("training_turf_enabled",true);
   GetConfiguration()->SetBool("training_turf_enabled",enabled);

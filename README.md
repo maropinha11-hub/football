@@ -21,8 +21,10 @@ Veja [os comandos](docs/TREINO-CLASSICO.md),
 O [estudo dos repositórios PES](docs/ESTUDO-PES-REFERENCIAS.md) prepara o leitor
 `pes-gani` para aproveitar somente animações PES 2021 identificadas por nome.
 O CPK real do PES 2017 já foi recebido: 2.956 clipes foram decodificados e
-2.365 nomes identificados. Uma primeira adaptação foi renderizada no modelo
-original em prévia visual, ainda separada da seleção de jogadas e contatos.
+2.365 nomes identificados. O primeiro passe curto adaptado já é um candidato
+funcional com contato real do pé direito. Abra **treinar-animacoes-pes.bat**,
+toque **A** parado e mirando para a frente; **Insert** compara com o original.
+Esse teste não substitui a condução nem as outras jogadas aprovadas.
 Veja [os dados recebidos, a reprodução e os limites](docs/ANIMACOES-PES2017.md).
 A física e a lógica de jogadas continuam do Football.
 

@@ -1,86 +1,68 @@
 {
-  "date": "2026-10-29",
+  "date": "2026-10-30",
   "result": "passed",
-  "base_commit": "a011771e25fe23c1c9a99c7757dbb9250e38fdbf",
-  "scope": "native animation/IK gameplay with no runtime ragdoll; not an original PES integration",
+  "base_commit": "af30d265d2e235ccf5ef53a01c82379571935aa3",
+  "scope": "Approved native animation/IK gameplay plus one explicitly enabled retargeted PES 2017 short pass; no runtime ragdoll.",
   "implemented": {
     "animation_body_default": true,
     "ragdoll_worlds": 0,
     "cloth_dynamics": false,
-    "legacy_free_body_toggle_blocked": true,
-    "ground_reception_selection": "same fixed-tick and predicted-skin planning as airborne arrivals",
-    "prepared_leg_reception": "one deliberate cushion on real swept shin/thigh/ankle contact; complete pending control, preserve passive grazing behavior",
-    "reach": "fixed-length IK, 0.12 m small anticipatory foot allowance, bounded approach",
+    "unchanged_native_animation_bank": true,
+    "retargeted_pes_actions": 1,
+    "pes_enabled_by_default": false,
     "ground_bounce": 0.74,
-    "unchanged_native_animation_bank": true
+    "contact": "Same bounded native planning and real weighted-skin gate; no expanded tolerance or forced ball attachment."
   },
   "binaries": {
-    "native_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717",
-    "windows_unstripped_sha256": "1b1910865da534339c9eb5722718450b23e4f13fae2642351d1f86801fd738c5"
+    "native_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
+    "windows_unstripped_sha256": "57974542e92bec8c8ceaaa852d0499b71e6cd77fd0f8653f6aa12a1103583684"
   },
   "unit_validation": {
     "ctest_suites": 14,
     "ctest_result": "passed",
-    "python_tests": 241,
-    "python_passed": 235,
-    "python_skipped": 6,
-    "pes_gani_synthetic_tests": 5,
-    "pes_gani_name_hashes_verified": 4105
+    "python_tests": 244,
+    "python_passed": 238,
+    "python_skipped": 6
   },
   "rendered": [
     {
       "scenario": "camera",
       "result": "passed",
       "checks": 27,
-      "executable_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717"
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
     },
     {
       "scenario": "central",
       "result": "passed",
       "checks": 10,
-      "executable_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717"
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
     },
     {
       "scenario": "airborne",
       "result": "passed",
       "checks": 28,
-      "executable_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717"
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
     },
     {
       "scenario": "actions",
       "result": "passed",
       "checks": 37,
-      "executable_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717"
+      "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f"
     }
   ],
-  "rendered_checks": 106,
-  "no_ragdoll_telemetry": {
-    "samples": 7002,
-    "all_no_worlds_no_muscle_dynamics": true
+  "rendered_checks": 102,
+  "pes_shortpass": {
+    "result": "passed",
+    "checks": 38,
+    "views": 2,
+    "executable_sha256": "87b7a80d04acc3f210a22f7b3f5df908345a395e31e132e3af9fb04c5ab39a1f",
+    "report": "docs/pes2017-shortpass-validation.json"
   },
-  "prepared_reception_examples": [
-    {
-      "t": "64000",
-      "actor": "10",
-      "function": "3",
-      "part": "left_ankle",
-      "skin_gap": "0.0004993",
-      "skin_speed": "7.01304",
-      "incoming": "7.04449",
-      "outgoing": "4.19520"
-    }
-  ],
   "limitations": {
     "windows_gui_executed": false,
     "original_pes_gameplay_integrated": false,
     "real_pes2021_clips_imported": 0,
     "all_possible_ball_arrivals_proven": false
   },
-  "research": "docs/ESTUDO-PES-REFERENCIAS.md",
-  "prepared_reception_test": {
-    "result": "passed",
-    "checks": 4,
-    "attempts": 12,
-    "executable_sha256": "4ca5f195616781fc6c5f8d916666ab4c3ada343b84eaff67f0f689aa52eec717"
-  }
+  "research": "docs/ANIMACOES-PES2017.md"
 }

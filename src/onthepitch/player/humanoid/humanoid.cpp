@@ -584,6 +584,11 @@ void Humanoid::Process() {
             currentAnim->anim->GetVariable("touch_bodypart").c_str(), int(currentAnim->functionType), match->GetBall()->Predict(0).coords[2],player->GetID());
 
       radian nextBodyAngle = startAngle + currentAnim->anim->GetOutgoingAngle() + currentAnim->anim->GetOutgoingBodyAngle() + currentAnim->rotationSmuggle.end;
+      if(currentAnim->anim->GetVariable("pes_action")=="true"&&GetConfiguration()->GetBool("training_telemetry",false))
+        printf("PES_ACTION_CONTACT t=%lu actor=%d frame=%d planned=%d part=%s power=%.5f name=%s\n",
+          match->GetActualTime_ms(),player->GetID(),currentAnim->frameNum,currentAnim->touchFrame,
+          currentAnim->anim->GetVariable("touch_bodypart").c_str(),currentAnim->originatingCommand.touchInfo.desiredPower,
+          currentAnim->anim->GetVariable("pes_source_name").c_str());
 
       if (currentAnim->functionType == e_FunctionType_Trap || (currentAnim->functionType == e_FunctionType_BallControl && CastPlayer()->HasPossession() == false)) {
         //printf("trap!\n");
@@ -2093,6 +2098,15 @@ bool Humanoid::SelectAnim(const PlayerCommand &command, e_InterruptAnim localInt
     preferUserHeel=userHeel;
   }
   RankMotionMatches(dataSet,command);
+  const bool preferPesPass=UsesTrainingContacts()&&GetConfiguration()->GetBool("training_pes_shortpass",false)&&
+    command.desiredFunctionType==e_FunctionType_ShortPass&&spatialState.floatVelocity<1.4f&&
+    match->GetBall()->Predict(0).coords[2]<.27f&&match->GetBall()->GetMovement().GetLength()<2.5f&&
+    command.touchInfo.desiredDirection.Get2D().GetNormalized(spatialState.bodyDirectionVec).GetDotProduct(spatialState.bodyDirectionVec)>.96f&&
+    command.touchInfo.desiredPower<=.6f&&!match->IsInSetPiece();
+  dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){
+    return anims->GetAnim(id)->GetVariable("pes_action")=="true"&&!preferPesPass;
+  }),dataSet.end());
+  if(preferPesPass)std::stable_partition(dataSet.begin(),dataSet.end(),[&](int id){return anims->GetAnim(id)->GetVariable("pes_action")=="true";});
   if(activeReach){
     // Prefer an intentional airborne reception before waiting for a ground
     // ball. Final acceptance still uses each candidate's real contact skin.

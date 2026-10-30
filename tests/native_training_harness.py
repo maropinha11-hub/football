@@ -10,7 +10,7 @@ KEY_BITS={key:1<<i for i,key in enumerate([
     'Left','Right','Up','Down','r','1','2','3','4','5','Tab','6','t','F4','F5','F6','e','F7','F8','F9'])}
 
 class NativeTraining:
-    def __init__(self,build,output,display=':94',analog_pad=False,camera=2,config_overrides=None):
+    def __init__(self,build,output,display=':94',analog_pad=False,camera=2,config_overrides=None,extra_arguments=()):
         self.build=Path(build).resolve();self.output=Path(output).resolve()
         self.output.mkdir(parents=True,exist_ok=False)
         self.log=self.output/'game.log';self.cache=[];self.offset=0;self.pending=b''
@@ -22,6 +22,7 @@ class NativeTraining:
                         XDG_RUNTIME_DIR=str(runtime),XDG_CACHE_HOME=str(self.output/'cache'))
         self.camera=camera
         self.config_overrides=config_overrides or {}
+        self.extra_arguments=list(extra_arguments)
         self.pad_file=None;self.pad_values=[0,0,0,0,-32768,-32768,0]
         if analog_pad:
             root=Path(__file__).resolve().parents[1]
@@ -113,7 +114,7 @@ class NativeTraining:
                 game_env=dict(self.env)
                 extra=self.env.get('FOOTBALL_TEST_PRELOAD','')
                 if extra:game_env['LD_PRELOAD']=extra+':'+game_env.get('LD_PRELOAD','')
-                self.game=subprocess.Popen([str(self.build/'gameplayfootball'),'--config',str(config),'--training','--telemetry'],
+                self.game=subprocess.Popen([str(self.build/'gameplayfootball'),'--config',str(config),'--training','--telemetry',*self.extra_arguments],
                                            cwd=self.build,env=game_env,stdout=stream,stderr=subprocess.STDOUT)
             self.wait(lambda:self.frames()and self.frames()[-1]['t']>=500,seconds=60)
             windows=self.wait(lambda:subprocess.run(['xdotool','search','--pid',str(self.game.pid)],env=self.env,

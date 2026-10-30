@@ -4,6 +4,13 @@ Extraia o ZIP completo em **uma pasta nova** e abra **treino-classico.bat**.
 Para a partida de teste, abra **jogar-partida.bat**. Não substitua arquivos de
 outra versão nem copie pastas PES para esta instalação.
 
+Para testar o **novo passe curto PES**, abra **treinar-animacoes-pes.bat**.
+Com o jogador parado, mirando para a frente e a bola no chão, toque **A**.
+**Insert** alterna o passe novo e o original; **R** reinicia a tentativa e
+**R3/Tab** mostra o corpo por fora. O teste acrescenta um passe de chapa com
+o pé direito. Corridas, passes laterais, bolas altas e as demais ações continuam
+usando o banco nativo. A condução aprovada não foi substituída.
+
 Esta versão usa a movimentação nativa aprovada e a câmera em primeira pessoa.
 O corpo recebe adaptações de equilíbrio, tronco e braços, e alcance de pernas
 por IK com comprimento dos ossos preservado. O contato da bola continua sendo
@@ -28,9 +35,11 @@ Se a canela/coxa tocar primeiro durante uma recepção preparada, esse contato
 real pode concluir o domínio. A bola é amortecida nessa ação e o jogador
 continua a jogada, em vez de ficar esperando um toque posterior do pé.
 
-Os leitores PES preparados nesta etapa são ferramentas de estudo. Nenhuma
-animação PES 2021 foi instalada nesta versão, nem foi concluída a integração da
-gameplay exata do PES 2017. Consulte `ESTUDO-PES-REFERENCIAS.md` nos fontes.
+O passe foi adaptado do acervo PES 2017 enviado pelo usuário. O instante de
+contato foi anotado para o Football e só produz toque quando o pé alcança a
+superfície real da bola. A física e a escolha das demais jogadas continuam
+sendo do Football. Isto não reproduz a gameplay exata do PES; nenhum clipe
+PES 2021 foi instalado. Consulte `ANIMACOES-PES2017.md` nos fontes.
 
 A validação nativa com controle Xbox virtual está registrada em
 `animation-gameplay-validation.json`. O pacote Windows também é conferido

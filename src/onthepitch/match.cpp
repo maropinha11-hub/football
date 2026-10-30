@@ -390,6 +390,8 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
       printf("PLAYER_MATCH_START locked_id=%d home=%d away=%d half_seconds=%.2f\n",trainingPlayer->GetID(),teams[0]->GetActivePlayerCount(),teams[1]->GetActivePlayerCount(),matchDurationFactor*2700);
     } else {
       SetMatchPhase(e_MatchPhase_1stHalf);ResetTraining(0);
+      if(GetConfiguration()->GetBool("training_pes_shortpass",false))
+        SpamMessage("Teste de passe PES | A parado: passe | Insert: comparar | R: reiniciar",10000);
     }
     pes3Preview.reset(new PES3Preview(dynamicNode));
     if (GetConfiguration()->GetBool("pes3_preview",false)) SpamMessage(pes3Preview->toggle(),12000);

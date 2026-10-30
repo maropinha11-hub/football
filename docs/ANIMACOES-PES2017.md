@@ -52,11 +52,47 @@ verificadas, não uma validação de todas as transições ou de todo o acervo.
 
 ![Primeira pose adaptada no modelo nativo](images/pes2017-native-preview.png)
 
-Esta é uma **prévia visual**, ativada explicitamente por configuração. Ela
+Essa primeira corrida é uma **prévia visual**, ativada explicitamente por configuração. Ela
 não registra candidatos de gameplay, não decide recepções/chutes e não cria
 contatos com a bola. Sem a opção de prévia, o treino usa a gameplay aprovada;
-o teste de câmera e movimentos nativos passou novamente. O pacote Windows
-público continua sendo a versão anterior, sem esses clipes instalados.
+o teste de câmera e movimentos nativos passou novamente.
+
+## Primeiro passe funcional
+
+O pacote atual acrescenta **um** movimento: `kick_short_0_0_inside_y0_000`
+(hash `85b2713b`, ID 49074), um passe curto de chapa com o pé direito.
+O atalho `treinar-animacoes-pes.bat` habilita o candidato; **Insert** compara
+com o original. A condição de uso é jogador parado ou muito lento, bola baixa
+e quase parada, direção frontal e força curta/média. O seletor conserva os
+candidatos nativos quando o movimento não alcança a bola ou não se adequa à
+situação. `treino-classico.bat` começa com o teste desligado.
+
+A anotação de contato é nossa: quadro 26 a 100 Hz, retimado para 29 pelo
+pipeline nativo. Não é um marcador recuperado do PES. O clipe usa a convenção
+de altura relativa do Football; a prévia visual usa altura absoluta. O toque
+passa pelo planejamento nativo e pela superfície real ponderada da chuteira,
+sem ampliar a tolerância nem deslocar a perna instantaneamente até a bola.
+A classificação genérica pela origem geométrica inicialmente escolhia a
+chuteira apoiada; a anotação explícita corrige a seleção para o pé direito que
+realiza a batida.
+
+O ZIP contém somente essa adaptação e sua proveniência. Os arquivos originais
+do jogo e a biblioteca decodificada completa continuam privados. A física,
+força do passe e seleção de ações continuam sendo do Football. A hipótese de
+30 FPS e a escala angular ainda precisam de comparação com o jogo original;
+este teste não constitui recuperação da gameplay exata do PES.
+
+![Passe adaptado no jogador nativo](images/pes2017-shortpass.png)
+
+Os testes renderizados usam controle Xbox virtual em primeira e terceira
+pessoa: contato único com o pé direito, comparação com o original, fallback
+em corrida e passe lateral, bola fora de alcance e retomada do movimento.
+As rotações do tronco/pernas permanecem finitas e contínuas na entrada e
+saída. A simulação confirma contato na superfície; uma captura a 30 FPS pode
+não mostrar o instante exato do impacto a 100 Hz. Resultados completos:
+[pes2017-shortpass-validation.json](pes2017-shortpass-validation.json).
+A compilação Windows foi conferida como pacote; sua execução gráfica não foi
+realizada neste ambiente.
 
 ## Reproduzir com os arquivos locais
 
@@ -99,3 +135,22 @@ e a saída de cada jogada ao seletor do Football. Os arquivos recebidos bastam
 para continuar essa análise; a biblioteca completa ainda não está ligada à
 partida. Resultados e limites estão em
 [pes2017-animation-import-validation.json](pes2017-animation-import-validation.json).
+
+Para reproduzir o candidato de passe, decodificar `body_anime_file6.mtar` e
+usar o JSON de hash `85b2713b`, junto do seu `source-rig.json`:
+
+```bash
+blender -b --python tools/animations/retarget_fox_clip.py -- \
+  /tmp/pes17-pass/00216-85b2713b.json /tmp/pes17-pass/source-rig.json \
+  /tmp/short_pass.anim --short-pass --contact-frame 26 \
+  --contact-point -0.01 -0.39 0.11
+
+python3 tests/training_pes_shortpass_smoke.py --build build \
+  --output /tmp/pes17-pass-external --camera 1
+python3 tests/training_pes_shortpass_smoke.py --build build \
+  --output /tmp/pes17-pass-firstperson --camera 2 --launch-via-cli
+```
+
+O teste lê o candidato em `data/media/training/pes17/short_pass.anim`, disponível
+no diretório de dados do executável. Os arquivos originais de entrada não
+fazem parte do repositório.

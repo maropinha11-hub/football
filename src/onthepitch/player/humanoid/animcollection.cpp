@@ -571,6 +571,25 @@ void AnimCollection::Load(boost::filesystem::path directory) {
   // The training player uses native dribbling in every camera/direction.
   // DefenseJog imports remain archived, but are not gameplay candidates.
 
+  // The retargeted action is an additional candidate. Approach planning and
+  // the final weighted-skin gate still own the touch, as for native passes.
+  if(TrainingEnabled()&&boost::filesystem::exists("media/training/pes17/short_pass.anim")){
+    Animation *animation=new Animation();
+    boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
+    animation->AddExtension("football",extension);
+    animation->Load("media/training/pes17/short_pass.anim");
+    if(animation->GetVariable("pes_action")!="true"||animation->GetAnimType()!="shortpass"||
+       animation->GetVariable("pes_contact_bodypart")!="right_foot"){
+      delete animation;throw std::runtime_error("Invalid retargeted short-pass candidate");
+    }
+    animation->SetName("pes17/"+animation->GetVariable("pes_source_name"));
+    animation->SetVariable("baseanim","false");
+    _PrepareAnim(animation,playerNode,bodyParts,nodeMap,false);
+    printf("PES_ACTION_CANDIDATE name=%s frames=%d contact=%s part=%s native_bank_preserved=1\n",
+      animation->GetName().c_str(),animation->GetFrameCount(),animation->GetVariable("touchframe").c_str(),
+      animation->GetVariable("touch_bodypart").c_str());
+  }
+
   // Additional reception candidate: the existing native chest clips remain
   // in the collection, and the original trajectory/approach selector owns it.
   for(const std::string mode:{"Stand","Run"})if(TrainingEnabled() &&
@@ -1171,6 +1190,10 @@ int AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode,
     }
     //printf("closest: %s\n", closestBodyPart->GetName().c_str());
     animation->SetVariable("touch_bodypart", closestBodyPart->GetName());
+    // The attacking foot is part of the annotation. Classifying by geometry
+    // origin can pick the planted shoe even while the other leg is swinging.
+    if(animation->GetVariable("pes_action")=="true")
+      animation->SetVariable("touch_bodypart",animation->GetVariable("pes_contact_bodypart"));
     if(TrainingEnabled() && animation->GetAnimType()=="trap" &&
         (animation->GetName().find("chest")!=std::string::npos || animation->GetVariable("added_chest")=="true"))
       animation->SetVariable("touch_bodypart","trunk");

@@ -98,8 +98,9 @@ e conferir o contato na imagem antes de instalar outros. Esse processo não
 substitui a recuperação e comparação da física e do seletor original.
 
 **Atualização:** o usuário enviou o `dt13_win.cpk` do PES 2017. O acervo foi
-extraído e uma primeira adaptação foi renderizada no Football. Veja
-[a análise dos dados recebidos e os limites da prévia](ANIMACOES-PES2017.md).
+extraído, uma primeira adaptação foi renderizada e um passe curto foi ligado
+ao seletor nativo em modo de teste. Veja
+[a análise dos dados recebidos e os limites da integração](ANIMACOES-PES2017.md).
 As afirmações sobre arquivos ainda ausentes abaixo descrevem a auditoria
 anterior ao recebimento desse CPK.
 
