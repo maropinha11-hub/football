@@ -17,19 +17,25 @@ from mathutils import Matrix,Quaternion,Vector
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('clip',type=Path);p.add_argument('rig',type=Path);p.add_argument('output',type=Path)
 p.add_argument('--short-pass',action='store_true',help='Export an additional Football short-pass candidate')
-p.add_argument('--action',choices=['shortpass','highpass','shot','trap','ballcontrol'],help='Native action for the additional candidate')
-p.add_argument('--role',choices=['pass','cross','shot','header','reception','control'],default='pass')
-p.add_argument('--contact-bodypart',choices=['right_foot','left_foot','right_upperleg','left_upperleg','right_lowerleg','left_lowerleg','trunk','head'],default='right_foot')
+p.add_argument('--action',choices=['shortpass','highpass','shot','trap','ballcontrol','interfere','sliding','deflect','trip','movement','special'],help='Native action for the additional candidate')
+p.add_argument('--role',choices=['pass','cross','shot','header','reception','control','tackle','keeper','balance','recovery','locomotion'],default='pass')
+p.add_argument('--contact-bodypart',choices=['right_foot','left_foot','right_upperleg','left_upperleg','right_lowerleg','left_lowerleg','trunk','head','right_lowerarm','left_lowerarm'],default='right_foot')
+p.add_argument('--state-in',default='');p.add_argument('--state-out',default='')
+p.add_argument('--retainer-out',default='');p.add_argument('--retainer-in',default='')
+p.add_argument('--trip-type',type=int,choices=[1,2,3],default=1)
 p.add_argument('--direction-degrees',type=float,default=0)
 p.add_argument('--power-range',type=float,nargs=2,default=[0,.6])
 p.add_argument('--player-speed-range',type=float,nargs=2,default=[0,1.4])
 p.add_argument('--ball-height-range',type=float,nargs=2,default=[0,.27])
 p.add_argument('--root-motion',action='store_true',help='Preserve decoded horizontal root travel for a moving action')
 p.add_argument('--stationary-entry',action='store_true',help='Fit the first/last 100 ms of root velocity to standing locomotion')
+p.add_argument('--body-support',action='store_true',help='Also support torso and limbs for authored dives and ground poses')
 p.add_argument('--technique',choices=['inside','outside','instep','heel'])
 p.add_argument('--max-ball-speed',type=float,default=2.5)
 p.add_argument('--contact-frame',type=int,help='Explicit integration contact frame at 100 Hz, not recovered from PES')
 p.add_argument('--contact-point',type=float,nargs=3,help='Annotated native ball centre at the contact frame')
+p.add_argument('--infer-contact',action='store_true',help='Estimate a Football contact from native limb kinematics; never an original PES event')
+p.add_argument('--infer-foot',action='store_true',help='Choose the striking foot from its motion, rather than its name')
 a=p.parse_args(sys.argv[sys.argv.index('--')+1:])
 action='shortpass'if a.short_pass else a.action
 if a.short_pass and a.action:raise ValueError('Use either --short-pass or --action')
@@ -90,12 +96,13 @@ def torso(points):
 rest,rest_q=evaluate(0,True)
 aligned=[axes[i].rotation_difference(direction(rest,pair))if pair else Quaternion()for i,pair in enumerate(segments)]
 frames=round(clip['frames']*100/clip['fps']);output=[];errors=[];max_length_error=0
-if action and (a.contact_frame is None or a.contact_point is None or not 8<=a.contact_frame<frames-8 or
+contact_action=bool(action and action not in ['trip','movement','special'])
+if contact_action and not a.infer_contact and (a.contact_frame is None or a.contact_point is None or not 8<=a.contact_frame<frames-8 or
                     not all(math.isfinite(x)for x in a.contact_point)):
     raise ValueError('A gameplay candidate requires an explicit bounded contact annotation')
 for tick in range(frames+1):
     points,world=evaluate(tick*clip['fps']/100);global_=[]
-    if (torso(points)@Vector((0,0,1))).z<.35:
+    if not a.body_support and (torso(points)@Vector((0,0,1))).z<.35:
         raise ValueError('This first preview fits foot-supported upright poses; ground-contact falls need a different support solve')
     for i,name in enumerate(selected):
         q=world[name]@rest_q[name].inverted()@aligned[i]
@@ -112,6 +119,15 @@ for tick in range(frames+1):
     minimum=min((locations[ankle]+global_[ankle]@Vector([foot['max'if bits[i]else'min'][i]for i in range(3)])).z
         for ankle,foot in zip((9,12),ref['feet'])for bits in itertools.product((0,1),repeat=3))
     airborne=max(0,min(points[n].z for n in ['sk_foot_l','sk_foot_r'])-min(rest[n].z for n in ['sk_foot_l','sk_foot_r']))
+    if a.body_support:
+        # A dive cannot use feet as its only support. These conservative
+        # segment end radii keep the pelvis, shoulders, head, knees and hands
+        # above the pitch; fixed bone lengths are still solved by FK.
+        radii=[.13,.14,.12,.08,.065,.08,.065,.085,.07,0,.085,.07,0]
+        minimum=min(minimum,min(v.z-r for v,r in zip(locations,radii)))
+        lowest=min(points[n].z for n in selected)
+        rest_lowest=min(rest[n].z for n in selected)
+        airborne=max(0,lowest-rest_lowest)
     height=.008-minimum+airborne
     if output:
         for i,q in enumerate(local):
@@ -126,14 +142,60 @@ for tick in range(frames+1):
             end=basis@sample(clip['root'].get('pos',[]),clip['frames']);end.z=0
             travel=end+(travel-end)*smooth((frames-tick)/10)
     output.append(dict(q=local,height=height,travel=travel,positions=[list(v+Vector((0,0,height)))for v in locations]))
+if a.infer_contact:
+    if not contact_action:raise ValueError('Only contact actions can infer a ball marker')
+    aim=Vector((math.sin(math.radians(a.direction_degrees)),-math.cos(math.radians(a.direction_degrees)),0))
+    parts=[a.contact_bodypart]
+    if a.infer_foot:parts=['right_foot','left_foot']
+    if a.role=='keeper':parts=['right_lowerarm','left_lowerarm']
+    bones={'right_foot':12,'left_foot':9,'right_upperleg':10,'left_upperleg':7,
+           'right_lowerleg':11,'left_lowerleg':8,'trunk':1,'head':2,'right_lowerarm':6,'left_lowerarm':4}
+    candidates=[]
+    for part in parts:
+        index=bones[part];points=[];centres=[]
+        for row in output:
+            world=[]
+            for i,q in enumerate(row['q']):world.append((world[parents[i]]@q).normalized()if parents[i]>=0 else q)
+            q=world[index];base=Vector(row['positions'][index]);offset=Vector();normal=aim.copy()
+            if part.endswith('foot'):
+                side=1 if part.startswith('right')else 0;foot=ref['feet'][side]
+                offset=Vector([(l+h)*.5 for l,h in zip(foot['min'],foot['max'])])
+                if a.technique in ['inside','outside']:
+                    sign=(1 if side else -1)*(1 if a.technique=='inside'else -1)
+                    offset.x=foot['max'if sign>0 else'min'][0]
+                    normal=q@Vector((sign,0,0))
+                else:offset.y=foot['min'][1];normal=q@Vector((0,-1,0))
+            elif part=='head':offset=Vector((0,-.10,.02))
+            elif part=='trunk':offset=Vector((0,-.14,.22 if a.ball_height_range[1]>1.2 else .02))
+            elif part.endswith('upperleg'):offset=Vector((0,-.07,-.15))
+            elif part.endswith('lowerleg'):offset=Vector((0,-.07,-.17))
+            elif part.endswith('lowerarm'):offset=Vector((0,0,-.25))
+            centre=base+q@offset
+            point=centre+normal.normalized()*.11
+            if a.ball_height_range[1]<=.36:point.z=.11
+            centres.append(centre+row['travel']);points.append(point)
+        end=max(9,min(len(output)-9,round(len(output)*.70)))
+        for frame in range(8,end):
+            point=points[frame];velocity=(centres[frame+1]-centres[frame-1])*50
+            if not a.ball_height_range[0]-.18<=point.z<=a.ball_height_range[1]+.18:continue
+            if a.role in ['reception','control']:
+                score=3*(point.x*aim.x+point.y*aim.y)-.035*velocity.length
+            else:score=velocity.dot(aim)+.12*velocity.length
+            score-=.0005*frame
+            if part.startswith('right'):score+=.015
+            candidates.append((score,frame,part,point))
+    if not candidates:raise ValueError('No anatomically supported contact in the annotated height window')
+    _,a.contact_frame,a.contact_bodypart,point=max(candidates,key=lambda r:r[0])
+    a.contact_point=list(point)
 root_bind=ref['bones'][0]['offset'][2]if action else 0
 lines=['player'+''.join(',%d,%.9f,%.9f,%.9f'%(i,row['travel'].x,row['travel'].y,row['height']-root_bind)for i,row in enumerate(output))]
 for i,bone in enumerate(ref['bones']):
     lines.append(bone['name']+''.join(',%d,%.9f,%.9f,%.9f,%.9f'%(t,row['q'][i].x,row['q'][i].y,row['q'][i].z,row['q'][i].w)for t,row in enumerate(output)))
 if action:
-    contact=Vector(a.contact_point)+output[a.contact_frame]['travel']
-    lines+=['extension,football,%d,%.9f,%.9f,%.9f'%(a.contact_frame,*contact),
-        '<type>'+action+'</type>','<pes_action>true</pes_action>',
+    if contact_action:
+        contact=Vector(a.contact_point)+output[a.contact_frame]['travel']
+        lines+=['extension,football,%d,%.9f,%.9f,%.9f'%(a.contact_frame,*contact)]
+    lines+=['<type>'+action+'</type>','<pes_action>true</pes_action>',
         '<pes_contact_bodypart>'+a.contact_bodypart+'</pes_contact_bodypart>',
         '<pes_source_name>'+str(clip.get('name'))+'</pes_source_name>',
         '<balldirection>%.9f,%.9f,0</balldirection>'%(math.sin(math.radians(a.direction_degrees)),-math.cos(math.radians(a.direction_degrees))),
@@ -149,17 +211,25 @@ if action:
             incomingballdirection='0,1,0',incomingballdirection_maxdeviation=.4).items():
             lines.append('<%s>%s</%s>'%(key,value,key))
         if a.technique:lines.append('<physical_technique>'+a.technique+'</physical_technique>')
+    if a.state_in:lines.append('<incoming_special_state>'+a.state_in+'</incoming_special_state>')
+    if a.state_out:lines.append('<outgoing_special_state>'+a.state_out+'</outgoing_special_state>')
+    if a.retainer_out:lines.append('<outgoing_retain_state>'+a.retainer_out+'</outgoing_retain_state>')
+    if a.retainer_in:lines.append('<incoming_retain_state>'+a.retainer_in+'</incoming_retain_state>')
+    if action=='trip':
+        lines+=['<triptype>'+str(a.trip_type)+'</triptype>',
+                '<bumpdirection>%.9f,%.9f,0</bumpdirection>'%(math.sin(math.radians(a.direction_degrees)),-math.cos(math.radians(a.direction_degrees)))]
 else:lines+=['<type>trainingpose</type>']
 lines+=['<loop>false</loop>','<root_motion>'+str(a.root_motion).lower()+'</root_motion>']
 a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text('\n'.join(lines)+'\n')
 report=dict(name=clip.get('name'),source_sha256=hashlib.sha256(a.clip.read_bytes()).hexdigest(),
     output_sha256=hashlib.sha256(a.output.read_bytes()).hexdigest(),samples=len(output),source_fps_assumed=clip['fps'],
-    source_game_pose_comparison_pending=True,root_xy_imported=a.root_motion,ball_events_added=bool(action),
+    source_game_pose_comparison_pending=True,root_xy_imported=a.root_motion,ball_events_added=contact_action,
     motion_root_rotation_applied=True,
+    ground_support='whole_body_proxies'if a.body_support else'feet',
     root_velocity_entry_exit_fitted=a.stationary_entry,
     action=action,role=a.role if action else None,contact_bodypart=a.contact_bodypart if action else None,
     contact_frame_100hz=a.contact_frame if action else None,
-    contact_annotation_origin='Football integration; original PES ball timing not recovered'if action else None,
+    contact_annotation_origin=('Kinematic Football integration estimate; original PES ball timing not recovered'if a.infer_contact else'Football integration; original PES ball timing not recovered')if contact_action else None,
     maximum_direction_error=max(errors),maximum_bone_length_error=max_length_error,
     maximum_10ms_joint_angle_change=max(2*math.acos(min(1,abs(left.dot(right))))
         for before,after in zip(output,output[1:])for left,right in zip(before['q'],after['q'])),

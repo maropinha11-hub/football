@@ -9,6 +9,8 @@ da base original, com controles em primeira pessoa e exercícios de treino.
 Carreira e partidas online ficam para etapas posteriores.
 
 O pacote atual é o [treino clássico Windows x64](artifacts/football-classico-windows-x86_64.zip).
+Depois de extrair em uma pasta nova, `treinar-animacoes-pes.bat` testa o banco
+ampliado e `partida-animacoes-pes.bat` usa o mesmo banco com os dois times.
 Extraia em **uma pasta nova** e abra **treino-classico.bat**; para a partida,
 abra **jogar-partida.bat**. Esta revisão mantém a câmera e as animações nativas,
 com adaptações corporais e alcance de pernas por IK, **sem ragdoll nem dinâmica
@@ -21,12 +23,14 @@ Veja [os comandos](docs/TREINO-CLASSICO.md),
 O [estudo dos repositórios PES](docs/ESTUDO-PES-REFERENCIAS.md) prepara o leitor
 `pes-gani` para aproveitar somente animações PES 2021 identificadas por nome.
 O CPK real do PES 2017 já foi recebido: 2.956 clipes foram decodificados e
-2.365 nomes identificados. O banco de teste contém **21 clipes adaptados**, com
-passes, chutes, cruzamentos, cabeceios e recepções. Abra
+2.365 nomes identificados. O banco ampliado contém **1.833 clipes adaptados** e
+**3.070 candidatos**, com ações de campo, goleiros, conduções e recuperações. Abra
 **treinar-animacoes-pes.bat**; **Insert** compara com o banco original.
 Os movimentos entram quando a trajetória, a direção e o contato real permitem;
-as opções nativas continuam disponíveis. A condução e a locomoção aprovadas
-foram preservadas. Veja [o banco e seus limites](docs/BANCO-ANIMACOES-PES2017.md).
+as opções nativas continuam disponíveis. O treino clássico preserva o banco
+aprovado. O modo PES usa seleção de poses aprendida, previsão da bola e
+transições compartilhadas entre a imagem e os contatos. A recepção com virada
+tem limites de torção do tronco. Veja [o banco e seus limites](docs/BANCO-ANIMACOES-PES2017.md).
 Veja [os dados recebidos, a reprodução e os limites](docs/ANIMACOES-PES2017.md).
 A física e a lógica de jogadas continuam do Football.
 

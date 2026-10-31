@@ -3,6 +3,7 @@
 // i do not offer support, so don't ask. to be used for inspiration :)
 
 #include "utils.hpp"
+#include "read_lines.hpp"
 
 #include "log.hpp"
 
@@ -166,20 +167,13 @@ namespace blunted {
 
   void file_to_vector(std::string filename, std::vector<std::string> &destination) {
 
-    char line[32767];
     std::ifstream file;
 
     file.open(filename.c_str(), std::ios::in);
 
     if (file.fail()) Log(e_FatalError, "utils", "file_to_vector", "file not found or empty: " + filename);
 
-    while (file.getline(line, 32767)) {
-      std::string line_str;
-      line_str.assign(line);
-      // remove possible windows CR
-      line_str.erase( std::remove(line_str.begin(), line_str.end(), '\r'), line_str.end() );
-      destination.push_back(line_str);
-    }
+    readTextLines(file,destination);
 
     file.close();
   }

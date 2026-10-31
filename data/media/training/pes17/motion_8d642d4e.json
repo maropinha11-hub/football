@@ -1,0 +1,58 @@
+{
+  "name": "kick_short_3_0_outside_y6_f090_taekwondo",
+  "source_sha256": "02bdd8db5cecc7ae384621dabeadac18b347b4e099f81467d553a67c1802af83",
+  "output_sha256": "538d7b05da6afff32d4682982e4edea69ad9df588feadb06f6822b44b680cac7",
+  "samples": 198,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": false,
+  "action": "shortpass",
+  "role": "pass",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": 39,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 4.792901225591371e-07,
+  "maximum_bone_length_error": 1.9582960220088097e-07,
+  "maximum_10ms_joint_angle_change": 0.1346919694296832,
+  "root_height_range": [
+    0.8025444583892822,
+    1.4444714622497559
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file6.mtar",
+  "source_name_hash": "8d642d4e",
+  "source_id": 59372,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": -90,
+    "height": [
+      1.05,
+      1.85
+    ],
+    "speed": [
+      1.4,
+      10
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "shortpass",
+    "role": "pass",
+    "infer_contact": true,
+    "infer_foot": true,
+    "technique": "outside"
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

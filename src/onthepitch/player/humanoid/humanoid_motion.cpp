@@ -2,6 +2,8 @@
 #include "motion_matching.hpp"
 #include "frame_motion_matching.hpp"
 #include "strike_technique.hpp"
+#include "pes_pose_matching.hpp"
+#include "utils/animationextensions/footballanimationextension.hpp"
 #include "../../../main.hpp"
 #include "../../match.hpp"
 #include <map>
@@ -111,18 +113,29 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
     return result;
   };
   MotionFeature query=extract(currentAnim->anim,currentAnim->frameNum,startAngle-spatialState.angle);
+  MotionFeature pesQuery=query;
+  for(unsigned i=0;i<5;++i){
+    const Vector3 actual=(contactPositions[joints[i]]-contactPositions[0]).GetRotated2D(-spatialState.angle);
+    pesQuery.positions[i]={{actual.coords[0],actual.coords[1],actual.coords[2]}};
+  }
   const Vector3 desired=(command.useDesiredMovement?command.desiredDirection*command.desiredVelocityFloat:spatialState.movement).GetRotated2D(-spatialState.angle);
   const Vector3 facing=(command.useDesiredLookAt?command.desiredLookAt-spatialState.position:spatialState.bodyDirectionVec).Get2D().GetRotated2D(-spatialState.angle).GetNormalized(Vector3(0,-1,0));
   for(unsigned i=0;i<3;++i){const float time=(i+1)*.15f;
     query.trajectory[i]={{desired.coords[0]*time,desired.coords[1]*time,0}};
     query.facing[i]={{facing.coords[0],facing.coords[1],0}};
+    pesQuery.trajectory[i]=query.trajectory[i];pesQuery.facing[i]=query.facing[i];
   }
   // Contact clips enter at their authored beginning. This is a constrained
   // motion-matching search: native reach/timing feasibility still follows it.
   // Jumping to arbitrary kick frames would discard the ball-contact marker.
   static std::map<const Animation*,MotionFeature> database;
+  // Forward kinematics scales offsets to this actor's height. The learned
+  // descriptor then normalizes by that same height; sharing a descriptor
+  // extracted for another player distorts both pose and support features.
+  // Preserve the native cache/cost path and key imported entries by scale.
+  static std::map<std::pair<const Animation*,float>,MotionFeature> pesDatabase;
   static boost::weak_ptr<AnimCollection> databaseOwner;
-  if(databaseOwner.lock()!=anims){database.clear();databaseOwner=anims;}
+  if(databaseOwner.lock()!=anims){database.clear();pesDatabase.clear();databaseOwner=anims;}
   std::map<int,float> costs;
   const bool preferRight=command.desiredFunctionType==e_FunctionType_BallControl;
   const bool strike=command.desiredFunctionType==e_FunctionType_ShortPass||command.desiredFunctionType==e_FunctionType_LongPass||command.desiredFunctionType==e_FunctionType_Shot||command.desiredFunctionType==e_FunctionType_HighPass;
@@ -130,9 +143,34 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   const Vector3 aim=command.touchInfo.desiredDirection.GetRotated2D(-spatialState.angle);
   const float opening=std::atan2(aim.coords[0],-aim.coords[1]);
   const auto technique=football_strike::choose(command.touchInfo.desiredPower,opening,ballLocal.coords[0],spatialState.floatVelocity,command.desiredFunctionType==e_FunctionType_Shot);
+  const auto learnedQuery=football_pes_matching::features(pesQuery,contactPositions[0].coords[2],zMultiplier);
+  float nearestOpponent=30;
+  std::vector<Player*> opposition;match->GetTeam(1-static_cast<Player*>(player)->GetTeamID())->GetActivePlayers(opposition);
+  for(auto *other:opposition)nearestOpponent=std::min(nearestOpponent,(other->GetPosition()-spatialState.position).Get2D().GetLength());
+  unsigned pesCompared=0;
   for(int id:candidates){auto *clip=anims->GetAnim(id);
     auto found=database.find(clip);if(found==database.end())found=database.emplace(clip,extract(clip,0,0)).first;
     costs[id]=motionCost(query,found->second);
+    if(clip->GetVariable("pes_bulk")=="true"){
+      const auto key=std::make_pair(static_cast<const Animation*>(clip),zMultiplier);
+      auto scaled=pesDatabase.find(key);
+      if(scaled==pesDatabase.end())scaled=pesDatabase.emplace(key,extract(clip,0,0)).first;
+      Quaternion ignored;Vector3 root;clip->GetKeyFrame("player",0,ignored,root);
+      costs[id]=football_pes_matching::cost(learnedQuery,football_pes_matching::features(scaled->second,(.96f+root.coords[2])*zMultiplier,zMultiplier));
+      auto extension=boost::static_pointer_cast<FootballAnimationExtension>(clip->GetExtension("football"));
+      Vector3 contact;int frame=-1;
+      if(extension&&extension->GetFirstTouch(contact,frame)){
+        const Vector3 arrival=(match->GetBall()->Predict(std::max(0,frame)*10)-spatialState.position).GetRotated2D(-spatialState.angle);
+        const Vector3 error=arrival-Vector3(contact.coords[0],contact.coords[1],contact.coords[2]*zMultiplier);
+        costs[id]+=.4f*std::min(9.f,error.Get2D().GetSquaredLength())+2.f*error.coords[2]*error.coords[2];
+        costs[id]+=.8f*std::max(0,frame)*.01f;
+        // Shorter preparation is preferable under real opponent pressure.
+        costs[id]+=.25f*std::max(0.f,2.f-nearestOpponent)*frame*.01f;
+      }
+      const Vector3 end=spatialState.position+clip->GetOutgoingMovement().GetRotated2D(spatialState.angle)*.35f;
+      costs[id]+=2.f*std::max(0.f,std::fabs(end.coords[0])-pitchHalfW)+2.f*std::max(0.f,std::fabs(end.coords[1])-pitchHalfH);
+      ++pesCompared;
+    }
     if(command.useDesiredTripDirection){
       // Pose continuity is a secondary preference for impacts. A front brace
       // may resemble idle more closely than a side step, but cannot recover
@@ -151,4 +189,7 @@ void HumanoidBase::RankMotionMatches(DataSet &candidates,const PlayerCommand &co
   std::stable_sort(candidates.begin(),candidates.end(),[&](int a,int b){return costs[a]<costs[b];});
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("MOTION_MATCH t=%lu candidates=%zu indexed=%zu choice=%d cost=%.6f function=%d\n",match->GetActualTime_ms(),candidates.size(),database.size(),candidates.front(),costs[candidates.front()],int(command.desiredFunctionType));
+  if(pesCompared&&GetConfiguration()->GetBool("training_telemetry",false))
+    printf("PES_LEARNED_MATCH t=%lu actor=%d compared=%u dimensions=50 choice=%s cost=%.6f opponent=%.4f\n",
+      match->GetActualTime_ms(),player->GetID(),pesCompared,anims->GetAnim(candidates.front())->GetName().c_str(),costs[candidates.front()],nearestOpponent);
 }

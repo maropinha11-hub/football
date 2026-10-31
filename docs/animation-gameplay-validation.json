@@ -1,28 +1,28 @@
 {
-  "date": "2026-10-30",
+  "date": "2026-10-31",
   "result": "passed",
-  "base_commit": "0fe1797e01a0723047b387196d70606d2f0a6016",
-  "scope": "Approved native animation/IK gameplay plus 21 explicitly enabled retargeted PES 2017 action sources / 37 runtime candidates; no runtime ragdoll.",
+  "base_commit": "0ccef1a63c4461f18da6cad87ea846e5b4e68f6b",
+  "scope": "Native animation/IK with the expanded opt-in PES bank and learned pose-selection metric; no runtime ragdoll.",
   "implemented": {
     "animation_body_default": true,
     "ragdoll_worlds": 0,
     "cloth_dynamics": false,
     "unchanged_native_animation_bank": true,
-    "retargeted_pes_actions": 21,
+    "retargeted_pes_actions": 1833,
+    "pes_runtime_candidates": 3070,
     "pes_enabled_by_default": false,
     "ground_bounce": 0.74,
-    "contact": "Same bounded native planning and real weighted-skin gate; no expanded tolerance or forced ball attachment.",
-    "pes_runtime_candidates": 37
+    "contact": "Native planning and real weighted-skin contact; no forced attachment."
   },
   "binaries": {
-    "native_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
-    "windows_unstripped_sha256": "77a65dbad0d706f43ce2b2b1de3033e7a3def6a1c31124a2ada5cce861dd51be"
+    "native_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+    "windows_unstripped_sha256": "747a8efbac9f67eae6a9d86276c5cb40cfff9c4469c4e0b956983a7bbd1b0b06"
   },
   "unit_validation": {
-    "ctest_suites": 14,
+    "ctest_suites": 15,
     "ctest_result": "passed",
-    "python_tests": 250,
-    "python_passed": 244,
+    "python_tests": 254,
+    "python_passed": 248,
     "python_skipped": 6
   },
   "rendered": [
@@ -30,42 +30,90 @@
       "scenario": "camera",
       "result": "passed",
       "checks": 27,
-      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca"
     },
     {
       "scenario": "central",
       "result": "passed",
       "checks": 10,
-      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca"
     },
     {
       "scenario": "airborne",
       "result": "passed",
       "checks": 28,
-      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca"
     },
     {
       "scenario": "actions",
       "result": "passed",
       "checks": 37,
-      "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0"
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca"
     }
   ],
   "rendered_checks": 102,
+  "pes_action_bank": {
+    "result": "passed",
+    "checks": 181,
+    "views": 2,
+    "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+    "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124",
+    "actual_contact_sources": 18,
+    "report": "docs/pes2017-action-bank-validation.json"
+  },
+  "reception_turns": {
+    "date": "2026-10-31",
+    "result": "passed",
+    "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+    "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124",
+    "checks": 37
+  },
+  "pes_match": {
+    "result": "passed",
+    "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+    "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124",
+    "checks": 94,
+    "stages": [
+      {
+        "scenario": "central",
+        "result": "passed",
+        "checks": 10
+      },
+      {
+        "scenario": "airborne",
+        "result": "passed",
+        "checks": 28
+      },
+      {
+        "scenario": "keepers",
+        "result": "passed",
+        "checks": 23
+      },
+      {
+        "scenario": "restarts",
+        "result": "passed",
+        "checks": 17
+      },
+      {
+        "scenario": "autonomous_match",
+        "result": "passed",
+        "checks": 16
+      }
+    ],
+    "report": "docs/pes2017-match-validation.json"
+  },
+  "learned_selection": {
+    "report": "docs/pes2017-pose-metric-validation.json",
+    "task": "Rank 20-80 ms real continuations under 1 cm pose noise and requested future trajectory.",
+    "heldout_accuracy": 0.967,
+    "generative_motion": false
+  },
   "limitations": {
     "windows_gui_executed": false,
     "original_pes_gameplay_integrated": false,
-    "real_pes2021_clips_imported": 0,
-    "all_possible_ball_arrivals_proven": false
+    "all_possible_ball_arrivals_proven": false,
+    "all_sources_contact_exercised": false,
+    "excluded_source_records": 1123
   },
-  "research": "docs/BANCO-ANIMACOES-PES2017.md",
-  "pes_action_bank": {
-    "result": "passed",
-    "checks": 179,
-    "views": 2,
-    "executable_sha256": "680e3a007dfd3890479da5f42845458af17ae70bf06babc39815575c3187bad0",
-    "bank_catalog_sha256": "6bd4ab4a46b37ede02c572f420c254ecdb9a465c452984cf1a7be5aad9d631db",
-    "actual_contact_sources": 11,
-    "report": "docs/pes2017-action-bank-validation.json"
-  }
+  "research": "docs/BANCO-ANIMACOES-PES2017.md"
 }

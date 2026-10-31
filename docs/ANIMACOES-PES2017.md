@@ -42,8 +42,9 @@ O movimento `run_2_0` foi adaptado de 20 para 13 ossos, com base na anatomia,
 nos vetores dos segmentos e no bind real do modelo. A conversão de eixos é
 uma rotação própria `(X,Y,Z) -> (X,-Z,Y)`: não troca os lados do corpo.
 A raiz horizontal fica fora do clipe nativo para evitar deslocamento duplo.
-O protótipo atual resolve apoio em pé; poses de queda exigem outro contato
-com o chão e são recusadas pelo conversor.
+Esse primeiro protótipo resolvia apenas apoio em pé. O conversor ampliado
+também resolve apoio dos segmentos do corpo para quedas e recuperações,
+mantendo os estados de entrada e saída do seletor nativo.
 
 A amostragem gerou 91 poses a 100 Hz. Nos quadros 0, 45 e 90, o executável
 renderizou a malha original, preservando os ossos e as distâncias rígidas,
@@ -94,9 +95,9 @@ não mostrar o instante exato do impacto a 100 Hz. Resultados completos:
 A compilação Windows foi conferida como pacote; sua execução gráfica não foi
 realizada neste ambiente.
 
-## Ampliação do banco
+## Primeira ampliação do banco — etapa anterior
 
-A etapa atual reúne 21 clipes de origem e conserva o passe aprovado. A
+Essa etapa reuniu 21 clipes de origem e conservou o passe aprovado. A
 adaptação agora aplica também a rotação geral da animação, armazenada fora da
 hierarquia dos ossos, e preserva o deslocamento de apoio das novas ações.
 Há seleção por função, direção, velocidade e altura escalada para o jogador,
@@ -104,6 +105,23 @@ com candidatos nativos de reserva. A recepção de peito foi integrada à camada
 superior existente, com previsão do instante de chegada e transição para a
 ação seguinte. Detalhes e limites em
 [BANCO-ANIMACOES-PES2017.md](BANCO-ANIMACOES-PES2017.md).
+
+## Banco ampliado atual
+
+O banco atual tem **1.833 clipes adaptados e 3.070 candidatos de execução**,
+incluindo espelhamentos e variantes de recepção/condução. Abrange onze
+famílias: locomoção, condução, passes, chutes, cruzamentos, cabeceios,
+recepções, cortes, equilíbrio, recuperação e goleiros. O modo clássico
+continua disponível. Os 1.123 registros restantes têm contexto desconhecido,
+dependências ou reprovações de conversão e não foram ativados.
+
+Uma métrica de 50 características foi treinada para ordenar poses e trajetórias;
+ela não gera movimentos nem reproduz o seletor original do PES. O alcance e
+o contato real com a bola continuam obrigatórios. Os novos arquivos FBAN2
+preservam os valores float32 usados pelo motor, sem remoção de chaves.
+A torção do tronco nas recepções altas agora tem limite anatômico e liberação
+suave quando o jogador muda de orientação. O guia do banco documenta o
+treinamento, a cobertura efetivamente testada e as limitações.
 
 ## Reproduzir com os arquivos locais
 

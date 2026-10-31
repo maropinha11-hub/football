@@ -436,6 +436,7 @@ class HumanoidBase {
     Animation *upperReceptionClip=nullptr;
     unsigned long upperReceptionStarted_ms=0;
     float upperReceptionPhase=0,upperReceptionWeight=0,upperReceptionArmWeight=0,upperReceptionArmRelease=-1;
+    float upperReceptionAbortPhase=-1;
     int upperReceptionContactFrame=0,upperReceptionEndFrame=0;
     bool upperReceptionTouchMade=false;
     bool contactPreviousBallValid=false;

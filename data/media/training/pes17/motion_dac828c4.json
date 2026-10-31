@@ -1,0 +1,56 @@
+{
+  "name": "dodge_0_0_045_crouch",
+  "source_sha256": "977ff7995dc0821d28b619e934825131e3b678077fbbc0896ff673a4cacdef4c",
+  "output_sha256": "14404372090b8822c61dadaaa4259ef3abf5345219a49a97a4607623bf164067",
+  "samples": 204,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": false,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": true,
+  "action": "trip",
+  "role": "balance",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": null,
+  "contact_annotation_origin": null,
+  "maximum_direction_error": 4.805480091749757e-07,
+  "maximum_bone_length_error": 1.5902304562054326e-07,
+  "maximum_10ms_joint_angle_change": 0.16489351465600602,
+  "root_height_range": [
+    0.5426211194992066,
+    0.9546477632522583
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file1.mtar",
+  "source_name_hash": "dac828c4",
+  "source_id": 14863,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 45,
+    "height": [
+      0,
+      4
+    ],
+    "speed": [
+      0,
+      12
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "trip",
+    "role": "balance",
+    "trip_type": 1
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

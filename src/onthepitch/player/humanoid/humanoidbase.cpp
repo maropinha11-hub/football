@@ -1205,7 +1205,7 @@ void HumanoidBase::Put() {
   if(TrainingEnabled() && player->GetExternalController() && GetConfiguration()->GetBool("training_telemetry",false)) {
     char chunk[180];std::snprintf(chunk,sizeof(chunk),"TRAINING_CONTACT_JOINTS t=%lu",fetchedbuf_animApplyBuffer.snapshotTime_ms);
     std::string row(chunk);
-    for(const unsigned i:{1u,7u,8u,9u,10u,11u,12u}) {
+    for(unsigned i=0;i<13;++i) {
       const auto q=nodeMap.at(pes3::nativeBoneNames[i])->GetRotation().GetNormalized();
       std::snprintf(chunk,sizeof(chunk)," j%u=[%.6f,%.6f,%.6f,%.6f]",i,q.elements[0],q.elements[1],q.elements[2],q.elements[3]);row+=chunk;
     }
@@ -1297,6 +1297,12 @@ int HumanoidBase::GetIdleMovementAnimID() {
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
+  // Reset/fallback idle is a native safety state, not a context-aware action
+  // search. Imported goalie guards and long authored waits must never bypass
+  // the role, intent and comparison-mode checks in Humanoid::SelectAnim.
+  dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){
+    return anims->GetAnim(id)->GetVariable("pes_action")=="true";
+  }),dataSet.end());
   if (Verbose()) if (dataSet.size() == 0) printf("no animations to begin with\n");
 
   int desiredIdleLevel = 1;
@@ -1343,6 +1349,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
 void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos,bool recovering) {
   ResetPhysicalRig(!recovering);
   upperReceptionClip=nullptr;upperReceptionPhase=0;upperReceptionWeight=0;
+  upperReceptionAbortPhase=-1;
   contactPoseBlend=0;contactPreviousBallValid=false;bodyContactUntil_ms=0;
   pesEntryValid=false;
   buf_trainingLook.Clear();
@@ -1845,6 +1852,11 @@ bool HumanoidBase::SelectAnim(const PlayerCommand &command, e_InterruptAnim loca
 
   DataSet dataSet;
   anims->CrudeSelection(dataSet, query);
+  // The base selector also drives match officials. Player-context imports
+  // belong exclusively to Humanoid's bounded, role-aware action search.
+  dataSet.erase(std::remove_if(dataSet.begin(),dataSet.end(),[&](int id){
+    return anims->GetAnim(id)->GetVariable("pes_action")=="true";
+  }),dataSet.end());
   if (dataSet.size() == 0) {
     if (command.desiredFunctionType == e_FunctionType_Movement) {
       //if (player->GetDebug()) printf("selected player: ");

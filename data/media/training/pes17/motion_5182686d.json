@@ -1,0 +1,58 @@
+{
+  "name": "gkdeflectlate_s03_0_0_y08",
+  "source_sha256": "6156fca2ec7d72cbf0f69b6147248f2efa4f09b3e439c9babd7655c48b472241",
+  "output_sha256": "ca2ad1a9a1c456bb4a05df6749ce6edf76a922c533267aca13876c7a5d106305",
+  "samples": 258,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": true,
+  "action": "deflect",
+  "role": "keeper",
+  "contact_bodypart": "right_lowerarm",
+  "contact_frame_100hz": 154,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 4.65620307311257e-07,
+  "maximum_bone_length_error": 1.6349781123414786e-07,
+  "maximum_10ms_joint_angle_change": 0.15393569260726045,
+  "root_height_range": [
+    0.19708028542995454,
+    0.9882837371826172
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file3.mtar",
+  "source_name_hash": "5182686d",
+  "source_id": 51925,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 0,
+    "height": [
+      0.08,
+      3.5
+    ],
+    "speed": [
+      0,
+      12
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_lowerarm",
+    "mirror": false,
+    "action": "deflect",
+    "role": "keeper",
+    "infer_contact": true,
+    "keeper_only": true,
+    "retain_ball": false
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

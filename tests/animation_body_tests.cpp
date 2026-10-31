@@ -1,10 +1,37 @@
 #include "onthepitch/player/humanoid/physical_rig.hpp"
+#include "onthepitch/player/humanoid/reception_orientation.hpp"
+#include "onthepitch/player/humanoid/pes_pose_matching.hpp"
 #include <iostream>
 using namespace football_physics;
 int main(){
   pes3::NativeBind b;b.offsets={{{{0,0,.96f}},{{0,0,.15f}},{{0,-.03f,.5f}},{{.16f,-.01f,.48f}},{{-.01f,0,-.33f}},{{-.16f,-.01f,.48f}},{{.01f,0,-.33f}},{{.087f,0,-.01f}},{{0,0,-.42f}},{{0,-.04f,-.44f}},{{-.087f,0,-.01f}},{{0,0,-.42f}},{{0,-.04f,-.44f}}}};
   for(auto &q:b.rotations)q={{0,0,0,1}};
   unsigned checks=0,failures=0;auto check=[&](bool ok,const char *name){++checks;if(!ok){++failures;std::cerr<<name<<'\n';}};
+  {
+    MotionFeature f;
+    const auto a=football_pes_matching::features(f,.96f,1);
+    f.positions[0]={{.2f,-.4f,-.8f}};
+    const auto other=football_pes_matching::features(f,.96f,1);
+    check(football_pes_matching::trained&&football_pes_matching::cost(a,a)==0&&football_pes_matching::cost(a,other)>0,
+          "the learned PES pose metric is active and distinguishes a different reaching foot");
+    f.velocities[0]={{.4f,-.8f,.1f}};
+    const auto normalized=football_pes_matching::features(f,.96f,1);
+    for(auto &p:f.positions)for(auto &x:p)x*=1.2f;
+    for(auto &v:f.velocities)for(auto &x:v)x*=1.2f;
+    const auto taller=football_pes_matching::features(f,.96f*1.2f,1.2f);
+    check(football_pes_matching::cost(normalized,taller)<1e-10f,
+          "equivalent poses at different player heights have the same learned selection descriptor");
+    for(float yaw:{-3.14f,-2.f,-1.4f,0.f,1.4f,2.f,3.14f}){
+      const auto requested=productRotation(exponential({{.4f,0,0}}),exponential({{0,0,yaw}}));
+      const auto q=football_reception::boundedSpine(requested);
+      const float twist=2*std::atan2(q[2],q[3]);
+      check(std::fabs(twist)<=.9601f&&std::fabs(dotPoint(rotatePoint(q,{{0,0,1}}),rotatePoint(requested,{{0,0,1}}))-1)<1e-5f,
+            "turning away from an arrival preserves chest lean without twisting the spine backwards");
+    }
+    check(football_reception::fade(5,5)==1&&football_reception::fade(17,5)==0&&
+          football_reception::fade(11,5)>.49f&&football_reception::fade(11,5)<.51f,
+          "an abandoned upper reception releases gradually rather than snapping or locking locomotion");
+  }
   for(unsigned requested:{0u,1u,2u}){
     PhysicalRig body;body.configure(b,1);Input input;input.animationOnly=true;input.controller=requested;input.pose=b.rotations;
     bool animated=true,lengths=true;float response=0;

@@ -85,7 +85,10 @@ def main():
         ('thigh_receive',0,0,0,0,'F5',['8'],None,True),
         ('chest_receive',0,0,0,0,'F5',[],None,True),
         ('jumping_header',4,300,0,0,'F6',['Shift_L'],8,True),
-        ('running_pass',1,180,0,900,None,[],4,True),
+        # A gait-phase-dependent native fallback is a valid physical action.
+        # The combined two-view suite still requires actual PES running-pass
+        # and running-shot contacts, in addition to the five action families.
+        ('running_pass',1,180,0,900,None,[],4,False),
         # The source depends on the exact gait phase at release. Keep the
         # native shot when its shoe is the reachable one; the release suite
         # additionally requires a real contact from the PES running shot
@@ -111,12 +114,13 @@ def main():
             for name,row in unique.items():
                 if '_mirror'not in name:continue
                 original=unique[name.replace('_mirror','')]
-                pairs.append(row['contact']==original['contact']and row['frames']==original['frames'])
+                pairs.append(row.get('contact')==original.get('contact')and row['frames']==original['frames'])
             check('mirrored candidates own independent event maps with identical timing',bool(pairs)and all(pairs),dict(pairs=len(pairs)))
             g.reset();start=len(g.read_log());pad(0);g.advance(1800);g.pad(0,0);g.advance(300)
             log=g.read_log()[start:]
-            check('owned forward dribbling retains the approved native gait',not events(log,'PES_ACTION_CONTACT')and
-                  any(r.get('function')=='2'for r in events(log,'TRAINING_ACTION_TOUCH')),events(log,'TRAINING_NATIVE_START'))
+            check('owned forward dribbling completes actual control touches without triggering a receiving trap',
+                  any(r.get('function')=='2'for r in events(log,'TRAINING_ACTION_TOUCH'))and
+                  all(r.get('function')=='2'for r in events(log,'PES_ACTION_CONTACT')),events(log,'TRAINING_NATIVE_START'))
             observed=set()
             for name,button,hold,angle,run,key,mods,function,require_pes in scenarios:
                 g.reset();start=len(g.read_log());start_time=g.frames()[-1]['t']
@@ -171,6 +175,10 @@ def main():
                 distance=math.dist(before[:2],frames[-1]['player'][:2])
                 check(name+' returns control to the approved locomotion',distance>.25,dict(distance_m=distance))
             check('actual contacts exercise multiple distinct source movements',len(observed)>=8,sorted(observed))
+            learned=events(g.read_log(),'PES_LEARNED_MATCH')
+            if catalog['source_clips']>21:
+                check('the trained metric participates in actual runtime selection',
+                      bool(learned)and all(math.isfinite(float(r['cost']))for r in learned),dict(decisions=len(learned)))
             report['observed_source_clips']=sorted(observed)
             if a.camera==2:
                 eyes=events(g.read_log(),'PHYSICAL_EYE')

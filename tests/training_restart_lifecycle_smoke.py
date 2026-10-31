@@ -6,7 +6,7 @@ from native_training_harness import NativeTraining
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
-p.add_argument('--display',default=':247');a=p.parse_args()
+p.add_argument('--display',default=':247');p.add_argument('--pes-actions',action='store_true');a=p.parse_args()
 r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
@@ -14,7 +14,7 @@ def ev(g,prefix,start=0):
  return [dict(re.findall(r'(\w+)=([^\s]+)',x))for x in g.read_log()[start:].splitlines()if x.startswith(prefix+' ')]
 try:
  with NativeTraining(a.build,a.output/'match',display=a.display,analog_pad=True,camera=1,
-    config_overrides=dict(context_x=480,context_y=270,player_match='true',training_physical_rig='true',training_physical_lab='true',player_match_half_seconds=120,simulation_seed=7))as g:
+    config_overrides=dict(context_x=480,context_y=270,player_match='true',training_physical_rig='true',training_physical_lab='true',player_match_half_seconds=120,simulation_seed=7),extra_arguments=['--pes-actions']if a.pes_actions else[])as g:
   g.advance(2700)
   for i,kind in enumerate(['free_kick','penalty','corner','throw_in','goal_kick']):
    start=len(g.read_log());g.keys(['F10'],True);g.advance(100);g.keys(['F10'],False);g.advance(250)

@@ -65,6 +65,7 @@ void HumanoidBase::ConfigurePhysicalRig(){
   std::vector<football_physics::BalanceMotion> bank;
   unsigned sources=0;
   for(auto *clip:anims->GetAnimations())if(clip->GetAnimType()=="trip" && clip->GetVariable("triptype")=="1"){
+    if(clip->GetVariable("pes_action")=="true")continue; // Authored alternatives already exist; do not multiply the entire imported bank sixteenfold.
     ++sources;
     const auto push=point(GetVectorFromString(clip->GetVariable("bumpdirection")));
     for(float gain:{.55f,.75f,1.f,1.25f})for(float cadence:{1.f,1.2f})for(float lateral:{-.035f,.035f}){
@@ -578,9 +579,16 @@ void HumanoidBase::UpdatePhysicalRigPose(){
       if(delta.GetLength()<input.opponentDistance){input.opponentDistance=delta.GetLength();input.opponent=point(delta);}
     }
     input.passiveTracking=false; // Physical muscles stay active for every CPU actor.
-    if(!input.controller)ComposeWalkingReference(input,physicalRigTime!=match->GetActualTime_ms());
+    if(!input.controller&&currentAnim->anim->GetVariable("pes_bulk")!="true")
+      ComposeWalkingReference(input,physicalRigTime!=match->GetActualTime_ms());
     ComposeReceptionReference(input,physicalRigTime!=match->GetActualTime_ms());
     BuildSituationalInput(input);
+    if(currentAnim->anim->GetVariable("pes_bulk")=="true"){
+      // Authored full-body preparations already contain trunk and arm work.
+      // Keep a small situational response instead of stacking two wind-ups.
+      input.situation.trunkGain*=.25f;input.situation.armGain*=.25f;input.situation.followThroughGain*=.25f;
+      if(currentAnim->anim->GetVariable("pes_role")=="locomotion")input.situation.enabled=false;
+    }
     // The interior-frame matcher is not a validated physical walking policy.
     // Keep it available for offline study; it must not replace support targets
     // while the free body is trying to establish finite sole contact.

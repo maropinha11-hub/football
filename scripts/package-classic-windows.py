@@ -33,6 +33,21 @@ def package():
     if(pes.get('result')!='passed' or pes.get('executable_sha256')!=validation['binaries']['native_sha256'] or
        pes.get('bank_catalog_sha256')!=bank_hash or pes.get('views')!=2):
         raise RuntimeError('Action bank has no matching successful two-view contact/fallback validation')
+    metric=json.loads((ROOT/'docs/pes2017-pose-metric-validation.json').read_text())
+    if(metric.get('result')!='passed' or metric.get('bank_catalog_sha256')!=bank_hash or
+       metric.get('source_clips')!=bank['source_clips'] or metric.get('header_sha256')!=hashlib.sha256(
+           (ROOT/'src/onthepitch/player/humanoid/learned_pes_pose_metric.hpp').read_bytes()).hexdigest()):
+        raise RuntimeError('The learned metric does not match the validated action library')
+    turns=validation.get('reception_turns',{})
+    if(turns.get('result')!='passed' or turns.get('executable_sha256')!=validation['binaries']['native_sha256'] or
+       turns.get('bank_catalog_sha256')!=bank_hash):
+        raise RuntimeError('Turning receptions have no successful graphical regression')
+    match=validation.get('pes_match',{})
+    if(match.get('result')!='passed' or match.get('executable_sha256')!=validation['binaries']['native_sha256'] or
+       match.get('bank_catalog_sha256')!=bank_hash or
+       {r['scenario']for r in match.get('stages',[])}!={'central','airborne','keepers','restarts','autonomous_match'} or
+       any(r['result']!='passed'for r in match['stages'])):
+        raise RuntimeError('The expanded bank has no matching CPU/keeper/restart/match validation')
     for row in bank['actions']:
         if hashlib.sha256((bank_path.parent/row['file']).read_bytes()).hexdigest()!=row['sha256']:
             raise RuntimeError('Action bank changed after validation: '+row['file'])
@@ -58,6 +73,7 @@ def package():
                               ('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),
                               ('run-training.bat','--training --physical-rig'),
                               ('jogar-partida.bat','--player-match --physical-rig'),
+                              ('partida-animacoes-pes.bat','--player-match --physical-rig --pes-actions'),
                               ('run-controller-test.bat','--test-controller')]:
             (stage/filename).write_text('@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
                 'gameplayfootball.exe --config training.config '+args+' %*\r\nif errorlevel 1 pause\r\n',encoding='ascii',newline='')
@@ -66,12 +82,15 @@ def package():
                             ('docs/TREINO-CLASSICO.md','LEIA-PRIMEIRO.txt'),
                             ('docs/BANCO-ANIMACOES-PES2017.md','ANIMACOES-PES2017.txt'),
                             ('docs/pes2017-action-bank-validation.json','pes2017-action-bank-validation.json'),
+                            ('docs/pes2017-pose-metric-validation.json','pes2017-pose-metric-validation.json'),
+                            ('docs/pes2017-match-validation.json','pes2017-match-validation.json'),
                             ('docs/animation-gameplay-validation.json','animation-gameplay-validation.json')]:
             shutil.copy2(ROOT/source,stage/name)
         files=sorted(p for p in stage.rglob('*')if p.is_file())
         manifest=dict(mode='native_animation_and_ik',ragdoll=False,cloth_dynamics=False,
                       original_pes_gameplay_integrated=False,retargeted_pes2017_actions=bank['source_clips'],
                       pes2017_runtime_candidates=bank['runtime_candidates'],pes2017_bank_sha256=bank_hash,
+                      pose_selection='learned_diagonal_metric_50d',pose_metric_test_accuracy=metric['test_pair_accuracy']['learned'],
                       pes_action_enabled_by_default=False,
                       files={p.relative_to(stage).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()for p in files})
         (stage/'RELEASE.json').write_text(json.dumps(manifest,indent=2)+'\n')

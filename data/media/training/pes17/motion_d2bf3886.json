@@ -1,0 +1,56 @@
+{
+  "name": "gkprejump_4_0_rotateRun_090",
+  "source_sha256": "71f1b64a7f88d8565b209ee37eb86e444489d57c1a50217837c42a860b4867b9",
+  "output_sha256": "709212c65b8d1e3ffcd9c65c0e9e6c831e474d3d09ea84a95e46db52b14b3e54",
+  "samples": 131,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": false,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": false,
+  "action": "movement",
+  "role": "locomotion",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": null,
+  "contact_annotation_origin": null,
+  "maximum_direction_error": 4.7403495671113926e-07,
+  "maximum_bone_length_error": 1.408070835484665e-07,
+  "maximum_10ms_joint_angle_change": 0.10768317398043702,
+  "root_height_range": [
+    0.7454221086502075,
+    1.175866975069046
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file4.mtar",
+  "source_name_hash": "d2bf3886",
+  "source_id": 4114,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 90,
+    "height": [
+      0,
+      4
+    ],
+    "speed": [
+      1.4,
+      10
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "movement",
+    "role": "locomotion",
+    "keeper_only": true
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

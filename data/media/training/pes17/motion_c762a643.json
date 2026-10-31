@@ -1,0 +1,59 @@
+{
+  "name": "gkgoalkick_inside_0_0_000",
+  "source_sha256": "2c1f2f0c9e34fbbab5ce571487fed7c6a0c6cf7e11a1344db38e1fcebaf6e302",
+  "output_sha256": "0e9260a1242c3dcff85535edb69b1dcf075b76ac5bb3e15ea1c559454c6b555b",
+  "samples": 361,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": true,
+  "action": "highpass",
+  "role": "cross",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": 168,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 4.65765583756202e-07,
+  "maximum_bone_length_error": 1.801868160233866e-07,
+  "maximum_10ms_joint_angle_change": 0.1290876190744885,
+  "root_height_range": [
+    0.7355699973106384,
+    1.057988478422165
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file4.mtar",
+  "source_name_hash": "c762a643",
+  "source_id": 16250,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 0,
+    "height": [
+      0.08,
+      0.4
+    ],
+    "speed": [
+      0,
+      2.2
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": false,
+    "action": "highpass",
+    "role": "cross",
+    "infer_contact": true,
+    "infer_foot": true,
+    "setpiece": true,
+    "keeper_only": true
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

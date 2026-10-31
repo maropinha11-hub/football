@@ -1,0 +1,57 @@
+{
+  "name": "traprun_3_3_090_y0_in",
+  "source_sha256": "373a6f6851da056a6ddec7113433358d1a41c16f67039a24a73e075fa03de0d7",
+  "output_sha256": "25b896957f63e6a9e04f9752e0df7f899c28b301b9da401734a0efa1bb86e08b",
+  "samples": 91,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": false,
+  "action": "trap",
+  "role": "reception",
+  "contact_bodypart": "left_foot",
+  "contact_frame_100hz": 60,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 5.16191365590357e-07,
+  "maximum_bone_length_error": 1.5514110396352976e-07,
+  "maximum_10ms_joint_angle_change": 0.12445230581737057,
+  "root_height_range": [
+    0.7756622867584229,
+    1.0213631527423859
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file8.mtar",
+  "source_name_hash": "c9b79753",
+  "source_id": 53864,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 90,
+    "height": [
+      0.08,
+      0.36
+    ],
+    "speed": [
+      1.4,
+      10
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "trap",
+    "role": "reception",
+    "infer_contact": true,
+    "infer_foot": true
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

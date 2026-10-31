@@ -581,11 +581,13 @@ void AnimCollection::Load(boost::filesystem::path directory) {
       source.Load(file);
       const std::string type=source.GetAnimType(),part=source.GetVariable("pes_contact_bodypart");
       Vector3 marker;int frame=-1;
+      const bool contact=type!="movement"&&type!="trip";
       if(source.GetVariable("pes_action")!="true"||source.GetVariable("pes_source_name").empty()||
-         (type!="shortpass"&&type!="highpass"&&type!="shot"&&type!="trap"&&type!="ballcontrol")||
+         (type!="shortpass"&&type!="highpass"&&type!="shot"&&type!="trap"&&type!="ballcontrol"&&
+          type!="movement"&&type!="trip"&&type!="interfere"&&type!="sliding"&&type!="deflect")||
          (part!="right_foot"&&part!="left_foot"&&part!="right_upperleg"&&part!="left_upperleg"&&
-          part!="right_lowerleg"&&part!="left_lowerleg"&&part!="trunk"&&part!="head")||
-         !boost::static_pointer_cast<FootballAnimationExtension>(source.GetExtension("football"))->GetFirstTouch(marker,frame)||frame<1)
+          part!="right_lowerleg"&&part!="left_lowerleg"&&part!="trunk"&&part!="head"&&part!="right_lowerarm"&&part!="left_lowerarm")||
+         (contact&&(!boost::static_pointer_cast<FootballAnimationExtension>(source.GetExtension("football"))->GetFirstTouch(marker,frame)||frame<1)))
         throw std::runtime_error("Invalid retargeted action candidate: "+file);
       const bool receiving=source.GetVariable("pes_role")=="reception";
       for(int control=0;control<(receiving?2:1);++control)
@@ -793,8 +795,10 @@ void AnimCollection::CrudeSelection(DataSet &dataSet, const CrudeSelectionQuery 
 
 
   int animSize = animations.size();
+  const bool pesEnabled=TrainingPESActionsEnabled();
 
   for (int i = 0; i < animSize; i++) {
+    if(!pesEnabled&&animations.at(i)->GetVariable("pes_action")=="true")continue;
 
     const std::string &animType = animations.at(i)->GetAnimType();
 

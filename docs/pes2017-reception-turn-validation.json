@@ -1,0 +1,296 @@
+{
+  "date": "2026-10-31",
+  "result": "passed",
+  "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+  "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124",
+  "checks": 37,
+  "views": [
+    {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "early_reverse keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 75
+          }
+        },
+        {
+          "check": "early_reverse never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 10,
+            "maximum_twist_rad": 0.161531
+          }
+        },
+        {
+          "check": "early_reverse keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 10
+          }
+        },
+        {
+          "check": "early_reverse releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.8580683106964293,
+            "releases": []
+          }
+        },
+        {
+          "check": "arrival_diagonal keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 80
+          }
+        },
+        {
+          "check": "arrival_diagonal never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 10,
+            "maximum_twist_rad": 0.156526
+          }
+        },
+        {
+          "check": "arrival_diagonal keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 10
+          }
+        },
+        {
+          "check": "arrival_diagonal releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 1.4591207352374924,
+            "releases": []
+          }
+        },
+        {
+          "check": "after_touch_reverse keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 90
+          }
+        },
+        {
+          "check": "after_touch_reverse never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 10,
+            "maximum_twist_rad": 0.162906
+          }
+        },
+        {
+          "check": "after_touch_reverse keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 10
+          }
+        },
+        {
+          "check": "after_touch_reverse releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.621970894193907,
+            "releases": []
+          }
+        },
+        {
+          "check": "after_touch_side keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 95
+          }
+        },
+        {
+          "check": "after_touch_side never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 10,
+            "maximum_twist_rad": 0.157629
+          }
+        },
+        {
+          "check": "after_touch_side keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 10
+          }
+        },
+        {
+          "check": "after_touch_side releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.1743388972283046,
+            "releases": []
+          }
+        },
+        {
+          "check": "the trials exercise a real upper reception rather than only an idle pose",
+          "result": "passed",
+          "evidence": {
+            "starts": 4,
+            "masks": 40
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+      "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124"
+    },
+    {
+      "result": "passed",
+      "checks": [
+        {
+          "check": "early_reverse keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 50
+          }
+        },
+        {
+          "check": "early_reverse never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 7,
+            "maximum_twist_rad": 0.145486
+          }
+        },
+        {
+          "check": "early_reverse keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 7
+          }
+        },
+        {
+          "check": "early_reverse releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 1.1620090275036596,
+            "releases": []
+          }
+        },
+        {
+          "check": "arrival_diagonal keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 54
+          }
+        },
+        {
+          "check": "arrival_diagonal never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 7,
+            "maximum_twist_rad": 0.143847
+          }
+        },
+        {
+          "check": "arrival_diagonal keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 7
+          }
+        },
+        {
+          "check": "arrival_diagonal releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.9232105175645495,
+            "releases": []
+          }
+        },
+        {
+          "check": "after_touch_reverse keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 59
+          }
+        },
+        {
+          "check": "after_touch_reverse never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 7,
+            "maximum_twist_rad": 0.146589
+          }
+        },
+        {
+          "check": "after_touch_reverse keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 7
+          }
+        },
+        {
+          "check": "after_touch_reverse releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 2.803028121514303,
+            "releases": []
+          }
+        },
+        {
+          "check": "after_touch_side keeps the actual skeleton finite",
+          "result": "passed",
+          "evidence": {
+            "samples": 65
+          }
+        },
+        {
+          "check": "after_touch_side never winds the spine around the pelvis",
+          "result": "passed",
+          "evidence": {
+            "samples": 7,
+            "maximum_twist_rad": 0.153216
+          }
+        },
+        {
+          "check": "after_touch_side keeps independent legs and root",
+          "result": "passed",
+          "evidence": {
+            "samples": 7
+          }
+        },
+        {
+          "check": "after_touch_side releases movement after the attempt",
+          "result": "passed",
+          "evidence": {
+            "distance_m": 3.586427015847388,
+            "releases": []
+          }
+        },
+        {
+          "check": "the trials exercise a real upper reception rather than only an idle pose",
+          "result": "passed",
+          "evidence": {
+            "starts": 4,
+            "masks": 28
+          }
+        },
+        {
+          "check": "turning receptions preserve head and eye alignment",
+          "result": "passed",
+          "evidence": {
+            "samples": 386
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ],
+      "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+      "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124"
+    }
+  ]
+}

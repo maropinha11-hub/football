@@ -4,6 +4,7 @@
 #include "anatomical_arms.hpp"
 #include "native_contact_timing.hpp"
 #include "body_ball_response.hpp"
+#include "reception_orientation.hpp"
 #include "../../match.hpp"
 #include "../player.hpp"
 #include "../controller/humancontroller.hpp"
@@ -262,6 +263,8 @@ void HumanoidBase::BlendUpperReception(Animation *clip,float phase,float weight,
   if(player==match->GetTrainingPlayer())facing=match->GetTrainingReceptionFacing().GetAngle2D()+.5f*pi;
   Quaternion turn;turn.SetAngleAxis(facing,Vector3(0,0,1));
   source[1]=(local[0].GetInverse()*turn*source[0]*source[1]).GetNormalized();
+  const auto bounded=football_reception::boundedSpine({{source[1].elements[0],source[1].elements[1],source[1].elements[2],source[1].elements[3]}});
+  source[1]=Quaternion(bounded[0],bounded[1],bounded[2],bounded[3]);
   for(unsigned i=1;i<7;++i) {
     const float blend=i<3?weight:(armWeight<0?weight:armWeight);
     local[i]=local[i].GetSlerped(blend,source[i]).GetNormalized();
@@ -284,6 +287,19 @@ void HumanoidBase::TickUpperReception() {
     upperReceptionPhase=0;upperReceptionWeight=upperReceptionArmWeight=0;return;
   }
   upperReceptionPhase=float(match->GetActualTime_ms()-upperReceptionStarted_ms)*.1f;
+  // Reversing away from a chest arrival invalidates the upper-body plan.
+  // Decay it over 120 ms; native full-body reception can then take over.
+  if(upperReceptionAbortPhase<0&&player==match->GetTrainingPlayer()){
+    const Vector3 front=(contactGlobal[0]*Vector3(0,-1,0)).Get2D().GetNormalized(spatialState.bodyDirectionVec);
+    if(front.GetDotProduct(match->GetTrainingReceptionFacing())<.35f){
+      upperReceptionAbortPhase=upperReceptionPhase;
+      if(GetConfiguration()->GetBool("training_telemetry",false))
+        printf("RECEPTION_RELEASE t=%lu actor=%d phase=%.3f reason=pelvis_turn touched=%d\n",match->GetActualTime_ms(),player->GetID(),upperReceptionPhase,upperReceptionTouchMade?1:0);
+    }
+  }
+  if(upperReceptionAbortPhase>=0&&upperReceptionPhase>=upperReceptionAbortPhase+12){
+    upperReceptionClip=nullptr;upperReceptionWeight=upperReceptionArmWeight=0;return;
+  }
   if(!upperReceptionTouchMade && upperReceptionPhase>upperReceptionContactFrame+7)
     upperReceptionEndFrame=std::min(upperReceptionEndFrame,upperReceptionContactFrame+19);
   if(upperReceptionPhase>=upperReceptionEndFrame) {
@@ -292,6 +308,7 @@ void HumanoidBase::TickUpperReception() {
     upperReceptionClip=nullptr;upperReceptionWeight=0;return;
   }
   upperReceptionWeight=ease(upperReceptionPhase/10)*ease((upperReceptionEndFrame-upperReceptionPhase)/12);
+  upperReceptionWeight*=football_reception::fade(upperReceptionPhase,upperReceptionAbortPhase);
   if(upperReceptionTouchMade && upperReceptionArmRelease<0 && match->GetBall()->Predict(0).coords[2]<=.16f)
     upperReceptionArmRelease=upperReceptionPhase;
   upperReceptionArmWeight=upperReceptionWeight*(upperReceptionArmRelease<0?1:1-ease((upperReceptionPhase-upperReceptionArmRelease)/12));
@@ -323,6 +340,7 @@ bool HumanoidBase::StartUpperReception(Animation *clip,int contactFrame) {
   if(gap>.025f)return false;
   upperReceptionClip=clip;upperReceptionContactFrame=contactFrame;upperReceptionEndFrame=clip->GetFrameCount()-1;
   upperReceptionStarted_ms=match->GetActualTime_ms()+lead;upperReceptionPhase=0;upperReceptionWeight=0;upperReceptionArmWeight=0;upperReceptionArmRelease=-1;upperReceptionTouchMade=false;
+  upperReceptionAbortPhase=-1;
   if(GetConfiguration()->GetBool("training_telemetry",false))
     printf("TRAINING_UPPER_START t=%lu mode=%s contact_frame=%d frames=%d legs_free=1\n",match->GetActualTime_ms(),
       clip->GetVariable("reception_mode").c_str(),contactFrame,clip->GetFrameCount());
@@ -344,7 +362,9 @@ void HumanoidBase::PutUpperReception() {
   // the ball. Re-applying the latest source phase before a second render-only
   // smoother makes contact timing depend on frame rate.
   const Quaternion physicalSpine=fetchedContactLocal[0]*fetchedContactLocal[1];
-  const Quaternion targetSpine=(local[0].GetInverse()*physicalSpine).GetNormalized();
+  Quaternion targetSpine=(local[0].GetInverse()*physicalSpine).GetNormalized();
+  const auto bounded=football_reception::boundedSpine({{targetSpine.elements[0],targetSpine.elements[1],targetSpine.elements[2],targetSpine.elements[3]}});
+  targetSpine=Quaternion(bounded[0],bounded[1],bounded[2],bounded[3]);
   local[1]=local[1].GetSlerped(buffer.upperWeight,targetSpine).GetNormalized();
   local[2]=local[2].GetSlerped(buffer.upperWeight,fetchedContactLocal[2]).GetNormalized();
   for(unsigned i=3;i<7;++i)local[i]=local[i].GetSlerped(buffer.upperArmWeight,fetchedContactLocal[i]).GetNormalized();
@@ -355,8 +375,9 @@ void HumanoidBase::PutUpperReception() {
     for(unsigned i=0;i<4;++i)for(unsigned c=0;c<4;++c)armError=std::max(armError,std::fabs(arms[i].elements[c]-nodeMap.at(pes3::nativeBoneNames[i+3])->GetRotation().elements[c]));
     for(unsigned i=0;i<6;++i)legError=std::max(legError,(legs[i]-nodeMap.at(pes3::nativeBoneNames[i+7])->GetDerivedPosition()).GetLength());
     for(unsigned i=0;i<4;++i)spineDelta+=std::fabs(spine.elements[i]-local[1].elements[i]);
-    printf("TRAINING_UPPER_MASK t=%lu phase=%.3f legs_error=%.8f root_error=%.8f spine_delta=%.6f arms_error=%.8f arm_weight=%.5f\n",buffer.snapshotTime_ms,
-      buffer.upperPhase,legError,(root-nodeMap.at("body")->GetDerivedPosition()).GetLength(),spineDelta,armError,buffer.upperArmWeight);
+    const float twist=ModulateIntoRange(-pi,pi,2*std::atan2(local[1].elements[2],local[1].elements[3]));
+    printf("TRAINING_UPPER_MASK t=%lu phase=%.3f legs_error=%.8f root_error=%.8f spine_delta=%.6f arms_error=%.8f arm_weight=%.5f spine_twist=%.6f source=%s\n",buffer.snapshotTime_ms,
+      buffer.upperPhase,legError,(root-nodeMap.at("body")->GetDerivedPosition()).GetLength(),spineDelta,armError,buffer.upperArmWeight,twist,buffer.upperReception->GetName().c_str());
   }
 }
 

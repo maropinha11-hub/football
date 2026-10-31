@@ -1,0 +1,58 @@
+{
+  "name": "kick_short_0_4_inside_y0_045_r_f090",
+  "source_sha256": "06df68e2bc7d2a4ab703098ea2f6de786b0a7364ab81b30247fa189fd7d53e44",
+  "output_sha256": "7085db8b0405b60e05ea7a0df2a28cf90290dc2cd2e4e2958e1823fa6d27a5e1",
+  "samples": 161,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": true,
+  "action": "shortpass",
+  "role": "pass",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": 22,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 5.364418029785156e-07,
+  "maximum_bone_length_error": 1.6409067182809878e-07,
+  "maximum_10ms_joint_angle_change": 0.22066157684705506,
+  "root_height_range": [
+    0.6677323417663574,
+    0.98701551425457
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file6.mtar",
+  "source_name_hash": "547a2c22",
+  "source_id": 10346,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 45,
+    "height": [
+      0.08,
+      0.36
+    ],
+    "speed": [
+      0,
+      2.2
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "shortpass",
+    "role": "pass",
+    "infer_contact": true,
+    "infer_foot": true,
+    "technique": "inside"
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

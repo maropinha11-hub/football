@@ -4,7 +4,8 @@
 Unlike an all-player movement check, the idle-ball regression only measures
 live play with a stationary low ball beside a stationary CPU player. The old
 build left a home defender in that state for 13.5 seconds (seed 9 fixture).
-No input or pass request rescues the CPU in this test.
+No input or pass request rescues the CPU in this test. The fixture only
+supplies a kick when the fixed human is assigned an authorized restart.
 """
 import argparse
 from collections import Counter
@@ -54,10 +55,12 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--display', default=':154')
     parser.add_argument('--seed', type=int, default=9)
+    parser.add_argument('--pes-actions',action='store_true')
     parser.add_argument('--validate-existing', action='store_true',
                         help='Reevaluate this fixture log, verifying the recorded executable hash and exit result')
     args = parser.parse_args()
-    report = dict(result='running', seed=args.seed, checks=[],
+    human_restarts=[]
+    report = dict(result='running', seed=args.seed, checks=[],pes_actions=args.pes_actions,
                   executable_sha256=hashlib.sha256((args.build / 'gameplayfootball').read_bytes()).hexdigest())
 
     def check(name, ok, evidence):
@@ -70,6 +73,7 @@ def main():
             previous = json.loads((args.output / 'validation.json').read_text())
             assert previous['executable_sha256'] == report['executable_sha256']
             assert previous['seed'] == args.seed
+            assert previous.get('pes_actions',False)==args.pes_actions
             exit_check = next(c for c in previous['checks'] if c['check'] == 'clean rendered game exit')
             assert exit_check['result'] == 'passed' and exit_check['evidence'] == 0
             lines = (args.output / 'game' / 'game.log').read_text().splitlines()
@@ -79,13 +83,40 @@ def main():
             with NativeTraining(args.build, args.output / 'game', display=args.display,
                                 analog_pad=True, config_overrides={
                                     'context_x': 320, 'context_y': 180, 'player_match': 'true',
-                                    'player_match_half_seconds': 60, 'simulation_seed': args.seed}) as game:
-                game.wait(lambda: 'PLAYER_MATCH_END ' in game.log.read_text(), seconds=280)
+                                    'player_match_half_seconds': 60, 'simulation_seed': args.seed},
+                                camera=1,
+                                extra_arguments=['--pes-actions']if args.pes_actions else[]) as game:
+                # Reading an ever-growing 22-player diagnostic log from its
+                # beginning can itself compete with the simulation clock.
+                with game.log.open('rb')as stream:
+                    carry=b'';release_at=None;next_restart=0
+                    def ended():
+                        nonlocal carry,release_at,next_restart
+                        chunk=carry+stream.read()
+                        rows=chunk.split(b'\n');carry=rows.pop()
+                        for line in rows:
+                            if line.startswith(b'PLAYER_MATCH_END '):return True
+                            if not line.startswith(b'PLAYER_MATCH_FRAME '):continue
+                            frame=json.loads(line[19:]);now=frame['t']
+                            if release_at is not None and now>=release_at:
+                                game.pad(0,0);release_at=None
+                            if(frame['in_play']and frame['set_piece']and frame['taker']==frame['locked_id']
+                               and release_at is None and now>=next_restart):
+                                # Only the human's own ball is played. A live
+                                # CPU possession is never rescued by input.
+                                dx,dy=-frame['ball'][0],-frame['ball'][1]
+                                length=max(.1,math.hypot(dx,dy))
+                                game.pad(-dy/length,dx/length,buttons=1)
+                                release_at=now+150;next_restart=now+3000
+                                human_restarts.append(dict(t=now,type=frame['restart_type'],actor=frame['taker']))
+                        return False
+                    game.wait(ended, seconds=280)
                 lines = game.log.read_text().splitlines()
                 training = game.frames()
                 game.keys(['Escape'], True)
                 game.game.wait(timeout=15)
                 exit_code = game.game.returncode
+                report['human_restart_inputs']=human_restarts
         frames = [json.loads(line[19:]) for line in lines if line.startswith('PLAYER_MATCH_FRAME ')]
         decisions = events(lines, 'PLAYER_MATCH_AI')
         actions = events(lines, 'PLAYER_MATCH_ACTION')
@@ -145,7 +176,7 @@ def main():
         else:
             report['coverage_note'] = 'No CPU entered the native central shooting zone; actual shots are covered by the other match fixture.'
         report['native_shots'] = shots
-        check('two halves finish with the human idle', frames[-1]['over'] == 1
+        check('two halves finish with human input limited to its own restarts', frames[-1]['over'] == 1
               and {1, 2} <= {f['phase'] for f in frames},
               dict(last_t=frames[-1]['t'], score=[frames[-1]['home'], frames[-1]['away']]))
         pace = ((training[-1]['t'] - training[0]['t']) /

@@ -2,7 +2,7 @@
 import argparse,hashlib,json,math,re
 from pathlib import Path
 from native_training_harness import NativeTraining
-p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':850');p.add_argument('--central-only',action='store_true');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':850');p.add_argument('--central-only',action='store_true');p.add_argument('--pes-actions',action='store_true');a=p.parse_args()
 r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
@@ -10,7 +10,7 @@ def ev(g,prefix,start=0):return[dict(re.findall(r'(\w+)=([^\s]+)',line))for line
 def key(g,k,mods=[]):g.keys(mods+[k],True);g.advance(80);g.keys(mods+[k],False);g.advance(120)
 def mf(g,start=0):return[json.loads(line[19:])for line in g.read_log()[start:].splitlines()if line.startswith('PLAYER_MATCH_FRAME ')]
 try:
- with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides=dict(context_x=480,context_y=270,training_physical_rig='true',training_physical_lab='true',player_match='true',player_match_half_seconds=120,simulation_seed=7,training_keeper_lab_start=7 if a.central_only else 0))as g:
+ with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides=dict(context_x=480,context_y=270,training_physical_rig='true',training_physical_lab='true',player_match='true',player_match_half_seconds=120,simulation_seed=7,training_keeper_lab_start=7 if a.central_only else 0),extra_arguments=['--pes-actions']if a.pes_actions else[])as g:
   g.advance(2700)
   for trial in (range(7,9)if a.central_only else range(11)):
    if trial>(7 if a.central_only else 0):key(g,'r');g.advance(2700)

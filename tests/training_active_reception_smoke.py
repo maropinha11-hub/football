@@ -2,7 +2,7 @@
 import argparse,hashlib,json,math,re,subprocess
 from pathlib import Path
 from native_training_harness import NativeTraining
-p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':2100');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--build',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--display',default=':2100');p.add_argument('--pes-actions',action='store_true');a=p.parse_args()
 r=dict(result='running',checks=[],executable_sha256=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest())
 def check(name,ok,evidence):
  row=dict(check=name,result='passed'if ok else'failed',evidence=evidence);r['checks'].append(row);print(json.dumps(row),flush=True)
@@ -10,7 +10,7 @@ def ev(g,prefix,start=0):return[dict(re.findall(r'(\w+)=([^\s]+)',line))for line
 def records(g,prefix,start=0):return list({(x['t'],x.get('actor',-1)):x for line in g.read_log()[start:].splitlines()if line.startswith(prefix+' ')for x in [json.loads(line[len(prefix)+1:])]}.values())
 def key(g,k,mods=()):g.keys([*mods,k],True);g.advance(100);g.keys([*mods,k],False);g.advance(100)
 try:
- with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides=dict(context_x=640,context_y=360,training_physical_rig='true',training_physical_lab='true',player_match='true',player_match_half_seconds=120,player_match_all_restarts='false',simulation_seed=7))as g:
+ with NativeTraining(a.build,a.output/'game',display=a.display,analog_pad=True,camera=1,config_overrides=dict(context_x=640,context_y=360,training_physical_rig='true',training_physical_lab='true',player_match='true',player_match_half_seconds=120,player_match_all_restarts='false',simulation_seed=7),extra_arguments=['--pes-actions']if a.pes_actions else[])as g:
   bank=ev(g,'PHYSICAL_RECEIVE_BANK');check('derived full-body actions load from native sources',bool(bank)and int(bank[0]['clips'])>=100,bank)
   for cpu in [False,True]:
    for name,k,mods,parts in [('shin','F5',['7'],['foot','lowerleg']),('thigh','F5',['8'],['foot','lowerleg','upperleg']),('descending','F5',['9'],['trunk','head']),('jump','F6',['Shift_L'],['head'])]:

@@ -1,0 +1,2714 @@
+{
+  "date": "2026-10-31",
+  "result": "passed",
+  "executable_sha256": "2d5678b004d5c2197c1c2ad07d319992f076ec8f2101f45bcf7e17e8f8593bca",
+  "bank_catalog_sha256": "0de8421474b0a4f66385003e3f173f1d4b79ece19713dc8148ab77e94e457124",
+  "stages": [
+    {
+      "scenario": "central",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "human central control None uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "3640",
+                "arrival_ms": "1000",
+                "error": "0.39106",
+                "target": "[-5.0295,-17.4646,0.1173]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [],
+            "prepared_shin": [
+              {
+                "t": "4600",
+                "actor": "10",
+                "function": "3",
+                "part": "left_ankle",
+                "skin_gap": "0.0004996",
+                "skin_speed": "1.89929",
+                "incoming": "6.39837",
+                "outgoing": "1.35916"
+              }
+            ],
+            "skin": [],
+            "reach": [
+              {
+                "t": "3640",
+                "actor": "10",
+                "function": "3",
+                "frame": "88",
+                "offset": "0.05124",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human central control Shift_L uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "8770",
+                "arrival_ms": "1000",
+                "error": "0.44286",
+                "target": "[-4.9311,-19.0302,0.1163]",
+                "offset": "0.650",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "9740",
+                "part": "left_foot",
+                "function": "3",
+                "z": "0.1807",
+                "actor": "10"
+              },
+              {
+                "t": "10240",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.1206",
+                "actor": "10"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "9740",
+                "part": "left_foot",
+                "gap": "-0.01618",
+                "accepted": "1",
+                "new_cycle": "0"
+              },
+              {
+                "t": "10240",
+                "part": "right_foot",
+                "gap": "0.00099",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "8700",
+                "actor": "9",
+                "function": "2",
+                "frame": "27",
+                "offset": "0.01731",
+                "pelvis_lowering": "0.00000"
+              },
+              {
+                "t": "8770",
+                "actor": "10",
+                "function": "3",
+                "frame": "88",
+                "offset": "0.04031",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human central control Control_L uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "13980",
+                "arrival_ms": "1000",
+                "error": "0.35570",
+                "target": "[-5.1712,-16.7178,0.1127]",
+                "offset": "-0.650",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "14930",
+                "part": "right_foot",
+                "function": "3",
+                "z": "0.1197",
+                "actor": "10"
+              },
+              {
+                "t": "15410",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.1096",
+                "actor": "10"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "14930",
+                "part": "right_foot",
+                "gap": "-0.00600",
+                "accepted": "1",
+                "new_cycle": "0"
+              },
+              {
+                "t": "15410",
+                "part": "right_foot",
+                "gap": "-0.01170",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "13980",
+                "actor": "10",
+                "function": "3",
+                "frame": "88",
+                "offset": "0.03390",
+                "pelvis_lowering": "0.00000"
+              },
+              {
+                "t": "14780",
+                "actor": "10",
+                "function": "3",
+                "frame": "15",
+                "offset": "0.01960",
+                "pelvis_lowering": "0.00065"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU central control None uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "19090",
+                "arrival_ms": "1000",
+                "error": "0.12062",
+                "target": "[-7.7766,-17.6160,0.1175]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "20130",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1204",
+                "actor": "7"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "20130",
+                "part": "left_foot",
+                "gap": "-0.00602",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "19750",
+                "actor": "7",
+                "function": "2",
+                "frame": "38",
+                "offset": "0.02852",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU central control Shift_L uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "24320",
+                "arrival_ms": "1000",
+                "error": "0.46728",
+                "target": "[-7.8122,-18.6885,0.1140]",
+                "offset": "0.650",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "25340",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.1186",
+                "actor": "7"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "25340",
+                "part": "right_foot",
+                "gap": "0.00075",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "26260",
+                "actor": "7",
+                "function": "2",
+                "frame": "27",
+                "offset": "0.01318",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU central control Control_L uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "29580",
+                "arrival_ms": "1000",
+                "error": "0.22282",
+                "target": "[-7.8389,-15.7779,0.1156]",
+                "offset": "-0.650",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "30710",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1123",
+                "actor": "7"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "30710",
+                "part": "left_foot",
+                "gap": "0.00063",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "30260",
+                "actor": "7",
+                "function": "2",
+                "frame": "45",
+                "offset": "0.02524",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU endline reception/first-time action None uses a real receiving foot or prepared shin",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "0",
+                "t": "34900",
+                "arrival_ms": "1000",
+                "error": "0.06673",
+                "target": "[54.9200,11.9600,0.1131]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "touches": [
+              {
+                "t": "35970",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1166",
+                "actor": "7"
+              }
+            ],
+            "prepared_shin": [],
+            "skin": [
+              {
+                "t": "35970",
+                "part": "left_foot",
+                "gap": "-0.00146",
+                "accepted": "1",
+                "new_cycle": "0"
+              }
+            ],
+            "reach": [
+              {
+                "t": "35590",
+                "actor": "7",
+                "function": "2",
+                "frame": "38",
+                "offset": "0.03073",
+                "pelvis_lowering": "0.00000"
+              }
+            ]
+          }
+        },
+        {
+          "check": "fixture remains inside the final 20 cm of the goal line",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "34900",
+              "actor": "7",
+              "distance_to_line": "0.08000"
+            }
+          ]
+        },
+        {
+          "check": "indexed skin agrees with the original weighted mesh query",
+          "result": "passed",
+          "evidence": [
+            {
+              "samples": "12000",
+              "optimized_us": "43.54967",
+              "reference_us": "90.65947",
+              "max_error": "0.000000000"
+            },
+            {
+              "samples": "14000",
+              "optimized_us": "41.71911",
+              "reference_us": "86.95362",
+              "max_error": "0.000000000"
+            },
+            {
+              "samples": "518000",
+              "optimized_us": "7.17296",
+              "reference_us": "19.35678",
+              "max_error": "0.000000000"
+            },
+            {
+              "samples": "14000",
+              "optimized_us": "40.61748",
+              "reference_us": "82.98849",
+              "max_error": "0.000000000"
+            }
+          ]
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "scenario": "airborne",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "derived full-body actions load from native sources",
+          "result": "passed",
+          "evidence": [
+            {
+              "clips": "194",
+              "native_sources": "5",
+              "physical_contact": "1"
+            }
+          ]
+        },
+        {
+          "check": "human shin starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "3660",
+              "arrival_ms": "420",
+              "error": "0.00035",
+              "target": "[-4.8799,-17.3328,0.4300]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "10",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "human shin intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "3660",
+                "arrival_ms": "420",
+                "error": "0.00035",
+                "target": "[-4.8799,-17.3328,0.4300]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "3660",
+                "actor": "10",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/foot/139"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "4070",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.4318",
+                "actor": "10"
+              }
+            ],
+            "body": [
+              {
+                "t": "5900",
+                "part": "right_ankle",
+                "correction": "0.001836",
+                "sweep": "0.00000",
+                "speed_before": "4.71419",
+                "speed_after": "4.89287",
+                "actor": "23",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "9.45017"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human shin visibly reaches with the leg before impact",
+          "result": "passed",
+          "evidence": {
+            "max_ankle_height": 0.61651,
+            "samples": 11
+          }
+        },
+        {
+          "check": "human thigh starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "9550",
+              "arrival_ms": "420",
+              "error": "0.00034",
+              "target": "[-4.8949,-16.2855,0.7400]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "10",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "human thigh intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "9550",
+                "arrival_ms": "420",
+                "error": "0.00034",
+                "target": "[-4.8949,-16.2855,0.7400]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "9550",
+                "actor": "10",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/thigh/185"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "9920",
+                "part": "right_upperleg",
+                "function": "2",
+                "z": "0.8200",
+                "actor": "10"
+              }
+            ],
+            "body": [
+              {
+                "t": "9930",
+                "part": "right_knee",
+                "correction": "0.009685",
+                "sweep": "0.00000",
+                "speed_before": "0.65000",
+                "speed_after": "0.46221",
+                "actor": "10",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "0.23645"
+              },
+              {
+                "t": "9940",
+                "part": "right_knee",
+                "correction": "0.000218",
+                "sweep": "0.94998",
+                "speed_before": "0.41909",
+                "speed_after": "0.54528",
+                "actor": "10",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "0.49769"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human thigh visibly reaches with the leg before impact",
+          "result": "passed",
+          "evidence": {
+            "max_ankle_height": 0.50758,
+            "samples": 10
+          }
+        },
+        {
+          "check": "human descending starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "15490",
+              "arrival_ms": "600",
+              "error": "0.00038",
+              "target": "[-5.0019,-19.6518,1.4300]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "10",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "human descending cushions without repeatedly hammering the ball against its own head",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "16090",
+              "part": "neck",
+              "correction": "0.009393",
+              "sweep": "0.00000",
+              "speed_before": "0.24225",
+              "speed_after": "0.94545",
+              "actor": "10",
+              "moving_skin": "1",
+              "samples": "8",
+              "skin_speed": "1.61690"
+            }
+          ]
+        },
+        {
+          "check": "human descending intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "15490",
+                "arrival_ms": "600",
+                "error": "0.00038",
+                "target": "[-5.0019,-19.6518,1.4300]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "15490",
+                "actor": "10",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "pes17/trap_0_0_000_y7_head_fast_ver12"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "16080",
+                "part": "head",
+                "function": "3",
+                "z": "1.4313",
+                "actor": "10"
+              }
+            ],
+            "body": [
+              {
+                "t": "16090",
+                "part": "neck",
+                "correction": "0.009393",
+                "sweep": "0.00000",
+                "speed_before": "0.24225",
+                "speed_after": "0.94545",
+                "actor": "10",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "1.61690"
+              },
+              {
+                "t": "18110",
+                "part": "right_ankle",
+                "correction": "0.050057",
+                "sweep": "0.00000",
+                "speed_before": "5.32078",
+                "speed_after": "9.37068",
+                "actor": "25",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "9.39323"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human jump starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "2",
+              "t": "21370",
+              "arrival_ms": "1150",
+              "error": "0.00026",
+              "target": "[-5.0253,-17.8062,2.3800]",
+              "offset": "0.650",
+              "match": "1",
+              "actor": "10",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "human jump cushions without repeatedly hammering the ball against its own head",
+          "result": "passed",
+          "evidence": []
+        },
+        {
+          "check": "human jump intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "2",
+                "t": "21370",
+                "arrival_ms": "1150",
+                "error": "0.00026",
+                "target": "[-5.0253,-17.8062,2.3800]",
+                "offset": "0.650",
+                "match": "1",
+                "actor": "10",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "22080",
+                "actor": "10",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/head/19"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "22560",
+                "part": "head",
+                "function": "3",
+                "z": "2.0460",
+                "actor": "10"
+              }
+            ],
+            "body": [
+              {
+                "t": "24400",
+                "part": "right_knee",
+                "correction": "0.022766",
+                "sweep": "0.03098",
+                "speed_before": "1.13240",
+                "speed_after": "2.03437",
+                "actor": "23",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "5.40810"
+              },
+              {
+                "t": "24470",
+                "part": "right_thigh",
+                "correction": "0.012328",
+                "sweep": "0.45040",
+                "speed_before": "2.26080",
+                "speed_after": "2.02360",
+                "actor": "10",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "3.42494"
+              },
+              {
+                "t": "24500",
+                "part": "right_knee",
+                "correction": "0.023481",
+                "sweep": "0.46788",
+                "speed_before": "2.10832",
+                "speed_after": "6.29832",
+                "actor": "10",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "5.87871"
+              }
+            ]
+          }
+        },
+        {
+          "check": "human jump actually lifts both feet off the pitch",
+          "result": "passed",
+          "evidence": {
+            "minimum_ankle_height_peak": 0.63216,
+            "max_ankle_height": 0.63307,
+            "samples": 17
+          }
+        },
+        {
+          "check": "CPU shin starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "28230",
+              "arrival_ms": "420",
+              "error": "0.00035",
+              "target": "[-7.7707,-18.9604,0.4300]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "7",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "CPU shin intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "28230",
+                "arrival_ms": "420",
+                "error": "0.00035",
+                "target": "[-7.7707,-18.9604,0.4300]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "28230",
+                "actor": "7",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/foot/139"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "28620",
+                "part": "right_foot",
+                "function": "2",
+                "z": "0.4635",
+                "actor": "7"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "CPU shin visibly reaches with the leg before impact",
+          "result": "passed",
+          "evidence": {
+            "max_ankle_height": 0.66308,
+            "samples": 11
+          }
+        },
+        {
+          "check": "CPU thigh starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "34340",
+              "arrival_ms": "420",
+              "error": "0.00035",
+              "target": "[-7.2106,-15.6902,0.7400]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "7",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "CPU thigh intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "34340",
+                "arrival_ms": "420",
+                "error": "0.00035",
+                "target": "[-7.2106,-15.6902,0.7400]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "34340",
+                "actor": "7",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/thigh/183"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "34750",
+                "part": "right_upperleg",
+                "function": "2",
+                "z": "0.7411",
+                "actor": "7"
+              }
+            ],
+            "body": [
+              {
+                "t": "34780",
+                "part": "right_thigh",
+                "correction": "0.000866",
+                "sweep": "0.12018",
+                "speed_before": "1.20743",
+                "speed_after": "1.25143",
+                "actor": "7",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "1.04181"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU thigh visibly reaches with the leg before impact",
+          "result": "passed",
+          "evidence": {
+            "max_ankle_height": 0.38101,
+            "samples": 12
+          }
+        },
+        {
+          "check": "CPU descending starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "1",
+              "t": "40520",
+              "arrival_ms": "600",
+              "error": "0.00038",
+              "target": "[-7.9604,-15.6150,1.4300]",
+              "offset": "0.000",
+              "match": "1",
+              "actor": "7",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "CPU descending cushions without repeatedly hammering the ball against its own head",
+          "result": "passed",
+          "evidence": []
+        },
+        {
+          "check": "CPU descending intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "1",
+                "t": "40520",
+                "arrival_ms": "600",
+                "error": "0.00038",
+                "target": "[-7.9604,-15.6150,1.4300]",
+                "offset": "0.000",
+                "match": "1",
+                "actor": "7",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "40520",
+                "actor": "7",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/head/8"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "40980",
+                "part": "head",
+                "function": "3",
+                "z": "2.1004",
+                "actor": "7"
+              }
+            ],
+            "body": [
+              {
+                "t": "43170",
+                "part": "left_ankle",
+                "correction": "0.000462",
+                "sweep": "0.99108",
+                "speed_before": "5.96947",
+                "speed_after": "1.20457",
+                "actor": "26",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "1.75371"
+              },
+              {
+                "t": "43290",
+                "part": "right_knee",
+                "correction": "0.046781",
+                "sweep": "0.38658",
+                "speed_before": "1.67587",
+                "speed_after": "8.83518",
+                "actor": "7",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "8.58367"
+              }
+            ]
+          }
+        },
+        {
+          "check": "CPU jump starts a new incoming ball without the previous attempt owner",
+          "result": "passed",
+          "evidence": [
+            {
+              "type": "2",
+              "t": "46860",
+              "arrival_ms": "1150",
+              "error": "0.00026",
+              "target": "[-7.8681,-17.7163,2.3800]",
+              "offset": "0.650",
+              "match": "1",
+              "actor": "4",
+              "last_actor": "-1"
+            }
+          ]
+        },
+        {
+          "check": "CPU jump cushions without repeatedly hammering the ball against its own head",
+          "result": "passed",
+          "evidence": []
+        },
+        {
+          "check": "CPU jump intentionally selects and completes an airborne skin contact",
+          "result": "passed",
+          "evidence": {
+            "delivery": [
+              {
+                "type": "2",
+                "t": "46860",
+                "arrival_ms": "1150",
+                "error": "0.00026",
+                "target": "[-7.8681,-17.7163,2.3800]",
+                "offset": "0.650",
+                "match": "1",
+                "actor": "4",
+                "last_actor": "-1"
+              }
+            ],
+            "selected": [
+              {
+                "t": "47560",
+                "actor": "4",
+                "function": "3",
+                "entry": "0",
+                "imported": "0",
+                "source": "physical/receive/head/19"
+              }
+            ],
+            "contacts": [
+              {
+                "t": "48040",
+                "part": "head",
+                "function": "3",
+                "z": "2.1146",
+                "actor": "4"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "CPU jump actually lifts both feet off the pitch",
+          "result": "passed",
+          "evidence": {
+            "minimum_ankle_height_peak": 0.64338,
+            "max_ankle_height": 0.64431,
+            "samples": 19
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "scenario": "keepers",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "lab scenario 0 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "3260",
+            "mode": "0",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 1 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "6980",
+            "mode": "1",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 2 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "10680",
+            "mode": "2",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 3 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "14370",
+            "mode": "3",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 4 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "18060",
+            "mode": "4",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 5 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "21770",
+            "mode": "5",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 6 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "25470",
+            "mode": "6",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "lab scenario 7 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "29200",
+            "mode": "7",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "arrival 7 is actually intercepted on the body",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "30090",
+                "part": "right_lowerarm",
+                "function": "9",
+                "z": "0.1140",
+                "actor": "18"
+              },
+              {
+                "t": "32770",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1165",
+                "actor": "18"
+              }
+            ],
+            "body": [
+              {
+                "t": "30100",
+                "part": "right_elbow",
+                "correction": "0.033960",
+                "sweep": "0.00000",
+                "speed_before": "3.18029",
+                "speed_after": "4.14825",
+                "actor": "18",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "3.00535"
+              },
+              {
+                "t": "30110",
+                "part": "right_elbow",
+                "correction": "0.010053",
+                "sweep": "0.41990",
+                "speed_before": "3.69569",
+                "speed_after": "3.79198",
+                "actor": "18",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "2.52457"
+              }
+            ]
+          }
+        },
+        {
+          "check": "reachable arrival 7 is kept out of goal",
+          "result": "passed",
+          "evidence": {
+            "scores": [
+              [
+                29500,
+                0,
+                0
+              ],
+              [
+                30000,
+                0,
+                0
+              ],
+              [
+                30500,
+                0,
+                0
+              ],
+              [
+                31000,
+                0,
+                0
+              ],
+              [
+                31500,
+                0,
+                0
+              ],
+              [
+                32000,
+                0,
+                0
+              ],
+              [
+                32500,
+                0,
+                0
+              ],
+              [
+                33000,
+                0,
+                0
+              ]
+            ],
+            "hits": [
+              {
+                "t": "30090",
+                "part": "right_lowerarm",
+                "function": "9",
+                "z": "0.1140",
+                "actor": "18"
+              },
+              {
+                "t": "32770",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1165",
+                "actor": "18"
+              }
+            ],
+            "body": [
+              {
+                "t": "30100",
+                "part": "right_elbow",
+                "correction": "0.033960",
+                "sweep": "0.00000",
+                "speed_before": "3.18029",
+                "speed_after": "4.14825",
+                "actor": "18",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "3.00535"
+              },
+              {
+                "t": "30110",
+                "part": "right_elbow",
+                "correction": "0.010053",
+                "sweep": "0.41990",
+                "speed_before": "3.69569",
+                "speed_after": "3.79198",
+                "actor": "18",
+                "moving_skin": "1",
+                "samples": "8",
+                "skin_speed": "2.52457"
+              }
+            ]
+          }
+        },
+        {
+          "check": "lab scenario 8 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "36730",
+            "mode": "8",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "arrival 8 is actually intercepted on the body",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "37550",
+                "part": "trunk",
+                "function": "11",
+                "z": "0.9883",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "reachable arrival 8 is kept out of goal",
+          "result": "passed",
+          "evidence": {
+            "scores": [
+              [
+                37000,
+                0,
+                0
+              ],
+              [
+                37500,
+                0,
+                0
+              ],
+              [
+                38000,
+                0,
+                0
+              ],
+              [
+                38500,
+                0,
+                0
+              ],
+              [
+                39000,
+                0,
+                0
+              ],
+              [
+                39500,
+                0,
+                0
+              ],
+              [
+                40000,
+                0,
+                0
+              ],
+              [
+                40500,
+                0,
+                0
+              ]
+            ],
+            "hits": [
+              {
+                "t": "37550",
+                "part": "trunk",
+                "function": "11",
+                "z": "0.9883",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "lab scenario 9 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "44400",
+            "mode": "9",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "arrival 9 is actually intercepted on the body",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "45930",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1415",
+                "actor": "18"
+              },
+              {
+                "t": "48270",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1100",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "reachable arrival 9 is kept out of goal",
+          "result": "passed",
+          "evidence": {
+            "scores": [
+              [
+                44500,
+                0,
+                0
+              ],
+              [
+                45000,
+                0,
+                0
+              ],
+              [
+                45500,
+                0,
+                0
+              ],
+              [
+                46000,
+                0,
+                0
+              ],
+              [
+                46500,
+                0,
+                0
+              ],
+              [
+                47000,
+                0,
+                0
+              ],
+              [
+                47500,
+                0,
+                0
+              ],
+              [
+                48000,
+                0,
+                0
+              ]
+            ],
+            "hits": [
+              {
+                "t": "45930",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1415",
+                "actor": "18"
+              },
+              {
+                "t": "48270",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1100",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "backpass 9 is handled only with legal body parts",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "45930",
+                "part": "left_foot",
+                "function": "2",
+                "z": "0.1415",
+                "actor": "18"
+              },
+              {
+                "t": "48270",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1100",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "lab scenario 10 uses the requested initial condition",
+          "result": "passed",
+          "evidence": {
+            "t": "51910",
+            "mode": "10",
+            "actor": "18",
+            "side": "1"
+          }
+        },
+        {
+          "check": "arrival 10 is actually intercepted on the body",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "52750",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "reachable arrival 10 is kept out of goal",
+          "result": "passed",
+          "evidence": {
+            "scores": [
+              [
+                52000,
+                0,
+                0
+              ],
+              [
+                52500,
+                0,
+                0
+              ],
+              [
+                53000,
+                0,
+                0
+              ],
+              [
+                53500,
+                0,
+                0
+              ],
+              [
+                54000,
+                0,
+                0
+              ],
+              [
+                54500,
+                0,
+                0
+              ],
+              [
+                55000,
+                0,
+                0
+              ],
+              [
+                55500,
+                0,
+                0
+              ],
+              [
+                56000,
+                0,
+                0
+              ]
+            ],
+            "hits": [
+              {
+                "t": "52750",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "backpass 10 is handled only with legal body parts",
+          "result": "passed",
+          "evidence": {
+            "hits": [
+              {
+                "t": "52750",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1128",
+                "actor": "18"
+              }
+            ],
+            "body": []
+          }
+        },
+        {
+          "check": "all rendered player and ball positions remain finite",
+          "result": "passed",
+          "evidence": {
+            "frames": 563
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "scenario": "restarts",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "free_kick cannot touch the ball before its whistle",
+          "result": "passed",
+          "evidence": {
+            "prepared": [
+              {
+                "t": "3540",
+                "type": "3",
+                "actor": "10",
+                "start": "4240"
+              }
+            ],
+            "authorized": [
+              {
+                "t": "4240",
+                "type": "3",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "4740",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1158",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "free_kick completes once after an actual taker contact",
+          "result": "passed",
+          "evidence": {
+            "released": [
+              {
+                "t": "4740",
+                "type": "3",
+                "actor": "10",
+                "function": "4",
+                "position": "[27.65177,7.85607]"
+              }
+            ],
+            "completed": [
+              {
+                "t": "4750",
+                "type": "3",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "4740",
+                "part": "left_foot",
+                "function": "4",
+                "z": "0.1158",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "free_kick returns to live play with one locked human",
+          "result": "passed",
+          "evidence": {
+            "tail": {
+              "t": 8000,
+              "clock": 92025,
+              "phase": 1,
+              "locked_id": 10,
+              "selected_id": 10,
+              "human_count": 1,
+              "home": 0,
+              "away": 0,
+              "in_play": 1,
+              "set_piece": 0,
+              "over": 0,
+              "last_touch_team": 0,
+              "pass_pending": 0,
+              "difficulty": 1.0,
+              "designated_id": 24,
+              "ball": [
+                35.558,
+                8.672,
+                0.279
+              ],
+              "ball_speed": 4.442,
+              "restart_type": 3,
+              "restart_team": 0,
+              "taker": 10
+            }
+          }
+        },
+        {
+          "check": "penalty cannot touch the ball before its whistle",
+          "result": "passed",
+          "evidence": {
+            "prepared": [
+              {
+                "t": "8400",
+                "type": "6",
+                "actor": "10",
+                "start": "9100"
+              }
+            ],
+            "authorized": [
+              {
+                "t": "9100",
+                "type": "6",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "11160",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1187",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "penalty completes once after an actual taker contact",
+          "result": "passed",
+          "evidence": {
+            "released": [
+              {
+                "t": "11160",
+                "type": "6",
+                "actor": "10",
+                "function": "8",
+                "position": "[43.42380,0.13366]"
+              }
+            ],
+            "completed": [
+              {
+                "t": "11170",
+                "type": "6",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "11160",
+                "part": "right_foot",
+                "function": "8",
+                "z": "0.1187",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "penalty returns to live play with one locked human",
+          "result": "passed",
+          "evidence": {
+            "tail": {
+              "t": 13000,
+              "clock": 135450,
+              "phase": 1,
+              "locked_id": 10,
+              "selected_id": 10,
+              "human_count": 1,
+              "home": 0,
+              "away": 0,
+              "in_play": 1,
+              "set_piece": 0,
+              "over": 0,
+              "last_touch_team": 1,
+              "pass_pending": 0,
+              "difficulty": 1.0,
+              "designated_id": 24,
+              "ball": [
+                43.556,
+                9.674,
+                0.179
+              ],
+              "ball_speed": 7.508,
+              "restart_type": 6,
+              "restart_team": 0,
+              "taker": 10
+            }
+          }
+        },
+        {
+          "check": "corner cannot touch the ball before its whistle",
+          "result": "passed",
+          "evidence": {
+            "prepared": [
+              {
+                "t": "13400",
+                "type": "4",
+                "actor": "10",
+                "start": "14100"
+              }
+            ],
+            "authorized": [
+              {
+                "t": "14100",
+                "type": "4",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "14590",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1184",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "corner completes once after an actual taker contact",
+          "result": "passed",
+          "evidence": {
+            "released": [
+              {
+                "t": "14590",
+                "type": "4",
+                "actor": "10",
+                "function": "4",
+                "position": "[55.32522,36.14107]"
+              }
+            ],
+            "completed": [
+              {
+                "t": "14600",
+                "type": "4",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "14590",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1184",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "corner returns to live play with one locked human",
+          "result": "passed",
+          "evidence": {
+            "tail": {
+              "t": 18000,
+              "clock": 214200,
+              "phase": 1,
+              "locked_id": 10,
+              "selected_id": 10,
+              "human_count": 1,
+              "home": 0,
+              "away": 0,
+              "in_play": 1,
+              "set_piece": 0,
+              "over": 0,
+              "last_touch_team": 1,
+              "pass_pending": 0,
+              "difficulty": 1.0,
+              "designated_id": 27,
+              "ball": [
+                51.52,
+                22.097,
+                0.117
+              ],
+              "ball_speed": 1.23,
+              "restart_type": 4,
+              "restart_team": 0,
+              "taker": 10
+            }
+          }
+        },
+        {
+          "check": "throw_in cannot touch the ball before its whistle",
+          "result": "passed",
+          "evidence": {
+            "prepared": [
+              {
+                "t": "18350",
+                "type": "5",
+                "actor": "10",
+                "start": "19050"
+              }
+            ],
+            "authorized": [
+              {
+                "t": "19050",
+                "type": "5",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "19290",
+                "part": "left_lowerarm",
+                "function": "4",
+                "z": "1.8187",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "throw_in completes once after an actual taker contact",
+          "result": "passed",
+          "evidence": {
+            "released": [
+              {
+                "t": "19290",
+                "type": "5",
+                "actor": "10",
+                "function": "4",
+                "position": "[0.03498,36.63605]"
+              }
+            ],
+            "completed": [
+              {
+                "t": "19300",
+                "type": "5",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "19290",
+                "part": "left_lowerarm",
+                "function": "4",
+                "z": "1.8187",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "throw_in returns to live play with one locked human",
+          "result": "passed",
+          "evidence": {
+            "tail": {
+              "t": 22500,
+              "clock": 287325,
+              "phase": 1,
+              "locked_id": 10,
+              "selected_id": 10,
+              "human_count": 1,
+              "home": 0,
+              "away": 0,
+              "in_play": 1,
+              "set_piece": 0,
+              "over": 0,
+              "last_touch_team": 0,
+              "pass_pending": 0,
+              "difficulty": 1.0,
+              "designated_id": 2,
+              "ball": [
+                -13.824,
+                19.366,
+                1.381
+              ],
+              "ball_speed": 4.469,
+              "restart_type": 5,
+              "restart_team": 0,
+              "taker": 10
+            }
+          }
+        },
+        {
+          "check": "throw-in keeps both actual foot surfaces outside the sideline",
+          "result": "passed",
+          "evidence": {
+            "samples": 57,
+            "minimum_margin": 0.303429
+          }
+        },
+        {
+          "check": "goal_kick cannot touch the ball before its whistle",
+          "result": "passed",
+          "evidence": {
+            "prepared": [
+              {
+                "t": "23360",
+                "type": "2",
+                "actor": "10",
+                "start": "24060"
+              }
+            ],
+            "authorized": [
+              {
+                "t": "24060",
+                "type": "2",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "24560",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1119",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "goal_kick completes once after an actual taker contact",
+          "result": "passed",
+          "evidence": {
+            "released": [
+              {
+                "t": "24560",
+                "type": "2",
+                "actor": "10",
+                "function": "4",
+                "position": "[-49.82948,6.18542]"
+              }
+            ],
+            "completed": [
+              {
+                "t": "24570",
+                "type": "2",
+                "actor": "10"
+              }
+            ],
+            "hits": [
+              {
+                "t": "24560",
+                "part": "right_foot",
+                "function": "4",
+                "z": "0.1119",
+                "actor": "10"
+              }
+            ]
+          }
+        },
+        {
+          "check": "goal_kick returns to live play with one locked human",
+          "result": "passed",
+          "evidence": {
+            "tail": {
+              "t": 27500,
+              "clock": 365850,
+              "phase": 1,
+              "locked_id": 10,
+              "selected_id": 10,
+              "human_count": 1,
+              "home": 0,
+              "away": 0,
+              "in_play": 1,
+              "set_piece": 0,
+              "over": 0,
+              "last_touch_team": 0,
+              "pass_pending": 0,
+              "difficulty": 1.0,
+              "designated_id": 2,
+              "ball": [
+                -29.836,
+                6.219,
+                0.112
+              ],
+              "ball_speed": 3.239,
+              "restart_type": 2,
+              "restart_team": 0,
+              "taker": 10
+            }
+          }
+        },
+        {
+          "check": "clean exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "scenario": "autonomous_match",
+      "result": "passed",
+      "checks": [
+        {
+          "check": "maximum original difficulty",
+          "result": "passed",
+          "evidence": [
+            1.0
+          ]
+        },
+        {
+          "check": "both complete teams keep one fixed human",
+          "result": "passed",
+          "evidence": {
+            "frames": 473,
+            "locked": 10
+          }
+        },
+        {
+          "check": "native kickoff formation retains width, depth and a goalkeeper at each goal",
+          "result": "passed",
+          "evidence": {
+            "0": {
+              "width_m": 34.679,
+              "depth_m": 53.9,
+              "keeper_position": [
+                -53.9,
+                0.0,
+                0.0
+              ]
+            },
+            "1": {
+              "width_m": 41.262,
+              "depth_m": 49.825,
+              "keeper_position": [
+                53.895,
+                -0.004,
+                0.0
+              ]
+            }
+          }
+        },
+        {
+          "check": "team 0 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 106,
+            "actors": [
+              "1",
+              "2",
+              "3",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ]
+          }
+        },
+        {
+          "check": "team 0 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 100
+          }
+        },
+        {
+          "check": "team 0 executes native passes without human requests",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "2390",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "7",
+              "requested": "0"
+            },
+            {
+              "t": "25110",
+              "team": "0",
+              "actor": "8",
+              "action": "4",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "26960",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "29380",
+              "team": "0",
+              "actor": "1",
+              "action": "5",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "32080",
+              "team": "0",
+              "actor": "8",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "39810",
+              "team": "0",
+              "actor": "9",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "40940",
+              "team": "0",
+              "actor": "1",
+              "action": "4",
+              "target": "8",
+              "requested": "0"
+            },
+            {
+              "t": "41950",
+              "team": "0",
+              "actor": "8",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "48930",
+              "team": "0",
+              "actor": "8",
+              "action": "4",
+              "target": "9",
+              "requested": "0"
+            },
+            {
+              "t": "58780",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "5",
+              "requested": "0"
+            },
+            {
+              "t": "60450",
+              "team": "0",
+              "actor": "5",
+              "action": "4",
+              "target": "-1",
+              "requested": "0"
+            },
+            {
+              "t": "91090",
+              "team": "0",
+              "actor": "7",
+              "action": "6",
+              "target": "10",
+              "requested": "0"
+            },
+            {
+              "t": "104230",
+              "team": "0",
+              "actor": "10",
+              "action": "4",
+              "target": "4",
+              "requested": "0"
+            },
+            {
+              "t": "124510",
+              "team": "0",
+              "actor": "10",
+              "action": "4",
+              "target": "6",
+              "requested": "0"
+            },
+            {
+              "t": "128680",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "141660",
+              "team": "0",
+              "actor": "2",
+              "action": "6",
+              "target": "4",
+              "requested": "0"
+            },
+            {
+              "t": "155020",
+              "team": "0",
+              "actor": "10",
+              "action": "4",
+              "target": "6",
+              "requested": "0"
+            },
+            {
+              "t": "158670",
+              "team": "0",
+              "actor": "6",
+              "action": "4",
+              "target": "1",
+              "requested": "0"
+            },
+            {
+              "t": "159630",
+              "team": "0",
+              "actor": "1",
+              "action": "4",
+              "target": "5",
+              "requested": "0"
+            }
+          ]
+        },
+        {
+          "check": "team 0 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "1",
+            "2",
+            "3",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ]
+        },
+        {
+          "check": "team 1 autonomously evaluates on-ball play",
+          "result": "passed",
+          "evidence": {
+            "samples": 118,
+            "actors": [
+              "19",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28"
+            ]
+          }
+        },
+        {
+          "check": "team 1 chooses to advance with the ball",
+          "result": "passed",
+          "evidence": {
+            "advancing_decisions": 109
+          }
+        },
+        {
+          "check": "team 1 executes native passes without human requests",
+          "result": "passed",
+          "evidence": [
+            {
+              "t": "11000",
+              "team": "1",
+              "actor": "28",
+              "action": "4",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "17640",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "19860",
+              "team": "1",
+              "actor": "24",
+              "action": "4",
+              "target": "22",
+              "requested": "0"
+            },
+            {
+              "t": "21050",
+              "team": "1",
+              "actor": "22",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "22940",
+              "team": "1",
+              "actor": "24",
+              "action": "5",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "37170",
+              "team": "1",
+              "actor": "22",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "46010",
+              "team": "1",
+              "actor": "22",
+              "action": "4",
+              "target": "21",
+              "requested": "0"
+            },
+            {
+              "t": "47670",
+              "team": "1",
+              "actor": "21",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "55220",
+              "team": "1",
+              "actor": "21",
+              "action": "4",
+              "target": "24",
+              "requested": "0"
+            },
+            {
+              "t": "56890",
+              "team": "1",
+              "actor": "24",
+              "action": "6",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "66520",
+              "team": "1",
+              "actor": "18",
+              "action": "6",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "72460",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "77950",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "79680",
+              "team": "1",
+              "actor": "23",
+              "action": "4",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "79840",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "83730",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "89410",
+              "team": "1",
+              "actor": "23",
+              "action": "6",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "95140",
+              "team": "1",
+              "actor": "25",
+              "action": "4",
+              "target": "19",
+              "requested": "0"
+            },
+            {
+              "t": "97290",
+              "team": "1",
+              "actor": "19",
+              "action": "4",
+              "target": "23",
+              "requested": "0"
+            },
+            {
+              "t": "114830",
+              "team": "1",
+              "actor": "25",
+              "action": "6",
+              "target": "26",
+              "requested": "0"
+            },
+            {
+              "t": "117680",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "-1",
+              "requested": "0"
+            },
+            {
+              "t": "135850",
+              "team": "1",
+              "actor": "26",
+              "action": "4",
+              "target": "28",
+              "requested": "0"
+            },
+            {
+              "t": "146470",
+              "team": "1",
+              "actor": "26",
+              "action": "6",
+              "target": "28",
+              "requested": "0"
+            }
+          ]
+        },
+        {
+          "check": "team 1 players actively collect the ball",
+          "result": "passed",
+          "evidence": [
+            "19",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"
+          ]
+        },
+        {
+          "check": "no CPU remains parked beside a stationary ball for five seconds",
+          "result": "passed",
+          "evidence": {
+            "longest_ms": 0,
+            "longest_spans": [
+              {
+                "actor": 24,
+                "team": 1,
+                "start": 39000,
+                "end": 39000
+              },
+              {
+                "actor": 5,
+                "team": 0,
+                "start": 161500,
+                "end": 161500
+              }
+            ]
+          }
+        },
+        {
+          "check": "native attacking decisions produce actual shots in a shooting-zone fixture",
+          "result": "passed",
+          "evidence": {
+            "shots": [
+              {
+                "t": "118970",
+                "team": "1",
+                "actor": "24",
+                "action": "8",
+                "target": "-1",
+                "requested": "0"
+              },
+              {
+                "t": "149550",
+                "team": "1",
+                "actor": "28",
+                "action": "8",
+                "target": "-1",
+                "requested": "0"
+              }
+            ],
+            "shooting_zone_samples": 17
+          }
+        },
+        {
+          "check": "two halves finish with human input limited to its own restarts",
+          "result": "passed",
+          "evidence": {
+            "last_t": 161670,
+            "score": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "check": "simulation retains real time pace",
+          "result": "passed",
+          "evidence": 0.9961834649698809
+        },
+        {
+          "check": "clean rendered game exit",
+          "result": "passed",
+          "evidence": 0
+        }
+      ]
+    }
+  ],
+  "checks": 94,
+  "windows_gui_executed": false,
+  "human_restart_inputs": [
+    {
+      "t": 103500,
+      "type": 5,
+      "actor": 10
+    },
+    {
+      "t": 123500,
+      "type": 2,
+      "actor": 10
+    },
+    {
+      "t": 154000,
+      "type": 2,
+      "actor": 10
+    }
+  ],
+  "fixture_note": "CPU live play receives no input; automation plays only the fixed human player's authorized restarts."
+}

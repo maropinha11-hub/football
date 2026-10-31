@@ -3,10 +3,12 @@
 // i do not offer support, so don't ask. to be used for inspiration :)
 
 #include "animation.hpp"
+#include "packed_animation.hpp"
 
 #include "base/utils.hpp"
 
 #include <stdio.h>
+#include <stdexcept>
 
 #include "animationextensions/footballanimationextension.hpp"
 
@@ -1034,7 +1036,8 @@ namespace blunted {
     name = filename;
 
     std::vector<std::string> file;
-    file_to_vector(filename, file);
+    std::ifstream packed(filename.c_str(),std::ios::binary);
+    if(!packed.is_open()||!readPackedAnimation(packed,file))file_to_vector(filename, file);
 
     std::vector < std::vector<std::string> > tokenizedFile;
     int lastLine = 0;
@@ -1115,7 +1118,9 @@ namespace blunted {
       iter++;
     }
 
-    cache_AnimType = variableCache.find("type")->second;
+    const auto type=variableCache.find("type");
+    if(type==variableCache.end())throw std::runtime_error("Animation has no type metadata: "+filename);
+    cache_AnimType = type->second;
     if(GetVariable("starting_foot")=="left")currentFoot=e_Foot_Left;
 
     // Curated Fox actions are annotated in their canonical field-facing

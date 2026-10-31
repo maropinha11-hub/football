@@ -10,8 +10,11 @@ import math
 from pathlib import Path
 import re
 import unittest
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'tools/animations'))
+from packed_animation import read_text
 BANK = ROOT/'data/media/training/pes17'
 PARENTS = [-1,0,1,1,3,1,5,0,7,8,0,10,11]
 
@@ -55,9 +58,23 @@ class PESActionBankTests(unittest.TestCase):
         self.assertEqual(digest(tracks((BANK/'short_pass.anim').read_text())),
                          self.recipes['approved_shortpass_pose_sha256'])
 
+    def test_full_source_audit_distinguishes_candidates_from_unresolved_records(self):
+        audit=json.loads((BANK/'integration-audit.json').read_text())
+        rows=audit['clips'];summary=audit['summary']
+        self.assertEqual(len(rows),2956)
+        self.assertEqual(len({(r['container'],r['hash'],r['id'])for r in rows}),len(rows))
+        candidates=[r for r in rows if r['status']in {'curated_candidate','retargeted_candidate'}]
+        self.assertEqual(len(candidates),self.catalog['source_clips'])
+        self.assertEqual({r['source']for r in candidates},{r['source']for r in self.catalog['actions']})
+        self.assertEqual(sum(summary['statuses'].values()),len(rows))
+        self.assertEqual(summary['source_clips'],len(candidates))
+        self.assertEqual(summary['runtime_candidates'],self.catalog['runtime_candidates'])
+
     def test_inventory_hashes_and_source_provenance(self):
-        self.assertEqual(self.catalog['source_clips'], len(self.recipes['actions']))
-        self.assertEqual(self.catalog['runtime_candidates'], sum((2 if r.get('mirror') else 1)*(2 if r['role']=='reception' else 1) for r in self.recipes['actions']))
+        self.assertEqual(self.catalog['source_clips'], len(self.catalog['actions']))
+        self.assertEqual(self.catalog['source_clips'], len({r['source']for r in self.catalog['actions']}))
+        self.assertTrue({r['source']for r in self.recipes['actions']} <= {r['source']for r in self.catalog['actions']})
+        self.assertEqual(self.catalog['runtime_candidates'], sum((2 if r['mirrored'] else 1)*(2 if r['receiving_control_variant'] else 1) for r in self.catalog['actions']))
         self.assertEqual(len({r['source'] for r in self.recipes['actions']}), len(self.recipes['actions']))
         self.assertEqual({r['file'] for r in self.catalog['actions']}, {p.name for p in BANK.glob('*.anim')})
         for row in self.catalog['actions']:
@@ -67,12 +84,12 @@ class PESActionBankTests(unittest.TestCase):
                 self.assertEqual(row['sha256'], meta['output_sha256'])
                 self.assertEqual(meta['source_archive_sha256'], self.recipes['source_archive_sha256'])
                 self.assertTrue(meta['source_game_pose_comparison_pending'])
-                self.assertIn('not recovered', meta['contact_annotation_origin'])
+                if meta['ball_events_added']:self.assertIn('not recovered', meta['contact_annotation_origin'])
 
     def test_all_baked_pose_keys_are_continuous_and_normalized(self):
         for row in self.catalog['actions']:
             with self.subTest(file=row['file']):
-                pose = tracks((BANK/row['file']).read_text())
+                pose = tracks(read_text(BANK/row['file']))
                 self.assertEqual(set(pose), {'player', *(b['name'] for b in self.bind['bones'])})
                 size = len(pose['player'])
                 for name, keys in pose.items():
@@ -90,7 +107,7 @@ class PESActionBankTests(unittest.TestCase):
         bones = self.bind['bones']
         for row in self.catalog['actions']:
             with self.subTest(file=row['file']):
-                pose = tracks((BANK/row['file']).read_text())
+                pose = tracks(read_text(BANK/row['file']))
                 for frame, root in enumerate(pose['player']):
                     global_q = []; positions = []
                     for i, bone in enumerate(bones):

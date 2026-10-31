@@ -1,0 +1,56 @@
+{
+  "name": "fall_lowbody_3_0_180_divehead",
+  "source_sha256": "c7afddabe2a545ac9c74f0b43e6d0b572302be24c2b78cb406f698d0ee393aff",
+  "output_sha256": "c78014c02603ec6cf51760e2bdf2be240da2cdec4cfc1447294f1693c783096c",
+  "samples": 341,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": false,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": true,
+  "action": "trip",
+  "role": "balance",
+  "contact_bodypart": "right_foot",
+  "contact_frame_100hz": null,
+  "contact_annotation_origin": null,
+  "maximum_direction_error": 4.807789863616728e-07,
+  "maximum_bone_length_error": 1.9536952022836118e-07,
+  "maximum_10ms_joint_angle_change": 0.20639835105355644,
+  "root_height_range": [
+    0.1572902410030365,
+    0.9886057140231133
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file2.mtar",
+  "source_name_hash": "12ee0c24",
+  "source_id": 16400,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": 180,
+    "height": [
+      0,
+      4
+    ],
+    "speed": [
+      0,
+      12
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "trip",
+    "role": "balance",
+    "trip_type": 2
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

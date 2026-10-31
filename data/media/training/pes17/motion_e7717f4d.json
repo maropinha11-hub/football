@@ -1,0 +1,57 @@
+{
+  "name": "tacklefoot_rear_3_0_f135",
+  "source_sha256": "4a0e4ad5fd40a1939a03cac092addb637bfd204cda168404fa5b106f9e983b05",
+  "output_sha256": "1269cc0a1b817d0e95b314e5f61fb48e23f8b4e0a8b1ef994fa4aa5e682bc275",
+  "samples": 234,
+  "source_fps_assumed": 30.0,
+  "source_game_pose_comparison_pending": true,
+  "root_xy_imported": true,
+  "ball_events_added": true,
+  "motion_root_rotation_applied": true,
+  "ground_support": "whole_body_proxies",
+  "root_velocity_entry_exit_fitted": false,
+  "action": "interfere",
+  "role": "tackle",
+  "contact_bodypart": "left_foot",
+  "contact_frame_100hz": 159,
+  "contact_annotation_origin": "Kinematic Football integration estimate; original PES ball timing not recovered",
+  "maximum_direction_error": 5.332372777613268e-07,
+  "maximum_bone_length_error": 1.7144525876755523e-07,
+  "maximum_10ms_joint_angle_change": 0.24136826018539445,
+  "root_height_range": [
+    0.7709004716873169,
+    1.0071288781166077
+  ],
+  "source_game": "PES 2017 Windows",
+  "source_archive_sha256": "25d2dad1dd2d41b42c98e075daf3fa6fde1c159c63af9f7f40014b383e3d9342",
+  "source_mtar": "body_anime_file7.mtar",
+  "source_name_hash": "e7717f4d",
+  "source_id": 54062,
+  "rights": "Retargeted user-supplied PES motion; original rights retained. See NOTICE.",
+  "recipe": {
+    "direction": -135,
+    "height": [
+      0.08,
+      0.65
+    ],
+    "speed": [
+      1.4,
+      10
+    ],
+    "root_motion": true,
+    "body_support": true,
+    "max_ball_speed": 28,
+    "power": [
+      0,
+      1
+    ],
+    "part": "right_foot",
+    "mirror": true,
+    "action": "interfere",
+    "role": "tackle",
+    "infer_contact": true,
+    "infer_foot": true
+  },
+  "storage_format": "FBAN2",
+  "runtime_float32_exact": true
+}

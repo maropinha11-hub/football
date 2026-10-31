@@ -23,12 +23,13 @@ with zipfile.ZipFile(a.archive)as z,tempfile.TemporaryDirectory()as temporary:
     cfg=(root/'training.config').read_text();check('new and direct-executable launch use the same approved settings',(root/'football.config').read_text()==cfg==Path('config/training.config').read_text())
     check('animation mode, skin contacts and no cloth are the defaults',all(x in cfg for x in ['"training_animation_body" "true"','"training_physical_rig" "true"','"training_shirt_cloth" "false"','"training_body_controller" "0"']))
     check('ball rebound uses the reviewed shared setting','"training_ground_bounce" "0.74"'in cfg)
-    for filename,args in [('treino-classico.bat','--training --physical-rig'),('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),('run-training.bat','--training --physical-rig'),('jogar-partida.bat','--player-match --physical-rig'),('run-controller-test.bat','--test-controller')]:
+    for filename,args in [('treino-classico.bat','--training --physical-rig'),('treinar-animacoes-pes.bat','--training --physical-rig --pes-actions'),('run-training.bat','--training --physical-rig'),('jogar-partida.bat','--player-match --physical-rig'),('partida-animacoes-pes.bat','--player-match --physical-rig --pes-actions'),('run-controller-test.bat','--test-controller')]:
         bat=(root/filename).read_bytes();check('portable native launcher: '+filename,b'cd /d "%~dp0"'in bat and args.encode()in bat and b'powershell'not in bat.lower())
     bank_path=root/'media/training/pes17/catalog.json';bank=json.loads(bank_path.read_text())
-    check('the curated PES action bank is available without replacing native movement',
-          manifest.get('retargeted_pes2017_actions')==bank['source_clips']==21
-          and manifest.get('pes2017_runtime_candidates')==bank['runtime_candidates']==37
+    local_bank=json.loads(Path('data/media/training/pes17/catalog.json').read_text())
+    check('the expanded PES bank is available with the original mode retained',
+          manifest.get('retargeted_pes2017_actions')==bank['source_clips']==local_bank['source_clips']
+          and manifest.get('pes2017_runtime_candidates')==bank['runtime_candidates']==local_bank['runtime_candidates']
           and manifest.get('pes_action_enabled_by_default')is False
           and '"training_pes_actions" "false"'in cfg
           and b'<pes_contact_bodypart>right_foot</pes_contact_bodypart>'in(root/'media/training/pes17/short_pass.anim').read_bytes())
@@ -41,6 +42,19 @@ with zipfile.ZipFile(a.archive)as z,tempfile.TemporaryDirectory()as temporary:
           manifest.get('pes2017_bank_sha256')==validated.get('bank_catalog_sha256')==hashlib.sha256(bank_path.read_bytes()).hexdigest()
           and validated.get('result')=='passed'and len(validated.get('views',[]))==2
           and all(view['result']=='passed'for view in validated['views']))
+    metric=json.loads((root/'pes2017-pose-metric-validation.json').read_text())
+    check('the learned metric uses the released library and passed its held-out evaluation',
+          metric['result']=='passed'and metric['bank_catalog_sha256']==manifest['pes2017_bank_sha256']
+          and metric['source_clips']==bank['source_clips']and manifest['pose_selection']=='learned_diagonal_metric_50d')
+    match=json.loads((root/'pes2017-match-validation.json').read_text())
+    check('CPU, keeper, restart and match checks use the released bank',
+          match['result']=='passed'and match['bank_catalog_sha256']==manifest['pes2017_bank_sha256']
+          and len(match['stages'])==5 and all(row['result']=='passed'for row in match['stages']))
+    packed=[row for row in bank['actions']if row['file'].startswith('motion_')]
+    check('the expanded poses use float-exact packed storage with provenance',bool(packed)and all(
+          (bank_path.parent/row['file']).read_bytes().startswith(b'FBAN2')and
+          json.loads((bank_path.parent/row['file']).with_suffix('.json').read_text()).get('runtime_float32_exact')is True
+          for row in packed))
     exe=(root/'gameplayfootball.exe').read_bytes();pe=int.from_bytes(exe[60:64],'little')
     check('native executable is Windows x64',exe[:2]==b'MZ'and exe[pe:pe+4]==b'PE\0\0'and int.from_bytes(exe[pe+4:pe+6],'little')==0x8664)
     fresh=Path(temporary)/'fresh.exe';subprocess.run([os.environ.get('STRIP','x86_64-w64-mingw32-strip'),'--preserve-dates','--strip-debug','-o',str(fresh),str(a.build/'gameplayfootball.exe')],check=True)

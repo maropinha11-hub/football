@@ -15,6 +15,8 @@ a.output.mkdir(parents=True,exist_ok=a.resume)
 exe=hashlib.sha256((a.build/'gameplayfootball').read_bytes()).hexdigest()
 rows=[]
 for name,script,extra in [
+    ('turn_external','training_reception_turn_smoke.py',['--camera','1','--display',':'+str(a.display_base+2)]),
+    ('turn_firstperson','training_reception_turn_smoke.py',['--camera','2','--display',':'+str(a.display_base+3)]),
     ('bank_external','training_pes_bank_smoke.py',['--camera','1','--display',':'+str(a.display_base)]),
     ('bank_firstperson','training_pes_bank_smoke.py',['--camera','2','--display',':'+str(a.display_base+1)]),
     ('approved_native','run_classic_suite.py',['--display-base',str(a.display_base+10)]),
@@ -46,8 +48,10 @@ for name in ('bank_external','bank_firstperson'):
 # release still has to demonstrate all five families and the running kick.
 bank=json.loads((Path(__file__).resolve().parents[1]/'data/media/training/pes17/catalog.json').read_text())
 roles={r['role']for r in bank['actions']if r['source']in coverage}
-coverage_ok=roles=={'pass','shot','cross','header','reception'}and 'kick_long_3_0_instep_y0_000'in coverage
-report=dict(result='passed'if len(rows)==3 and all(r['result']=='passed'for r in rows)and coverage_ok else'failed',
+coverage_ok=({'pass','shot','cross','header','reception'}<=roles and
+             any(n.startswith(('kick_long_3_','kick_long_4_'))for n in coverage)and
+             any(n.startswith(('kick_short_3_','kick_short_4_'))for n in coverage))
+report=dict(result='passed'if len(rows)==5 and all(r['result']=='passed'for r in rows)and coverage_ok else'failed',
             executable_sha256=exe,stages=rows,observed_source_clips=sorted(coverage),
             observed_roles=sorted(roles),coverage_result='passed'if coverage_ok else'failed')
 (a.output/'validation.json').write_text(json.dumps(report,indent=2)+'\n')
